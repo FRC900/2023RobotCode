@@ -26,6 +26,6 @@
 		<arg name="cam_pos_z"            value="0.0" />
 		<arg name="run_camera"           value="$(arg run_camera)" />
 		<arg name="run_apriltag"         value="$(arg run_apriltag)" />
-		<arg name="run_object_detection" value="$(arg run_object_detection)" />
+		<arg name="run_object_detection" value="false" />
 	</include>
 </launch>
