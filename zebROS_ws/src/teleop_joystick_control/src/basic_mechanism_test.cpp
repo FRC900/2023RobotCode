@@ -10,6 +10,7 @@
 #include "teleop_joystick_control/TeleopJoystickComp2022Config.h"
 #include "teleop_joystick_control/TeleopJoystickCompDiagnostics2022Config.h"
 
+#include "teleop_joystick_control/RobotOrientationDriver.h"
 #include "teleop_joystick_control/TeleopCmdVel.h"
 
 #include <sensor_msgs/Imu.h>
@@ -40,12 +41,13 @@ ros::Publisher intake_pub;
 ros::Publisher intake_solenoid_pub;
 
 ros::Time last_header_stamp;
-double trigger_threshold = 0.5;
+constexpr double trigger_threshold = 0.5;
 
 // Teleop stuff
 std::unique_ptr<TeleopCmdVel<teleop_joystick_control::TeleopJoystickComp2022Config>> teleop_cmd_vel;
 teleop_joystick_control::TeleopJoystickComp2022Config config;
 teleop_joystick_control::TeleopJoystickCompDiagnostics2022Config diagnostics_config;
+std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 
 ros::ServiceClient BrakeSrv;
 ros::Publisher JoystickRobotVel;
@@ -392,25 +394,68 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		{
 			//Joystick1: buttonA
 			static bool sendRobotZero = false;
-
-			geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], imu_angle, config);
-
-			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
+			const StrafeSpeeds strafe_speeds = teleop_cmd_vel->generateCmdVel(joystick_states_array[0].leftStickX, joystick_states_array[0].leftStickY, imu_angle, joystick_states_array[0].header.stamp, config);
+			// Rotate the robot in response to a joystick request.
+			const double rotation_increment = teleop_cmd_vel->generateAngleIncrement(joystick_states_array[0].rightStickX, joystick_states_array[0].header.stamp, config);
+			if (rotation_increment != 0.0)
 			{
-				std_srvs::Empty empty;
-				if (!BrakeSrv.call(empty))
-				{
-					ROS_ERROR("BrakeSrv call failed in sendRobotZero_");
-				}
-				ROS_INFO("BrakeSrv called");
-
-				JoystickRobotVel.publish(cmd_vel);
-				sendRobotZero = true;
+				ROS_INFO_STREAM(__FUNCTION__ << " rotation_increment = " << rotation_increment);
+				robot_orientation_driver->incrementTargetOrientation(rotation_increment);
 			}
-			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
+			// TODO : should we run this separately on a timer?
+			// Only send cmd_vel message from teleop if the PID loop is
+			// responding to a setpoint from the teleop node.  This will
+			// prevent command generated from setpoints from other nodes
+			// being processed in here instead of there.
+			if (robot_orientation_driver->mostRecentCommandIsFromTeleop())
 			{
-				JoystickRobotVel.publish(cmd_vel);
-				sendRobotZero = false;
+				const double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
+				// TODO : add a robot_orientation_driver->isRobotRotating?
+				// If x and y inputs are 0 and the PID controls have settled on a final orientation,
+				// trigger brake mode in the swerve controller
+				if ((strafe_speeds.x_ == 0) && (strafe_speeds.y_ == 0) && (fabs(rotation_velocity) < 0.001)) // TODO : config item
+				{
+					// Only send this once and then stop publishing
+					// This will let other, lower priority cmd_vel messages
+					// from auto code move to the highest priority in the
+					// cmd vel mux rather than overriding them with higher
+					// priority 0,0,0 speeds from the teleop code
+					if (!sendRobotZero)
+					{
+						geometry_msgs::Twist cmd_vel;
+						cmd_vel.linear.x = 0.0;
+						cmd_vel.linear.y = 0.0;
+						cmd_vel.linear.z = 0.0;
+						cmd_vel.angular.x = 0.0;
+						cmd_vel.angular.y = 0.0;
+						cmd_vel.angular.z = 0.0;
+						JoystickRobotVel.publish(cmd_vel);
+
+						std_srvs::Empty empty;
+						if (!BrakeSrv.call(empty))
+						{
+							ROS_ERROR("BrakeSrv call failed in sendRobotZero");
+						}
+						ROS_INFO("BrakeSrv called");
+						sendRobotZero = true;
+					}
+				}
+				else
+				{
+					// Drive the robot using the non-zero cmd_vel read
+					// from the joystick, a previous rotation setpoint,
+					// or a combination of both
+					geometry_msgs::Twist cmd_vel;
+					cmd_vel.linear.x = strafe_speeds.x_;
+					cmd_vel.linear.y = strafe_speeds.y_;
+					cmd_vel.linear.z = 0.0;
+					cmd_vel.angular.x = 0.0;
+					cmd_vel.angular.y = 0.0;
+					cmd_vel.angular.z = rotation_velocity;
+
+					JoystickRobotVel.publish(cmd_vel);
+					sendRobotZero = false;
+				}
 			}
 
 			if(joystick_states_array[0].buttonAPress)
@@ -733,6 +778,7 @@ int main(int argc, char **argv)
 	std::map<std::string, std::string> service_connection_header;
 	service_connection_header["tcp_nodelay"] = "1";
 	teleop_cmd_vel = std::make_unique<TeleopCmdVel<teleop_joystick_control::TeleopJoystickComp2022Config>>(config);
+	robot_orientation_driver = std::make_unique<RobotOrientationDriver>(n);
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	if(!BrakeSrv.waitForExistence(ros::Duration(15)))
 	{

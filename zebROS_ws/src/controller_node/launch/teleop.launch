@@ -16,6 +16,8 @@
         <param name="lower_limit" value="-6.00" />
         <param name="windup_limit" value="0.5" />
         <param name="angle_error" value="true" />
+		<param name="max_loop_frequency" value="100.0" />
+		<param name="min_loop_frequency" value="100.0" />
       </node>
 	  <!-- TODO : orient strafind node requires values from here
 			 fix it so that they can be read from the ones in the teleop namespace
