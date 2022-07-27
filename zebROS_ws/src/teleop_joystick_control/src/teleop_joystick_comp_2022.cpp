@@ -1318,6 +1318,10 @@ int main(int argc, char **argv)
 	{
 		ROS_ERROR("Could not read max_rot_slow in teleop_joystick_comp");
 	}
+	if(!n_params.getParam("rotation_axis_scale", config.rotation_axis_scale))
+	{
+		ROS_ERROR("Could not read rotation_axis_scale in teleop_joystick_comp");
+	}
 	if(!n_params.getParam("drive_rate_limit_time", config.drive_rate_limit_time))
 	{
 		ROS_ERROR("Could not read drive_rate_limit_time in teleop_joystick_comp");

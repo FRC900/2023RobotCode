@@ -26,7 +26,7 @@ class TeleopCmdVel
 		TeleopCmdVel(const ConfigT &config):
 			x_rate_limit_(-config.max_speed, config.max_speed, config.drive_rate_limit_time),
 			y_rate_limit_(-config.max_speed, config.max_speed, config.drive_rate_limit_time),
-			rot_rate_limit_(-config.max_rot, config.max_rot, config.rotate_rate_limit_time),
+			//rot_rate_limit_(-config.max_rot, config.max_rot, config.rotate_rate_limit_time),
 			last_stamp_{ros::Time::now()}
 		{
 		}
@@ -48,7 +48,7 @@ class TeleopCmdVel
 		{
 			x_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
 			y_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
-			rot_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
+			//rot_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
 		}
 
 		StrafeSpeeds generateCmdVel(const double translationX, const double translationY, const double navX_angle, const ros::Time &stamp, const ConfigT &config)
@@ -126,7 +126,7 @@ class TeleopCmdVel
 			const ros::Duration timestep = stamp - last_stamp_;
 			last_stamp_ = stamp;
 
-			return angles::normalize_angle(rotation*timestep.toSec());
+			return angles::normalize_angle(rotation*timestep.toSec()*config.rotation_axis_scale);
 		}
 
 	private:
@@ -137,7 +137,7 @@ class TeleopCmdVel
 
 		rate_limiter::RateLimiter x_rate_limit_;
 		rate_limiter::RateLimiter y_rate_limit_;
-		rate_limiter::RateLimiter rot_rate_limit_;
+		//rate_limiter::RateLimiter rot_rate_limit_;
 
 		ros::Time last_stamp_;
 
