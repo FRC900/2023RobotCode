@@ -42,21 +42,17 @@ class TeleopCmdVel
 			slow_mode_ = slow_mode;
 		}
 
-		// Note - updateRiseTimeInMsec() does nothing if the
-		// requested time is the same as the current config
-		void updateRateLimit(const ConfigT &config)
-		{
-			x_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
-			y_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
-			//rot_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
-		}
-
-		StrafeSpeeds generateCmdVel(const double translationX, const double translationY, const double navX_angle, const ros::Time &stamp, const ConfigT &config)
+		StrafeSpeeds generateCmdVel(const double translationX, const double translationY, const double imu_angle, const ros::Time &stamp, const ConfigT &config)
 		{
 			const double max_speed = slow_mode_ ? config.max_speed_slow : config.max_speed;
 
 			x_rate_limit_.updateMinMax(-max_speed, max_speed);
 			y_rate_limit_.updateMinMax(-max_speed, max_speed);
+
+			// Note - updateRiseTimeInMsec() does nothing if the
+			// requested time is the same as the current config
+			x_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
+			y_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
 
 			//ROS_INFO_STREAM(__LINE__ << " "  << translationX << " " << translationY);
 
@@ -101,7 +97,7 @@ class TeleopCmdVel
 			joyVector[0] = -xSpeed; //intentionally flipped
 			joyVector[1] = -ySpeed;
 
-			const Eigen::Rotation2Dd rotate(robot_orient_ ? -offset_angle_ : -navX_angle);
+			const Eigen::Rotation2Dd rotate(robot_orient_ ? -offset_angle_ : -imu_angle);
 			const Eigen::Vector2d rotatedJoyVector = rotate.toRotationMatrix() * joyVector;
 
 			return StrafeSpeeds{rotatedJoyVector[1], rotatedJoyVector[0]};
@@ -111,6 +107,7 @@ class TeleopCmdVel
 		{
 			const double max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
 			//rot_rate_limit_.updateMinMax(-max_rot, max_rot);
+			//rot_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
 
 			double rotation = dead_zone_check(rotationZ, config.joystick_deadzone);
 
@@ -122,9 +119,12 @@ class TeleopCmdVel
 			rotation *= max_rot;
 			//rot_rate_limit_.applyLimit(rotation, stamp);
 
-			// TODO - check that timestep isn't too large?
 			const ros::Duration timestep = stamp - last_stamp_;
 			last_stamp_ = stamp;
+			// Make sure the robot doesn't rotate if there's been
+			// too much time elapsed since the last joystick value
+			if (timestep.toSec() > 0.2)
+				return 0;
 
 			return angles::normalize_angle(rotation*timestep.toSec()*config.rotation_axis_scale);
 		}
