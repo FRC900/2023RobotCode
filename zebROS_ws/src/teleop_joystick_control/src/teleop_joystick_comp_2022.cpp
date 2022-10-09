@@ -98,8 +98,6 @@ ros::Publisher speed_offset_publisher; //shooter speed offset
 bool imu_service_needed = true;
 
 ros::Publisher dynamic_arm_piston_;
-double last_offset;
-bool last_robot_orient;
 
 // Diagnostic mode controls
 void decIndexerArc(void)
@@ -291,8 +289,6 @@ void preemptActionlibServers(void)
 bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 		teleop_joystick_control::RobotOrient::Response&/* res*/)
 {
-	last_offset = req.offset_angle;
-	last_robot_orient = req.robot_orient;
 	// Used to switch between robot orient and field orient driving
 	teleop_cmd_vel->setRobotOrient(req.robot_orient, req.offset_angle);
 	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
@@ -743,30 +739,20 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				ROS_INFO_STREAM("Snapping to nearest cargo and enabling robot relative driving mode!");
 				// Align for cargo
-				ros::spinOnce();
-				std_msgs::Float64 orient_strafing_angle_msg;
-				orient_strafing_angle_msg.data = cargo_angle - imu_angle;
-				orient_strafing_setpoint_pub.publish(orient_strafing_angle_msg);
-				std_msgs::Bool enable_align_msg;
-				enable_align_msg.data = true;
-				// To align the robot to an angle, enable_align_msg.data
-				// needs to be true and the desired angle (in radians)
-				// needs to be published to orient_strafing_setpoint_pub
-				orient_strafing_enable_pub.publish(enable_align_msg);
-				teleop_cmd_vel->setRobotOrient(true, 0);
-				snappingToAngle = true;
+				robot_orientation_driver->setTargetOrientation(cargo_angle - imu_angle);
+				// Set to robot centric so that driving forward drives the intake into the cargo
+				// Last param == true means save the previous state in teleop_cmd_vel object,
+				// used by the ->restoreRobotOrient() code below to reset the setting once
+				// button A is released
+				teleop_cmd_vel->setRobotOrient(true, 0, true);
 			}
 			if(joystick_states_array[0].buttonAButton)
 			{
 			}
 			if(joystick_states_array[0].buttonARelease)
 			{
-				std_msgs::Bool enable_align_msg;
-				enable_align_msg.data = false;
-				orient_strafing_enable_pub.publish(enable_align_msg);
-				teleop_cmd_vel->setRobotOrient(last_robot_orient, last_offset);
+				teleop_cmd_vel->restoreRobotOrient();
 				ROS_INFO_STREAM("Stopping snapping to nearest cargo and disabling robot relative driving mode!");
-				snappingToAngle = false;
 				sendRobotZero = false;
 			}
 

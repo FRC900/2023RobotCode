@@ -40,6 +40,7 @@ public:
 
 	void setTargetOrientation(double angle, bool from_teleop = true);
 	void incrementTargetOrientation(double deltaAngle);
+	void stopRotation(void);
 	// subscriber to read setTargetOrientation as needed
 
 	// Called from callbacks in teleop code

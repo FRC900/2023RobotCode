@@ -31,13 +31,24 @@ class TeleopCmdVel
 		{
 		}
 
-		void setRobotOrient(const bool robot_orient, const double offset_angle)
+		void setRobotOrient(const bool robot_orient, const double offset_angle, const bool save = false)
 		{
 			robot_orient_ = robot_orient;
 			offset_angle_ = offset_angle;
+			if (save)
+			{
+				saved_robot_orient_ = robot_orient_;
+				saved_offset_angle_ = offset_angle_;
+			}
 		}
 
-		void setSlowMode(const bool &slow_mode)
+		void restoreRobotOrient(void)
+		{
+			robot_orient_ = saved_robot_orient_;
+			offset_angle_ = saved_offset_angle_;
+		}
+
+		void setSlowMode(const bool slow_mode)
 		{
 			slow_mode_ = slow_mode;
 		}
@@ -131,9 +142,12 @@ class TeleopCmdVel
 
 	private:
 		bool robot_orient_{false};
+		double offset_angle_{M_PI / 2.0};
+
 		bool slow_mode_{false};
 
-		double offset_angle_{M_PI / 2.0};
+		bool saved_robot_orient_{false};
+		double saved_offset_angle_{M_PI / 2.0};
 
 		rate_limiter::RateLimiter x_rate_limit_;
 		rate_limiter::RateLimiter y_rate_limit_;

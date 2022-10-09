@@ -47,6 +47,13 @@ void RobotOrientationDriver::incrementTargetOrientation(double deltaAngle)
 	setTargetOrientation(target_orientation_ + deltaAngle);
 }
 
+// Set the desired orientation to the current IMU orientation
+// to stop the robot at the current orientation
+void RobotOrientationDriver::stopRotation(void)
+{
+	setTargetOrientation(robot_orientation_);
+}
+
 void RobotOrientationDriver::orientationCmdCallback(const std_msgs::Float64::ConstPtr &orient_msg)
 {
 	//ROS_INFO_STREAM(__FUNCTION__ << " angle = " << orient_msg->data);
