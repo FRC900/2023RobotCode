@@ -66,10 +66,10 @@
 #include "ros_control_boilerplate/ros_iterative_robot.h"
 #include "ros_control_boilerplate/talon_convert.h"
 #include "spark_max_interface/spark_max_command_interface.h"
-#include "talon_interface/cancoder_command_interface.h"
-#include "talon_interface/canifier_command_interface.h"
-#include "talon_interface/orchestra_command_interface.h"
-#include "talon_interface/talon_command_interface.h"
+#include "ctre_interfaces/cancoder_command_interface.h"
+#include "ctre_interfaces/canifier_command_interface.h"
+#include "ctre_interfaces/orchestra_command_interface.h"
+#include "ctre_interfaces/talon_command_interface.h"
 
 #include "ros_control_boilerplate/tracer.h"
 

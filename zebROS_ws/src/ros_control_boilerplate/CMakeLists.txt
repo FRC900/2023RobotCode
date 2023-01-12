@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosparam_shortcuts
   sensor_msgs
   std_msgs
-  talon_interface
+  ctre_interfaces
   trajectory_msgs
   urdf
   spark_max_interface
@@ -58,7 +58,7 @@ catkin_package(
 	sensor_msgs
 	spark_max_interface
 	std_msgs
-	talon_interface
+	ctre_interfaces
 	trajectory_msgs
   LIBRARIES
 )

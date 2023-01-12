@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(talon_interface)
+project(ctre_interfaces)
 
 include("../cmake_modules/CMakeOpt.cmake")
 
@@ -103,7 +103,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES talon_interface
+  LIBRARIES ctre_interfaces
   CATKIN_DEPENDS hardware_interface state_handle
 #  DEPENDS system_lib
 )
@@ -180,7 +180,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_talon_interface.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ctre_interfaces.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
