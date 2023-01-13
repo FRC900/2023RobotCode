@@ -129,6 +129,8 @@ add_library(${PROJECT_NAME} STATIC
   src/talon_state_interface.cpp
   src/orchestra_command_interface.cpp
   src/orchestra_state_interface.cpp
+  src/candle_state_interface.cpp
+  src/candle_command_interface.cpp
 )
 
 ## Add cmake target dependencies of the library

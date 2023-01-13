@@ -70,6 +70,7 @@
 #include "ctre_interfaces/canifier_command_interface.h"
 #include "ctre_interfaces/orchestra_command_interface.h"
 #include "ctre_interfaces/talon_command_interface.h"
+#include "ctre_interfaces/candle_command_interface.h"
 
 #include "ros_control_boilerplate/tracer.h"
 

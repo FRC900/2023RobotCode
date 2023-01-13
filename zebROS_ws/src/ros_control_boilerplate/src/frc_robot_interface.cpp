@@ -53,6 +53,7 @@
 #include "ctre/phoenix/motorcontrol/can/WPI_TalonFX.h"
 #include "ctre/phoenix/motorcontrol/can/WPI_TalonSRX.h"
 #include "ctre/phoenix/motorcontrol/can/WPI_VictorSPX.h"
+#include "ctre/phoenix/led/CANdle.h"
 #include <ctre/phoenix/unmanaged/Unmanaged.h>
 #include "CTREPDP.h"
 #include "frc/AnalogInput.h"                          // for AnalogInput
