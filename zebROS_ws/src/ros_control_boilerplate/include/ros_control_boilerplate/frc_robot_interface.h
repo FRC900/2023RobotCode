@@ -470,6 +470,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		//robot iteration calls - sending stuff to driver station
 		double ctre_mc_read_hz_{100};
 		double cancoder_read_hz_{100};
+		double candle_read_hz_{100};
 		double canifier_read_hz_{100};
 		double spark_max_read_hz_{100};
 		double pcm_read_hz_{20};
