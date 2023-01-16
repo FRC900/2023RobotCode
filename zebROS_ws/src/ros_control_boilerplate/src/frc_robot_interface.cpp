@@ -267,7 +267,7 @@ bool FRCRobotInterface::initDevices(ros::NodeHandle root_nh)
 		if (candle_local_hardwares_[i]) {
 			this->candles_.emplace_back(std::make_unique<ctre::phoenix::led::CANdle>(this->candle_can_ids_[i], this->candle_names_[i]));
 			this->candle_read_state_mutexes_.emplace_back(std::make_shared<std::mutex>());
-			this->candle_read_thread_states_.emplace_back(std::make_shared<hardware_interface::candle::CANdleHWState>(this->candle_can_ids_[i]))
+			this->candle_read_thread_states_.emplace_back(std::make_shared<hardware_interface::candle::CANdleHWState>(this->candle_can_ids_[i]));
 			this->candle_read_threads_.emplace_back(std::thread(
 				&FRCRobotInterface::candle_read_thread,
 				this,
@@ -279,7 +279,7 @@ bool FRCRobotInterface::initDevices(ros::NodeHandle root_nh)
 			));
 		} else {
 			this->candles_.push_back(nullptr);
-			this->candle_read_state_mutexes.push_back(nullptr);
+			this->candle_read_state_mutexes_.push_back(nullptr);
 			this->candle_read_thread_states_.push_back(nullptr);
 		}
 	}
