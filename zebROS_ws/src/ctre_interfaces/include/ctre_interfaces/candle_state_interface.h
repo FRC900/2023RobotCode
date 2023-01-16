@@ -11,9 +11,7 @@ namespace hardware_interface {
 namespace candle {
 
 // An enum for all the animations the CANdle can play
-enum CANdleAnimationType {
-    BaseStandard,
-    BaseTwoSize,
+enum class CANdleAnimationType {
     ColourFlow,
     Fire,
     Larson,
@@ -23,6 +21,17 @@ enum CANdleAnimationType {
     Strobe,
     Twinkle,
     TwinkleOff
+};
+
+// A CANdle colour
+struct CANdleColour {
+    int red;
+    int green;
+    int blue;
+    int white;
+
+    // Constructor
+    CANdleColour(int red, int green, int blue, int white);
 };
 
 // An animation for the CANdle to play
@@ -36,25 +45,40 @@ struct CANdleAnimation {
     // Number of LEDs to animation
     int count;
     // The animation to play
-    CANdleAnimationType animation;
+    CANdleAnimationType type;
 
     // Constructor
-    CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType animation);
+    CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type);
     // Blank constructor/null
     CANdleAnimation();
+
+    // For all animations
+    int getID();
+    double getSpeed();
+    int getLEDStart();
+    int getLEDCount();
+    CANdleAnimationType getType();
+    // For base2 animations
+    virtual CANdleColour getColour();
+    virtual int getDirection();
+    // For base standard animations
+    virtual double getBrightness();
+    virtual bool getReversed();
+    virtual double getParam4();
+    virtual double getParam5();
 };
 // Base2 animations have configurable colour and direction
 struct BaseTwoCANdleAnimation : CANdleAnimation {
     // Animation colour
-    int red;
-    int green;
-    int blue;
-    int white;
+    CANdleColour colour;
     // Animation direction
     int direction;
 
     // Constructor
-    BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType animation, int red, int green, int blue, int white, int direction);
+    BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction);
+    // Overriden methods
+    virtual CANdleColour getColour() override;
+    virtual int getDirection() override;
 };
 // BaseStandard animations have configurable brightness, reversable direction, and 2 custom params
 struct BaseStandardCANdleAnimation : CANdleAnimation {
@@ -67,7 +91,12 @@ struct BaseStandardCANdleAnimation : CANdleAnimation {
     double param5;
 
     // Constructor
-    BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType animation, double brightness, bool reversed, double param4, double param5);
+    BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5);
+    // Overriden methods
+    virtual double getBrightness() override;
+    virtual bool getReversed() override;
+    virtual double getParam4() override;
+    virtual double getParam5() override;
 };
 
 // An LED in the CANdle, and it's current colour

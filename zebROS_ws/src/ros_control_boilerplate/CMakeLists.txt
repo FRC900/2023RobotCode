@@ -88,6 +88,7 @@ add_library(frc_robot_interface STATIC
 	src/ros_iterative_robot.cpp
 	src/ros_math_shared.cpp
 	src/talon_convert.cpp
+	src/candle_convert.cpp
 )
 
 # Main control executable

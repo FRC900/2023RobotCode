@@ -3,30 +3,70 @@
 namespace hardware_interface {
 namespace candle {
 
-CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType animation) {
-    this->id = id;
-    this->speed = speed;
-    this->start = start;
-    this->count = count;
-    this->animation = animation;
-}
-CANdleAnimation::CANdleAnimation() {}
-BaseTwoCANdleAnimation::BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType animation, int red, int green, int blue, int white, int direction)
-: CANdleAnimation(id, speed, start, count, animation)
-{
+CANdleColour::CANdleColour(int red, int green, int blue, int white) {
     this->red = red;
     this->green = green;
     this->blue = blue;
     this->white = white;
+}
+
+CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type) {
+    this->id = id;
+    this->speed = speed;
+    this->start = start;
+    this->count = count;
+    this->type = type;
+}
+CANdleAnimation::CANdleAnimation() {}
+
+int CANdleAnimation::getID() {
+    return this->id;
+}
+double CANdleAnimation::getSpeed() {
+    return this->speed;
+}
+int CANdleAnimation::getLEDStart() {
+    return this->start;
+}
+int CANdleAnimation::getLEDCount() {
+    return this->count;
+}
+CANdleAnimationType CANdleAnimation::getType() {
+    return this->type;
+}
+
+BaseTwoCANdleAnimation::BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction)
+: CANdleAnimation(id, speed, start, count, type),
+  colour(red, green, blue, white)
+{
     this->direction = direction;
 }
-BaseStandardCANdleAnimation::BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType animation, double brightness, bool reversed, double param4, double param5)
-: CANdleAnimation(id, speed, start, count, animation)
+CANdleColour BaseTwoCANdleAnimation::getColour() {
+    return this->colour;
+}
+int BaseTwoCANdleAnimation::getDirection() {
+    return this->direction;
+}
+
+BaseStandardCANdleAnimation::BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5)
+: CANdleAnimation(id, speed, start, count, type)
 {
     this->brightness = brightness;
     this->reversed = reversed;
     this->param4 = param4;
     this->param5 = param5;
+}
+double BaseStandardCANdleAnimation::getBrightness() {
+    return this->brightness;
+}
+bool BaseStandardCANdleAnimation::getReversed() {
+    return this->reversed;
+}
+double BaseStandardCANdleAnimation::getParam4() {
+    return this->param4;
+}
+double BaseStandardCANdleAnimation::getParam5() {
+    return this->param5;
 }
 
 LED::LED(int id, int red, int green, int blue) {
