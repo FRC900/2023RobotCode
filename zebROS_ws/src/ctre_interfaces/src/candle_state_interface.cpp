@@ -9,6 +9,7 @@ CANdleColour::CANdleColour(int red, int green, int blue, int white) {
     this->blue = blue;
     this->white = white;
 }
+CANdleColour::CANdleColour() {}
 
 CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, CANdleAnimationClass class_type) {
     this->id = id;
@@ -19,22 +20,6 @@ CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CAN
     this->class_type = class_type;
 }
 CANdleAnimation::CANdleAnimation() {}
-
-int CANdleAnimation::getID() {
-    return this->id;
-}
-double CANdleAnimation::getSpeed() {
-    return this->speed;
-}
-int CANdleAnimation::getLEDStart() {
-    return this->start;
-}
-int CANdleAnimation::getLEDCount() {
-    return this->count;
-}
-CANdleAnimationType CANdleAnimation::getType() {
-    return this->type;
-}
 
 BaseTwoCANdleAnimation::BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction)
 : CANdleAnimation(id, speed, start, count, type, CANdleAnimationClass::BaseTwo),
@@ -70,14 +55,6 @@ double BaseStandardCANdleAnimation::getParam5() {
     return this->param5;
 }
 
-LED::LED(int id, int red, int green, int blue) {
-    this->id = id;
-    this->red = red;
-    this->green = green;
-    this->blue = blue;
-}
-LED::LED() {}
-
 CANdleHWState::CANdleHWState(int id) :
     device_id{id},
     brightness{1},
@@ -85,17 +62,14 @@ CANdleHWState::CANdleHWState(int id) :
     animation()
 {
     for (int i = 0; i < 8; i++) {
-        this->leds[i] = LED(i, 255, 255, 255);
+        this->leds[i] = CANdleColour(255, 255, 255, 255);
     }
 }
 
-void CANdleHWState::setLED(int id, int red, int green, int blue) {
-    LED led = this->leds[id];
-    led.red = red;
-    led.green = green;
-    led.blue = blue;
+void CANdleHWState::setLED(int id, CANdleColour led) {
+    this->leds[id] = led;
 }
-LED CANdleHWState::getLED(int id) {
+CANdleColour CANdleHWState::getLED(int id) {
     return this->leds[id];
 }
 

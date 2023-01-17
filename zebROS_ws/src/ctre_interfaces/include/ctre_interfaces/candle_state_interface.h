@@ -36,6 +36,7 @@ struct CANdleColour {
 
     // Constructor
     CANdleColour(int red, int green, int blue, int white);
+    CANdleColour();
 };
 
 // An animation for the CANdle to play
@@ -54,7 +55,7 @@ struct CANdleAnimation {
     CANdleAnimationClass class_type;
 
     // Constructor
-    CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type);
+    CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, CANdleAnimationClass class_type);
     // Blank constructor/null
     CANdleAnimation();
 
@@ -106,21 +107,6 @@ struct BaseStandardCANdleAnimation : CANdleAnimation {
     virtual double getParam5() override;
 };
 
-// An LED in the CANdle, and it's current colour
-struct LED {
-    // The LED's number (0->7)
-    int id;
-    // The RGB colour values
-    int red;
-    int green;
-    int blue;
-
-    // Constructor
-    LED(int id, int red, int green, int blue);
-    // Blank constructor for arrays/vectors
-    LED();
-};
-
 class CANdleHWState {
     public:
         // Constructor and method to get device ID
@@ -128,8 +114,8 @@ class CANdleHWState {
         int getDeviceID() const;
 
         // Set the colour of an LED
-        void setLED(int id, int red, int green, int blue);
-        LED getLED(int id);
+        void setLED(int id, CANdleColour led);
+        CANdleColour getLED(int id);
 
         // Set the brightness of the CANdle's LEDs
         void setBrightness(double brightness);
@@ -151,7 +137,7 @@ class CANdleHWState {
         // The CAN ID of this CANdle
         int device_id;
         // All of the LED groups to colour
-        vector<LED> leds;
+        vector<CANdleColour> leds;
         // The brightness of the LEDs in the CANdle, from 0->1
         double brightness;
         // If the status LED should be on when the CANdle is being controlled

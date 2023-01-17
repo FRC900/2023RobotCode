@@ -15,12 +15,10 @@ struct LEDGroup {
     // Number of LEDs this group covers
     int count;
     // Colour to set for these LEDs
-    int red;
-    int green;
-    int blue;
+    CANdleColour colour;
 
     // Constructor
-    LEDGroup(int start, int count, int red, int green, int blue);
+    LEDGroup(int start, int count, CANdleColour colour);
     // Blank constructor for arrays and vectors
     LEDGroup();
 };
@@ -34,8 +32,9 @@ class CANdleHWCommand {
 
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
-        LEDGroup getLEDGroup(int id);
+        LEDGroup* getLEDGroup(int id);
         vector<LEDGroup>& getAllLEDGroups();
+        void removeLEDGroup(int id);
         bool ledGroupChanged(vector<LEDGroup>& groups);
 
         // Set brightness of LEDs

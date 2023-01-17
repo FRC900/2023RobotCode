@@ -19,7 +19,6 @@ namespace candle_convert {
 
 ColorFlowAnimation::Direction convertCANdleDirection(int direction);
 BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation* animation);
-BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleANimation* animation);
-void convertCANdleAnimation(CANdleAnimation* animation, Animation*& result);
+BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation);
 
 } // namespace candle_convert

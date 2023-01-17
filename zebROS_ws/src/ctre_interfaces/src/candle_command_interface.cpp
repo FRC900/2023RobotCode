@@ -3,12 +3,10 @@
 namespace hardware_interface {
 namespace candle {
 
-LEDGroup::LEDGroup(int start, int count, int red, int green, int blue) {
+LEDGroup::LEDGroup(int start, int count, CANdleColour colour) {
     this->start = start;
     this->count = count;
-    this->red = red;
-    this->green = green;
-    this->blue = blue;
+    this->colour = colour;
 }
 LEDGroup::LEDGroup() {}
 
@@ -30,8 +28,14 @@ int CANdleHWCommand::getDeviceID() {
 void CANdleHWCommand::setLEDGroup(LEDGroup leds) {
     this->led_groups.push_back(leds);
 }
-LEDGroup CANdleHWCommand::getLEDGroup(int id) {
-    return this->led_groups[id];
+LEDGroup* CANdleHWCommand::getLEDGroup(int id) {
+    return &(this->led_groups[id]);
+}
+vector<LEDGroup>& CANdleHWCommand::getAllLEDGroups() {
+    return this->led_groups;
+}
+void CANdleHWCommand::removeLEDGroup(int id) {
+    this->led_groups.erase(this->led_groups.begin() + id);
 }
 bool CANdleHWCommand::ledGroupChanged(vector<LEDGroup>& groups) {
     if (this->led_groups.size() > 0) {

@@ -2585,14 +2585,14 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 	}
 
 	this->write_tracer_.start_unique("candle");
-	for (size_t i = 0; i < this->num_candles_; i++) {
-		if (!(this->candle_local_hardwares_[i]))
+	for (size_t candle_id = 0; candle_id < this->num_candles_; candle_id++) {
+		if (!(this->candle_local_hardwares_[candle_id]))
 			continue;
 		
 		// Get candle, state, and command interfaces
-		auto& candle = this->candles_[i];
-		auto& candle_state = this->candle_state_[i];
-		auto& candle_command = this->candle_command_[i];
+		auto &candle = this->candles_[candle_id];
+		auto &candle_state = this->candle_state_[candle_id];
+		auto &candle_command = this->candle_command_[candle_id];
 
 		// For each Command property, check if it changed
 		//  if it did change, update the actual CANdle, and update the state
@@ -2605,7 +2605,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				"candle->ConfigBrightnessScalar",
 				candle_state.getDeviceID()
 			)) {
-				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
 						<< " : Set brightness to " << brightness);
 				candle_state.setBrightness(brightness);
 			} else {
@@ -2621,7 +2621,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				"candle->ConfigStatusLedState",
 				candle_state.getDeviceID()
 			)) {
-				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
 						<< " : Set status led when active to " << status_led_when_active);
 				candle_state.showStatusLEDWhenActive(status_led_when_active);
 			} else {
@@ -2637,7 +2637,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				"candle->configV5Enabled",
 				candle_state.getDeviceID()
 			)) {
-				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
 						<< " : Set enabled to " << enabled);
 				candle_state.setEnabled(enabled);
 			} else {
@@ -2649,15 +2649,21 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		CANdleAnimation* candle_animation;
 		Animation* animation;
 		if (candle_command.animationChanged(candle_animation)) {
-			// Convert the animation
-			candle_convert::convertCANdleAnimation(candle_animation, animation);
+			// Convert from CANdleAnimation to the appropriate CTRE animation class
+			if (candle_animation->class_type == CANdleAnimationClass::BaseStandard) {
+				BaseStandardAnimation base_animation = candle_convert::convertBaseStandardAnimation(candle_animation);
+				animation = &base_animation;
+			} else {
+				BaseTwoSizeAnimation base_two_animation = candle_convert::convertBaseTwoAnimation(candle_animation);
+				animation = &base_two_animation;
+			}
 
 			if (safeTalonCall(
 				candle->Animate(*animation),
 				"candle->Animate",
 				candle_state.getDeviceID()
 			)) {
-				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
 						<< " : Set animation to " << candle_animation);
 				candle_state.setAnimation(candle_animation);
 			} else {
@@ -2666,7 +2672,30 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		}
 
 		// LEDs
-		
+		vector<LEDGroup>& led_groups = candle_command.getAllLEDGroups();
+		for (size_t group_id = 0; group_id < led_groups.size(); group_id++) {
+			LEDGroup *group = candle_command.getLEDGroup(group_id);
+			CANdleColour colour = group->colour;
+			candle->SetLEDs(
+				colour.red,
+				colour.green,
+				colour.blue,
+				colour.white,
+				group->start,
+				group->count
+			);
+
+
+			for (size_t led_id = 0; led_id < (group->start + group->count); led_id++) {
+				candle_state.setLED(led_id, group->colour);
+			}
+
+			ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
+					<< " : Set led group " << group_id
+					<< " to colour " << group->colour);
+					
+			candle_command.removeLEDGroup(group_id);
+		}
 	}
 
 	write_tracer_.start_unique("nidec");

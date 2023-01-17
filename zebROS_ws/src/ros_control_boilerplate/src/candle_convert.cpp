@@ -15,130 +15,120 @@ ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
 }
 
 BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation* animation) {
+    bool reversed = animation->getReversed();
+    double brightness = animation->getBrightness();
 
-}
-BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
-    
-}
-
-void convertCANdleAnimation(CANdleAnimation* animation, Animation*& result) {
-    switch (animation->type)
-    {
-        case CANdleAnimationType::ColourFlow: {
-            CANdleColour colour = animation->getColour();
-            result = ColorFlowAnimation(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation->getSpeed(),
-                animation->getLEDCount(),
-                convertCANdleDirection(animation->getDirection())
-            );
-            break;
-        }
+    switch (animation->type) {
         case CANdleAnimationType::Fire: {
-            result = FireAnimation(
-                animation->getBrightness(),
-                animation->getSpeed(),
-                animation->getLEDCount(),
+            return FireAnimation(
+                brightness,
+                animation->speed,
+                animation->count,
                 animation->getParam4(),
                 animation->getParam5(),
-                animation->getReversed(),
-                animation->getLEDStart()
+                reversed,
+                animation->start
             );
-            break;
         }
-        case CANdleAnimationType::Larson: {
-            CANdleColour colour = animation->getColour();
-            result = LarsonAnimation(
+        case CANdleAnimationType::Rainbow: {
+            return RainbowAnimation(
+                brightness,
+                animation->speed,
+                animation->count,
+                reversed,
+                animation->start
+            );
+        }
+        case CANdleAnimationType::RGBFade: {
+            return RgbFadeAnimation(
+                brightness,
+                animation->speed,
+                animation->count,
+                animation->start
+            );
+        }
+    }
+}
+BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
+    CANdleColour colour = animation->getColour();
+    switch (animation->type) {
+        case CANdleAnimationType::ColourFlow: {
+            return ColorFlowAnimation(
                 colour.red,
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->getSpeed(),
-                animation->getLEDCount(),
+                animation->speed,
+                animation->count,
+                convertCANdleDirection(animation->getDirection())
+            );
+        }
+        case CANdleAnimationType::Larson:
+        {
+            return LarsonAnimation(
+                colour.red,
+                colour.green,
+                colour.blue,
+                colour.white,
+                animation->speed,
+                animation->count,
                 // TODO: Store Bounce mode and Size arguments in animation class
                 LarsonAnimation::BounceMode::Front,
                 2,
-                animation->getLEDStart()
+                animation->start
             );
-            break;
         }
-        case CANdleAnimationType::Rainbow: {
-            result = RainbowAnimation(
-                animation->getBrightness(),
-                animation->getSpeed(),
-                animation->getLEDCount(),
-                animation->getReversed(),
-                animation->getLEDStart()
-            );
-            break;
-        }
-        case CANdleAnimationType::RGBFade: {
-            result = RgbFadeAnimation(
-                animation->getBrightness(),
-                animation->getSpeed(),
-                animation->getLEDCount(),
-                animation->getLEDStart()
-            );
-            break;
-        }
-        case CANdleAnimationType::SingleFade: {
-            CANdleColour colour = animation->getColour();
-            result = SingleFadeAnimation(
+        case CANdleAnimationType::SingleFade:
+        {
+            return SingleFadeAnimation(
                 colour.red,
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->getSpeed(),
-                animation->getLEDCount(),
-                animation->getLEDStart()
+                animation->speed,
+                animation->count,
+                animation->start
             );
-            break;
         }
-        case CANdleAnimationType::Strobe: {
-            CANdleColour colour = animation->getColour();
-            result = StrobeAnimation(
+        case CANdleAnimationType::Strobe:
+        {
+            return StrobeAnimation(
                 colour.red,
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->getSpeed(),
-                animation->getLEDCount(),
-                animation->getLEDStart()
+                animation->speed,
+                animation->count,
+                animation->start
             );
-            break;
         }
-        case CANdleAnimationType::Twinkle: {
-            CANdleColour colour = animation->getColour();
-            result = TwinkleAnimation(
+        case CANdleAnimationType::Twinkle:
+        {
+            return TwinkleAnimation(
                 colour.red,
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->getSpeed(),
-                animation->getLEDCount(),
+                animation->speed,
+                animation->count,
                 // TODO: Store actual Divider value
                 TwinkleAnimation::TwinklePercent::Percent100,
-                animation->getLEDStart()
+                animation->start
             );
-            break;
         }
-        case CANdleAnimationType::TwinkleOff: {
-            CANdleColour colour = animation->getColour();
-            result = TwinkleOffAnimation(
+        case CANdleAnimationType::TwinkleOff:
+        {
+            return TwinkleOffAnimation(
                 colour.red,
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->getSpeed(),
-                animation->getLEDCount(),
+                animation->speed,
+                animation->count,
                 // TODO: Store actual Divider value
                 TwinkleOffAnimation::TwinkleOffPercent::Percent100,
-                animation->getLEDStart()
+                animation->start
             );
-            break;
         }
     }
 }
