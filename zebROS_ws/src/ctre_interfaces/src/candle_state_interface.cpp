@@ -10,12 +10,13 @@ CANdleColour::CANdleColour(int red, int green, int blue, int white) {
     this->white = white;
 }
 
-CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type) {
+CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, CANdleAnimationClass class_type) {
     this->id = id;
     this->speed = speed;
     this->start = start;
     this->count = count;
     this->type = type;
+    this->class_type = class_type;
 }
 CANdleAnimation::CANdleAnimation() {}
 
@@ -36,7 +37,7 @@ CANdleAnimationType CANdleAnimation::getType() {
 }
 
 BaseTwoCANdleAnimation::BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction)
-: CANdleAnimation(id, speed, start, count, type),
+: CANdleAnimation(id, speed, start, count, type, CANdleAnimationClass::BaseTwo),
   colour(red, green, blue, white)
 {
     this->direction = direction;
@@ -49,7 +50,7 @@ int BaseTwoCANdleAnimation::getDirection() {
 }
 
 BaseStandardCANdleAnimation::BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5)
-: CANdleAnimation(id, speed, start, count, type)
+: CANdleAnimation(id, speed, start, count, type, CANdleAnimationClass::BaseStandard)
 {
     this->brightness = brightness;
     this->reversed = reversed;

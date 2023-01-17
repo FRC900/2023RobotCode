@@ -124,7 +124,6 @@ FRCRobotInterface::~FRCRobotInterface()
 	};
 	join_threads(ctre_mc_read_threads_);
 	join_threads(cancoder_read_threads_);
-	join_threads(this->candle_read_threads_);
 	join_threads(pcm_threads_);
 	join_threads(pdp_threads_);
 	join_threads(pdh_threads_);
@@ -267,21 +266,8 @@ bool FRCRobotInterface::initDevices(ros::NodeHandle root_nh)
 
 		if (candle_local_hardwares_[i]) {
 			this->candles_.emplace_back(std::make_unique<ctre::phoenix::led::CANdle>(this->candle_can_ids_[i], this->candle_names_[i]));
-			this->candle_read_state_mutexes_.emplace_back(std::make_shared<std::mutex>());
-			this->candle_read_thread_states_.emplace_back(std::make_shared<hardware_interface::candle::CANdleHWState>(this->candle_can_ids_[i]));
-			this->candle_read_threads_.emplace_back(std::thread(
-				&FRCRobotInterface::candle_read_thread,
-				this,
-				this->candles_[i],
-				this->candle_read_thread_states_[i],
-				this->candle_read_state_mutexes_[i],
-				std::make_unique<Tracer>("candle_read_" + this->candle_names_[i] + " " + root_nh.getNamespace()),
-				this->candle_read_hz_
-			));
 		} else {
 			this->candles_.push_back(nullptr);
-			this->candle_read_state_mutexes_.push_back(nullptr);
-			this->candle_read_thread_states_.push_back(nullptr);
 		}
 	}
 
@@ -656,9 +642,6 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 	if(! param_nh.param("cancoder_read_hz", cancoder_read_hz_, cancoder_read_hz_)) {
 		ROS_ERROR("Failed to read cancoder_read_hz in frc_robot_interface");
 	}
-	if(! param_nh.param("candle_read_hz", candle_read_hz_, candle_read_hz_)) {
-		ROS_ERROR("Failed to read candle_read_hz in frc_robot_interface");
-	}
 	if(! param_nh.param("canifier_read_hz", canifier_read_hz_, canifier_read_hz_)) {
 		ROS_ERROR("Failed to read canifier_read_hz in frc_robot_interface");
 	}
@@ -700,7 +683,6 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 	ROS_INFO_STREAM("Controller Frequencies:" << std::endl <<
 			"\tctre_mc_read : " << ctre_mc_read_hz_ << std::endl <<
 			"\tcancoder_read : " << cancoder_read_hz_ << std::endl <<
-			"\tcandle_read : " << candle_read_hz_ << std::endl <<
 			"\tcanifier_read : " << canifier_read_hz_ << std::endl <<
 			"\tpcm_read : " << pcm_read_hz_ << std::endl <<
 			"\tpdh_read : " << pdh_read_hz_ << std::endl <<
@@ -1266,16 +1248,6 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 			if (l.owns_lock())
 			{
 				ph_state_[i] = *ph_read_thread_state_[i];
-			}
-		}
-	}
-
-	this->read_tracer_.start_unique("candle");
-	for (size_t i = 0; i < this->num_candles_; i++) {
-		if (this->candle_local_updates_[i]) {
-			std::unique_lock<std::mutex> lock(*(this->candle_read_state_mutexes_[i]), std::try_to_lock);
-			if (lock.owns_lock()) {
-				this->candle_state_[i] = *(this->candle_read_thread_states_[i]);
 			}
 		}
 	}
@@ -2610,6 +2582,91 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				cc.setClearStickyFaults();
 			}
 		}
+	}
+
+	this->write_tracer_.start_unique("candle");
+	for (size_t i = 0; i < this->num_candles_; i++) {
+		if (!(this->candle_local_hardwares_[i]))
+			continue;
+		
+		// Get candle, state, and command interfaces
+		auto& candle = this->candles_[i];
+		auto& candle_state = this->candle_state_[i];
+		auto& candle_command = this->candle_command_[i];
+
+		// For each Command property, check if it changed
+		//  if it did change, update the actual CANdle, and update the state
+
+		// Brightness
+		double brightness;
+		if (candle_command.brightnessChanged(brightness)) {
+			if (safeTalonCall(
+				candle->ConfigBrightnessScalar(brightness),
+				"candle->ConfigBrightnessScalar",
+				candle_state.getDeviceID()
+			)) {
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+						<< " : Set brightness to " << brightness);
+				candle_state.setBrightness(brightness);
+			} else {
+				candle_command.resetBrightnessChanged();
+			}
+		}
+
+		// Show status LED when active
+		bool status_led_when_active;
+		if (candle_command.statusLEDWhenActiveChanged(status_led_when_active)) {
+			if (safeTalonCall(
+				candle->ConfigStatusLedState(!status_led_when_active),
+				"candle->ConfigStatusLedState",
+				candle_state.getDeviceID()
+			)) {
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+						<< " : Set status led when active to " << status_led_when_active);
+				candle_state.showStatusLEDWhenActive(status_led_when_active);
+			} else {
+				candle_command.resetStatusLEDWhenActiveChanged();
+			}
+		}
+
+		// Enabled
+		bool enabled;
+		if (candle_command.enabledChanged(enabled)) {
+			if (safeTalonCall(
+				candle->configV5Enabled(enabled),
+				"candle->configV5Enabled",
+				candle_state.getDeviceID()
+			)) {
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+						<< " : Set enabled to " << enabled);
+				candle_state.setEnabled(enabled);
+			} else {
+				candle_command.resetEnabledChanged();
+			}
+		}
+
+		// Animation
+		CANdleAnimation* candle_animation;
+		Animation* animation;
+		if (candle_command.animationChanged(candle_animation)) {
+			// Convert the animation
+			candle_convert::convertCANdleAnimation(candle_animation, animation);
+
+			if (safeTalonCall(
+				candle->Animate(*animation),
+				"candle->Animate",
+				candle_state.getDeviceID()
+			)) {
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[i]
+						<< " : Set animation to " << candle_animation);
+				candle_state.setAnimation(candle_animation);
+			} else {
+				candle_command.resetAnimationChanged();
+			}
+		}
+
+		// LEDs
+		
 	}
 
 	write_tracer_.start_unique("nidec");

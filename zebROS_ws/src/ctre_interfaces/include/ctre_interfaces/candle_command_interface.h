@@ -35,27 +35,32 @@ class CANdleHWCommand {
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
         LEDGroup getLEDGroup(int id);
+        vector<LEDGroup>& getAllLEDGroups();
         bool ledGroupChanged(vector<LEDGroup>& groups);
 
         // Set brightness of LEDs
         void setBrightness(double brightness);
         double getBrightness();
         bool brightnessChanged(double& brightness);
+        void resetBrightnessChanged();
 
         // If the status LED should be shown when running
         void showStatusLEDWhenActive(bool show);
         bool getStatusLEDWhenActive();
         bool statusLEDWhenActiveChanged(bool& show);
+        void resetStatusLEDWhenActiveChanged();
 
         // If the CANdle is enabled
         void setEnabled(bool enabled);
         bool getEnabled();
         bool enabledChanged(bool& enabled);
+        void resetEnabledChanged();
 
         // The CANdle's animation
         void setAnimation(CANdleAnimation* animation);
         CANdleAnimation* getAnimation();
-        bool animationChanged(CANdleAnimation* animation);
+        bool animationChanged(CANdleAnimation*& animation);
+        void resetAnimationChanged();
 
     private:
         // CAN ID

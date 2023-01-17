@@ -14,7 +14,14 @@ ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
     }
 }
 
-void convertCANdleAnimation(CANdleAnimation* animation, Animation& result) {
+BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation* animation) {
+
+}
+BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
+    
+}
+
+void convertCANdleAnimation(CANdleAnimation* animation, Animation*& result) {
     switch (animation->type)
     {
         case CANdleAnimationType::ColourFlow: {

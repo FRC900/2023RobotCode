@@ -59,6 +59,9 @@ bool CANdleHWCommand::brightnessChanged(double& brightness) {
     }
     return false;
 }
+void CANdleHWCommand::resetBrightnessChanged() {
+    this->brightness_changed = true;
+}
 
 void CANdleHWCommand::showStatusLEDWhenActive(bool show) {
     this->show_status_led_when_active = show;
@@ -74,6 +77,9 @@ bool CANdleHWCommand::statusLEDWhenActiveChanged(bool& show) {
         return true;
     }
     return false;
+}
+void CANdleHWCommand::resetStatusLEDWhenActiveChanged() {
+    this->status_led_changed = true;
 }
 
 void CANdleHWCommand::setEnabled(bool enabled) {
@@ -91,6 +97,9 @@ bool CANdleHWCommand::enabledChanged(bool& enabled) {
     }
     return false;
 }
+void CANdleHWCommand::resetEnabledChanged() {
+    this->enabled_changed = true;
+}
 
 void CANdleHWCommand::setAnimation(CANdleAnimation* animation) {
     this->animation = animation;
@@ -99,13 +108,16 @@ void CANdleHWCommand::setAnimation(CANdleAnimation* animation) {
 CANdleAnimation* CANdleHWCommand::getAnimation() {
     return this->animation;
 }
-bool CANdleHWCommand::animationChanged(CANdleAnimation* animation) {
+bool CANdleHWCommand::animationChanged(CANdleAnimation*& animation) {
     if (this->animation_changed) {
         this->animation_changed = false;
         animation = this->animation;
         return true;
     }
     return false;
+}
+void CANdleHWCommand::resetAnimationChanged() {
+    this->animation_changed = true;
 }
 
 }

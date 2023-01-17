@@ -22,6 +22,10 @@ enum class CANdleAnimationType {
     Twinkle,
     TwinkleOff
 };
+enum class CANdleAnimationClass {
+    BaseStandard,
+    BaseTwo
+};
 
 // A CANdle colour
 struct CANdleColour {
@@ -46,6 +50,8 @@ struct CANdleAnimation {
     int count;
     // The animation to play
     CANdleAnimationType type;
+    // The animation class type
+    CANdleAnimationClass class_type;
 
     // Constructor
     CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type);
@@ -57,6 +63,7 @@ struct CANdleAnimation {
     double getSpeed();
     int getLEDStart();
     int getLEDCount();
+    CANdleAnimationClass getClassType();
     CANdleAnimationType getType();
     // For base2 animations
     virtual CANdleColour getColour() = 0;

@@ -470,7 +470,6 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		//robot iteration calls - sending stuff to driver station
 		double ctre_mc_read_hz_{100};
 		double cancoder_read_hz_{100};
-		double candle_read_hz_{20};
 		double canifier_read_hz_{100};
 		double spark_max_read_hz_{100};
 		double pcm_read_hz_{20};
@@ -523,16 +522,6 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 				double poll_frequency);
 		
 		std::vector<std::shared_ptr<ctre::phoenix::led::CANdle>> candles_;
-		std::vector<std::shared_ptr<std::mutex>> candle_read_state_mutexes_;
-		std::vector<std::shared_ptr<hardware_interface::candle::CANdleHWState>> candle_read_thread_states_;
-		std::vector<std::thread> candle_read_threads_;
-		void candle_read_thread(
-			std::shared_ptr<ctre::phoenix::led::CANdle> candle,
-			std::shared_ptr<hardware_interface::candle::CANdleHWState> state,
-			std::shared_ptr<std::mutex> mutex,
-			std::unique_ptr<Tracer> tracer,
-			double poll_frequency
-		);
 
 		std::vector<std::shared_ptr<frc::NidecBrushless>> nidec_brushlesses_;
 		std::vector<std::shared_ptr<frc::DigitalInput>> digital_inputs_;
