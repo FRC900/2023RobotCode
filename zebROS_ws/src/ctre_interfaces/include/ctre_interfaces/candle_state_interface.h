@@ -59,13 +59,13 @@ struct CANdleAnimation {
     int getLEDCount();
     CANdleAnimationType getType();
     // For base2 animations
-    virtual CANdleColour getColour();
-    virtual int getDirection();
+    virtual CANdleColour getColour() = 0;
+    virtual int getDirection() = 0;
     // For base standard animations
-    virtual double getBrightness();
-    virtual bool getReversed();
-    virtual double getParam4();
-    virtual double getParam5();
+    virtual double getBrightness() = 0;
+    virtual bool getReversed() = 0;
+    virtual double getParam4() = 0;
+    virtual double getParam5() = 0;
 };
 // Base2 animations have configurable colour and direction
 struct BaseTwoCANdleAnimation : CANdleAnimation {
@@ -137,8 +137,8 @@ class CANdleHWState {
         bool getEnabled();
 
         // The CANdle's animation
-        void setAnimation(CANdleAnimation animation);
-        CANdleAnimation getAnimation();
+        void setAnimation(CANdleAnimation* animation);
+        CANdleAnimation* getAnimation();
 
     private:
         // The CAN ID of this CANdle
@@ -152,7 +152,7 @@ class CANdleHWState {
         // If the CANdle is enabled
         bool enabled;
         // The currently playing CANdle animation
-        CANdleAnimation animation;
+        CANdleAnimation* animation;
 };
 
 

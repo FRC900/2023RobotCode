@@ -124,6 +124,7 @@ FRCRobotInterface::~FRCRobotInterface()
 	};
 	join_threads(ctre_mc_read_threads_);
 	join_threads(cancoder_read_threads_);
+	join_threads(this->candle_read_threads_);
 	join_threads(pcm_threads_);
 	join_threads(pdp_threads_);
 	join_threads(pdh_threads_);
@@ -655,6 +656,9 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 	if(! param_nh.param("cancoder_read_hz", cancoder_read_hz_, cancoder_read_hz_)) {
 		ROS_ERROR("Failed to read cancoder_read_hz in frc_robot_interface");
 	}
+	if(! param_nh.param("candle_read_hz", candle_read_hz_, candle_read_hz_)) {
+		ROS_ERROR("Failed to read candle_read_hz in frc_robot_interface");
+	}
 	if(! param_nh.param("canifier_read_hz", canifier_read_hz_, canifier_read_hz_)) {
 		ROS_ERROR("Failed to read canifier_read_hz in frc_robot_interface");
 	}
@@ -696,6 +700,7 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 	ROS_INFO_STREAM("Controller Frequencies:" << std::endl <<
 			"\tctre_mc_read : " << ctre_mc_read_hz_ << std::endl <<
 			"\tcancoder_read : " << cancoder_read_hz_ << std::endl <<
+			"\tcandle_read : " << candle_read_hz << std::endl <<
 			"\tcanifier_read : " << canifier_read_hz_ << std::endl <<
 			"\tpcm_read : " << pcm_read_hz_ << std::endl <<
 			"\tpdh_read : " << pdh_read_hz_ << std::endl <<

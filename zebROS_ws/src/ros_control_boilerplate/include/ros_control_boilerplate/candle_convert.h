@@ -18,6 +18,6 @@ using namespace hardware_interface::candle;
 namespace candle_convert {
 
 ColorFlowAnimation::Direction convertCANdleDirection(int direction);
-void convertCANdleAnimation(CANdleAnimation animation, Animation& result);
+void convertCANdleAnimation(CANdleAnimation* animation, Animation& result);
 
 } // namespace candle_convert

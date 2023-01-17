@@ -119,11 +119,15 @@ bool CANdleHWState::getEnabled() {
     return this->enabled;
 }
 
-void CANdleHWState::setAnimation(CANdleAnimation animation) {
+void CANdleHWState::setAnimation(CANdleAnimation* animation) {
     this->animation = animation;
 }
-CANdleAnimation CANdleHWState::getAnimation() {
+CANdleAnimation* CANdleHWState::getAnimation() {
     return this->animation;
+}
+
+int CANdleHWState::getDeviceID() const {
+    return this->device_id;
 }
 
 } // namespace candle

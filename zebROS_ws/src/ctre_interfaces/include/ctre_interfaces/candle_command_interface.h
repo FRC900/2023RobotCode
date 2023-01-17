@@ -53,9 +53,9 @@ class CANdleHWCommand {
         bool enabledChanged(bool& enabled);
 
         // The CANdle's animation
-        void setAnimation(CANdleAnimation animation);
-        CANdleAnimation getAnimation();
-        bool animationChanged(CANdleAnimation& animation);
+        void setAnimation(CANdleAnimation* animation);
+        CANdleAnimation* getAnimation();
+        bool animationChanged(CANdleAnimation* animation);
 
     private:
         // CAN ID
@@ -72,7 +72,7 @@ class CANdleHWCommand {
         bool enabled;
         bool enabled_changed;
         // The CANdle's animation
-        CANdleAnimation animation;
+        CANdleAnimation* animation;
         bool animation_changed;
 };
 

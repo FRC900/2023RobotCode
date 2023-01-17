@@ -92,14 +92,14 @@ bool CANdleHWCommand::enabledChanged(bool& enabled) {
     return false;
 }
 
-void CANdleHWCommand::setAnimation(CANdleAnimation animation) {
+void CANdleHWCommand::setAnimation(CANdleAnimation* animation) {
     this->animation = animation;
     this->animation_changed = true;
 }
-CANdleAnimation CANdleHWCommand::getAnimation() {
+CANdleAnimation* CANdleHWCommand::getAnimation() {
     return this->animation;
 }
-bool CANdleHWCommand::animationChanged(CANdleAnimation& animation) {
+bool CANdleHWCommand::animationChanged(CANdleAnimation* animation) {
     if (this->animation_changed) {
         this->animation_changed = false;
         animation = this->animation;
