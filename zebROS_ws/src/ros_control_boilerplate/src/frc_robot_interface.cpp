@@ -700,7 +700,7 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 	ROS_INFO_STREAM("Controller Frequencies:" << std::endl <<
 			"\tctre_mc_read : " << ctre_mc_read_hz_ << std::endl <<
 			"\tcancoder_read : " << cancoder_read_hz_ << std::endl <<
-			"\tcandle_read : " << candle_read_hz << std::endl <<
+			"\tcandle_read : " << candle_read_hz_ << std::endl <<
 			"\tcanifier_read : " << canifier_read_hz_ << std::endl <<
 			"\tpcm_read : " << pcm_read_hz_ << std::endl <<
 			"\tpdh_read : " << pdh_read_hz_ << std::endl <<
@@ -1266,6 +1266,16 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 			if (l.owns_lock())
 			{
 				ph_state_[i] = *ph_read_thread_state_[i];
+			}
+		}
+	}
+
+	this->read_tracer_.start_unique("candle");
+	for (size_t i = 0; i < this->num_candles_; i++) {
+		if (this->candle_local_updates_[i]) {
+			std::unique_lock<std::mutex> lock(*(this->candle_read_state_mutexes_[i]), std::try_to_lock);
+			if (lock.owns_lock()) {
+				this->candle_state_[i] = *(this->candle_read_thread_states_[i]);
 			}
 		}
 	}

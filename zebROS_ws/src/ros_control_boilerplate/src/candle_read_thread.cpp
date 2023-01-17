@@ -30,12 +30,14 @@ void FRCRobotInterface::candle_read_thread(
         // Get the configuration, and store it in config
         candle->GetAllConfigs(config);
 
-        // Lock the state mutex
-        std::lock_guard<std::mutex> _(*mutex);
-        // Update the state using the config variable
-        state->setBrightness(config.brightnessScalar);
-        state->showStatusLEDWhenActive(config.statusLedOffWhenActive);
-        state->setEnabled(config.v5Enabled);
+        {
+            // Lock the state mutex
+            std::lock_guard<std::mutex> _(*mutex);
+            // Update the state using the config variable
+            state->setBrightness(config.brightnessScalar);
+            state->showStatusLEDWhenActive(config.statusLedOffWhenActive);
+            state->setEnabled(config.v5Enabled);
+        }
     }
 }
 }
