@@ -26,9 +26,7 @@ struct LEDGroup {
 class CANdleHWCommand {
     public:
         // Constructor
-        CANdleHWCommand(int device_id);
-        // Get CAN ID
-        int getDeviceID();
+        CANdleHWCommand();
 
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
@@ -62,8 +60,6 @@ class CANdleHWCommand {
         void resetAnimationChanged();
 
     private:
-        // CAN ID
-        int device_id;
         // LED groups to be written
         vector<LEDGroup> led_groups;
         // Brightness of LEDs

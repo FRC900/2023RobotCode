@@ -259,13 +259,14 @@ bool FRCRobotInterface::initDevices(ros::NodeHandle root_nh)
 	}
 
 	for (size_t i = 0; i < this->num_candles_; i++) {
-		std::stringstream s;
-		s << "Loading joint " << i << "=" << this->candle_names_[i] <<
+		ROS_INFO_STREAM_NAMED("frcrobot_hw_interface",
+			"Loading joint (CANdle) " << i << "=" << this->candle_names_[i] <<
 			(this->candle_local_updates_[i] ? " local" : " remote") << " update, " <<
-			(this->candle_local_hardwares_[i] ? "local" : "remote") << " hardware";
+			(this->candle_local_hardwares_[i] ? "local" : "remote") << " hardware"
+		);
 
 		if (candle_local_hardwares_[i]) {
-			this->candles_.emplace_back(std::make_unique<ctre::phoenix::led::CANdle>(this->candle_can_ids_[i], this->candle_names_[i]));
+			this->candles_.emplace_back(std::make_unique<ctre::phoenix::led::CANdle>(this->candle_can_ids_[i], this->candle_can_busses_[i]));
 		} else {
 			this->candles_.push_back(nullptr);
 		}
@@ -2586,6 +2587,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 
 	this->write_tracer_.start_unique("candle");
 	for (size_t candle_id = 0; candle_id < this->num_candles_; candle_id++) {
+		//ROS_INFO_STREAM("Candle_status_0");
 		if (!(this->candle_local_hardwares_[candle_id]))
 			continue;
 		
@@ -2598,6 +2600,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		//  if it did change, update the actual CANdle, and update the state
 
 		// Brightness
+		//ROS_INFO_STREAM("Candle_status_1");
 		double brightness;
 		if (candle_command.brightnessChanged(brightness)) {
 			if (safeTalonCall(
@@ -2614,6 +2617,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		}
 
 		// Show status LED when active
+		//ROS_INFO_STREAM("Candle_status_2");
 		bool status_led_when_active;
 		if (candle_command.statusLEDWhenActiveChanged(status_led_when_active)) {
 			if (safeTalonCall(
@@ -2630,6 +2634,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		}
 
 		// Enabled
+		//ROS_INFO_STREAM("Candle_status_3");
 		bool enabled;
 		if (candle_command.enabledChanged(enabled)) {
 			if (safeTalonCall(
@@ -2646,17 +2651,26 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		}
 
 		// Animation
+		//ROS_INFO_STREAM("Candle_status_4");
 		CANdleAnimation* candle_animation;
 		Animation* animation;
 		if (candle_command.animationChanged(candle_animation)) {
+			ROS_INFO_STREAM("Candle_status_4.1");
 			// Convert from CANdleAnimation to the appropriate CTRE animation class
 			if (candle_animation->class_type == CANdleAnimationClass::BaseStandard) {
+				ROS_INFO_STREAM("Candle_status_4.1.1");
 				BaseStandardAnimation base_animation = candle_convert::convertBaseStandardAnimation(candle_animation);
+				ROS_INFO_STREAM("Candle_status_4.1.2");
 				animation = &base_animation;
+				ROS_INFO_STREAM("Candle_status_4.1.3");
 			} else {
+				ROS_INFO_STREAM("Candle_status_4.1.4");
 				BaseTwoSizeAnimation base_two_animation = candle_convert::convertBaseTwoAnimation(candle_animation);
+				ROS_INFO_STREAM("Candle_status_4.1.5");
 				animation = &base_two_animation;
+				ROS_INFO_STREAM("Candle_status_4.1.6");
 			}
+			ROS_INFO_STREAM("Candle_status_4.2");
 
 			if (safeTalonCall(
 				candle->Animate(*animation),
@@ -2664,14 +2678,16 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				candle_state.getDeviceID()
 			)) {
 				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
-						<< " : Set animation to " << candle_animation);
+						<< " : Changed its animation");
 				candle_state.setAnimation(candle_animation);
 			} else {
 				candle_command.resetAnimationChanged();
 			}
+			ROS_INFO_STREAM("Candle_status_4.done");
 		}
 
 		// LEDs
+		//ROS_INFO_STREAM("Candle_status_5");
 		vector<LEDGroup>& led_groups = candle_command.getAllLEDGroups();
 		for (size_t group_id = 0; group_id < led_groups.size(); group_id++) {
 			LEDGroup *group = candle_command.getLEDGroup(group_id);
@@ -2691,11 +2707,11 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			}
 
 			ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
-					<< " : Set led group " << group_id
-					<< " to colour " << group->colour);
+					<< " : Changed colours");
 					
 			candle_command.removeLEDGroup(group_id);
 		}
+		//ROS_INFO_STREAM("Candle_status_done");
 	}
 
 	write_tracer_.start_unique("nidec");

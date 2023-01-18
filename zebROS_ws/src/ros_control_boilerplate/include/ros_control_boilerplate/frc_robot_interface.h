@@ -201,7 +201,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		hardware_interface::as726x::AS726xStateInterface       as726x_state_interface_;
 		hardware_interface::as726x::RemoteAS726xStateInterface as726x_remote_state_interface_;
 		hardware_interface::candle::CANdleStateInterface		candle_state_interface_;
-		hardware_interface::candle::RemoteCANdleStateInterface	remote_candle_state_interface;
+		hardware_interface::candle::RemoteCANdleStateInterface	candle_remote_state_interface_;
                 hardware_interface::OrchestraStateInterface            talon_orchestra_state_interface_;
 
 		hardware_interface::JointCommandInterface          joint_command_interface_;
@@ -267,6 +267,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 
 		std::vector<std::string> 	candle_names_;
 		std::vector<int>		 	candle_can_ids_;
+		std::vector<std::string>	candle_can_busses_;
 		std::vector<bool>		 	candle_local_updates_;
 		std::vector<bool>		 	candle_local_hardwares_;
 		std::size_t					num_candles_{0};

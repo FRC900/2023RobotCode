@@ -10,20 +10,17 @@ LEDGroup::LEDGroup(int start, int count, CANdleColour colour) {
 }
 LEDGroup::LEDGroup() {}
 
-CANdleHWCommand::CANdleHWCommand(int device_id) :
-    device_id{device_id},
+CANdleHWCommand::CANdleHWCommand() :
     led_groups(10),
     brightness{1},
     brightness_changed{false},
     show_status_led_when_active{true},
     status_led_changed{false},
     enabled{true},
-    enabled_changed{false}
+    enabled_changed{false},
+    animation{nullptr},
+    animation_changed{false}
 {}
-
-int CANdleHWCommand::getDeviceID() {
-    return this->device_id;
-}
 
 void CANdleHWCommand::setLEDGroup(LEDGroup leds) {
     this->led_groups.push_back(leds);
