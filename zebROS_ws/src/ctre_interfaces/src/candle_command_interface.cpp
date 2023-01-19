@@ -11,7 +11,6 @@ LEDGroup::LEDGroup(int start, int count, CANdleColour colour) {
 LEDGroup::LEDGroup() {}
 
 CANdleHWCommand::CANdleHWCommand() :
-    led_groups(10),
     brightness{1},
     brightness_changed{false},
     show_status_led_when_active{true},
@@ -23,31 +22,50 @@ CANdleHWCommand::CANdleHWCommand() :
 {}
 
 void CANdleHWCommand::setLEDGroup(LEDGroup leds) {
-    this->led_groups.push_back(leds);
-}
-LEDGroup* CANdleHWCommand::getLEDGroup(int id) {
-    return &(this->led_groups[id]);
-}
-vector<LEDGroup>& CANdleHWCommand::getAllLEDGroups() {
-    return this->led_groups;
-}
-void CANdleHWCommand::removeLEDGroup(int id) {
-    this->led_groups.erase(this->led_groups.begin() + id);
+    size_t max = leds.start + leds.count;
+    for (size_t i = leds.start; i < max; i++) {
+        if (i < this->leds.size()) {
+            this->leds[i] = leds.colour;
+        } else {
+            this->leds.push_back(leds.colour);
+        }
+    }
+    this->leds_changed = true;
 }
 bool CANdleHWCommand::ledGroupChanged(vector<LEDGroup>& groups) {
-    if (this->led_groups.size() > 0) {
-        for (LEDGroup group : this->led_groups) {
-            groups.push_back(group);
+    groups.clear();
+    if (this->leds.size() == 0) {
+        this->leds_changed = false;
+        return false;
+    }
+
+    if (this->leds_changed) {
+        std::optional<CANdleColour> previous_colour;
+        for (size_t i = 0; i < this->leds.size(); i++) {
+            std::optional<CANdleColour>& led = this->leds[i];
+
+            if (led.has_value()) {
+                if (!previous_colour.has_value() || *previous_colour != *led) {
+                    groups.emplace_back(LEDGroup(i, 1, *previous_colour));
+                } else {
+                    groups.back().count += 1;
+                }
+            }
+
+            previous_colour = led;
         }
-        this->led_groups.clear();
+        this->leds_changed = false;
+        this->leds.clear();
         return true;
     }
     return false;
 }
 
 void CANdleHWCommand::setBrightness(double brightness) {
-    this->brightness = brightness;
-    this->brightness_changed = true;
+    if (this->brightness != brightness) {
+        this->brightness = brightness;
+        this->brightness_changed = true;
+    }
 }
 double CANdleHWCommand::getBrightness() {
     return this->brightness;
@@ -64,9 +82,11 @@ void CANdleHWCommand::resetBrightnessChanged() {
     this->brightness_changed = true;
 }
 
-void CANdleHWCommand::showStatusLEDWhenActive(bool show) {
-    this->show_status_led_when_active = show;
-    this->status_led_changed = true;
+void CANdleHWCommand::setStatusLEDWhenActive(bool show) {
+    if (this->show_status_led_when_active != show) {
+        this->show_status_led_when_active = show;
+        this->status_led_changed = true;
+    }
 }
 bool CANdleHWCommand::getStatusLEDWhenActive() {
     return this->show_status_led_when_active;
@@ -84,8 +104,10 @@ void CANdleHWCommand::resetStatusLEDWhenActiveChanged() {
 }
 
 void CANdleHWCommand::setEnabled(bool enabled) {
-    this->enabled = enabled;
-    this->enabled_changed = true;
+    if (this->enabled != enabled) {
+        this->enabled = enabled;
+        this->enabled_changed = true;
+    }
 }
 bool CANdleHWCommand::getEnabled() {
     return this->enabled;
@@ -103,8 +125,10 @@ void CANdleHWCommand::resetEnabledChanged() {
 }
 
 void CANdleHWCommand::setAnimation(CANdleAnimation* animation) {
-    this->animation = animation;
-    this->animation_changed = true;
+    if (this->animation != animation) {
+        this->animation = animation;
+        this->animation_changed = true;
+    }
 }
 CANdleAnimation* CANdleHWCommand::getAnimation() {
     return this->animation;

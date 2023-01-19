@@ -3,6 +3,7 @@
 #include "ctre_interfaces/candle_state_interface.h"
 #include "state_handle/command_handle.h"
 #include <vector>
+#include <optional>
 
 using namespace std;
 
@@ -30,9 +31,6 @@ class CANdleHWCommand {
 
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
-        LEDGroup* getLEDGroup(int id);
-        vector<LEDGroup>& getAllLEDGroups();
-        void removeLEDGroup(int id);
         bool ledGroupChanged(vector<LEDGroup>& groups);
 
         // Set brightness of LEDs
@@ -42,7 +40,7 @@ class CANdleHWCommand {
         void resetBrightnessChanged();
 
         // If the status LED should be shown when running
-        void showStatusLEDWhenActive(bool show);
+        void setStatusLEDWhenActive(bool show);
         bool getStatusLEDWhenActive();
         bool statusLEDWhenActiveChanged(bool& show);
         void resetStatusLEDWhenActiveChanged();
@@ -61,7 +59,8 @@ class CANdleHWCommand {
 
     private:
         // LED groups to be written
-        vector<LEDGroup> led_groups;
+        vector<std::optional<CANdleColour>> leds;
+        bool leds_changed;
         // Brightness of LEDs
         double brightness;
         bool brightness_changed;

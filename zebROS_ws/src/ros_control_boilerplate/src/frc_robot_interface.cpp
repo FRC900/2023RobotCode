@@ -2627,7 +2627,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			)) {
 				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
 						<< " : Set status led when active to " << status_led_when_active);
-				candle_state.showStatusLEDWhenActive(status_led_when_active);
+				candle_state.setStatusLEDWhenActive(status_led_when_active);
 			} else {
 				candle_command.resetStatusLEDWhenActiveChanged();
 			}
@@ -2688,28 +2688,26 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 
 		// LEDs
 		//ROS_INFO_STREAM("Candle_status_5");
-		vector<LEDGroup>& led_groups = candle_command.getAllLEDGroups();
-		for (size_t group_id = 0; group_id < led_groups.size(); group_id++) {
-			LEDGroup *group = candle_command.getLEDGroup(group_id);
-			CANdleColour colour = group->colour;
-			candle->SetLEDs(
-				colour.red,
-				colour.green,
-				colour.blue,
-				colour.white,
-				group->start,
-				group->count
-			);
+		vector<LEDGroup> led_groups;
+		if (candle_command.ledGroupChanged(led_groups)) {
+			for (LEDGroup group : led_groups) {
+				CANdleColour colour = group.colour;
+				candle->SetLEDs(
+					colour.red,
+					colour.green,
+					colour.blue,
+					colour.white,
+					group.start,
+					group.count
+				);
 
+				for (size_t led_id = 0; led_id < (group.start + group.count); led_id++) {
+					candle_state.setLED(led_id, colour);
+				}
 
-			for (size_t led_id = 0; led_id < (group->start + group->count); led_id++) {
-				candle_state.setLED(led_id, group->colour);
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
+						<< " : Changed colours");
 			}
-
-			ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
-					<< " : Changed colours");
-					
-			candle_command.removeLEDGroup(group_id);
 		}
 		//ROS_INFO_STREAM("Candle_status_done");
 	}

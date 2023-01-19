@@ -37,6 +37,8 @@ struct CANdleColour {
     // Constructor
     CANdleColour(int red, int green, int blue, int white);
     CANdleColour();
+
+    bool operator!=(const CANdleColour& rhs);
 };
 
 // An animation for the CANdle to play
@@ -122,7 +124,7 @@ class CANdleHWState {
         double getBrightness();
 
         // Show status LED when the CANdle is being controlled
-        void showStatusLEDWhenActive(bool show);
+        void setStatusLEDWhenActive(bool show);
         bool getStatusLEDWhenActive();
 
         // If the CANdle is enabled

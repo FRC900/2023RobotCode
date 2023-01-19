@@ -10,6 +10,9 @@ CANdleColour::CANdleColour(int red, int green, int blue, int white) {
     this->white = white;
 }
 CANdleColour::CANdleColour() {}
+bool CANdleColour::operator!=(const CANdleColour& rhs) {
+    return !(this->red == rhs.red && this->green == rhs.green && this->blue == rhs.blue && this->white == rhs.white);
+}
 
 CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, CANdleAnimationClass class_type) {
     this->id = id;
@@ -80,7 +83,7 @@ double CANdleHWState::getBrightness() {
     return this->brightness;
 }
 
-void CANdleHWState::showStatusLEDWhenActive(bool show) {
+void CANdleHWState::setStatusLEDWhenActive(bool show) {
     this->show_led_when_active = show;
 }
 bool CANdleHWState::getStatusLEDWhenActive() {
