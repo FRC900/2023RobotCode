@@ -76,8 +76,8 @@ class CANdleHWCommand {
 };
 
 
-typedef CommandHandle<CANdleHWCommand, CANdleHWState, CANdleStateHandle> CANdleCommandHandler;
-class CANdleCommandInterface : public HardwareResourceManager<CANdleCommandHandler, ClaimResources> {};
+typedef CommandHandle<CANdleHWCommand, CANdleHWState, CANdleStateHandle> CANdleCommandHandle;
+class CANdleCommandInterface : public HardwareResourceManager<CANdleCommandHandle, ClaimResources> {};
 
 } // namespace candle
 } // namespace hardware_interface

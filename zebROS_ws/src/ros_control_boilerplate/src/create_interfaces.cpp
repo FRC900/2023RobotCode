@@ -120,7 +120,7 @@ void FRCRobotInterface::createInterfaces(void)
 
 		// Do the same for a command interface for
 		// the same CANdle
-		hardware_interface::candle::CANdleCommandHandler cch(csh, &candle_command_[i]);
+		hardware_interface::candle::CANdleCommandHandle cch(csh, &candle_command_[i]);
 		candle_command_interface_.registerHandle(cch);
 		if (!candle_local_updates_[i])
 		{
