@@ -39,12 +39,11 @@ struct CANdleColour {
     CANdleColour();
 
     bool operator!=(const CANdleColour& rhs);
+    bool operator==(const CANdleColour& rhs);
 };
 
 // An animation for the CANdle to play
 struct CANdleAnimation {
-    // Animation ID
-    int id;
     // Animation speed
     double speed;
     // Initial LED to animate
@@ -56,57 +55,30 @@ struct CANdleAnimation {
     // The animation class type
     CANdleAnimationClass class_type;
 
-    // Constructor
-    CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, CANdleAnimationClass class_type);
-    // Blank constructor/null
-    CANdleAnimation();
-
-    // For all animations
-    int getID();
-    double getSpeed();
-    int getLEDStart();
-    int getLEDCount();
-    CANdleAnimationClass getClassType();
-    CANdleAnimationType getType();
-    // For base2 animations
-    virtual CANdleColour getColour() = 0;
-    virtual int getDirection() = 0;
-    // For base standard animations
-    virtual double getBrightness() = 0;
-    virtual bool getReversed() = 0;
-    virtual double getParam4() = 0;
-    virtual double getParam5() = 0;
-};
-// Base2 animations have configurable colour and direction
-struct BaseTwoCANdleAnimation : CANdleAnimation {
+    // For Base Two animations
     // Animation colour
     CANdleColour colour;
     // Animation direction
     int direction;
 
-    // Constructor
-    BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction);
-    // Overriden methods
-    virtual CANdleColour getColour() override;
-    virtual int getDirection() override;
-};
-// BaseStandard animations have configurable brightness, reversable direction, and 2 custom params
-struct BaseStandardCANdleAnimation : CANdleAnimation {
+    // For Base Standard animations
     // Animation brightness
     double brightness;
-    // If the animation should be reversed
+    // If the animation is reversed
     bool reversed;
-    // Extra, configurable params
+    // Extra params
     double param4;
     double param5;
 
-    // Constructor
-    BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5);
-    // Overriden methods
-    virtual double getBrightness() override;
-    virtual bool getReversed() override;
-    virtual double getParam4() override;
-    virtual double getParam5() override;
+    // Constructor for BaseStandard animations
+    CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5);
+    // Constructor for BaseTwo animations
+    CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction);
+    // Blank constructor/null
+    CANdleAnimation();
+
+    // Comparison methods
+    bool operator!=(const CANdleAnimation& rhs);
 };
 
 class CANdleHWState {
@@ -132,8 +104,8 @@ class CANdleHWState {
         bool getEnabled();
 
         // The CANdle's animation
-        void setAnimation(CANdleAnimation* animation);
-        CANdleAnimation* getAnimation();
+        void setAnimation(CANdleAnimation animation);
+        CANdleAnimation& getAnimation();
 
     private:
         // The CAN ID of this CANdle
@@ -147,7 +119,7 @@ class CANdleHWState {
         // If the CANdle is enabled
         bool enabled;
         // The currently playing CANdle animation
-        CANdleAnimation* animation;
+        CANdleAnimation animation;
 };
 
 

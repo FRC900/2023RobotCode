@@ -10,16 +10,15 @@ using namespace std;
 namespace hardware_interface {
 namespace candle {
 
-struct LEDGroup {
+struct LEDGroup : CANdleColour {
     // Start LED
     int start;
     // Number of LEDs this group covers
     int count;
-    // Colour to set for these LEDs
-    CANdleColour colour;
+    // Colour is handled by CANdleColour superclass
 
     // Constructor
-    LEDGroup(int start, int count, CANdleColour colour);
+    LEDGroup(int start, int count, int red, int green, int blue, int white);
     // Blank constructor for arrays and vectors
     LEDGroup();
 };
@@ -52,9 +51,9 @@ class CANdleHWCommand {
         void resetEnabledChanged();
 
         // The CANdle's animation
-        void setAnimation(CANdleAnimation* animation);
-        CANdleAnimation* getAnimation();
-        bool animationChanged(CANdleAnimation*& animation);
+        void setAnimation(CANdleAnimation animation);
+        CANdleAnimation& getAnimation();
+        bool animationChanged(CANdleAnimation& animation);
         void resetAnimationChanged();
 
     private:
@@ -71,7 +70,7 @@ class CANdleHWCommand {
         bool enabled;
         bool enabled_changed;
         // The CANdle's animation
-        CANdleAnimation* animation;
+        CANdleAnimation animation;
         bool animation_changed;
 };
 

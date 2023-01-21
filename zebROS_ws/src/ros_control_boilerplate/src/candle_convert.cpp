@@ -14,53 +14,50 @@ ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
     }
 }
 
-BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation* animation) {
-    bool reversed = animation->getReversed();
-    double brightness = animation->getBrightness();
-
-    switch (animation->type) {
+BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation animation) {
+    switch (animation.type) {
         case CANdleAnimationType::Fire: {
             return FireAnimation(
-                brightness,
-                animation->speed,
-                animation->count,
-                animation->getParam4(),
-                animation->getParam5(),
-                reversed,
-                animation->start
+                animation.brightness,
+                animation.speed,
+                animation.count,
+                animation.param4,
+                animation.param5,
+                animation.reversed,
+                animation.start
             );
         }
         case CANdleAnimationType::Rainbow: {
             return RainbowAnimation(
-                brightness,
-                animation->speed,
-                animation->count,
-                reversed,
-                animation->start
+                animation.brightness,
+                animation.speed,
+                animation.count,
+                animation.reversed,
+                animation.start
             );
         }
         case CANdleAnimationType::RGBFade: {
             return RgbFadeAnimation(
-                brightness,
-                animation->speed,
-                animation->count,
-                animation->start
+                animation.brightness,
+                animation.speed,
+                animation.count,
+                animation.start
             );
         }
     }
 }
-BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
-    CANdleColour colour = animation->getColour();
-    switch (animation->type) {
+BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
+    CANdleColour colour = animation.colour;
+    switch (animation.type) {
         case CANdleAnimationType::ColourFlow: {
             return ColorFlowAnimation(
                 colour.red,
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->speed,
-                animation->count,
-                convertCANdleDirection(animation->getDirection())
+                animation.speed,
+                animation.count,
+                convertCANdleDirection(animation.direction)
             );
         }
         case CANdleAnimationType::Larson:
@@ -70,12 +67,12 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->speed,
-                animation->count,
+                animation.speed,
+                animation.count,
                 // TODO: Store Bounce mode and Size arguments in animation class
                 LarsonAnimation::BounceMode::Front,
                 2,
-                animation->start
+                animation.start
             );
         }
         case CANdleAnimationType::SingleFade:
@@ -85,9 +82,9 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->speed,
-                animation->count,
-                animation->start
+                animation.speed,
+                animation.count,
+                animation.start
             );
         }
         case CANdleAnimationType::Strobe:
@@ -97,9 +94,9 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->speed,
-                animation->count,
-                animation->start
+                animation.speed,
+                animation.count,
+                animation.start
             );
         }
         case CANdleAnimationType::Twinkle:
@@ -109,11 +106,11 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->speed,
-                animation->count,
+                animation.speed,
+                animation.count,
                 // TODO: Store actual Divider value
                 TwinkleAnimation::TwinklePercent::Percent100,
-                animation->start
+                animation.start
             );
         }
         case CANdleAnimationType::TwinkleOff:
@@ -123,11 +120,11 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation* animation) {
                 colour.green,
                 colour.blue,
                 colour.white,
-                animation->speed,
-                animation->count,
+                animation.speed,
+                animation.count,
                 // TODO: Store actual Divider value
                 TwinkleOffAnimation::TwinkleOffPercent::Percent100,
-                animation->start
+                animation.start
             );
         }
     }

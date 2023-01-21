@@ -2652,12 +2652,12 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 
 		// Animation
 		//ROS_INFO_STREAM("Candle_status_4");
-		CANdleAnimation* candle_animation;
+		CANdleAnimation candle_animation;
 		Animation* animation;
 		if (candle_command.animationChanged(candle_animation)) {
 			ROS_INFO_STREAM("Candle_status_4.1");
 			// Convert from CANdleAnimation to the appropriate CTRE animation class
-			if (candle_animation->class_type == CANdleAnimationClass::BaseStandard) {
+			if (candle_animation.class_type == CANdleAnimationClass::BaseStandard) {
 				ROS_INFO_STREAM("Candle_status_4.1.1");
 				BaseStandardAnimation base_animation = candle_convert::convertBaseStandardAnimation(candle_animation);
 				ROS_INFO_STREAM("Candle_status_4.1.2");
@@ -2691,18 +2691,17 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		vector<LEDGroup> led_groups;
 		if (candle_command.ledGroupChanged(led_groups)) {
 			for (LEDGroup group : led_groups) {
-				CANdleColour colour = group.colour;
 				candle->SetLEDs(
-					colour.red,
-					colour.green,
-					colour.blue,
-					colour.white,
+					group.red,
+					group.green,
+					group.blue,
+					group.white,
 					group.start,
 					group.count
 				);
 
-				for (size_t led_id = 0; led_id < (group.start + group.count); led_id++) {
-					candle_state.setLED(led_id, colour);
+				for (size_t led_id = 0; led_id < (size_t)(group.start + group.count); led_id++) {
+					candle_state.setLED(led_id, group);
 				}
 
 				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]

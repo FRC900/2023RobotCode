@@ -1,7 +1,19 @@
 <library path="lib/candle_controller">
-    <class name="candle_controller/CANdleController" type="candle_controller::CANdleController" base_class_type="controller_interface::ControllerBase">
+    <class name="candle_controller/colour" type="candle_controller::CANdleController" base_class_type="controller_interface::ControllerBase">
         <description>
-            Controls the CANdle colours, animations, brightness, etc.
+            Controls the CANdle colours
+        </description>
+    </class>
+
+    <class name="candle_controller/brightness" type="candle_controller::CANdleController" base_class_type="controller_interface::ControllerBase">
+        <description>
+            Controls the CANdle brightness
+        </description>
+    </class>
+
+    <class name="candle_controller/animation" type="candle_controller::CANdleController" base_class_type="controller_interface::ControllerBase">
+        <description>
+            Controls the CANdle animation
         </description>
     </class>
 </library>

@@ -1,13 +1,40 @@
 #include <ros/ros.h>
 #include <controller_interface/controller.h>
 #include <ctre_interfaces/candle_command_interface.h>
-#include <string>
-#include <optional>
-#include <candle_controller_msgs/Colour.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <pluginlib/class_list_macros.h>
 
+#include <string>
+#include <optional>
+
+#include <candle_controller_msgs/Brightness.h>
+#include <candle_controller_msgs/Colour.h>
+#include <candle_controller_msgs/Animation.h>
+
 using namespace hardware_interface::candle;
+
+CANdleAnimationType convertAnimationType(int type) {
+    switch (type) {
+        case 0:
+            return CANdleAnimationType::ColourFlow;
+        case 1:
+            return CANdleAnimationType::Fire;
+        case 2:
+            return CANdleAnimationType::Larson;
+        case 3:
+            return CANdleAnimationType::Rainbow;
+        case 4:
+            return CANdleAnimationType::RGBFade;
+        case 5:
+            return CANdleAnimationType::SingleFade;
+        case 6:
+            return CANdleAnimationType::Strobe;
+        case 7:
+            return CANdleAnimationType::Twinkle;
+        case 8:
+            return CANdleAnimationType::TwinkleOff;
+    }
+}
 
 namespace candle_controller {
 class CANdleController : public controller_interface::Controller<CANdleCommandInterface> {
@@ -30,51 +57,148 @@ public:
         this->candle_handle = candle_command_interface->getHandle(candle_name);
 
         this->colour_service = controller_nh.advertiseService("candle_colour", &CANdleController::colourCallback, this);
+        this->brightness_service = controller_nh.advertiseService("candle_brightness", &CANdleController::brightnessCallback, this);
+        this->animation_service = controller_nh.advertiseService("candle_animation", &CANdleController::animationCallback, this);
         return true;
     }
 
     void starting(const ros::Time&) {}
 
     void update(const ros::Time&, const ros::Duration&) {
-        const Colour colour = *(this->colour_buffer.readFromRT());
+        const LEDs leds = *(this->led_buffer.readFromRT());
         const Animation animation = *(this->animation_buffer.readFromRT());
+        const Brightness brightness = *(this->brightness_buffer.readFromRT());
+
+        // Brightness isn't exclusive to colours/animations, so it gets special treatment
+        if (brightness.time > this->last_write) {
+            this->candle_handle->setBrightness(brightness.brightness);
+        }
+
+        if (leds.time > this->last_write || animation.time > this->last_write) {
+            if (leds.time > animation.time) {
+                this->last_write = leds.time;
+                this->candle_handle->setLEDGroup(leds);
+            } else {
+                this->last_write = animation.time;
+                this->candle_handle->setAnimation(animation.animation);
+            }
+        }
+
+        // Only overwrite last_write after the leds and animations have applied, since brightness isn't exclusive to them
+        if (brightness.time > this->last_write) {
+            this->last_write = brightness.time;
+        }
     }
 
     void stopping(const ros::Time&) {}
 
 private:
-    CANdleCommandHandle candle_handle;
-
-    ros::ServiceServer colour_service;
-
-    struct Colour : CANdleColour {
+    struct LEDs : LEDGroup {
         ros::Time time;
 
-        Colour() {}
+        LEDs() {}
     };
+
     struct Animation {
-        CANdleAnimation* animation;
+        CANdleAnimation animation;
         ros::Time time;
 
         Animation() {}
     };
 
-    realtime_tools::RealtimeBuffer<Colour> colour_buffer;
-    realtime_tools::RealtimeBuffer<Animation> animation_buffer;
+    struct Brightness {
+        double brightness;
+        ros::Time time;
 
-    bool colourCallback(candle_controller_msgs::Colour::Request& req, candle_controller_msgs::Colour::Response& res) {
+        Brightness() {}
+    };
+
+    CANdleCommandHandle candle_handle;
+    ros::ServiceServer colour_service;
+    ros::ServiceServer brightness_service;
+    ros::ServiceServer animation_service;
+    ros::Time last_write;
+
+    realtime_tools::RealtimeBuffer<LEDs> led_buffer;
+    realtime_tools::RealtimeBuffer<Animation> animation_buffer;
+    realtime_tools::RealtimeBuffer<Brightness> brightness_buffer;
+
+    bool colourCallback(candle_controller_msgs::Colour::Request& req, candle_controller_msgs::Colour::Response&) {
         if (this->isRunning()) {
-            Colour colour;
-            colour.red = req.red;
-            colour.green = req.green;
-            colour.blue = req.blue;
-            colour.white = req.white;
-            colour.time = ros::Time::now();
+            LEDs leds;
+            leds.red = req.red;
+            leds.green = req.green;
+            leds.blue = req.blue;
+            leds.white = req.white;
+            leds.time = ros::Time::now();
+
+            this->led_buffer.writeFromNonRT(leds);
 
             return true;
         } else {
-              ROS_ERROR_STREAM("Can't accept new commands. CANdleController is not running.");
-              return false;
+            ROS_ERROR_STREAM("Can't accept new commands. CANdleController is not running.");
+            return false;
+        }
+    }
+
+    bool brightnessCallback(candle_controller_msgs::Brightness::Request& req, candle_controller_msgs::Brightness::Response&) {
+        if (this->isRunning()) {
+            Brightness brightness;
+            brightness.brightness = req.brightness;
+            brightness.time = ros::Time::now();
+
+            this->brightness_buffer.writeFromNonRT(brightness);
+
+            return true;
+        } else {
+            ROS_ERROR_STREAM("Can't accept new commands. CANdleController is not running.");
+            return false;
+        }
+    }
+
+    bool animationCallback(candle_controller_msgs::Animation::Request& req, candle_controller_msgs::Brightness::Response&) {
+        if (this->isRunning()) {
+            CANdleAnimation candle_animation;
+            switch (req.animation_class) {
+                // Base Standard animation
+                case 0: {
+                    candle_animation = CANdleAnimation(
+                        req.speed,
+                        req.start,
+                        req.count,
+                        convertAnimationType(req.animation_type),
+                        req.brightness,
+                        req.reversed,
+                        req.param4,
+                        req.param5
+                    );
+                }
+                // Base Two animation
+                case 1: {
+                    candle_animation = CANdleAnimation(
+                        req.speed,
+                        req.start,
+                        req.count,
+                        convertAnimationType(req.animation_type),
+                        req.red,
+                        req.blue,
+                        req.green,
+                        req.white,
+                        req.direction
+                    );
+                }
+            }
+
+            Animation animation;
+            animation.animation = candle_animation;
+            animation.time = ros::Time::now();
+            
+            this->animation_buffer.writeFromNonRT(animation);
+
+            return true;
+        } else {
+            ROS_ERROR_STREAM("Can't accept new commands. CANdleController is not running.");
+            return false;
         }
     }
 };

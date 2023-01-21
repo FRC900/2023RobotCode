@@ -13,49 +13,59 @@ CANdleColour::CANdleColour() {}
 bool CANdleColour::operator!=(const CANdleColour& rhs) {
     return !(this->red == rhs.red && this->green == rhs.green && this->blue == rhs.blue && this->white == rhs.white);
 }
+bool CANdleColour::operator==(const CANdleColour& rhs) {
+    return !(this->operator!=(rhs));
+}
 
-CANdleAnimation::CANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, CANdleAnimationClass class_type) {
-    this->id = id;
+CANdleAnimation::CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5) {
     this->speed = speed;
     this->start = start;
     this->count = count;
     this->type = type;
-    this->class_type = class_type;
-}
-CANdleAnimation::CANdleAnimation() {}
-
-BaseTwoCANdleAnimation::BaseTwoCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction)
-: CANdleAnimation(id, speed, start, count, type, CANdleAnimationClass::BaseTwo),
-  colour(red, green, blue, white)
-{
-    this->direction = direction;
-}
-CANdleColour BaseTwoCANdleAnimation::getColour() {
-    return this->colour;
-}
-int BaseTwoCANdleAnimation::getDirection() {
-    return this->direction;
-}
-
-BaseStandardCANdleAnimation::BaseStandardCANdleAnimation(int id, double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5)
-: CANdleAnimation(id, speed, start, count, type, CANdleAnimationClass::BaseStandard)
-{
+    this->class_type = CANdleAnimationClass::BaseStandard;
     this->brightness = brightness;
     this->reversed = reversed;
     this->param4 = param4;
     this->param5 = param5;
 }
-double BaseStandardCANdleAnimation::getBrightness() {
-    return this->brightness;
+CANdleAnimation::CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction) {
+    this->speed = speed;
+    this->start = start;
+    this->count = count;
+    this->type = type;
+    this->class_type = CANdleAnimationClass::BaseTwo;
+    this->colour = CANdleColour(red, green, blue, white);
+    this->direction = direction;
 }
-bool BaseStandardCANdleAnimation::getReversed() {
-    return this->reversed;
-}
-double BaseStandardCANdleAnimation::getParam4() {
-    return this->param4;
-}
-double BaseStandardCANdleAnimation::getParam5() {
-    return this->param5;
+CANdleAnimation::CANdleAnimation() {}
+
+bool CANdleAnimation::operator!=(const CANdleAnimation& rhs) {
+    if (this->class_type == rhs.class_type) {
+        if (this->type == rhs.type) {
+            if (this->class_type == CANdleAnimationClass::BaseStandard) {
+                return !(
+                    (this->speed == rhs.speed) &&
+                    (this->start == rhs.start) &&
+                    (this->count == rhs.count) &&
+                    (this->brightness == rhs.brightness) &&
+                    (this->param4 == rhs.param4) &&
+                    (this->param5 == rhs.param5)
+                );
+            } else {
+                return !(
+                    (this->speed == rhs.speed) &&
+                    (this->start == rhs.start) &&
+                    (this->count == rhs.count) &&
+                    (this->colour == rhs.colour) &&
+                    (this->direction == rhs.direction)
+                );
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 CANdleHWState::CANdleHWState(int id) :
@@ -97,10 +107,10 @@ bool CANdleHWState::getEnabled() {
     return this->enabled;
 }
 
-void CANdleHWState::setAnimation(CANdleAnimation* animation) {
+void CANdleHWState::setAnimation(CANdleAnimation animation) {
     this->animation = animation;
 }
-CANdleAnimation* CANdleHWState::getAnimation() {
+CANdleAnimation& CANdleHWState::getAnimation() {
     return this->animation;
 }
 
