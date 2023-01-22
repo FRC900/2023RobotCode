@@ -124,6 +124,7 @@ FRCRobotInterface::~FRCRobotInterface()
 	};
 	join_threads(ctre_mc_read_threads_);
 	join_threads(cancoder_read_threads_);
+	join_threads(pigeon2_read_threads_);
 	join_threads(pcm_threads_);
 	join_threads(pdp_threads_);
 	join_threads(pdh_threads_);
@@ -269,6 +270,33 @@ bool FRCRobotInterface::initDevices(ros::NodeHandle root_nh)
 			this->candles_.emplace_back(std::make_unique<ctre::phoenix::led::CANdle>(this->candle_can_ids_[i], this->candle_can_busses_[i]));
 		} else {
 			this->candles_.push_back(nullptr);
+		}
+	}
+
+	for (size_t i = 0; i < num_pigeon2s_; i++)
+	{
+		ROS_INFO_STREAM_NAMED("frcrobot_hw_interface",
+							  "Loading joint " << i << "=" << pigeon2_names_[i] <<
+							  (pigeon2_local_updates_[i] ? " local" : " remote") << " update, " <<
+							  (pigeon2_local_hardwares_[i] ? "local" : "remote") << " hardware" <<
+							  " at CAN id " << pigeon2_can_ids_[i] << " on CAN bus \"" << pigeon2_can_busses_[i] << "\"");
+
+		if (pigeon2_local_hardwares_[i])
+		{
+			pigeon2s_.emplace_back(std::make_shared<ctre::phoenix::sensors::Pigeon2>(pigeon2_can_ids_[i], pigeon2_can_busses_[i]));
+			pigeon2_read_state_mutexes_.emplace_back(std::make_shared<std::mutex>());
+			pigeon2_read_thread_states_.emplace_back(std::make_shared<hardware_interface::pigeon2::Pigeon2HWState>(pigeon2_can_ids_[i]));
+			pigeon2_read_threads_.emplace_back(std::thread(&FRCRobotInterface::pigeon2_read_thread, this,
+												pigeon2s_[i], pigeon2_read_thread_states_[i],
+												pigeon2_read_state_mutexes_[i],
+												std::make_unique<Tracer>("pigeon2_read_" + pigeon2_names_[i] + " " + root_nh.getNamespace()),
+												pigeon2_read_hz_));
+		}
+		else
+		{
+			pigeon2s_.push_back(nullptr);
+			pigeon2_read_state_mutexes_.push_back(nullptr);
+			pigeon2_read_thread_states_.push_back(nullptr);
 		}
 	}
 
@@ -646,6 +674,9 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 	if(! param_nh.param("canifier_read_hz", canifier_read_hz_, canifier_read_hz_)) {
 		ROS_ERROR("Failed to read canifier_read_hz in frc_robot_interface");
 	}
+	if(! param_nh.param("pigeon2_read_hz", pigeon2_read_hz_, pigeon2_read_hz_)) {
+		ROS_ERROR("Failed to read pigeon2_read_hz in frc_robot_interface");
+	}
 	if(! param_nh.param("spark_max_read_hz", spark_max_read_hz_, spark_max_read_hz_)) {
 		ROS_ERROR("Failed to read spark_max_read_hz in frc_robot_interface");
 	}
@@ -685,6 +716,7 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw
 			"\tctre_mc_read : " << ctre_mc_read_hz_ << std::endl <<
 			"\tcancoder_read : " << cancoder_read_hz_ << std::endl <<
 			"\tcanifier_read : " << canifier_read_hz_ << std::endl <<
+			"\tpigeon2_read : " << pigeon2_read_hz_ << std::endl <<
 			"\tpcm_read : " << pcm_read_hz_ << std::endl <<
 			"\tpdh_read : " << pdh_read_hz_ << std::endl <<
 			"\tpdp_read : " << pdp_read_hz_ << std::endl <<
@@ -1093,12 +1125,26 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 			cs.setStickyFaults(crts->getStickyFaults());
 		}
 	}
+
+	read_tracer_.start_unique("pigeon2");
+	for (size_t joint_id = 0; joint_id < num_pigeon2s_; ++joint_id)
+	{
+		if (pigeon2_local_hardwares_[joint_id])
+		{
+			std::unique_lock<std::mutex> l(*pigeon2_read_state_mutexes_[joint_id], std::try_to_lock);
+			if (!l.owns_lock())
+				continue;
+			pigeon2_state_[joint_id] = *pigeon2_read_thread_states_[joint_id];
+		}
+	}
+
 	read_tracer_.start_unique("nidec");
 	for (size_t i = 0; i < num_nidec_brushlesses_; i++)
 	{
 		if (nidec_brushless_local_updates_[i])
 			brushless_vel_[i] = nidec_brushlesses_[i]->Get();
 	}
+
 	read_tracer_.start_unique("digital in");
 	for (size_t i = 0; i < num_digital_inputs_; i++)
 	{

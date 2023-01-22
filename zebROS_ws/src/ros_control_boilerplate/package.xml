@@ -33,6 +33,7 @@
   <depend>frc_msgs</depend>
   <depend>remote_joint_interface</depend>
   <depend>periodic_interval_counter</depend>
+  <depend>pigeon2_interface</depend>
 
   <export>
   </export>

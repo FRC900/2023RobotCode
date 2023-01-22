@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   message_generation
   periodic_interval_counter
+  pigeon2_interface
   realtime_tools
   remote_joint_interface
   roscpp
@@ -83,6 +84,8 @@ add_library(frc_robot_interface STATIC
 	src/pdh_read_thread.cpp
 	src/pdp_read_thread.cpp
 	src/ph_read_thread.cpp
+	src/pigeon2_convert.cpp
+	src/pigeon2_read_thread.cpp
 	src/read_config.cpp
 	src/rev_convert.cpp
 	src/ros_iterative_robot.cpp

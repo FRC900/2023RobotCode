@@ -129,6 +129,35 @@ void FRCRobotInterface::createInterfaces(void)
 		}
 	}
 
+	num_pigeon2s_ = pigeon2_names_.size();
+	// Create vectors of the correct size for
+	// pigeon2 HW state and commands
+	pigeon2_command_.resize(num_pigeon2s_);
+
+	for (size_t i = 0; i < num_pigeon2s_; i++)
+	{
+		ROS_INFO_STREAM_NAMED(name_, "FRCRobotInterface: Registering Pigeon2 Interface for : " << pigeon2_names_[i] << " at hw ID " << pigeon2_can_ids_[i]);
+		pigeon2_state_.emplace_back(hardware_interface::pigeon2::Pigeon2HWState(pigeon2_can_ids_[i]));
+	}
+	for (size_t i = 0; i < num_pigeon2s_; i++)
+	{
+		// Create state interface for the given Pigeon2
+		// and point it to the data stored in the
+		// corresponding pigeon2_state array entry
+		hardware_interface::pigeon2::Pigeon2StateHandle psh(pigeon2_names_[i], &pigeon2_state_[i]);
+		pigeon2_state_interface_.registerHandle(psh);
+
+		// Do the same for a command interface for
+		// the same Pigeon2
+		hardware_interface::pigeon2::Pigeon2CommandHandle pch(psh, &pigeon2_command_[i]);
+		pigeon2_command_interface_.registerHandle(pch);
+		if (!pigeon2_local_updates_[i])
+		{
+			hardware_interface::pigeon2::Pigeon2WritableStateHandle pwsh(pigeon2_names_[i], &pigeon2_state_[i]); /// writing directly to state?
+			pigeon2_remote_state_interface_.registerHandle(pwsh);
+		}
+	}
+
 	num_spark_maxs_ = spark_max_names_.size();
 	// Create vectors of the correct size for
 	// Spark Max HW state and commands
