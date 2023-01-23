@@ -12,6 +12,7 @@ include("../cmake_modules/CMakeOpt.cmake")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   controller_interface
+  realtime_tools
   ctre_interfaces
   candle_controller_msgs
   pluginlib

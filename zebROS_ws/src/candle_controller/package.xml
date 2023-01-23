@@ -50,7 +50,6 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <depend>ctre_interfaces</depend>
-  <depend>hardware_interface</depend>
   <depend>controller_interface</depend>
   <depend>pluginlib</depend>
   <depend>realtime_tools</depend>
