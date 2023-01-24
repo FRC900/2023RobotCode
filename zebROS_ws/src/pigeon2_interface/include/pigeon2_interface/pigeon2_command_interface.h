@@ -70,6 +70,24 @@ class Pigeon2HWCommand
 		bool getClearStickyFaults(void) const;
 		bool clearStickyFaultsChanged(void);
 
+		void setSetYaw(double yaw);
+		double getSetYaw(void) const;
+		bool setYawChanged(double &yaw);
+		void resetSetYaw(void);
+
+		void setAddYaw(double yaw);
+		double getAddYaw(void) const;
+		bool addYawChanged(double &yaw);
+		void resetAddYaw(void);
+
+		void setSetYawToCompass(void);
+		bool getSetYawToCompass(void) const;
+		bool setYawToCompassChanged(void);
+
+		void setSetAccumZAngle(void);
+		bool getSetAccumZAngle(void) const;
+		bool setAccumZAngleChanged(void);
+
 	private:
 		AxisDirection                mount_pose_forward_{AxisDirection::Undefined};
 		AxisDirection                mount_pose_up_{AxisDirection::Undefined};
@@ -90,9 +108,14 @@ class Pigeon2HWCommand
 		bool                         temperature_compensation_changed_{true};
 		bool                         disable_no_motion_compensation_{false};
 		bool                         disable_no_motion_compensation_changed_{true};
-
-        bool                         zero_gyro_bias_now_;
 		bool                         clear_sticky_faults_;
+        bool                         zero_gyro_bias_now_;
+		double                       set_yaw_{0};
+		bool                         set_yaw_changed_{false};
+		double                       add_yaw_{0};
+		bool                         add_yaw_changed_{false};
+		bool                         set_yaw_to_compass_{false};
+		bool                         set_accum_z_angle_{false};
 };
 
 // Handle - used by each controller to get, by name of the

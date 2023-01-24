@@ -280,5 +280,84 @@ bool Pigeon2HWCommand::zeroGyroBiasNowChanged(void)
 	return ret;
 }
 
+
+void Pigeon2HWCommand::setSetYaw(double yaw)
+{
+	if (yaw != set_yaw_)
+	{
+		set_yaw_ = yaw;
+		set_yaw_changed_ = true;
+	}
+}
+double Pigeon2HWCommand::getSetYaw(void) const
+{
+	return set_yaw_;
+}
+bool Pigeon2HWCommand::setYawChanged(double &yaw)
+{
+	yaw = set_yaw_;
+	auto ret = set_yaw_changed_;
+	set_yaw_changed_ = false;
+	return ret;
+}
+void Pigeon2HWCommand::resetSetYaw(void)
+{
+	set_yaw_changed_ = true;
+}
+
+void Pigeon2HWCommand::setAddYaw(double yaw)
+{
+	if (yaw != add_yaw_)
+	{
+		add_yaw_ = yaw;
+		add_yaw_changed_ = true;
+	}
+}
+double Pigeon2HWCommand::getAddYaw(void) const
+{
+	return add_yaw_;
+}
+bool Pigeon2HWCommand::addYawChanged(double &yaw)
+{
+	yaw = add_yaw_;
+	bool rc = add_yaw_changed_;
+	add_yaw_changed_ = false;
+	return rc;
+}
+void Pigeon2HWCommand::resetAddYaw(void)
+{
+	add_yaw_changed_ = true;
+}
+
+void Pigeon2HWCommand::setSetYawToCompass(void)
+{
+	set_yaw_to_compass_ = true;
+
+}
+bool Pigeon2HWCommand::getSetYawToCompass(void) const
+{
+	return set_yaw_to_compass_;
+}
+bool Pigeon2HWCommand::setYawToCompassChanged(void)
+{
+	auto rc = set_yaw_to_compass_;
+	set_yaw_to_compass_ = false;
+}
+
+void Pigeon2HWCommand::setSetAccumZAngle(void)
+{
+	set_accum_z_angle_ = true;
+}
+bool Pigeon2HWCommand::getSetAccumZAngle(void) const
+{
+	return set_accum_z_angle_;
+}
+bool Pigeon2HWCommand::setAccumZAngleChanged(void)
+{
+	auto ret = set_accum_z_angle_;
+	set_accum_z_angle_ = false;
+	return ret;
+}
+
 } // namespace hardware_interface
 } // namespace cancoder
