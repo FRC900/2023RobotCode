@@ -123,6 +123,159 @@ std::array<double, 3> Pigeon2HWState::getGravityVector(void) const
 	return gravity_vector_;
 }
 
+void Pigeon2HWState::set6dQuaternion(std::array<double, 4> &quaternion)
+{
+	quaternion_6d_ = quaternion;
+}
+std::array<double, 4> Pigeon2HWState::get6dQuatention(void) const
+{
+	return quaternion_6d_;
+}
+
+void Pigeon2HWState::setYaw(double yaw)
+{
+	yaw_ = yaw;
+}
+double Pigeon2HWState::getYaw(void) const
+{
+	return yaw_;
+}
+
+void Pigeon2HWState::setPitch(double pitch)
+{
+	pitch_ = pitch;
+}
+double Pigeon2HWState::getPitch(void) const
+{
+	return pitch_;
+}
+
+void Pigeon2HWState::setRoll(double roll)
+{
+	roll_ = roll;
+}
+double Pigeon2HWState::getRoll(void) const
+{
+	return roll_;
+}
+
+void Pigeon2HWState::setAccumGyro(std::array<double, 3> accum_gyro)
+{
+	accum_gyro_ = accum_gyro;
+}
+std::array<double, 3> Pigeon2HWState::getAccumGyro(void) const
+{
+	return accum_gyro_;
+}
+
+void Pigeon2HWState::setAbsoluteCompassHeading(double absolute_compass_heading)
+{
+	absolute_compass_heading_ = absolute_compass_heading;
+}
+double Pigeon2HWState::getAbsoluteCompassHeading(void) const
+{
+	return absolute_compass_heading_;
+}
+
+void Pigeon2HWState::setCompassHeading(double compass_heading)
+{
+	compass_heading_ = compass_heading;
+}
+double Pigeon2HWState::getCompassHeading(void) const
+{
+	return compass_heading_;
+}
+
+void Pigeon2HWState::setCompassFieldStrength(double compass_field_strength)
+{
+	compass_field_strength_ = compass_field_strength;
+}
+double Pigeon2HWState::getCompassFieldStrength(void) const
+{
+	return compass_field_strength_;
+}
+
+void Pigeon2HWState::setTemperature(double temperature)
+{
+	temperature_ = temperature;
+}
+double Pigeon2HWState::getTemperature(void) const
+{
+	return temperature_;
+}
+
+void Pigeon2HWState::setUptime(uint32_t uptime)
+{
+	uptime_ = uptime;
+}
+uint32_t Pigeon2HWState::getUptime(void) const
+{
+	return uptime_;
+}
+
+void Pigeon2HWState::setRawMagnetometer(std::array<int16_t, 3> &raw_magnetometer)
+{
+	raw_magnetometer_xyz_ = raw_magnetometer;
+}
+std::array<int16_t, 3> Pigeon2HWState::getRawMagnetometer(void) const
+{
+	return raw_magnetometer_xyz_;
+}
+
+void Pigeon2HWState::setBiasedMagnetometer(std::array<int16_t, 3> &biased_magnetometer)
+{
+	biased_magnetometer_xyz_ = biased_magnetometer;
+}
+std::array<int16_t, 3> Pigeon2HWState::getBiasedMagnetometer(void) const
+{
+	return biased_magnetometer_xyz_;
+}
+
+void Pigeon2HWState::setBiasedAccelerometer(std::array<int16_t, 3> &biased_accelerometer)
+{
+	biased_accelerometer_xyz_ = biased_accelerometer;
+}
+std::array<int16_t, 3> Pigeon2HWState::getBiasedAccelerometer(void) const
+{
+	return biased_accelerometer_xyz_;
+}
+
+void Pigeon2HWState::setRawGyro(std::array<double, 3> &raw_gyro)
+{
+	raw_gyro_ = raw_gyro;
+}
+std::array<double, 3> Pigeon2HWState::getRawGyro(void) const
+{
+	return raw_gyro_;
+}
+
+void Pigeon2HWState::setResetCount(uint32_t reset_count)
+{
+	reset_count_ = reset_count;
+}
+uint32_t Pigeon2HWState::getResetCount(void) const
+{
+	return reset_count_;
+}
+
+void Pigeon2HWState::setResetFlags(uint32_t reset_flags)
+{
+	reset_flags_ = reset_flags;
+}
+uint32_t Pigeon2HWState::getResetFlags(void) const
+{
+	return reset_flags_;
+}
+
+void Pigeon2HWState::setFirmwareVersion(uint32_t firmware_version)
+{
+	firmware_version_ = firmware_version;
+}
+uint32_t Pigeon2HWState::getFirmwareVersion(void) const
+{
+	return firmware_version_;
+}
+
 void Pigeon2HWState::setFaults(int faults)
 {
 	faults_ = faults;
@@ -131,7 +284,6 @@ int Pigeon2HWState::getFaults(void) const
 {
 	return faults_;
 }
-
 
 void Pigeon2HWState::setStickyFaults(int sticky_faults)
 {

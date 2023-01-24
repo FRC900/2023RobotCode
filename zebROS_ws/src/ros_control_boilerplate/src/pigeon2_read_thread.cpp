@@ -36,6 +36,37 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 		pigeon2->GetStickyFaults(ctre_sticky_faults);
 		const unsigned sticky_faults = ctre_sticky_faults.ToBitfield();
 
+		std::array<double, 4> quaternion_6d;
+		pigeon2->Get6dQuaternion(quaternion_6d);
+
+		std::array<double, 3> ypr;
+		pigeon2->GetYawPitchRoll(ypr);
+
+		std::array<double, 3> accum_gyro;
+		pigeon2->GetAccumGyro(accum_gyro);
+
+		const double absolute_compass_heading = pigeon2->GetAbsoluteCompassHeading();
+		const double compass_heading = pigeon2->GetCompassHeading();
+		const double compass_field_strength = pigeon2->GetCompassFieldStrength();
+		const double temperature = pigeon2->GetTemp();
+		const uint32_t uptime = pigeon2->GetUpTime();
+		
+		std::array<double, 3> raw_magnetometer;
+		pigeon2->GetRawMagnetometer(raw_magnetometer);
+
+		std::array<double, 3> biased_magnetometer;
+		pigeon2->GetBiasedMagnetometer(biased_magnetometer);
+
+		std::array<double, 3> biased_accelerometer;
+		pigeon2->GetBiasedAccelerometer(biased_accelerometer);
+
+		std::array<double, 3> raw_gyro;
+		pigeon2->GetRawGyro(raw_gyro);
+
+		const uint32_t reset_count = pigeon2->GetResetCount();
+		const uint32_t reset_flags = pigeon2->GetResetFlags();
+		const uint32_t firmware_Version = pigeon2->GetFirmVers();
+
 		// Actually update the Pigeon2HWState shared between
 		// this thread and read()
 		// Do this all at once so the code minimizes the amount
@@ -48,6 +79,13 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 			state->setGravityVector(gravity_vector);
 			state->setFaults(faults);
 			state->setStickyFaults(sticky_faults);
+
+			state->set6dQuaternion(quaternion_6d);
+			state->setYaw(ypr[0]);
+			state->setPitch(ypr[1]);
+			state->setRoll(ypr[2]);
+			state->setAccumGyro(accum_gyro);
+			state->setAbsoluteCompassHeading(absolute_compass_heading);
 		}
 		tracer->report(60);
 	}

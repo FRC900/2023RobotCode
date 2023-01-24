@@ -62,6 +62,57 @@ class Pigeon2HWState
 		void setGravityVector(const std::array<double, 3> &gravity_vector);
 		std::array<double, 3> getGravityVector(void) const;
 
+		void set6dQuaternion(std::array<double, 4> &quaternion);
+		std::array<double, 4> get6dQuatention(void) const;
+
+		void setYaw(double yaw);
+		double getYaw(void) const;
+
+		void setPitch(double pitch);
+		double getPitch(void) const;
+
+		void setRoll(double roll);
+		double getRoll(void) const;
+
+		void setAccumGyro(std::array<double, 3> accum_gyro);
+		std::array<double, 3> getAccumGyro(void) const;
+
+		void setAbsoluteCompassHeading(double absolute_compass_heading);
+		double getAbsoluteCompassHeading(void) const;
+
+		void setCompassHeading(double compass_heading);
+		double getCompassHeading(void) const;
+
+		void setCompassFieldStrength(double compass_field_strength);
+		double getCompassFieldStrength(void) const;
+
+		void setTemperature(double temperature);
+		double getTemperature(void) const;
+
+		void setUptime(uint32_t uptime);
+		uint32_t getUptime(void) const;
+
+		void setRawMagnetometer(std::array<int16_t, 3> &raw_magnetometer);
+		std::array<int16_t, 3> getRawMagnetometer(void) const;
+
+		void setBiasedMagnetometer(std::array<int16_t, 3> &biased_magnetometer);
+		std::array<int16_t, 3> getBiasedMagnetometer(void) const;
+
+		void setBiasedAccelerometer(std::array<int16_t, 3> &biased_accelerometer);
+		std::array<int16_t, 3> getBiasedAccelerometer(void) const;
+
+		void setRawGyro(std::array<double, 3> &raw_gyro);
+		std::array<double, 3> getRawGyro(void) const;
+
+		void setResetCount(uint32_t reset_count);
+		uint32_t getResetCount(void) const;
+
+		void setResetFlags(uint32_t reset_flags);
+		uint32_t getResetFlags(void) const;
+
+		void setFirmwareVersion(uint32_t firmware_version);
+		uint32_t getFirmwareVersion(void) const;
+
 		int getFaults(void) const;
 		void setFaults(int faults);
 
@@ -82,6 +133,23 @@ class Pigeon2HWState
 		bool                         temperature_compensation_{false};
 		bool                         disable_no_motion_compensation_{false};
 		std::array<double, 3>        gravity_vector_{0, 0, 0};
+		std::array<double, 4>        quaternion_6d_{0, 0, 0, 0};
+		double                       yaw_{0};
+		double                       pitch_{0};
+		double                       roll_{0};
+		std::array<double, 3>        accum_gyro_{0};
+		double                       absolute_compass_heading_{0};
+		double                       compass_heading_{0};
+		double                       compass_field_strength_{0};
+		double                       temperature_{0};
+		uint32_t                     uptime_{0};
+		std::array<int16_t, 3>       raw_magnetometer_xyz_{0, 0, 0};
+		std::array<int16_t, 3>       biased_magnetometer_xyz_{0, 0, 0};
+		std::array<int16_t, 3>       biased_accelerometer_xyz_{0, 0, 0};
+		std::array<double, 3>        raw_gyro_{0, 0, 0};
+		uint32_t                     reset_count_{0};
+		uint32_t                     reset_flags_{0};
+		uint32_t                     firmware_version_{0};
 		int                          faults_{0};
 		int                          sticky_faults_{0};
 };
