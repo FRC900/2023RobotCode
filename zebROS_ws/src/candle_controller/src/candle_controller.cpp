@@ -76,6 +76,8 @@ public:
         if (leds.time > this->last_write || animation.time > this->last_write) {
             if (leds.time > animation.time) {
                 ROS_INFO_STREAM("Writing LED group to CANdle");
+                LEDGroup group = leds.group;
+                ROS_INFO_STREAM("Colours to write: Red |" << group.red << "| // Blue |" << group.blue << "| // Green |" << group.green << "| // Start |" << group.start << "| // Count |" << group.count << "|");
                 this->last_write = leds.time;
                 this->candle_handle->setLEDGroup(leds.group);
             } else {

@@ -22,7 +22,8 @@ CANdleHWCommand::CANdleHWCommand() :
     animation_changed{false}
 {}
 
-void CANdleHWCommand::setLEDGroup(LEDGroup leds) {
+void CANdleHWCommand::setLEDGroup(LEDGroup leds)
+{
     size_t max = leds.start + leds.count;
     for (size_t i = leds.start; i < max; i++) {
         if (i < this->leds.size()) {
@@ -45,25 +46,21 @@ void CANdleHWCommand::setLEDGroup(LEDGroup leds) {
 }
 bool CANdleHWCommand::ledGroupChanged(vector<LEDGroup>& groups) {
     groups.clear();
-    if (this->leds.size() == 0) {
-        this->leds_changed = false;
-        return false;
-    }
 
     if (this->leds_changed) {
         std::optional<CANdleColour> previous_colour;
         for (size_t i = 0; i < this->leds.size(); i++) {
-            std::optional<CANdleColour>& led = this->leds[i];
+            std::optional<CANdleColour> led = this->leds[i];
 
             if (led.has_value()) {
                 if (!previous_colour.has_value() || *previous_colour != *led) {
                     groups.emplace_back(LEDGroup(
                         i,
                         1,
-                        previous_colour->red,
-                        previous_colour->green,
-                        previous_colour->blue,
-                        previous_colour->white
+                        led->red,
+                        led->green,
+                        led->blue,
+                        led->white
                     ));
                 } else {
                     groups.back().count += 1;

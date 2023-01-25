@@ -2692,8 +2692,8 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		if (candle_command.ledGroupChanged(led_groups)) {
 			candle_command.drainLEDGroups();
 			for (LEDGroup group : led_groups) {
-				ROS_INFO_STREAM("Colours to write: Red |" << group.red << "| // Blue |" << group.blue << "| // Green |" << group.green <<
-									"| // Start |" << group.start << "| // Count |" << group.count << "|");
+				ROS_INFO_STREAM("Robot Controller: Colours to write: Red |" << group.red << "| // Blue |" << group.blue << "| // Green |" << group.green
+									<< "| // Start |" << group.start << "| // Count |" << group.count << "|");
 				if (safeTalonCall(
 					candle->SetLEDs(
 						group.red,
