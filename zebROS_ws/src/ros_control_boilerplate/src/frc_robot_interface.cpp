@@ -2690,22 +2690,31 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		//ROS_INFO_STREAM("Candle_status_5");
 		vector<LEDGroup> led_groups;
 		if (candle_command.ledGroupChanged(led_groups)) {
+			candle_command.drainLEDGroups();
 			for (LEDGroup group : led_groups) {
-				candle->SetLEDs(
-					group.red,
-					group.green,
-					group.blue,
-					group.white,
-					group.start,
-					group.count
-				);
+				ROS_INFO_STREAM("Colours to write: Red |" << group.red << "| // Blue |" << group.blue << "| // Green |" << group.green <<
+									"| // Start |" << group.start << "| // Count |" << group.count << "|");
+				if (safeTalonCall(
+					candle->SetLEDs(
+						group.red,
+						group.green,
+						group.blue,
+						group.white,
+						group.start,
+						group.count
+					),
+					"candle->SetLEDs",
+					candle_state.getDeviceID()
+				)) {
+					for (size_t led_id = 0; led_id < (size_t)(group.start + group.count); led_id++) {
+						candle_state.setLED(led_id, group);
+					}
 
-				for (size_t led_id = 0; led_id < (size_t)(group.start + group.count); led_id++) {
-					candle_state.setLED(led_id, group);
+					ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
+							<< " : Changed colours");
+				} else {
+					candle_command.resetLEDGroupChanged(group);
 				}
-
-				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
-						<< " : Changed colours");
 			}
 		}
 		//ROS_INFO_STREAM("Candle_status_done");

@@ -73,10 +73,15 @@ bool CANdleHWCommand::ledGroupChanged(vector<LEDGroup>& groups) {
             previous_colour = led;
         }
         this->leds_changed = false;
-        this->leds.clear();
         return true;
     }
     return false;
+}
+void CANdleHWCommand::resetLEDGroupChanged(LEDGroup& group) {
+    this->setLEDGroup(group);
+}
+void CANdleHWCommand::drainLEDGroups() {
+    this->leds.clear();
 }
 
 void CANdleHWCommand::setBrightness(double brightness) {

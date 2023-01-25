@@ -42,43 +42,44 @@ public:
     CANdleController() {}
 
     bool init(
-        hardware_interface::RobotHW* hw,
-        ros::NodeHandle& root_nh,
+        CANdleCommandInterface* candle_command_interface,
+        ros::NodeHandle& /*root_nh*/,
         ros::NodeHandle& controller_nh
-    ) {
-        CANdleCommandInterface* const candle_command_interface = hw->get<CANdleCommandInterface>();
-        
+    ) override {
         std::string candle_name;
         if (!controller_nh.getParam("name", candle_name)) {
-            ROS_ERROR("Cannot initialize candle! Failed to read the 'name' field.");
+            ROS_ERROR("Cannot initialize candle! Failed to read the 'name' field.==========");
             return false;
         }
 
         this->candle_handle = candle_command_interface->getHandle(candle_name);
 
-        this->colour_service = controller_nh.advertiseService("candle_colour", &CANdleController::colourCallback, this);
-        this->brightness_service = controller_nh.advertiseService("candle_brightness", &CANdleController::brightnessCallback, this);
-        this->animation_service = controller_nh.advertiseService("candle_animation", &CANdleController::animationCallback, this);
+        this->colour_service = controller_nh.advertiseService("colour", &CANdleController::colourCallback, this);
+        this->brightness_service = controller_nh.advertiseService("brightness", &CANdleController::brightnessCallback, this);
+        this->animation_service = controller_nh.advertiseService("animation", &CANdleController::animationCallback, this);
         return true;
     }
 
-    void starting(const ros::Time&) {}
+    void starting(const ros::Time&) override {}
 
-    void update(const ros::Time&, const ros::Duration&) {
+    void update(const ros::Time&, const ros::Duration&) override {
         const LEDs leds = *(this->led_buffer.readFromRT());
         const Animation animation = *(this->animation_buffer.readFromRT());
         const Brightness brightness = *(this->brightness_buffer.readFromRT());
 
         // Brightness isn't exclusive to colours/animations, so it gets special treatment
         if (brightness.time > this->last_write) {
+            ROS_INFO_STREAM("Writing new brightness to CANdle");
             this->candle_handle->setBrightness(brightness.brightness);
         }
 
         if (leds.time > this->last_write || animation.time > this->last_write) {
             if (leds.time > animation.time) {
+                ROS_INFO_STREAM("Writing LED group to CANdle");
                 this->last_write = leds.time;
-                this->candle_handle->setLEDGroup(leds);
+                this->candle_handle->setLEDGroup(leds.group);
             } else {
+                ROS_INFO_STREAM("Writing new animation to CANdle");
                 this->last_write = animation.time;
                 this->candle_handle->setAnimation(animation.animation);
             }
@@ -90,11 +91,12 @@ public:
         }
     }
 
-    void stopping(const ros::Time&) {}
+    void stopping(const ros::Time&) override {}
 
 private:
-    struct LEDs : LEDGroup {
+    struct LEDs {
         ros::Time time;
+        LEDGroup group;
 
         LEDs() {}
     };
@@ -126,10 +128,7 @@ private:
     bool colourCallback(candle_controller_msgs::Colour::Request& req, candle_controller_msgs::Colour::Response&) {
         if (this->isRunning()) {
             LEDs leds;
-            leds.red = req.red;
-            leds.green = req.green;
-            leds.blue = req.blue;
-            leds.white = req.white;
+            leds.group = LEDGroup(req.start, req.count, req.red, req.green, req.blue, req.white);
             leds.time = ros::Time::now();
 
             this->led_buffer.writeFromNonRT(leds);
@@ -156,7 +155,7 @@ private:
         }
     }
 
-    bool animationCallback(candle_controller_msgs::Animation::Request& req, candle_controller_msgs::Brightness::Response&) {
+    bool animationCallback(candle_controller_msgs::Animation::Request& req, candle_controller_msgs::Animation::Response&) {
         if (this->isRunning()) {
             CANdleAnimation candle_animation;
             switch (req.animation_class) {
