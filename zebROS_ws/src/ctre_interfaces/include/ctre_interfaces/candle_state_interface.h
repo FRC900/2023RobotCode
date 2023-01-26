@@ -78,6 +78,7 @@ struct CANdleAnimation {
     CANdleAnimation();
 
     // Comparison methods
+    bool operator==(const CANdleAnimation& rhs);
     bool operator!=(const CANdleAnimation& rhs);
 };
 

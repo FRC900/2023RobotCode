@@ -74,9 +74,6 @@ bool CANdleHWCommand::ledGroupChanged(vector<LEDGroup>& groups) {
     }
     return false;
 }
-void CANdleHWCommand::resetLEDGroupChanged(LEDGroup& group) {
-    this->setLEDGroup(group);
-}
 void CANdleHWCommand::drainLEDGroups() {
     this->leds.clear();
 }
@@ -148,6 +145,8 @@ void CANdleHWCommand::setAnimation(CANdleAnimation animation) {
     if (this->animation != animation) {
         this->animation = animation;
         this->animation_changed = true;
+    } else {
+        ROS_INFO_STREAM("Identical animation detected. Not updating");
     }
 }
 CANdleAnimation& CANdleHWCommand::getAnimation() {

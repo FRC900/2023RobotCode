@@ -31,7 +31,6 @@ class CANdleHWCommand {
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
         bool ledGroupChanged(vector<LEDGroup>& groups);
-        void resetLEDGroupChanged(LEDGroup& group);
         void drainLEDGroups();
 
         // Set brightness of LEDs

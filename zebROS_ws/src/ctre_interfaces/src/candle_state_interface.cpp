@@ -14,7 +14,12 @@ bool CANdleColour::operator!=(const CANdleColour& rhs) {
     return !(this->red == rhs.red && this->green == rhs.green && this->blue == rhs.blue && this->white == rhs.white);
 }
 bool CANdleColour::operator==(const CANdleColour& rhs) {
-    return !(this->operator!=(rhs));
+    return (
+        this->red == rhs.red &&
+        this->green == rhs.green &&
+        this->blue == rhs.blue &&
+        this->white == rhs.white
+    );
 }
 
 CANdleAnimation::CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5) {
@@ -39,33 +44,34 @@ CANdleAnimation::CANdleAnimation(double speed, int start, int count, CANdleAnima
 }
 CANdleAnimation::CANdleAnimation() {}
 
-bool CANdleAnimation::operator!=(const CANdleAnimation& rhs) {
+bool CANdleAnimation::operator==(const CANdleAnimation& rhs) {
     if (this->class_type == rhs.class_type) {
-        if (this->type == rhs.type) {
-            if (this->class_type == CANdleAnimationClass::BaseStandard) {
-                return !(
-                    (this->speed == rhs.speed) &&
-                    (this->start == rhs.start) &&
-                    (this->count == rhs.count) &&
-                    (this->brightness == rhs.brightness) &&
-                    (this->param4 == rhs.param4) &&
-                    (this->param5 == rhs.param5)
-                );
-            } else {
-                return !(
-                    (this->speed == rhs.speed) &&
-                    (this->start == rhs.start) &&
-                    (this->count == rhs.count) &&
-                    (this->colour == rhs.colour) &&
-                    (this->direction == rhs.direction)
-                );
-            }
+        if (this->class_type == CANdleAnimationClass::BaseStandard) {
+            return (
+                (this->speed == rhs.speed) &&
+                (this->start == rhs.start) &&
+                (this->count == rhs.count) &&
+                (this->brightness == rhs.brightness) &&
+                (this->param4 == rhs.param4) &&
+                (this->param5 == rhs.param5) &&
+                (this->type == rhs.type)
+            );
         } else {
-            return false;
+            return (
+                (this->speed == rhs.speed) &&
+                (this->start == rhs.start) &&
+                (this->count == rhs.count) &&
+                (this->colour == rhs.colour) &&
+                (this->direction == rhs.direction) &&
+                (this->type == rhs.type)
+            );
         }
     } else {
         return false;
     }
+}
+bool CANdleAnimation::operator!=(const CANdleAnimation& rhs) {
+    return !(this->operator==(rhs));
 }
 
 CANdleHWState::CANdleHWState(int id) :
