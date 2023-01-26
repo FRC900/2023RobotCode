@@ -50,17 +50,17 @@ class Pigeon2HWCommand
 		void setCompassEnable(bool compass_enable);
 		bool getCompassEnable(void) const;
 		bool compassEnableChanged(bool &compass_enable);
-		void resetCompassEnableChanged(void);
+		void resetCompassEnable(void);
 
-		void setTemperatureCompensation(bool temperature_compensation);
-		bool getTemperatureCompensation(void) const;
-		bool temperatureCompensationChanged(bool &temperature_compensation);
-		void resetTemperatureCompensationChanged(void);
+		void setDisableTemperatureCompensation(bool temperature_compensation);
+		bool getDisableTemperatureCompensation(void) const;
+		bool disableTemperatureCompensationChanged(bool &temperature_compensation);
+		void resetDisableTemperatureCompensation(void);
 
-		void setDisableNoMotionCompensation(bool disable_no_motion_compensation);
-		bool getDisableNoMotionCompensation(void) const;
-		bool disableNoMotionCompensationChanged(bool &disable_no_motion_compensation);
-		void resetDisableNoMotionCompensationChanged(void);
+		void setDisableNoMotionCalibration(bool disable_no_motion_compensation);
+		bool getDisableNoMotionCalibration(void) const;
+		bool disableNoMotionCalibrationChanged(bool &disable_no_motion_compensation);
+		void resetDisableNoMotionCalibration(void);
 
 		void setZeroGyroBiasNow(void);
 		bool getZeroGyroBiasNow(void) const;
@@ -104,10 +104,10 @@ class Pigeon2HWCommand
 		bool                         z_axis_gyro_error_changed_{true};
 		bool                         compass_enable_{false};
 		bool                         compass_enable_changed_{true};
-		bool                         temperature_compensation_{false};
-		bool                         temperature_compensation_changed_{true};
-		bool                         disable_no_motion_compensation_{false};
-		bool                         disable_no_motion_compensation_changed_{true};
+		bool                         disable_temperature_compensation_{false};
+		bool                         disable_temperature_compensation_changed_{true};
+		bool                         disable_no_motion_calibration_{false};
+		bool                         disable_no_motion_calibration_changed_{true};
 		bool                         clear_sticky_faults_;
         bool                         zero_gyro_bias_now_;
 		double                       set_yaw_{0};

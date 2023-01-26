@@ -54,11 +54,11 @@ class Pigeon2HWState
 		void setCompassEnable(bool compass_enable);
 		bool getCompassEnable(void) const;
 
-		void setTemperatureCompensation(bool temperature_compensation);
-		bool getTemperatureCompensation(void) const;
+		void setDisableTemperatureCompensation(bool temperature_compensation);
+		bool getDisableTemperatureCompensation(void) const;
 
-		void setDisableNoMotionCompensation(bool disable_no_motion_compensation);
-		bool getDisableNoMotionCompensation(void) const;
+		void setDisableNoMotionCalibration(bool disable_no_motion_calibration);
+		bool getDisableNoMotionCalibration(void) const;
 
 		void setGravityVector(const std::array<double, 3> &gravity_vector);
 		std::array<double, 3> getGravityVector(void) const;
@@ -131,8 +131,8 @@ class Pigeon2HWState
 		double                       y_axis_gyro_error_{0};
 		double                       z_axis_gyro_error_{0};
 		bool                         compass_enable_{false};
-		bool                         temperature_compensation_{false};
-		bool                         disable_no_motion_compensation_{false};
+		bool                         disable_temperature_compensation_{false};
+		bool                         disable_no_motion_calibration_{false};
 		std::array<double, 3>        gravity_vector_{0, 0, 0};
 		std::array<double, 4>        quaternion_6d_{0, 0, 0, 0};
 		double                       yaw_{0};

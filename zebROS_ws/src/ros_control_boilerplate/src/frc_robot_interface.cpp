@@ -2862,9 +2862,9 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			pc.resetXAxisGyroError();
 			pc.resetYAxisGyroError();
 			pc.resetZAxisGyroError();
-			pc.resetCompassEnableChanged();
-			pc.resetTemperatureCompensationChanged();
-			pc.resetDisableNoMotionCompensationChanged();
+			pc.resetCompassEnable();
+			pc.resetDisableTemperatureCompensation();
+			pc.resetDisableNoMotionCalibration();
 			pc.resetSetYaw();
 			pc.resetAddYaw();
 		}
@@ -2876,7 +2876,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			pigeon2_convert_.axisDirection(forward, forward_phoenix) &&
 			pigeon2_convert_.axisDirection(up, up_phoenix) )
 		{
-			if (safeTalonCall(pigeon2->ConfigMountPose(forward_phoenix, up_phoenix), "pigeon2->ConfigMountPose(axis)", ps.getDeviceNumber()))
+			if (safeTalonCall(pigeon2->ConfigMountPose(forward_phoenix, up_phoenix, configTimeoutMs), "pigeon2->ConfigMountPose(axis)", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " : ConfigMountPose(axis) set");
 				ps.setMountPoseForward(forward);
@@ -2896,7 +2896,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		double yaw;
 		if (pc.mountPoseRPYChanged(roll, pitch, yaw))
 		{
-			if (safeTalonCall(pigeon2->ConfigMountPose(roll, pitch, yaw), "pigeon2->ConfigMountPose(rpy)", ps.getDeviceNumber()))
+			if (safeTalonCall(pigeon2->ConfigMountPose(roll, pitch, yaw, configTimeoutMs), "pigeon2->ConfigMountPose(rpy)", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " : ConfigMountPose(rpy) set");
 				ps.setMountPoseForward(hardware_interface::pigeon2::AxisDirection::Undefined);
@@ -2916,10 +2916,154 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		{
 			if (safeTalonCall(pigeon2->ConfigXAxisGyroError(x_axis_gyro_error), "pigeon2->ConfigXAxisGyroError()", ps.getDeviceNumber()))
 			{
-
+				ROS_INFO_STREAM("Pogeon2 " << pigeon2_names_[joint_id] << " ConfigXAxisGyroError = " << x_axis_gyro_error);
+				ps.setXAxisGyroError(x_axis_gyro_error);
+			}
+			else
+			{
+				pc.resetXAxisGyroError();
+			}
+		}
+		double y_axis_gyro_error;
+		if (pc.yAxisGyroErrorChanged(y_axis_gyro_error))
+		{
+			if (safeTalonCall(pigeon2->ConfigYAxisGyroError(y_axis_gyro_error), "pigeon2->ConfigYAxisGyroError()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pogeon2 " << pigeon2_names_[joint_id] << " ConfigYAxisGyroError = " << y_axis_gyro_error);
+				ps.setYAxisGyroError(y_axis_gyro_error);
+			}
+			else
+			{
+				pc.resetYAxisGyroError();
+			}
+		}
+		double z_axis_gyro_error;
+		if (pc.zAxisGyroErrorChanged(z_axis_gyro_error))
+		{
+			if (safeTalonCall(pigeon2->ConfigXAxisGyroError(z_axis_gyro_error), "pigeon2->ConfigZAxisGyroError()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pogeon2 " << pigeon2_names_[joint_id] << " ConfigZAxisGyroError = " << z_axis_gyro_error);
+				ps.setZAxisGyroError(z_axis_gyro_error);
+			}
+			else
+			{
+				pc.resetZAxisGyroError();
 			}
 		}
 
+		bool compass_enable;
+		if (pc.compassEnableChanged(compass_enable))
+		{
+			if (safeTalonCall(pigeon2->ConfigEnableCompass(compass_enable, configTimeoutMs), "pigeon2->ConfigEnableCommpass", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " ConfigEnableCompass = " << compass_enable);
+				ps.setCompassEnable(compass_enable);
+			}
+			else
+			{
+				pc.resetCompassEnable();
+			}
+		}
+
+		bool disable_temperature_compensation;
+		if (pc.disableTemperatureCompensationChanged(disable_temperature_compensation))
+		{
+			if (safeTalonCall(pigeon2->ConfigDisableTemperatureCompensation(disable_temperature_compensation, configTimeoutMs), "pigeon2->ConfigDisableTemperatureCompensation", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " ConfigDisableTemperatureCompensation = " << disable_temperature_compensation);
+				ps.setDisableTemperatureCompensation(disable_temperature_compensation);
+			}
+			else
+			{
+				pc.resetDisableTemperatureCompensation();
+			}
+		}
+		bool disable_no_motion_compensation;
+		if (pc.disableNoMotionCalibrationChanged(disable_no_motion_compensation))
+		{
+			if (safeTalonCall(pigeon2->ConfigDisableNoMotionCalibration(disable_no_motion_compensation, configTimeoutMs), "pigeon2->ConfigDisableNoMotionCalibration", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " ConfigDisableNoMotionCalibration = " << disable_no_motion_compensation);
+				ps.setDisableNoMotionCalibration(disable_no_motion_compensation);
+			}
+			else
+			{
+				pc.resetDisableNoMotionCalibration();
+			}
+		}
+		
+		if (pc.zeroGyroBiasNowChanged())
+		{
+			if (safeTalonCall(pigeon2->ZeroGyroBiasNow(), "pigeon2->ZeroGyroBiasNow()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " ZeroGyroBiasNow");
+			}
+			else
+			{
+				pc.setZeroGyroBiasNow();
+			}
+		}
+		if (pc.clearStickyFaultsChanged())
+		{
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->ClearStickyFaults(timeoutMs)), "pigeon2->SetYawToCompass()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " ClearStickyFaults");
+			}
+			else
+			{
+				pc.setClearStickyFaults();
+			}
+		}
+
+		double set_yaw;
+		if (pc.setYawChanged(set_yaw))
+		{
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->SetYaw(set_yaw, timeoutMs)), "pigeon2->SetYaw()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " SetYaw to " << set_yaw);
+			}
+			else
+			{
+				pc.resetSetYaw();
+			}
+		}
+
+		double add_yaw;
+		if (pc.addYawChanged(add_yaw))
+		{
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->AddYaw(add_yaw, timeoutMs)), "pigeon2->AddYaw()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " AddYaw to " << add_yaw);
+			}
+			else
+			{
+				pc.resetAddYaw();
+			}
+		}
+
+		if (pc.setYawToCompassChanged())
+		{
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->SetYawToCompass(timeoutMs)), "pigeon2->SetYawToCompass()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " SetYawToCompass");
+			}
+			else
+			{
+				pc.setSetYawToCompass();
+			}
+		}
+
+		if (pc.setAccumZAngleChanged())
+		{
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->SetAccumZAngle(timeoutMs)), "pigeon2->SetAccumZAngle()", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " SetAccumZAngle");
+			}
+			else
+			{
+				pc.setSetAccumZAngle();
+			}
+		}
 	}
 
 	write_tracer_.start_unique("nidec");

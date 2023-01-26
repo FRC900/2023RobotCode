@@ -96,22 +96,22 @@ bool Pigeon2HWState::getCompassEnable(void) const
 	return compass_enable_;
 }
 
-void Pigeon2HWState::setTemperatureCompensation(bool temperature_compensation)
+void Pigeon2HWState::setDisableTemperatureCompensation(bool temperature_compensation)
 {
-	temperature_compensation_ = temperature_compensation;
+	disable_temperature_compensation_ = temperature_compensation;
 }
-bool Pigeon2HWState::getTemperatureCompensation(void) const
+bool Pigeon2HWState::getDisableTemperatureCompensation(void) const
 {
-	return temperature_compensation_;
+	return disable_temperature_compensation_;
 }
 
-void Pigeon2HWState::setDisableNoMotionCompensation(bool disable_no_motions_compensation)
+void Pigeon2HWState::setDisableNoMotionCalibration(bool disable_no_motions_calibration)
 {
-	disable_no_motion_compensation_ = disable_no_motions_compensation;
+	disable_no_motion_calibration_ = disable_no_motions_calibration;
 }
-bool Pigeon2HWState::getDisableNoMotionCompensation(void) const
+bool Pigeon2HWState::getDisableNoMotionCalibration(void) const
 {
-	return disable_no_motion_compensation_;
+	return disable_no_motion_calibration_;
 }
 
 void Pigeon2HWState::setGravityVector(const std::array<double, 3> &gravity_vector)

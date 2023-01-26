@@ -196,58 +196,58 @@ bool Pigeon2HWCommand::compassEnableChanged(bool &compass_enable)
 	compass_enable_changed_ = false;
 	return ret;
 }
-void Pigeon2HWCommand::resetCompassEnableChanged(void)
+void Pigeon2HWCommand::resetCompassEnable(void)
 {
 	compass_enable_changed_ = true;
 }
 
 
-void Pigeon2HWCommand::setTemperatureCompensation(bool temperature_compensation)
+void Pigeon2HWCommand::setDisableTemperatureCompensation(bool temperature_compensation)
 {
-    if (temperature_compensation_ != temperature_compensation)
+    if (disable_temperature_compensation_ != temperature_compensation)
 	{
-	temperature_compensation_ = temperature_compensation;
-	temperature_compensation_changed_ = true;
+		disable_temperature_compensation_ = temperature_compensation;
+		disable_temperature_compensation_changed_ = true;
 	}
 }
-bool Pigeon2HWCommand::getTemperatureCompensation(void) const
+bool Pigeon2HWCommand::getDisableTemperatureCompensation(void) const
 {
-	return temperature_compensation_;
+	return disable_temperature_compensation_;
 }
-bool Pigeon2HWCommand::temperatureCompensationChanged(bool &temperature_compensation)
+bool Pigeon2HWCommand::disableTemperatureCompensationChanged(bool &temperature_compensation)
 {
-	temperature_compensation = temperature_compensation_;
-	auto ret = temperature_compensation_changed_;
-	temperature_compensation_changed_ = false;
+	temperature_compensation = disable_temperature_compensation_;
+	auto ret = disable_temperature_compensation_changed_;
+	disable_temperature_compensation_changed_ = false;
 	return ret;
 }
-void Pigeon2HWCommand::resetTemperatureCompensationChanged(void)
+void Pigeon2HWCommand::resetDisableTemperatureCompensation(void)
 {
-	temperature_compensation_changed_ = true;
+	disable_temperature_compensation_changed_ = true;
 }
 
-void Pigeon2HWCommand::setDisableNoMotionCompensation(bool disable_no_motions_compensation)
+void Pigeon2HWCommand::setDisableNoMotionCalibration(bool disable_no_motions_calibration)
 {
-    if (disable_no_motion_compensation_ != disable_no_motions_compensation)
+    if (disable_no_motion_calibration_ != disable_no_motions_calibration)
 	{
-	disable_no_motion_compensation_ = disable_no_motions_compensation;
-	disable_no_motion_compensation_changed_ = true;
+	disable_no_motion_calibration_ = disable_no_motions_calibration;
+	disable_no_motion_calibration_changed_ = true;
 	}
 }
-bool Pigeon2HWCommand::getDisableNoMotionCompensation(void) const
+bool Pigeon2HWCommand::getDisableNoMotionCalibration(void) const
 {
-	return disable_no_motion_compensation_;
+	return disable_no_motion_calibration_;
 }
-bool Pigeon2HWCommand::disableNoMotionCompensationChanged(bool &disable_no_motion_compensation)
+bool Pigeon2HWCommand::disableNoMotionCalibrationChanged(bool &disable_no_motion_calibration)
 {
-	disable_no_motion_compensation = disable_no_motion_compensation_;
-	auto ret = disable_no_motion_compensation_changed_;
-	disable_no_motion_compensation_changed_ = false;
+	disable_no_motion_calibration = disable_no_motion_calibration_;
+	auto ret = disable_no_motion_calibration_changed_;
+	disable_no_motion_calibration_changed_ = false;
 	return ret;
 }
-void Pigeon2HWCommand::resetDisableNoMotionCompensationChanged(void)
+void Pigeon2HWCommand::resetDisableNoMotionCalibration(void)
 {
-	disable_no_motion_compensation_changed_ = true;
+	disable_no_motion_calibration_changed_ = true;
 }
 
 void Pigeon2HWCommand::setClearStickyFaults(void)
