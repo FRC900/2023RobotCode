@@ -9,8 +9,8 @@ namespace pigeon2_convert
 class Pigeon2Convert
 {
 	public:
-		bool axisDirection(ctre::phoenix::sensors::AxisDirection input,
-				hardware_interface::pigeon2::AxisDirection &output) const;
+		bool axisDirection(hardware_interface::pigeon2::AxisDirection input,
+				ctre::phoenix::sensors::AxisDirection &output) const;
 };
 
 } // namespace pigeon2_convert

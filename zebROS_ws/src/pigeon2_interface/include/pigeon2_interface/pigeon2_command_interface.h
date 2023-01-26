@@ -29,7 +29,7 @@ class Pigeon2HWCommand
 		void setMountPoseYaw(double direction);
 		double getMountPoseYaw(void) const;
 
-		bool mountPoseRPYChanged(double &iroll, double &pitch, double &yaw);
+		bool mountPoseRPYChanged(double &roll, double &pitch, double &yaw);
 		void resetMountPoseRPY(void);
 
 		void setXAxisGyroError(double x_axis_gyro_error);

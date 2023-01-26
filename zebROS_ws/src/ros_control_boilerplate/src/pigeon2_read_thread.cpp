@@ -37,13 +37,13 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 		const unsigned sticky_faults = ctre_sticky_faults.ToBitfield();
 
 		std::array<double, 4> quaternion_6d;
-		pigeon2->Get6dQuaternion(quaternion_6d);
+		pigeon2->Get6dQuaternion(&quaternion_6d[0]);
 
 		std::array<double, 3> ypr;
-		pigeon2->GetYawPitchRoll(ypr);
+		pigeon2->GetYawPitchRoll(&ypr[0]);
 
 		std::array<double, 3> accum_gyro;
-		pigeon2->GetAccumGyro(accum_gyro);
+		pigeon2->GetAccumGyro(&accum_gyro[0]);
 
 		const double absolute_compass_heading = pigeon2->GetAbsoluteCompassHeading();
 		const double compass_heading = pigeon2->GetCompassHeading();
@@ -51,21 +51,21 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 		const double temperature = pigeon2->GetTemp();
 		const uint32_t uptime = pigeon2->GetUpTime();
 		
-		std::array<double, 3> raw_magnetometer;
-		pigeon2->GetRawMagnetometer(raw_magnetometer);
+		std::array<int16_t, 3> raw_magnetometer;
+		pigeon2->GetRawMagnetometer(&raw_magnetometer[0]);
 
-		std::array<double, 3> biased_magnetometer;
-		pigeon2->GetBiasedMagnetometer(biased_magnetometer);
+		std::array<int16_t, 3> biased_magnetometer;
+		pigeon2->GetBiasedMagnetometer(&biased_magnetometer[0]);
 
-		std::array<double, 3> biased_accelerometer;
-		pigeon2->GetBiasedAccelerometer(biased_accelerometer);
+		std::array<int16_t, 3> biased_accelerometer;
+		pigeon2->GetBiasedAccelerometer(&biased_accelerometer[0]);
 
 		std::array<double, 3> raw_gyro;
-		pigeon2->GetRawGyro(raw_gyro);
+		pigeon2->GetRawGyro(&raw_gyro[0]);
 
 		const uint32_t reset_count = pigeon2->GetResetCount();
 		const uint32_t reset_flags = pigeon2->GetResetFlags();
-		const uint32_t firmware_Version = pigeon2->GetFirmVers();
+		const uint32_t firmware_version = pigeon2->GetFirmVers();
 
 		// Actually update the Pigeon2HWState shared between
 		// this thread and read()
@@ -86,6 +86,18 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 			state->setRoll(ypr[2]);
 			state->setAccumGyro(accum_gyro);
 			state->setAbsoluteCompassHeading(absolute_compass_heading);
+			state->setCompassHeading(compass_heading);
+			state->setCompassFieldStrength(compass_field_strength);
+			state->setTemperature(temperature);
+			state->setUptime(uptime);
+			state->setRawMagnetometer(raw_magnetometer);
+			state->setBiasedMagnetometer(biased_magnetometer);
+			state->setBiasedAccelerometer(biased_accelerometer);
+			state->setRawGyro(raw_gyro);
+			state->setResetCount(reset_count);
+			state->setResetFlags(reset_flags);
+			state->setFirmwareVersion(firmware_version);
+
 		}
 		tracer->report(60);
 	}

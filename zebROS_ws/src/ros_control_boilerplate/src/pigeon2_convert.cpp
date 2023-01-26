@@ -2,32 +2,32 @@
 
 namespace pigeon2_convert
 {
-bool Pigeon2Convert::axisDirection(ctre::phoenix::sensors::AxisDirection input,
-		hardware_interface::pigeon2::AxisDirection &output) const
+bool Pigeon2Convert::axisDirection(hardware_interface::pigeon2::AxisDirection input,
+		ctre::phoenix::sensors::AxisDirection &output) const
 {
 	switch (input)
 	{
-		case ctre::phoenix::sensors::AxisDirection::PositiveZ:
-			output = hardware_interface::pigeon2::AxisDirection::PositiveZ;
-			break;
-		case ctre::phoenix::sensors::AxisDirection::PositiveY:
-			output = hardware_interface::pigeon2::AxisDirection::PositiveY;
-			break;
-		case ctre::phoenix::sensors::AxisDirection::PositiveX:
-			output = hardware_interface::pigeon2::AxisDirection::PositiveX;
-			break;
-		case ctre::phoenix::sensors::AxisDirection::NegativeZ:
-			output = hardware_interface::pigeon2::AxisDirection::NegativeZ;
-			break;
-		case ctre::phoenix::sensors::AxisDirection::NegativeY:
-			output = hardware_interface::pigeon2::AxisDirection::NegativeY;
-			break;
-		case ctre::phoenix::sensors::AxisDirection::NegativeX:
-			output = hardware_interface::pigeon2::AxisDirection::NegativeX;
-			break;
-		default:
-			ROS_ERROR("Invalid input in convertCANCoderMagnetFieldStrength");
-			return false;
+	case hardware_interface::pigeon2::AxisDirection::PositiveZ:
+		output = ctre::phoenix::sensors::AxisDirection::PositiveZ;
+		break;
+	case hardware_interface::pigeon2::AxisDirection::PositiveY:
+		output = ctre::phoenix::sensors::AxisDirection::PositiveY;
+		break;
+	case hardware_interface::pigeon2::AxisDirection::PositiveX:
+		output = ctre::phoenix::sensors::AxisDirection::PositiveX;
+		break;
+	case hardware_interface::pigeon2::AxisDirection::NegativeZ:
+		output = ctre::phoenix::sensors::AxisDirection::NegativeZ;
+		break;
+	case hardware_interface::pigeon2::AxisDirection::NegativeY:
+		output = ctre::phoenix::sensors::AxisDirection::NegativeY;
+		break;
+	case hardware_interface::pigeon2::AxisDirection::NegativeX:
+		output = ctre::phoenix::sensors::AxisDirection::NegativeX;
+		break;
+	default:
+		ROS_ERROR("Invalid input in convertCANCoderMagnetFieldStrength");
+		return false;
 	}
 	return true;
 }

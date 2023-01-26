@@ -234,19 +234,15 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 			cancoder_local_hardwares_.push_back(local_hardware);
 			cancoder_can_busses_.push_back(can_bus);
 		}
-<<<<<<< HEAD
-		else if (joint_type == "candle") {
-=======
-		else if (joint_type == "pigeon2")
+		else if (joint_type == "candle")
 		{
-			// TODO - lots of these blocks are copy-paste, make them functions
->>>>>>> f4bce313 (Start of adding pigeon2 to hardware interface)
 			readJointLocalParams(joint_params, local, saw_local_keyword, local_update, local_hardware);
 
 			const bool has_can_id = joint_params.hasMember("can_id");
 			if (!local_hardware && has_can_id)
-<<<<<<< HEAD
-				throw std::runtime_error("A CANCoder can_id was specified with local_hardware == false for joint " + joint_name);
+			{
+				throw std::runtime_error("A CANdle can_id was specified with local_hardware == false for joint " + joint_name);
+			}
 
 			int can_id;
 			std::string can_bus;
@@ -271,15 +267,24 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 					
 					can_bus = static_cast<std::string>(xml_can_bus);
 				}
-
-				this->candle_names_.push_back(joint_name);
-				this->candle_can_ids_.push_back(can_id);
-				this->candle_local_updates_.push_back(local_update);
-				this->candle_local_hardwares_.push_back(local_hardware);
-				this->candle_can_busses_.push_back(can_bus);
 			}
-=======
+
+			this->candle_names_.push_back(joint_name);
+			this->candle_can_ids_.push_back(can_id);
+			this->candle_local_updates_.push_back(local_update);
+			this->candle_local_hardwares_.push_back(local_hardware);
+			this->candle_can_busses_.push_back(can_bus);
+		}
+		else if (joint_type == "pigeon2")
+		{
+			readJointLocalParams(joint_params, local, saw_local_keyword, local_update, local_hardware);
+
+			const bool has_can_id = joint_params.hasMember("can_id");
+			if (!local_hardware && has_can_id)
+			{
 				throw std::runtime_error("A Pigeon2 can_id was specified with local_hardware == false for joint " + joint_name);
+			}
+			// TODO - lots of these blocks are copy-paste, make them functions
 
 			int can_id = 0;
 			std::string can_bus;
@@ -289,7 +294,7 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 					throw std::runtime_error("A Pigeon2 can_id was not specified");
 				XmlRpc::XmlRpcValue &xml_can_id = joint_params["can_id"];
 				if (!xml_can_id.valid() ||
-						xml_can_id.getType() != XmlRpc::XmlRpcValue::TypeInt)
+					xml_can_id.getType() != XmlRpc::XmlRpcValue::TypeInt)
 					throw std::runtime_error("An invalid joint can_id was specified (expecting an int) for joint " + joint_name);
 				can_id = xml_can_id;
 				auto it = std::find(pigeon2_can_ids_.cbegin(), pigeon2_can_ids_.cend(), can_id);
@@ -300,7 +305,7 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 					XmlRpc::XmlRpcValue &xml_can_bus = joint_params["can_bus"];
 					if (!xml_can_bus.valid() ||
 						xml_can_bus.getType() != XmlRpc::XmlRpcValue::TypeString)
-					throw std::runtime_error("An invalid joint can_bus was specified (expecting a string) for joint " + joint_name);
+						throw std::runtime_error("An invalid joint can_bus was specified (expecting a string) for joint " + joint_name);
 					can_bus = static_cast<std::string>(xml_can_bus);
 				}
 			}
@@ -309,7 +314,6 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 			pigeon2_local_updates_.push_back(local_update);
 			pigeon2_local_hardwares_.push_back(local_hardware);
 			pigeon2_can_busses_.push_back(can_bus);
->>>>>>> f4bce313 (Start of adding pigeon2 to hardware interface)
 		}
 		else if (joint_type == "can_spark_max")
 		{
@@ -907,7 +911,7 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 			s << "Unknown joint type " << joint_type << " specified for joint " + joint_name;
 			throw std::runtime_error(s.str());
 		}
-	}
+		}
 	run_hal_robot_ = rpnh.param<bool>("run_hal_robot", true);
 	can_interface_ = rpnh.param<std::string>("can_interface", "can0");
 }

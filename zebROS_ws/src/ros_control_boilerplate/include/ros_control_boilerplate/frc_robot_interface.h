@@ -247,6 +247,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 														 const std::string &joint_name);
 		void readConfig(ros::NodeHandle rpnh);
 		void createInterfaces(void);
+		void createIMUInterface(size_t i, const std::string &name, const std::string &frame_id, bool local);
 		bool initDevices(ros::NodeHandle root_nh);
 
 		// Configuration
@@ -280,6 +281,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		std::size_t					num_candles_{0};
 
 		std::vector<std::string> pigeon2_names_;
+		std::vector<std::string> pigeon2_frame_ids_;
 		std::vector<int>         pigeon2_can_ids_;
 		std::vector<bool>        pigeon2_local_updates_;
 		std::vector<bool>        pigeon2_local_hardwares_;

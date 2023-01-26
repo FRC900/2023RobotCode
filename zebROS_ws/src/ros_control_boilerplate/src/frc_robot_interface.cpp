@@ -1131,10 +1131,45 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 	{
 		if (pigeon2_local_hardwares_[joint_id])
 		{
-			std::unique_lock<std::mutex> l(*pigeon2_read_state_mutexes_[joint_id], std::try_to_lock);
-			if (!l.owns_lock())
-				continue;
-			pigeon2_state_[joint_id] = *pigeon2_read_thread_states_[joint_id];
+			// Fill in the full pigeon2 state using the last
+			// data read from the pigeon2 read thread for this hardware
+			{
+				std::unique_lock<std::mutex> l(*pigeon2_read_state_mutexes_[joint_id], std::try_to_lock);
+				if (!l.owns_lock())
+				{
+					continue;
+				}
+				pigeon2_state_[joint_id] = *pigeon2_read_thread_states_[joint_id];
+			}
+
+			// also, fill in the standard ROS imu state info
+			// for this.  We really only care about orientation,
+			// but do a best effort for the rest
+			size_t i = num_navX_ + joint_id;
+			const auto ps = &pigeon2_state_[joint_id];
+
+			const auto q = ps->get6dQuatention();
+			imu_orientations_[i][3] = q[0];
+			imu_orientations_[i][0] = q[1];
+			imu_orientations_[i][1] = q[2];
+			imu_orientations_[i][2] = q[3];
+
+			auto from_q2_14 = [](uint16_t in)
+			{
+				double ret = in >> 14;
+				ret += (in & 0x3fff) / static_cast<double>(1U << 14);
+
+				return in / 9.80665;
+			};
+			const auto biased_accelerometer = ps->getBiasedAccelerometer();
+			imu_linear_accelerations_[i][0] = from_q2_14(biased_accelerometer[0]);
+			imu_linear_accelerations_[i][1] = from_q2_14(biased_accelerometer[1]);
+			imu_linear_accelerations_[i][2] = from_q2_14(biased_accelerometer[2]);
+
+			// TODO - figure out how to read this
+			imu_angular_velocities_[i][0] = 0;
+			imu_angular_velocities_[i][1] = 0;
+			imu_angular_velocities_[i][2] = 0;
 		}
 	}
 
@@ -2808,6 +2843,83 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				}
 			}
 		}
+	}
+
+	for (size_t joint_id = 0; joint_id < num_pigeon2s_; ++joint_id)
+	{
+		if (!pigeon2_local_hardwares_[joint_id])
+			continue;
+
+		// Save some typing by making references to commonly
+		// used variables
+		auto &pigeon2 = pigeon2s_[joint_id];
+		auto &ps = pigeon2_state_[joint_id];
+		auto &pc = pigeon2_command_[joint_id];
+		if (pigeon2->HasResetOccurred())
+		{
+			pc.resetMountPoseAxis();
+			pc.resetMountPoseRPY();
+			pc.resetXAxisGyroError();
+			pc.resetYAxisGyroError();
+			pc.resetZAxisGyroError();
+			pc.resetCompassEnableChanged();
+			pc.resetTemperatureCompensationChanged();
+			pc.resetDisableNoMotionCompensationChanged();
+			pc.resetSetYaw();
+			pc.resetAddYaw();
+		}
+		hardware_interface::pigeon2::AxisDirection forward;
+		hardware_interface::pigeon2::AxisDirection up;
+		ctre::phoenix::sensors::AxisDirection forward_phoenix;
+		ctre::phoenix::sensors::AxisDirection up_phoenix;
+		if (pc.mountPoseAxisChanged(forward, up) &&
+			pigeon2_convert_.axisDirection(forward, forward_phoenix) &&
+			pigeon2_convert_.axisDirection(up, up_phoenix) )
+		{
+			if (safeTalonCall(pigeon2->ConfigMountPose(forward_phoenix, up_phoenix), "pigeon2->ConfigMountPose(axis)", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " : ConfigMountPose(axis) set");
+				ps.setMountPoseForward(forward);
+				ps.setMountPoseUp(up);
+				ps.setMountPoseRoll(0);
+				ps.setMountPosePitch(0);
+				ps.setMountPoseYaw(0);
+			}
+			else
+			{
+				pc.resetMountPoseAxis();
+			}
+		}
+
+		double roll;
+		double pitch;
+		double yaw;
+		if (pc.mountPoseRPYChanged(roll, pitch, yaw))
+		{
+			if (safeTalonCall(pigeon2->ConfigMountPose(roll, pitch, yaw), "pigeon2->ConfigMountPose(rpy)", ps.getDeviceNumber()))
+			{
+				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " : ConfigMountPose(rpy) set");
+				ps.setMountPoseForward(hardware_interface::pigeon2::AxisDirection::Undefined);
+				ps.setMountPoseUp(hardware_interface::pigeon2::AxisDirection::Undefined);
+				ps.setMountPoseRoll(roll);
+				ps.setMountPosePitch(pitch);
+				ps.setMountPoseYaw(yaw);
+			}
+			else
+			{
+				pc.resetMountPoseRPY();
+			}
+		}
+
+		double x_axis_gyro_error;
+		if (pc.xAxisGyroErrorChanged(x_axis_gyro_error))
+		{
+			if (safeTalonCall(pigeon2->ConfigXAxisGyroError(x_axis_gyro_error), "pigeon2->ConfigXAxisGyroError()", ps.getDeviceNumber()))
+			{
+
+			}
+		}
+
 	}
 
 	write_tracer_.start_unique("nidec");

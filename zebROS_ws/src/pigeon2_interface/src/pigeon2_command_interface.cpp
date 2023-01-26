@@ -119,9 +119,9 @@ double Pigeon2HWCommand::getXAxisGyroError(void) const
 bool Pigeon2HWCommand::xAxisGyroErrorChanged(double &x_axis_gyro_error)
 {
 	x_axis_gyro_error = x_axis_gyro_error_;
-	auto rc = x_axis_gyro_error_changed_;
+	auto ret = x_axis_gyro_error_changed_;
 	x_axis_gyro_error_changed_ = false;
-	return rc;
+	return ret;
 }
 void Pigeon2HWCommand::resetXAxisGyroError(void)
 {
@@ -143,9 +143,9 @@ double Pigeon2HWCommand::getYAxisGyroError(void) const
 bool Pigeon2HWCommand::yAxisGyroErrorChanged(double &y_axis_gyro_error)
 {
 	y_axis_gyro_error = y_axis_gyro_error_;
-	auto rc = y_axis_gyro_error_changed_;
+	auto ret = y_axis_gyro_error_changed_;
 	y_axis_gyro_error_changed_ = false;
-	return rc;
+	return ret;
 }
 void Pigeon2HWCommand::resetYAxisGyroError(void)
 {
@@ -167,9 +167,9 @@ double Pigeon2HWCommand::getZAxisGyroError(void) const
 bool Pigeon2HWCommand::zAxisGyroErrorChanged(double &z_axis_gyro_error)
 {
 	z_axis_gyro_error = z_axis_gyro_error_;
-	auto rc = z_axis_gyro_error_changed_;
+	auto ret = z_axis_gyro_error_changed_;
 	z_axis_gyro_error_changed_ = false;
-	return rc;
+	return ret;
 }
 void Pigeon2HWCommand::resetZAxisGyroError(void)
 {
@@ -320,9 +320,9 @@ double Pigeon2HWCommand::getAddYaw(void) const
 bool Pigeon2HWCommand::addYawChanged(double &yaw)
 {
 	yaw = add_yaw_;
-	bool rc = add_yaw_changed_;
+	bool ret = add_yaw_changed_;
 	add_yaw_changed_ = false;
-	return rc;
+	return ret;
 }
 void Pigeon2HWCommand::resetAddYaw(void)
 {
@@ -340,8 +340,9 @@ bool Pigeon2HWCommand::getSetYawToCompass(void) const
 }
 bool Pigeon2HWCommand::setYawToCompassChanged(void)
 {
-	auto rc = set_yaw_to_compass_;
+	auto ret = set_yaw_to_compass_;
 	set_yaw_to_compass_ = false;
+	return ret;
 }
 
 void Pigeon2HWCommand::setSetAccumZAngle(void)

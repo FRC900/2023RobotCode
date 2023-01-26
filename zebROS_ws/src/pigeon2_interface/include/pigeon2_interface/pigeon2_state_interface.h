@@ -1,6 +1,7 @@
 #ifndef INC_PIGEON2_STATE_INTERFACE__
 #define INC_PIGEON2_STATE_INTERFACE__
 
+#include <array>
 #include <string>
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include "state_handle/state_handle.h"
