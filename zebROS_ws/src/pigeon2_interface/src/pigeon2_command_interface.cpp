@@ -283,11 +283,8 @@ bool Pigeon2HWCommand::zeroGyroBiasNowChanged(void)
 
 void Pigeon2HWCommand::setSetYaw(double yaw)
 {
-	if (yaw != set_yaw_)
-	{
-		set_yaw_ = yaw;
-		set_yaw_changed_ = true;
-	}
+	set_yaw_ = yaw;
+	set_yaw_changed_ = true;
 }
 double Pigeon2HWCommand::getSetYaw(void) const
 {
@@ -307,11 +304,8 @@ void Pigeon2HWCommand::resetSetYaw(void)
 
 void Pigeon2HWCommand::setAddYaw(double yaw)
 {
-	if (yaw != add_yaw_)
-	{
-		add_yaw_ = yaw;
-		add_yaw_changed_ = true;
-	}
+	add_yaw_ = yaw;
+	add_yaw_changed_ = true;
 }
 double Pigeon2HWCommand::getAddYaw(void) const
 {

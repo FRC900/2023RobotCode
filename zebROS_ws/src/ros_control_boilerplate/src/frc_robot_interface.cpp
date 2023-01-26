@@ -2845,6 +2845,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		}
 	}
 
+	write_tracer_.start_unique("pigeon2");
 	for (size_t joint_id = 0; joint_id < num_pigeon2s_; ++joint_id)
 	{
 		if (!pigeon2_local_hardwares_[joint_id])
