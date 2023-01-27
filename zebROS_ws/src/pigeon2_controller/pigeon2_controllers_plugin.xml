@@ -1,0 +1,7 @@
+<library path="lib/libpigeon2_controller">
+	<class name="pigeon2_controller/Pigeon2Controller" type="pigeon2_controller::Pigeon2Controller" base_class_type="controller_interface::ControllerBase">
+		<description>
+			The pigeon2 controller allows configuration of device settings through either params or dynamic reconfigure
+		</description>
+	</class>
+</library>
