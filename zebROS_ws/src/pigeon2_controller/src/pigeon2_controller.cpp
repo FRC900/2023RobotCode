@@ -9,7 +9,7 @@ private:
 	std::unique_ptr<pigeon2_controller_interface::Pigeon2ControllerInterface> interface_;
 
 public:
-	Pigeon2Controller(void) {}
+Pigeon2Controller(void) =default;
 
 bool init(hardware_interface::pigeon2::Pigeon2CommandInterface *hw,
 		  ros::NodeHandle                                     &/*root_nh*/,
