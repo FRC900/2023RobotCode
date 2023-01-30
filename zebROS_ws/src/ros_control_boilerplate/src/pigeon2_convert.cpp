@@ -26,7 +26,7 @@ bool Pigeon2Convert::axisDirection(hardware_interface::pigeon2::AxisDirection in
 		output = ctre::phoenix::sensors::AxisDirection::NegativeX;
 		break;
 	default:
-		ROS_ERROR("Invalid input in convertCANCoderMagnetFieldStrength");
+		ROS_ERROR("Invalid input in Pigeon2Convert::axisDirection");
 		return false;
 	}
 	return true;

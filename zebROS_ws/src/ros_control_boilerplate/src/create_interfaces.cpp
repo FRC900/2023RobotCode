@@ -436,10 +436,10 @@ void FRCRobotInterface::createInterfaces(void)
 		createIMUInterface(i, navX_names_[i], navX_frame_ids_[i], navX_locals_[i]);
 	}
 
-	for (size_t i = num_navX_; i < num_navX_ + num_pigeon2s_; i++)
+	for (size_t i = 0; i < num_pigeon2s_; i++)
 	{
-		ROS_INFO_STREAM_NAMED(name_, "FRCRobotInterface: Registering IMU pigeon2 interface for : " << navX_names_[i] << " at id " << navX_ids_[i]);
-		createIMUInterface(i, pigeon2_names_[i], pigeon2_frame_ids_[i], pigeon2_local_hardwares_[i]);
+		ROS_INFO_STREAM_NAMED(name_, "FRCRobotInterface: Registering IMU pigeon2 interface for : " << pigeon2_names_[i] << " at CAN id " << pigeon2_can_ids_[i]);
+		createIMUInterface(i + num_navX_, pigeon2_names_[i], pigeon2_frame_ids_[i], pigeon2_local_hardwares_[i]);
 	}
 
 	num_analog_inputs_ = analog_input_names_.size();

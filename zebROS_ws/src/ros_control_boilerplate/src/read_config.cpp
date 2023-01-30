@@ -309,6 +309,21 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 					can_bus = static_cast<std::string>(xml_can_bus);
 				}
 			}
+
+			const bool has_frame_id = joint_params.hasMember("frame_id");
+			if (!local_hardware && has_frame_id)
+				throw std::runtime_error("A pigeon2 frame_id was specified for non-local hardware for joint " + joint_name);
+			std::string frame_id;
+			if (local_hardware)
+			{
+				if (!has_frame_id)
+					throw std::runtime_error("A pigeon2 frame_id was not specified for joint " + joint_name);
+				XmlRpc::XmlRpcValue &xml_joint_frame_id = joint_params["frame_id"];
+				if (!xml_joint_frame_id.valid() ||
+					xml_joint_frame_id.getType() != XmlRpc::XmlRpcValue::TypeString)
+					throw std::runtime_error("An invalid pigeon2 frame_id was specified (expecting a string) for joint " + joint_name);
+				frame_id = std::string(xml_joint_frame_id);
+			}
 			pigeon2_names_.push_back(joint_name);
 			pigeon2_can_ids_.push_back(can_id);
 			pigeon2_local_updates_.push_back(local_update);

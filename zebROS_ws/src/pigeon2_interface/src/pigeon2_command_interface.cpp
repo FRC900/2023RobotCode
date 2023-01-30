@@ -54,7 +54,7 @@ void Pigeon2HWCommand::setMountPoseRoll(double direction)
 	if (mount_pose_roll_ != direction)
 	{
 		mount_pose_roll_ = direction;
-		mount_pose_axis_changed_ = true;
+		mount_pose_rpy_changed_ = true;
 	}
 }
 double Pigeon2HWCommand::getMountPoseRoll(void) const
@@ -67,7 +67,7 @@ void Pigeon2HWCommand::setMountPosePitch(double direction)
 	if (mount_pose_pitch_ != direction)
 	{
 		mount_pose_pitch_ = direction;
-		mount_pose_axis_changed_ = true;
+		mount_pose_rpy_changed_ = true;
 	}
 }
 double Pigeon2HWCommand::getMountPosePitch(void) const
@@ -80,7 +80,7 @@ void Pigeon2HWCommand::setMountPoseYaw(double direction)
 	if (mount_pose_yaw_ != direction)
 	{
 		mount_pose_yaw_ = direction;
-		mount_pose_axis_changed_ = true;
+		mount_pose_rpy_changed_ = true;
 	}
 }
 double Pigeon2HWCommand::getMountPoseYaw(void) const
@@ -96,7 +96,7 @@ bool Pigeon2HWCommand::mountPoseRPYChanged(double &roll, double &pitch, double &
 	yaw = mount_pose_yaw_;
 	auto ret = mount_pose_rpy_changed_;
 	mount_pose_rpy_changed_ = false;
-	return true;
+	return ret;
 }
 
 void Pigeon2HWCommand::resetMountPoseRPY(void)

@@ -2874,6 +2874,8 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		ctre::phoenix::sensors::AxisDirection forward_phoenix;
 		ctre::phoenix::sensors::AxisDirection up_phoenix;
 		if (pc.mountPoseAxisChanged(forward, up) &&
+			(forward != hardware_interface::pigeon2::AxisDirection::Undefined) &&
+		    (up != hardware_interface::pigeon2::AxisDirection::Undefined) &&
 			pigeon2_convert_.axisDirection(forward, forward_phoenix) &&
 			pigeon2_convert_.axisDirection(up, up_phoenix) )
 		{
