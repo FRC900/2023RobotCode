@@ -114,11 +114,11 @@ class Pigeon2HWState
 		void setFirmwareVersion(uint32_t firmware_version);
 		uint32_t getFirmwareVersion(void) const;
 
-		int getFaults(void) const;
-		void setFaults(int faults);
+		uint64_t getFaults(void) const;
+		void setFaults(uint64_t faults);
 
-		int getStickyFaults(void) const;
-		void setStickyFaults(int sticky_faults);
+		uint64_t getStickyFaults(void) const;
+		void setStickyFaults(uint64_t sticky_faults);
 
 	private :
 		int                          device_number_;
@@ -151,8 +151,8 @@ class Pigeon2HWState
 		uint32_t                     reset_count_{0};
 		uint32_t                     reset_flags_{0};
 		uint32_t                     firmware_version_{0};
-		int                          faults_{0};
-		int                          sticky_faults_{0};
+		uint64_t                     faults_{0};
+		uint64_t                     sticky_faults_{0};
 };
 // Glue code to let this be registered in the list of
 // hardware resources on the robot.  Since state is

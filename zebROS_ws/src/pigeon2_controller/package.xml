@@ -54,7 +54,9 @@
   <build_depend>ddynamic_reconfigure</build_depend>
   <build_depend>realtime_tools</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>periodic_interval_counter</build_depend>
   <build_depend>pigeon2_interface</build_depend>
+  <build_depend>pigeon2_state_msgs</build_depend>
   <build_export_depend>controller_interface</build_export_depend>
   <build_export_depend>ddr_updater</build_export_depend>
   <build_export_depend>ddynamic_reconfigure</build_export_depend>

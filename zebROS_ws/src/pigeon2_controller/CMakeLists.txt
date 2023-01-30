@@ -10,7 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   controller_interface
   ddr_updater
   ddynamic_reconfigure
+  periodic_interval_counter
   pigeon2_interface
+  pigeon2_state_msgs
   realtime_tools
   roscpp
 )
@@ -139,6 +141,7 @@ target_link_libraries(pigeon2_controller_interface
 
 add_library(pigeon2_controller
   src/pigeon2_controller.cpp
+  src/pigeon2_state_controller.cpp
 )
 
 ## Add cmake target dependencies of the library

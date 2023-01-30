@@ -276,20 +276,20 @@ uint32_t Pigeon2HWState::getFirmwareVersion(void) const
 	return firmware_version_;
 }
 
-void Pigeon2HWState::setFaults(int faults)
+void Pigeon2HWState::setFaults(uint64_t faults)
 {
 	faults_ = faults;
 }
-int Pigeon2HWState::getFaults(void) const
+uint64_t Pigeon2HWState::getFaults(void) const
 {
 	return faults_;
 }
 
-void Pigeon2HWState::setStickyFaults(int sticky_faults)
+void Pigeon2HWState::setStickyFaults(uint64_t sticky_faults)
 {
 	sticky_faults_ = sticky_faults;
 }
-int Pigeon2HWState::getStickyFaults(void) const
+uint64_t Pigeon2HWState::getStickyFaults(void) const
 {
 	return sticky_faults_;
 }
