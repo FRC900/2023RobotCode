@@ -1,11 +1,8 @@
 #pragma once
 
-#include <string>
 #include <vector>
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include "state_handle/state_handle.h"
-
-using namespace std;
 
 namespace hardware_interface {
 namespace candle {
@@ -112,7 +109,7 @@ class CANdleHWState {
         // The CAN ID of this CANdle
         int device_id;
         // All of the LED groups to colour
-        vector<CANdleColour> leds;
+        std::vector<CANdleColour> leds;
         // The brightness of the LEDs in the CANdle, from 0->1
         double brightness;
         // If the status LED should be on when the CANdle is being controlled

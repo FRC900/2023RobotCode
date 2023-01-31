@@ -5,8 +5,6 @@
 #include <vector>
 #include <optional>
 
-using namespace std;
-
 namespace hardware_interface {
 namespace candle {
 
@@ -30,7 +28,7 @@ class CANdleHWCommand {
 
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
-        bool ledGroupChanged(vector<LEDGroup>& groups);
+        bool ledGroupChanged(std::vector<LEDGroup>& groups);
         void drainLEDGroups();
 
         // Set brightness of LEDs
@@ -59,7 +57,7 @@ class CANdleHWCommand {
 
     private:
         // LED groups to be written
-        vector<std::optional<CANdleColour>> leds;
+        std::vector<std::optional<CANdleColour>> leds;
         bool leds_changed;
         // Brightness of LEDs
         double brightness;

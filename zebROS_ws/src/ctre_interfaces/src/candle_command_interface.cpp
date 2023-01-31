@@ -44,7 +44,7 @@ void CANdleHWCommand::setLEDGroup(LEDGroup leds)
     }
     this->leds_changed = true;
 }
-bool CANdleHWCommand::ledGroupChanged(vector<LEDGroup>& groups) {
+bool CANdleHWCommand::ledGroupChanged(std::vector<LEDGroup>& groups) {
     groups.clear();
 
     if (this->leds_changed) {
