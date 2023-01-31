@@ -43,7 +43,8 @@ CANdleAnimationType convertAnimationType(int type) {
             return CANdleAnimationType::TwinkleOff;
         }
         default: {
-            ROS_ERROR_STREAM("Invalid int to convert to CANdleAnimationType!");
+            ROS_ERROR_STREAM("Invalid int to convert to CANdleAnimationType! Defaulting to ColourFlow.");
+            return CANdleAnimationType::ColourFlow;
         }
     }
 }
@@ -75,9 +76,6 @@ CANdleAnimationClass getAnimationClass(CANdleAnimationType type) {
         }
         case CANdleAnimationType::TwinkleOff: {
             return CANdleAnimationClass::BaseTwo;
-        }
-        default: {
-            ROS_ERROR_STREAM("Faild to match CANdleAnimationType to get CANdleAnimationClass!");
         }
     }
 }
