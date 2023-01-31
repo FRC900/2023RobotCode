@@ -11,6 +11,9 @@ ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
             return ColorFlowAnimation::Direction::Forward;
         case 1:
             return ColorFlowAnimation::Direction::Backward;
+        default:
+            ROS_ERROR_STREAM("Invalid int to convert to CANdle direction! Defaulting to Forwards.");
+            return ColorFlowAnimation::Direction::Forward;
     }
 }
 
