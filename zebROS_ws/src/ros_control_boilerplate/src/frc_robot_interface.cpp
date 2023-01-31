@@ -2648,15 +2648,13 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 
 		// Animation
 		CANdleAnimation candle_animation;
-		Animation* animation;
+		std::shared_ptr<Animation> animation;
 		if (candle_command.animationChanged(candle_animation)) {
 			// Convert from CANdleAnimation to the appropriate CTRE animation class
 			if (candle_animation.class_type == CANdleAnimationClass::BaseStandard) {
-				BaseStandardAnimation base_animation = candle_convert::convertBaseStandardAnimation(candle_animation);
-				animation = &base_animation;
+				animation = candle_convert::convertBaseStandardAnimation(candle_animation);
 			} else {
-				BaseTwoSizeAnimation base_two_animation = candle_convert::convertBaseTwoAnimation(candle_animation);
-				animation = &base_two_animation;
+				animation = candle_convert::convertBaseTwoAnimation(candle_animation);
 			}
 
 			if (safeTalonCall(
@@ -2673,7 +2671,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		}
 
 		// LEDs
-		vector<LEDGroup> led_groups;
+		std::vector<LEDGroup> led_groups;
 		if (candle_command.ledGroupChanged(led_groups)) {
 			candle_command.drainLEDGroups();
 			for (LEDGroup group : led_groups) {

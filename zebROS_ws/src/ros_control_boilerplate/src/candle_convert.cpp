@@ -17,10 +17,10 @@ ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
     }
 }
 
-BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation animation) {
+std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(CANdleAnimation animation) {
     switch (animation.type) {
         case CANdleAnimationType::Fire: {
-            return FireAnimation(
+            return std::make_shared<FireAnimation>(
                 animation.brightness,
                 animation.speed,
                 animation.count,
@@ -31,7 +31,7 @@ BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation animation) {
             );
         }
         case CANdleAnimationType::Rainbow: {
-            return RainbowAnimation(
+            return std::make_shared<RainbowAnimation>(
                 animation.brightness,
                 animation.speed,
                 animation.count,
@@ -40,7 +40,7 @@ BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation animation) {
             );
         }
         case CANdleAnimationType::RGBFade: {
-            return RgbFadeAnimation(
+            return std::make_shared<RgbFadeAnimation>(
                 animation.brightness,
                 animation.speed,
                 animation.count,
@@ -49,11 +49,11 @@ BaseStandardAnimation convertBaseStandardAnimation(CANdleAnimation animation) {
         }
     }
 }
-BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
+std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation animation) {
     CANdleColour colour = animation.colour;
     switch (animation.type) {
         case CANdleAnimationType::ColourFlow: {
-            return ColorFlowAnimation(
+            return std::make_shared<ColorFlowAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -65,7 +65,7 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
         }
         case CANdleAnimationType::Larson:
         {
-            return LarsonAnimation(
+            return std::make_shared<LarsonAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -80,7 +80,7 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
         }
         case CANdleAnimationType::SingleFade:
         {
-            return SingleFadeAnimation(
+            return std::make_shared<SingleFadeAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -92,7 +92,7 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
         }
         case CANdleAnimationType::Strobe:
         {
-            return StrobeAnimation(
+            return std::make_shared<StrobeAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -104,7 +104,7 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
         }
         case CANdleAnimationType::Twinkle:
         {
-            return TwinkleAnimation(
+            return std::make_shared<TwinkleAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -118,7 +118,7 @@ BaseTwoSizeAnimation convertBaseTwoAnimation(CANdleAnimation animation) {
         }
         case CANdleAnimationType::TwinkleOff:
         {
-            return TwinkleOffAnimation(
+            return std::make_shared<TwinkleOffAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
