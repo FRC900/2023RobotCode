@@ -8,7 +8,7 @@ ROBORIO_ADDR=10.9.0.2
 
 # This can be an array of IP address if there are multiple Jetsons
 #JETSON_ADDR=( )
-JETSON_ADDR=(10.9.0.8 10.9.0.9)
+JETSON_ADDR=(10.9.0.8)
 
 # Environment to deploy to (prod or dev).
 INSTALL_ENV=dev
@@ -75,12 +75,12 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # Directory paths on the Jetson and roboRIO.
-RIO_CLONE_LOCATION=/home/admin/2023RobotCode
+RIO_CLONE_LOCATION=/home/admin/2022RobotCode
 RIO_ENV_LOCATION=$RIO_CLONE_LOCATION.$INSTALL_ENV
 RIO_ROS_CODE_LOCATION=$RIO_ENV_LOCATION/zebROS_ws
 RIO_INSTALL_LOCATION=$RIO_ROS_CODE_LOCATION/install_isolated
 
-JETSON_CLONE_LOCATION=/home/ubuntu/2023RobotCode
+JETSON_CLONE_LOCATION=/home/ubuntu/2022RobotCode
 JETSON_ENV_LOCATION=$JETSON_CLONE_LOCATION.$INSTALL_ENV
 JETSON_ROS_CODE_LOCATION=$JETSON_ENV_LOCATION/zebROS_ws
 
@@ -136,7 +136,7 @@ echo "Time synchronized."
 echo "Killing code on remotes "
 for i in "${JETSON_ADDR[@]}"
 do
-    echo ubuntu | ssh -tt ubuntu@$i "sudo /home/ubuntu/2023RobotCode/zebROS_ws/kill_ros_.sh"
+    echo ubuntu | ssh -tt ubuntu@$i "sudo /home/ubuntu/2022RobotCode/zebROS_ws/kill_ros_.sh"
 done
 echo "ROS Killed on Jetson"
 
