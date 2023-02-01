@@ -685,6 +685,8 @@ void FRCRobotInterface::createInterfaces(void)
 	registerInterface(&cancoder_command_interface_);
 	registerInterface(&candle_state_interface_);
 	registerInterface(&candle_command_interface_);
+	registerInterface(&pigeon2_state_interface_);
+	registerInterface(&pigeon2_command_interface_);
 	registerInterface(&spark_max_state_interface_);
 	registerInterface(&spark_max_command_interface_);
 	registerInterface(&joint_state_interface_);
