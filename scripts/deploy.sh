@@ -8,7 +8,13 @@ ROBORIO_ADDR=10.9.0.2
 
 # This can be an array of IP address if there are multiple Jetsons
 #JETSON_ADDR=( )
-JETSON_ADDR=(10.9.0.8 10.9.0.9)
+# If we're deploying to the robot in a box, only deploy to 1 jetson (it doesn't have 2)
+if [ $1 == "box" ]; then
+    JETSON_ADDR=(10.9.0.8)
+else
+    # On the actual robot, deploy to both jetsons
+    JETSON_ADDR=(10.9.0.8 10.9.0.9)
+fi
 
 # Environment to deploy to (prod or dev).
 INSTALL_ENV=dev
