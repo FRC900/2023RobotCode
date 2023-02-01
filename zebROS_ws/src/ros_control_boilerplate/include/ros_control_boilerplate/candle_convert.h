@@ -11,6 +11,7 @@
 #include <ctre/phoenix/led/TwinkleAnimation.h>
 #include <ctre/phoenix/led/TwinkleOffAnimation.h>
 #include "ctre_interfaces/candle_state_interface.h"
+#include <memory>
 
 using namespace ctre::phoenix::led;
 using namespace hardware_interface::candle;

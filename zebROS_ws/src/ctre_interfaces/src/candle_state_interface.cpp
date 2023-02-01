@@ -114,9 +114,9 @@ bool CANdleHWState::getEnabled() {
 }
 
 void CANdleHWState::setAnimation(CANdleAnimation animation) {
-    this->animation = animation;
+    this->animation.emplace(animation);
 }
-CANdleAnimation& CANdleHWState::getAnimation() {
+std::optional<CANdleAnimation>& CANdleHWState::getAnimation() {
     return this->animation;
 }
 

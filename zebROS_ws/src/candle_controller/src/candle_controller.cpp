@@ -228,16 +228,15 @@ private:
                         req.count,
                         animation_type,
                         req.red,
-                        req.blue,
                         req.green,
+                        req.blue,
                         req.white,
                         req.direction
                     );
                 }
             }
 
-            ROS_INFO_STREAM("Setting CANdle animation to animation with speed |" 
-                            << animation.animation.speed << "| // start |" << animation.animation.start);
+            ROS_INFO_STREAM("Setting CANdle animation to animation with ID " << (int) animation.animation.class_type);
             
             this->animation_buffer.writeFromNonRT(animation);
 

@@ -3,7 +3,6 @@ float64 speed
 uint32 start
 uint32 count
 uint8 animation_type
-uint8 animation_class
 
 # Base2 Animations
 uint8 red
@@ -28,8 +27,4 @@ uint8 ANIMATION_TYPE_SINGLE_FADE = 5
 uint8 ANIMATION_TYPE_STROBE = 6
 uint8 ANIMATION_TYPE_TWINKLE = 7
 uint8 ANIMATION_TYPE_TWINKLE_OFF = 8
-
-# Animation class enum
-uint8 ANIMATION_CLASS_BASE_STANDARD = 0
-uint8 ANIMATION_CLASS_BASE_TWO = 1
 ---

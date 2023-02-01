@@ -2662,8 +2662,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				"candle->Animate",
 				candle_state.getDeviceID()
 			)) {
-				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
-						<< " : Changed its animation" << animation->GetSpeed());
+				ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id] << " : Changed its animation");
 				candle_state.setAnimation(candle_animation);
 			} else {
 				candle_command.resetAnimationChanged();
@@ -2673,28 +2672,45 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		// LEDs
 		std::vector<LEDGroup> led_groups;
 		if (candle_command.ledGroupChanged(led_groups)) {
-			candle_command.drainLEDGroups();
-			for (LEDGroup group : led_groups) {
+			// Clear the active animation, if it exists
+			bool animationCleared = true;
+			if (candle_state.getAnimation().has_value()) {
 				if (safeTalonCall(
-					candle->SetLEDs(
-						group.red,
-						group.green,
-						group.blue,
-						group.white,
-						group.start,
-						group.count
-					),
-					"candle->SetLEDs",
+					candle->ClearAnimation(0),
+					"candle->ClearAnimation",
 					candle_state.getDeviceID()
 				)) {
-					for (size_t led_id = 0; led_id < (size_t)(group.start + group.count); led_id++) {
-						candle_state.setLED(led_id, group);
-					}
-
-					ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
-							<< " : Changed colours");
+					candle_state.getAnimation().reset();
 				} else {
-					candle_command.setLEDGroup(group);
+					animationCleared = false;
+				}
+			}
+
+			// If the active animation was cleared, change the LED colours
+			if (animationCleared) {
+				candle_command.drainLEDGroups();
+				for (LEDGroup group : led_groups) {
+					if (safeTalonCall(
+						candle->SetLEDs(
+							group.red,
+							group.green,
+							group.blue,
+							group.white,
+							group.start,
+							group.count
+						),
+						"candle->SetLEDs",
+						candle_state.getDeviceID()
+					)) {
+						for (size_t led_id = 0; led_id < (size_t)(group.start + group.count); led_id++) {
+							candle_state.setLED(led_id, group);
+						}
+
+						ROS_INFO_STREAM("CANdle " << this->candle_names_[candle_id]
+								<< " : Changed colours");
+					} else {
+						candle_command.setLEDGroup(group);
+					}
 				}
 			}
 		}

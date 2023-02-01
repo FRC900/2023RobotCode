@@ -3,6 +3,7 @@
 #include <vector>
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include "state_handle/state_handle.h"
+#include <optional>
 
 namespace hardware_interface {
 namespace candle {
@@ -103,7 +104,7 @@ class CANdleHWState {
 
         // The CANdle's animation
         void setAnimation(CANdleAnimation animation);
-        CANdleAnimation& getAnimation();
+        std::optional<CANdleAnimation>& getAnimation();
 
     private:
         // The CAN ID of this CANdle
@@ -117,7 +118,7 @@ class CANdleHWState {
         // If the CANdle is enabled
         bool enabled;
         // The currently playing CANdle animation
-        CANdleAnimation animation;
+        std::optional<CANdleAnimation> animation;
 };
 
 
