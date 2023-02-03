@@ -40,6 +40,7 @@ class Pigeon2CIParams : public ddr_updater::DDRUpdater
 	private:
 		const std::map<std::string, int> axis_direction_enum_map_
 		{
+            {"Undefined", static_cast<int>(hardware_interface::pigeon2::AxisDirection::Undefined)},
 			{"PositiveZ", static_cast<int>(hardware_interface::pigeon2::AxisDirection::PositiveZ)},
 			{"PositiveY", static_cast<int>(hardware_interface::pigeon2::AxisDirection::PositiveY)},
 			{"PositiveX", static_cast<int>(hardware_interface::pigeon2::AxisDirection::PositiveX)},
