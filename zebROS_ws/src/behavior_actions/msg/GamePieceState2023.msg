@@ -7,4 +7,4 @@ uint8 NONE=4 # for sure no game piece
 uint8 UNKNOWN=5 # we have a game piece, but not sure what it is right now
 uint8 game_piece
 
-float64 offset_from_center # will be -1 if piece is none
+float64 offset_from_center # will be inf if terabees are 0 or inf
