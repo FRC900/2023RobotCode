@@ -54,6 +54,7 @@ add_message_files(
   AutoMode.msg
   AutoState.msg
   ShooterOffset.msg
+  GamePieceState2023.msg
 )
 
 ## Generate services in the 'srv' folder
