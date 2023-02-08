@@ -3,15 +3,6 @@
 namespace hardware_interface {
 namespace candle {
 
-LEDGroup::LEDGroup(int start, int count, int red, int green, int blue, int white)
-:
-    CANdleColour(red, green, blue, white)
-{
-    this->start = start;
-    this->count = count;
-}
-LEDGroup::LEDGroup() {}
-
 CANdleHWCommand::CANdleHWCommand() :
     brightness{1},
     brightness_changed{false},
@@ -27,41 +18,49 @@ void CANdleHWCommand::setLEDGroup(LEDGroup leds)
     size_t max = leds.start + leds.count;
     for (size_t i = leds.start; i < max; i++) {
         if (i < this->leds.size()) {
-            this->leds[i] = CANdleColour(
-                leds.red,
-                leds.green,
-                leds.blue,
-                leds.white
+            this->leds[i] = Colour(
+                leds.colour.red,
+                leds.colour.green,
+                leds.colour.blue,
+                leds.colour.white
             );
         } else {
-            this->leds.emplace_back(CANdleColour(
-                leds.red,
-                leds.green,
-                leds.blue,
-                leds.white
+            if ((i - this->leds.size()) > 1) {
+                this->leds.resize(i);
+            }
+
+            this->leds.emplace_back(Colour(
+                leds.colour.red,
+                leds.colour.green,
+                leds.colour.blue,
+                leds.colour.white
             ));
         }
     }
     this->leds_changed = true;
 }
-bool CANdleHWCommand::ledGroupChanged(std::vector<LEDGroup>& groups) {
+bool CANdleHWCommand::ledGroupsChanged(std::vector<LEDGroup>& groups) {
     groups.clear();
 
     if (this->leds_changed) {
-        std::optional<CANdleColour> previous_colour;
+        std::optional<Colour> previous_colour;
         for (size_t i = 0; i < this->leds.size(); i++) {
-            std::optional<CANdleColour> led = this->leds[i];
+            std::optional<Colour> led = this->leds[i];
 
             if (led.has_value()) {
-                if (!previous_colour.has_value() || *previous_colour != *led) {
+                // If the previous colour is none, or the colour has changed, start a new group
+                if (!previous_colour.has_value() || previous_colour.value() != led.value()) {
                     groups.emplace_back(LEDGroup(
                         i,
                         1,
-                        led->red,
-                        led->green,
-                        led->blue,
-                        led->white
+                        Colour(
+                            led->red,
+                            led->green,
+                            led->blue,
+                            led->white
+                        )
                     ));
+                // If the colour matches the last colour, just increase the number of LEDs in that group
                 } else {
                     groups.back().count += 1;
                 }
@@ -141,27 +140,27 @@ void CANdleHWCommand::resetEnabledChanged() {
     this->enabled_changed = true;
 }
 
-void CANdleHWCommand::setAnimation(CANdleAnimation animation) {
-    if (this->animation != animation) {
-        this->animation = animation;
-        this->animation_changed = true;
-    } else {
-        ROS_INFO_STREAM("Identical animation detected. Not updating");
+void CANdleHWCommand::setAnimation(Animation animation) {
+    for (Animation& existing_animation : this->animations) {
+        if (animation == existing_animation) {
+            ROS_INFO_STREAM("Identical animation detected. Not updating");
+            return;
+        }
     }
+
+    this->animations.push_back(animation);
+    this->animation_changed = true;
 }
-CANdleAnimation& CANdleHWCommand::getAnimation() {
-    return this->animation;
-}
-bool CANdleHWCommand::animationChanged(CANdleAnimation& animation) {
+bool CANdleHWCommand::animationsChanged(std::vector<Animation>& animations) {
     if (this->animation_changed) {
         this->animation_changed = false;
-        animation = this->animation;
+        animations = this->animations;
         return true;
     }
     return false;
 }
-void CANdleHWCommand::resetAnimationChanged() {
-    this->animation_changed = true;
+void CANdleHWCommand::drainAnimations() {
+    this->animations.clear();
 }
 
 }

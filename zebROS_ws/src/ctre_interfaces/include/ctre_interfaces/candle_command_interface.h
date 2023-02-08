@@ -8,17 +8,22 @@
 namespace hardware_interface {
 namespace candle {
 
-struct LEDGroup : CANdleColour {
+struct LEDGroup {
     // Start LED
     int start;
     // Number of LEDs this group covers
     int count;
-    // Colour is handled by CANdleColour superclass
+    // Colour to set the LEDs to
+    Colour colour;
 
     // Constructor
-    LEDGroup(int start, int count, int red, int green, int blue, int white);
+    LEDGroup(int start, int count, Colour colour) :
+        start{start},
+        count{count},
+        colour{colour}
+    {}
     // Blank constructor for arrays and vectors
-    LEDGroup();
+    LEDGroup() {}
 };
 
 class CANdleHWCommand {
@@ -28,7 +33,7 @@ class CANdleHWCommand {
 
         // Set colour of LEDs
         void setLEDGroup(LEDGroup leds);
-        bool ledGroupChanged(std::vector<LEDGroup>& groups);
+        bool ledGroupsChanged(std::vector<LEDGroup>& groups);
         void drainLEDGroups();
 
         // Set brightness of LEDs
@@ -50,14 +55,13 @@ class CANdleHWCommand {
         void resetEnabledChanged();
 
         // The CANdle's animation
-        void setAnimation(CANdleAnimation animation);
-        CANdleAnimation& getAnimation();
-        bool animationChanged(CANdleAnimation& animation);
-        void resetAnimationChanged();
+        void setAnimation(Animation animation);
+        bool animationsChanged(std::vector<Animation>& animation);
+        void drainAnimations();
 
     private:
-        // LED groups to be written
-        std::vector<std::optional<CANdleColour>> leds;
+        // LEDs to be written
+        std::vector<std::optional<Colour>> leds;
         bool leds_changed;
         // Brightness of LEDs
         double brightness;
@@ -68,8 +72,8 @@ class CANdleHWCommand {
         // If the CANdle is enabled
         bool enabled;
         bool enabled_changed;
-        // The CANdle's animation
-        CANdleAnimation animation;
+        // Animations to be written
+        std::vector<Animation> animations;
         bool animation_changed;
 };
 

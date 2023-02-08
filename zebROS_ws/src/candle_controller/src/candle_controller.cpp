@@ -13,69 +13,73 @@
 
 using namespace hardware_interface::candle;
 
-CANdleAnimationType convertAnimationType(int type) {
+AnimationType convertAnimationType(int type) {
     switch (type) {
         case 0: {
-            return CANdleAnimationType::ColourFlow;
+            return AnimationType::ColourFlow;
         }
         case 1: {
-            return CANdleAnimationType::Fire;
+            return AnimationType::Fire;
         }
         case 2: {
-            return CANdleAnimationType::Larson;
+            return AnimationType::Larson;
         }
         case 3: {
-            return CANdleAnimationType::Rainbow;
+            return AnimationType::Rainbow;
         }
         case 4: {
-            return CANdleAnimationType::RGBFade;
+            return AnimationType::RGBFade;
         }
         case 5: {
-            return CANdleAnimationType::SingleFade;
+            return AnimationType::SingleFade;
         }
         case 6: {
-            return CANdleAnimationType::Strobe;
+            return AnimationType::Strobe;
         }
         case 7: {
-            return CANdleAnimationType::Twinkle;
+            return AnimationType::Twinkle;
         }
         case 8: {
-            return CANdleAnimationType::TwinkleOff;
+            return AnimationType::TwinkleOff;
         }
         default: {
-            ROS_ERROR_STREAM("Invalid int to convert to CANdleAnimationType! Defaulting to ColourFlow.");
-            return CANdleAnimationType::ColourFlow;
+            ROS_ERROR_STREAM("Invalid int to convert to AnimationType! Defaulting to ColourFlow.");
+            return AnimationType::ColourFlow;
         }
     }
 }
-CANdleAnimationClass getAnimationClass(CANdleAnimationType type) {
+AnimationClass getAnimationClass(AnimationType type) {
     switch (type) {
-        case CANdleAnimationType::ColourFlow: {
-            return CANdleAnimationClass::BaseTwo;
+        case AnimationType::ColourFlow: {
+            return AnimationClass::BaseTwo;
         }
-        case CANdleAnimationType::Fire: {
-            return CANdleAnimationClass::BaseStandard;
+        case AnimationType::Fire: {
+            return AnimationClass::BaseStandard;
         }
-        case CANdleAnimationType::Larson: {
-            return CANdleAnimationClass::BaseTwo;
+        case AnimationType::Larson: {
+            return AnimationClass::BaseTwo;
         }
-        case CANdleAnimationType::Rainbow: {
-            return CANdleAnimationClass::BaseStandard;
+        case AnimationType::Rainbow: {
+            return AnimationClass::BaseStandard;
         }
-        case CANdleAnimationType::RGBFade: {
-            return CANdleAnimationClass::BaseStandard;
+        case AnimationType::RGBFade: {
+            return AnimationClass::BaseStandard;
         }
-        case CANdleAnimationType::SingleFade: {
-            return CANdleAnimationClass::BaseTwo;
+        case AnimationType::SingleFade: {
+            return AnimationClass::BaseTwo;
         }
-        case CANdleAnimationType::Strobe: {
-            return CANdleAnimationClass::BaseTwo;
+        case AnimationType::Strobe: {
+            return AnimationClass::BaseTwo;
         }
-        case CANdleAnimationType::Twinkle: {
-            return CANdleAnimationClass::BaseTwo;
+        case AnimationType::Twinkle: {
+            return AnimationClass::BaseTwo;
         }
-        case CANdleAnimationType::TwinkleOff: {
-            return CANdleAnimationClass::BaseTwo;
+        case AnimationType::TwinkleOff: {
+            return AnimationClass::BaseTwo;
+        }
+        default: {
+            ROS_ERROR_STREAM("Invalid AnimationType passed to candle_controller::getAnimationClass! Defaulting to AnimationClass::BaseTwo.");
+            return AnimationClass::BaseTwo;
         }
     }
 }
@@ -107,11 +111,11 @@ public:
     void starting(const ros::Time&) override {}
 
     void update(const ros::Time&, const ros::Duration&) override {
-        const LEDs leds = *(this->led_buffer.readFromRT());
-        const Animation animation = *(this->animation_buffer.readFromRT());
-        const Brightness brightness = *(this->brightness_buffer.readFromRT());
+        const LEDGroupStamped leds = *(this->led_buffer.readFromRT());
+        const AnimationStamped animation = *(this->animation_buffer.readFromRT());
+        const BrightnessStamped brightness = *(this->brightness_buffer.readFromRT());
 
-        // Brightness isn't exclusive to colours/animations, so it gets special treatment
+        // BrightnessStamped isn't exclusive to colours/animations, so it gets special treatment
         if (brightness.time > this->last_write) {
             ROS_INFO_STREAM("Writing new brightness to CANdle");
             this->candle_handle->setBrightness(brightness.brightness);
@@ -138,25 +142,25 @@ public:
     void stopping(const ros::Time&) override {}
 
 private:
-    struct LEDs {
+    struct LEDGroupStamped {
         ros::Time time;
         LEDGroup group;
 
-        LEDs() {}
+        LEDGroupStamped() {}
     };
 
-    struct Animation {
-        CANdleAnimation animation;
+    struct AnimationStamped {
+        Animation animation;
         ros::Time time;
 
-        Animation() {}
+        AnimationStamped() {}
     };
 
-    struct Brightness {
+    struct BrightnessStamped {
         double brightness;
         ros::Time time;
 
-        Brightness() {}
+        BrightnessStamped() {}
     };
 
     CANdleCommandHandle candle_handle;
@@ -165,14 +169,14 @@ private:
     ros::ServiceServer animation_service;
     ros::Time last_write;
 
-    realtime_tools::RealtimeBuffer<LEDs> led_buffer;
-    realtime_tools::RealtimeBuffer<Animation> animation_buffer;
-    realtime_tools::RealtimeBuffer<Brightness> brightness_buffer;
+    realtime_tools::RealtimeBuffer<LEDGroupStamped> led_buffer;
+    realtime_tools::RealtimeBuffer<AnimationStamped> animation_buffer;
+    realtime_tools::RealtimeBuffer<BrightnessStamped> brightness_buffer;
 
     bool colourCallback(candle_controller_msgs::Colour::Request& req, candle_controller_msgs::Colour::Response&) {
         if (this->isRunning()) {
-            LEDs leds;
-            leds.group = LEDGroup(req.start, req.count, req.red, req.green, req.blue, req.white);
+            LEDGroupStamped leds;
+            leds.group = LEDGroup(req.start, req.count, Colour(req.red, req.green, req.blue, req.white));
             leds.time = ros::Time::now();
 
             this->led_buffer.writeFromNonRT(leds);
@@ -186,7 +190,7 @@ private:
 
     bool brightnessCallback(candle_controller_msgs::Brightness::Request& req, candle_controller_msgs::Brightness::Response&) {
         if (this->isRunning()) {
-            Brightness brightness;
+            BrightnessStamped brightness;
             brightness.brightness = req.brightness;
             brightness.time = ros::Time::now();
 
@@ -201,15 +205,15 @@ private:
 
     bool animationCallback(candle_controller_msgs::Animation::Request& req, candle_controller_msgs::Animation::Response&) {
         if (this->isRunning()) {
-            Animation animation;
+            AnimationStamped animation;
             animation.time = ros::Time::now();
-            CANdleAnimationType animation_type = convertAnimationType(req.animation_type);
-            CANdleAnimationClass animation_class = getAnimationClass(animation_type);
+            AnimationType animation_type = convertAnimationType(req.animation_type);
+            AnimationClass animation_class = getAnimationClass(animation_type);
 
             switch (animation_class) {
                 // Base Standard animation
-                case CANdleAnimationClass::BaseStandard: {
-                    animation.animation = CANdleAnimation(
+                case AnimationClass::BaseStandard: {
+                    animation.animation = Animation(
                         req.speed,
                         req.start,
                         req.count,
@@ -220,9 +224,10 @@ private:
                         req.param5
                     );
                 }
+                break;
                 // Base Two animation
-                case CANdleAnimationClass::BaseTwo: {
-                    animation.animation = CANdleAnimation(
+                case AnimationClass::BaseTwo: {
+                    animation.animation = Animation(
                         req.speed,
                         req.start,
                         req.count,
@@ -234,6 +239,7 @@ private:
                         req.direction
                     );
                 }
+                break;
             }
 
             ROS_INFO_STREAM("Setting CANdle animation to animation with ID " << (int) animation.animation.class_type);

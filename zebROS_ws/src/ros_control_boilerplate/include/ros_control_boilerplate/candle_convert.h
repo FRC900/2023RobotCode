@@ -13,13 +13,10 @@
 #include "ctre_interfaces/candle_state_interface.h"
 #include <memory>
 
-using namespace ctre::phoenix::led;
-using namespace hardware_interface::candle;
-
 namespace candle_convert {
 
-ColorFlowAnimation::Direction convertCANdleDirection(int direction);
-std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(CANdleAnimation animation);
-std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation animation);
+ctre::phoenix::led::ColorFlowAnimation::Direction convertCANdleDirection(int direction);
+std::shared_ptr<ctre::phoenix::led::BaseStandardAnimation> convertBaseStandardAnimation(hardware_interface::candle::Animation animation);
+std::shared_ptr<ctre::phoenix::led::BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_interface::candle::Animation animation);
 
 } // namespace candle_convert

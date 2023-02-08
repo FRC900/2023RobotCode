@@ -9,7 +9,7 @@ namespace hardware_interface {
 namespace candle {
 
 // An enum for all the animations the CANdle can play
-enum class CANdleAnimationType {
+enum class AnimationType {
     ColourFlow,
     Fire,
     Larson,
@@ -20,28 +20,28 @@ enum class CANdleAnimationType {
     Twinkle,
     TwinkleOff
 };
-enum class CANdleAnimationClass {
+enum class AnimationClass {
     BaseStandard,
     BaseTwo
 };
 
 // A CANdle colour
-struct CANdleColour {
+struct Colour {
     int red;
     int green;
     int blue;
     int white;
 
     // Constructor
-    CANdleColour(int red, int green, int blue, int white);
-    CANdleColour();
+    Colour(int red, int green, int blue, int white);
+    Colour();
 
-    bool operator!=(const CANdleColour& rhs);
-    bool operator==(const CANdleColour& rhs);
+    bool operator!=(const Colour& rhs);
+    bool operator==(const Colour& rhs);
 };
 
 // An animation for the CANdle to play
-struct CANdleAnimation {
+struct Animation {
     // Animation speed
     double speed;
     // Initial LED to animate
@@ -49,13 +49,13 @@ struct CANdleAnimation {
     // Number of LEDs to animation
     int count;
     // The animation to play
-    CANdleAnimationType type;
+    AnimationType type;
     // The animation class type
-    CANdleAnimationClass class_type;
+    AnimationClass class_type;
 
     // For Base Two animations
     // Animation colour
-    CANdleColour colour;
+    Colour colour;
     // Animation direction
     int direction;
 
@@ -69,15 +69,65 @@ struct CANdleAnimation {
     double param5;
 
     // Constructor for BaseStandard animations
-    CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, double brightness, bool reversed, double param4, double param5);
+    Animation(double speed, int start, int count, AnimationType type, double brightness, bool reversed, double param4, double param5);
     // Constructor for BaseTwo animations
-    CANdleAnimation(double speed, int start, int count, CANdleAnimationType type, int red, int green, int blue, int white, int direction);
+    Animation(double speed, int start, int count, AnimationType type, int red, int green, int blue, int white, int direction);
     // Blank constructor/null
-    CANdleAnimation();
+    Animation();
 
     // Comparison methods
-    bool operator==(const CANdleAnimation& rhs);
-    bool operator!=(const CANdleAnimation& rhs);
+    bool operator==(const Animation& rhs);
+    bool operator!=(const Animation& rhs);
+};
+
+// An LED on the CANdle
+enum LEDType {
+    Off,
+    Coloured,
+    Animated
+};
+union LEDDisplay {
+    Colour colour;
+    int animation_id;
+
+    LEDDisplay() :
+        animation_id{0}
+    {}
+};
+class LED {
+    public:
+        LEDType type;
+
+        LED() :
+            type{LEDType::Off}
+        {}
+        LED(int animation_id) :
+            type{LEDType::Animated}
+        {
+            this->display.animation_id = animation_id;
+        }
+        LED(Colour colour) :
+            type{LEDType::Coloured}
+        {
+            this->display.colour = colour;
+        }
+
+        std::optional<Colour> getColour() {
+            return this->type == LEDType::Coloured ? std::optional<Colour>(this->display.colour) : std::nullopt;
+        }
+        std::optional<int> getAnimationID() {
+            return this->type == LEDType::Animated ? std::optional<int>(this->display.animation_id) : std::nullopt;
+        }
+
+        void setColour(Colour colour) {
+            this->display.colour = colour;
+        }
+        void setAnimationID(int animation_id) {
+            this->display.animation_id = animation_id;
+        }
+
+    private:
+        LEDDisplay display;
 };
 
 class CANdleHWState {
@@ -87,8 +137,10 @@ class CANdleHWState {
         int getDeviceID() const;
 
         // Set the colour of an LED
-        void setLED(int id, CANdleColour led);
-        CANdleColour getLED(int id);
+        void setLED(int id, Colour colour);
+        void setLED(int id, int animation_id);
+        void setLEDOff(int id);
+        std::optional<LED> getLED(size_t id);
 
         // Set the brightness of the CANdle's LEDs
         void setBrightness(double brightness);
@@ -103,22 +155,24 @@ class CANdleHWState {
         bool getEnabled();
 
         // The CANdle's animation
-        void setAnimation(CANdleAnimation animation);
-        std::optional<CANdleAnimation>& getAnimation();
+        void setAnimation(Animation animation);
+        void clearAnimation(int id);
+        std::optional<Animation> getAnimation(size_t id);
+        size_t getNextAnimationSlot();
 
     private:
         // The CAN ID of this CANdle
         int device_id;
         // All of the LED groups to colour
-        std::vector<CANdleColour> leds;
+        std::vector<LED> leds;
         // The brightness of the LEDs in the CANdle, from 0->1
         double brightness;
         // If the status LED should be on when the CANdle is being controlled
         bool show_led_when_active;
         // If the CANdle is enabled
         bool enabled;
-        // The currently playing CANdle animation
-        std::optional<CANdleAnimation> animation;
+        // The CANdle's animations
+        std::optional<Animation> animations[8];
 };
 
 

@@ -17,9 +17,9 @@ ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
     }
 }
 
-std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(CANdleAnimation animation) {
+std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(hardware_interface::candle::Animation animation) {
     switch (animation.type) {
-        case CANdleAnimationType::Fire: {
+        case AnimationType::Fire: {
             return std::make_shared<FireAnimation>(
                 animation.brightness,
                 animation.speed,
@@ -30,7 +30,7 @@ std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(CANdleAnimat
                 animation.start
             );
         }
-        case CANdleAnimationType::Rainbow: {
+        case AnimationType::Rainbow: {
             return std::make_shared<RainbowAnimation>(
                 animation.brightness,
                 animation.speed,
@@ -39,7 +39,7 @@ std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(CANdleAnimat
                 animation.start
             );
         }
-        case CANdleAnimationType::RGBFade: {
+        case AnimationType::RGBFade: {
             return std::make_shared<RgbFadeAnimation>(
                 animation.brightness,
                 animation.speed,
@@ -49,10 +49,10 @@ std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(CANdleAnimat
         }
     }
 }
-std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation animation) {
-    CANdleColour colour = animation.colour;
+std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_interface::candle::Animation animation) {
+    Colour colour = animation.colour;
     switch (animation.type) {
-        case CANdleAnimationType::ColourFlow: {
+        case AnimationType::ColourFlow: {
             return std::make_shared<ColorFlowAnimation>(
                 colour.red,
                 colour.green,
@@ -60,10 +60,11 @@ std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation an
                 colour.white,
                 animation.speed,
                 animation.count,
-                convertCANdleDirection(animation.direction)
+                convertCANdleDirection(animation.direction),
+                animation.start
             );
         }
-        case CANdleAnimationType::Larson:
+        case AnimationType::Larson:
         {
             return std::make_shared<LarsonAnimation>(
                 colour.red,
@@ -78,7 +79,7 @@ std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation an
                 animation.start
             );
         }
-        case CANdleAnimationType::SingleFade:
+        case AnimationType::SingleFade:
         {
             return std::make_shared<SingleFadeAnimation>(
                 colour.red,
@@ -90,7 +91,7 @@ std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation an
                 animation.start
             );
         }
-        case CANdleAnimationType::Strobe:
+        case AnimationType::Strobe:
         {
             return std::make_shared<StrobeAnimation>(
                 colour.red,
@@ -102,7 +103,7 @@ std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation an
                 animation.start
             );
         }
-        case CANdleAnimationType::Twinkle:
+        case AnimationType::Twinkle:
         {
             return std::make_shared<TwinkleAnimation>(
                 colour.red,
@@ -116,7 +117,7 @@ std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(CANdleAnimation an
                 animation.start
             );
         }
-        case CANdleAnimationType::TwinkleOff:
+        case AnimationType::TwinkleOff:
         {
             return std::make_shared<TwinkleOffAnimation>(
                 colour.red,
