@@ -5,6 +5,7 @@
 #include <angles/angles.h>
 #include "teleop_joystick_control/rate_limiter.h"
 #include "teleop_joystick_control/TeleopJoystickCompConfig.h"
+#include "teleop_joystick_control/interpolating_map.h"
 
 struct StrafeSpeeds
 {

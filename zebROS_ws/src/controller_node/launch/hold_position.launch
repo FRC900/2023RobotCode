@@ -64,26 +64,6 @@
                 <remap from="pid_enable" to="y_position_pid/pid_enable" />
             </node>
 
-<<<<<<< HEAD
-            <node name="orient_pid" pkg="pid" type="controller" >
-                <param name="node_name" value="orient_pid" />
-                <param name="Kp" value="-4.2" />
-                <param name="Ki" value="0.0" />
-                <param name="Kd" value="-0.6" />
-                <param name="upper_limit" value="6.00" />
-                <param name="lower_limit" value="-6.00" />
-                <param name="windup_limit" value="0.5" />
-                <param name="angle_error" value="true" />
-                <param name="max_loop_frequency" value="100.0" />
-                <param name="min_loop_frequency" value="100.0" />
-                <param name="topic_from_controller" value="orient_pid/orient_command" />
-                <param name="setpoint_topic" value="orient_pid/orient_cmd_pub" />
-                <param name="topic_from_plant" value="orient_pid/orient_state" />
-                <remap from="pid_debug" to="orient_pid/pid_debug"/>
-                <remap from="pid_enable" to="orient_pid/pid_enable"/>
-            </node>
-=======
->>>>>>> 209ab3e1 (Add separate rotation method)
         </group>
 
 </launch>
