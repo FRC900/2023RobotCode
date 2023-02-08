@@ -36,6 +36,7 @@
    Desc:   Helper ros_control hardware interface that loads configurations
 */
 #include <ros/ros.h>
+#include <angles/angles.h>
 #include <ros_control_boilerplate/frc_robot_interface.h>
 #include "hardware_interface/joint_mode_interface.h"  // for JointCommandModes
 #include <ext/alloc_traits.h>                         // for __alloc_traits<...
@@ -2904,9 +2905,9 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " : ConfigMountPose(rpy) set");
 				ps.setMountPoseForward(hardware_interface::pigeon2::AxisDirection::Undefined);
 				ps.setMountPoseUp(hardware_interface::pigeon2::AxisDirection::Undefined);
-				ps.setMountPoseRoll(roll);
-				ps.setMountPosePitch(pitch);
-				ps.setMountPoseYaw(yaw);
+				ps.setMountPoseRoll(angles::to_degrees(roll));
+				ps.setMountPosePitch(angles::to_degrees(pitch));
+				ps.setMountPoseYaw(angles::to_degrees(yaw));
 			}
 			else
 			{
@@ -2920,7 +2921,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			if (safeTalonCall(pigeon2->ConfigXAxisGyroError(x_axis_gyro_error), "pigeon2->ConfigXAxisGyroError()", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pogeon2 " << pigeon2_names_[joint_id] << " ConfigXAxisGyroError = " << x_axis_gyro_error);
-				ps.setXAxisGyroError(x_axis_gyro_error);
+				ps.setXAxisGyroError(angles::to_degrees(x_axis_gyro_error));
 			}
 			else
 			{
@@ -2933,7 +2934,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			if (safeTalonCall(pigeon2->ConfigYAxisGyroError(y_axis_gyro_error), "pigeon2->ConfigYAxisGyroError()", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pogeon2 " << pigeon2_names_[joint_id] << " ConfigYAxisGyroError = " << y_axis_gyro_error);
-				ps.setYAxisGyroError(y_axis_gyro_error);
+				ps.setYAxisGyroError(angles::to_degrees(y_axis_gyro_error));
 			}
 			else
 			{
@@ -2946,7 +2947,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			if (safeTalonCall(pigeon2->ConfigXAxisGyroError(z_axis_gyro_error), "pigeon2->ConfigZAxisGyroError()", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pogeon2 " << pigeon2_names_[joint_id] << " ConfigZAxisGyroError = " << z_axis_gyro_error);
-				ps.setZAxisGyroError(z_axis_gyro_error);
+				ps.setZAxisGyroError(angles::to_degrees(z_axis_gyro_error));
 			}
 			else
 			{
@@ -3021,7 +3022,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		double set_yaw;
 		if (pc.setYawChanged(set_yaw))
 		{
-			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->SetYaw(set_yaw, timeoutMs)), "pigeon2->SetYaw()", ps.getDeviceNumber()))
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->SetYaw(angles::to_degrees(set_yaw), timeoutMs)), "pigeon2->SetYaw()", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " SetYaw to " << set_yaw);
 			}
@@ -3034,7 +3035,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 		double add_yaw;
 		if (pc.addYawChanged(add_yaw))
 		{
-			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->AddYaw(add_yaw, timeoutMs)), "pigeon2->AddYaw()", ps.getDeviceNumber()))
+			if (safeTalonCall(static_cast<ctre::phoenix::ErrorCode>(pigeon2->AddYaw(angles::to_degrees(add_yaw), timeoutMs)), "pigeon2->AddYaw()", ps.getDeviceNumber()))
 			{
 				ROS_INFO_STREAM("Pigeon2 " << pigeon2_names_[joint_id] << " AddYaw to " << add_yaw);
 			}
