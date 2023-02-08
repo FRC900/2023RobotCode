@@ -1,5 +1,6 @@
 
 #include <ros_control_boilerplate/frc_robot_interface.h>
+#include <angles/angles.h>
 namespace ros_control_boilerplate
 {
 // Each pigeon2 gets their own read thread. The thread loops at a fixed rate
@@ -62,8 +63,12 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 
 		std::array<double, 3> raw_gyro;
 		pigeon2->GetRawGyro(&raw_gyro[0]);
+		for (auto &r : raw_gyro)
+		{
+			r = angles::from_degrees(r);
+		}
 
-		const uint32_t reset_count = pigeon2->GetResetCount();
+		//const uint32_t reset_count = pigeon2->GetResetCount();
 		const uint32_t reset_flags = pigeon2->GetResetFlags();
 		const uint32_t firmware_version = pigeon2->GetFirmVers();
 
@@ -81,12 +86,14 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 			state->setStickyFaults(sticky_faults);
 
 			state->set6dQuaternion(quaternion_6d);
-			state->setYaw(ypr[0]);
-			state->setPitch(ypr[1]);
-			state->setRoll(ypr[2]);
-			state->setAccumGyro(accum_gyro);
-			state->setAbsoluteCompassHeading(absolute_compass_heading);
-			state->setCompassHeading(compass_heading);
+			state->setYaw(angles::from_degrees(ypr[0]));
+			state->setPitch(angles::from_degrees(ypr[1]));
+			state->setRoll(angles::from_degrees(ypr[2]));
+			state->setAccumGyro({angles::from_degrees(accum_gyro[0]),
+								angles::from_degrees(accum_gyro[1]),
+								angles::from_degrees(accum_gyro[2])});
+			state->setAbsoluteCompassHeading(angles::from_degrees(absolute_compass_heading));
+			state->setCompassHeading(angles::from_degrees(compass_heading));
 			state->setCompassFieldStrength(compass_field_strength);
 			state->setTemperature(temperature);
 			state->setUptime(uptime);
@@ -94,7 +101,7 @@ void FRCRobotInterface::pigeon2_read_thread(std::shared_ptr<ctre::phoenix::senso
 			state->setBiasedMagnetometer(biased_magnetometer);
 			state->setBiasedAccelerometer(biased_accelerometer);
 			state->setRawGyro(raw_gyro);
-			state->setResetCount(reset_count);
+			//state->setResetCount(reset_count);
 			state->setResetFlags(reset_flags);
 			state->setFirmwareVersion(firmware_version);
 

@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 include ("../cmake_modules/CMakeOpt.cmake")
 
 find_package(catkin REQUIRED COMPONENTS
+  angles
   as726x_interface
   cmake_modules
   controller_manager
