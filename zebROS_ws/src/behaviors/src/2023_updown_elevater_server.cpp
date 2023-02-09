@@ -340,13 +340,13 @@ class ElevaterAction2023
             {
                 for (size_t i = 0; i < talon_state.name.size(); i++)
                 {
-                    if (talon_state.name[i] == "elevater_master")
+                    if (talon_state.name[i] == "elevator_master")
                     {
                         elevater_master_idx = i;
                         break;
                     }
                 }
-                ElevaterERR("Can not find talong with name = " << "elevater_master");
+                ElevaterERR("Can not find talon with name = " << "elevator_master");
             }
             if (!(elevater_master_idx == std::numeric_limits<size_t>::max())) 
             {

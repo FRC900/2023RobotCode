@@ -1,7 +1,7 @@
 elevator_controller_2023:
     type: elevator_controller_2023/ElevatorController_2023
 
-    elevator_joint: [ 'elevator_master', 'elevator_follower1', 'elevator_follower2', 'elevator_follower3' ]
+    elevator_joint: [ 'elevator_master' ]
     max_height_val: 1.7
 
     arb_feed_forward_high: 0.052
@@ -29,11 +29,12 @@ elevator_controller_2023:
         close_loop_values:
             - {p: 0.275, i: 0.00001, d: 6.25, f: 0.28, i_zone: 0, closed_loop_peak_output: 1.0}
             - {p: 0.25, i: 0.0, d: 0, f: 0.58, i_zone: 4096, closed_loop_peak_output: 1.0}
-              
-        sensor_phase: True 
+
         invert_output: False
 
-        feedback_type: CTRE_MagEncoder_Relative
+        feedback_type: IntegratedSensor
+
+        neutral_mode: Brake
 
         # TODO : bottom limit switch config
         limit_switch_local_reverse_source: "FeedbackConnector"
@@ -51,22 +52,5 @@ elevator_controller_2023:
         conversion_factor: 0.02959
         neutral_deadband: 0.001
 
-        dynamic_reconfigure: true
-        motion_s_curve_strength: 0 
-    elevator_follower1: 
-        joint: elevator_follower1
-        sensor_phase: True 
-        invert_output: False
-        #feedback_type: CTRE_MagEncoder_Relative
-        #conversion_factor: 0.02959
-
-        #dynamic_reconfigure: true
-
-    elevator_follower2: 
-        joint: elevator_follower2
-        invert_output: True
-
-    elevator_follower3: 
-        joint: elevator_follower3
-        invert_output: True
-
+        dynamic_reconfigure: False
+        motion_s_curve_strength: 0

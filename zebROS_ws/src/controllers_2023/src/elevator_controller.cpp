@@ -95,8 +95,7 @@ class ElevatorController_2023 : public controller_interface::MultiInterfaceContr
 }; //class
 
 
- //namespace
-#endif
+ //namespac
 
 //END OF HPP CONTENTS
 template<typename T>
@@ -186,12 +185,11 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     
     }
 
-    //initialize the elevator joint
     if (!elevator_joint_.initWithNode(talon_command_iface, nullptr, controller_nh, elevator_params))
     {
         ROS_ERROR("Cannot initialize elevator joint!");
+        return false;
     }
-
     ddr_.registerVariable<double>
     ("arb_feed_forward_high",
      [this]()
@@ -287,6 +285,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     if (!elevator_joint_.initWithNode(talon_command_iface, nullptr, controller_nh, elevator_params))
     {
         ROS_ERROR("Cannot initialize elevator joint!");
+        return false;
     }
 
     elevator_service_ = controller_nh.advertiseService("elevator_service", &ElevatorController_2023::cmdService, this);
@@ -368,9 +367,9 @@ void ElevatorController_2023::update(const ros::Time &time, const ros::Duration 
         
 
         }
+    }
     else
     {
-
         elevator_joint_.setMode(hardware_interface::TalonMode_PercentOutput);
         if ((ros::Time::now() - last_time_down_).toSec() < elevator_zeroing_timeout)
         {
@@ -397,7 +396,6 @@ void ElevatorController_2023::update(const ros::Time &time, const ros::Duration 
     }
     last_position_ = elevator_joint_.getPosition();
     last_mode_ = elevator_joint_.getMode();
-    }
 }
 
 
@@ -432,14 +430,10 @@ bool ElevatorController_2023::cmdService(controllers_2023_msgs::ElevatorSrv::Req
     return true;
 }
 
-
-
-}//namespace
-//namespace
-
-
+}
 
 //DON'T FORGET TO EXPORT THE CLASS SO CONTROLLER_MANAGER RECOGNIZES THIS AS A TYPE
 PLUGINLIB_EXPORT_CLASS(elevator_controller_2023::ElevatorController_2023, controller_interface::ControllerBase)
 
 
+#endif
