@@ -28,7 +28,7 @@
 
 #include "ddynamic_reconfigure/ddynamic_reconfigure.h"
 
-#include "teleop_joystick_control/TeleopCmdVel.h"
+#include "teleop_joystick_control/TeleopCmdVel2023.h"
 #include "behavior_actions/AutoMode.h"
 
 #include "path_follower_msgs/holdPositionAction.h"
