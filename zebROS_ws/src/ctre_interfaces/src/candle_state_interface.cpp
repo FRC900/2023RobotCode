@@ -84,19 +84,36 @@ CANdleHWState::CANdleHWState(int id) :
     }
 }
 
-void CANdleHWState::setLED(int id, Colour colour) {
-    this->leds[id] = LED(colour);
+void CANdleHWState::setLED(size_t id, Colour colour) {
+    if (id < this->leds.size()) {
+        this->leds[id].emplace(LED(colour));
+    } else {
+        int diff = id - this->leds.size();
+        if (diff > 1) {
+            this->leds.resize(id);
+        }
+        this->leds.emplace_back(LED(colour));
+    }
 }
-void CANdleHWState::setLED(int id, int animation_id) {
-    this->leds[id] = LED(animation_id);
+void CANdleHWState::setLED(size_t id, int animation_id) {
+    if (id < this->leds.size()) {
+        this->leds[id].emplace(LED(animation_id));
+    } else {
+        int diff = id - this->leds.size();
+        if (diff > 1) {
+            this->leds.resize(id);
+        }
+        this->leds.emplace_back(LED(animation_id));
+    }
 }
-void CANdleHWState::setLEDOff(int id) {
-    this->leds[id] = LED();
+void CANdleHWState::setLEDOff(size_t id) {
+    this->leds[id].reset();
 }
 std::optional<LED> CANdleHWState::getLED(size_t id) {
     if (id < this->leds.size()) {
-        return std::optional<LED>(this->leds[id]);
+        return this->leds[id];
     } else {
+        ROS_INFO_STREAM("Warning: Attempting to get nonexistant LED");
         return std::nullopt;
     }
 }
@@ -130,13 +147,22 @@ void CANdleHWState::setAnimation(Animation animation) {
     }
 }
 void CANdleHWState::clearAnimation(int id) {
-    if (this->animations[id].has_value()) {
-        Animation animation = this->animations[id].value();
-        for (size_t led_id = animation.start; led_id < (size_t)(animation.start + animation.count); led_id++) {
-            this->setLEDOff(led_id);
+    if (id < this->max_animations) {
+        if (this->animations[id].has_value()) {
+            Animation animation = this->animations[id].value();
+            for (size_t led_id = animation.start; led_id < (size_t)(animation.start + animation.count); led_id++) {
+                this->setLEDOff(led_id);
+            }
+            //this->animations.erase(animations.begin() + id);
+            this->animations[id].reset();
         }
-        //this->animations.erase(animations.begin() + id);
-        this->animations[id].reset();
+    } else {
+        ROS_ERROR_STREAM("Attempted to clear CANdle animation with invalid ID!");
+    }
+}
+void CANdleHWState::clearAnimations() {
+    for (size_t i = 0; i < this->max_animations; i++) {
+        this->animations[i].reset();
     }
 }
 std::optional<Animation> CANdleHWState::getAnimation(size_t id) {
@@ -148,7 +174,7 @@ std::optional<Animation> CANdleHWState::getAnimation(size_t id) {
 }
 size_t CANdleHWState::getNextAnimationSlot() {
     //return this->animations.size();
-    for (size_t animation_id = 0; animation_id < 8; animation_id++) {
+    for (size_t animation_id = 0; animation_id < this->max_animations; animation_id++) {
         if (!(this->animations[animation_id].has_value())) {
             return animation_id;
         }

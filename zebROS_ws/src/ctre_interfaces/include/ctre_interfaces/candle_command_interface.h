@@ -59,6 +59,10 @@ class CANdleHWCommand {
         bool animationsChanged(std::vector<Animation>& animation);
         void drainAnimations();
 
+        // Stop CANdle animations
+        void stopAnimations();
+        bool stopAnimationsChanged(bool& stop);
+
     private:
         // LEDs to be written
         std::vector<std::optional<Colour>> leds;
@@ -75,6 +79,8 @@ class CANdleHWCommand {
         // Animations to be written
         std::vector<Animation> animations;
         bool animation_changed;
+        // If we should reset all the animations
+        bool stop_animations;
 };
 
 

@@ -82,7 +82,6 @@ struct Animation {
 
 // An LED on the CANdle
 enum LEDType {
-    Off,
     Coloured,
     Animated
 };
@@ -97,10 +96,7 @@ union LEDDisplay {
 class LED {
     public:
         LEDType type;
-
-        LED() :
-            type{LEDType::Off}
-        {}
+        
         LED(int animation_id) :
             type{LEDType::Animated}
         {
@@ -137,9 +133,9 @@ class CANdleHWState {
         int getDeviceID() const;
 
         // Set the colour of an LED
-        void setLED(int id, Colour colour);
-        void setLED(int id, int animation_id);
-        void setLEDOff(int id);
+        void setLED(size_t id, Colour colour);
+        void setLED(size_t id, int animation_id);
+        void setLEDOff(size_t id);
         std::optional<LED> getLED(size_t id);
 
         // Set the brightness of the CANdle's LEDs
@@ -157,6 +153,7 @@ class CANdleHWState {
         // The CANdle's animation
         void setAnimation(Animation animation);
         void clearAnimation(int id);
+        void clearAnimations();
         std::optional<Animation> getAnimation(size_t id);
         size_t getNextAnimationSlot();
 
@@ -164,7 +161,7 @@ class CANdleHWState {
         // The CAN ID of this CANdle
         int device_id;
         // All of the LED groups to colour
-        std::vector<LED> leds;
+        std::vector<std::optional<LED>> leds;
         // The brightness of the LEDs in the CANdle, from 0->1
         double brightness;
         // If the status LED should be on when the CANdle is being controlled
@@ -172,6 +169,7 @@ class CANdleHWState {
         // If the CANdle is enabled
         bool enabled;
         // The CANdle's animations
+        const size_t max_animations = 8;
         std::optional<Animation> animations[8];
 };
 

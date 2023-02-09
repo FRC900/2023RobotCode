@@ -10,7 +10,8 @@ CANdleHWCommand::CANdleHWCommand() :
     status_led_changed{false},
     enabled{true},
     enabled_changed{false},
-    animation_changed{false}
+    animation_changed{false},
+    stop_animations{true}
 {}
 
 void CANdleHWCommand::setLEDGroup(LEDGroup leds)
@@ -161,6 +162,18 @@ bool CANdleHWCommand::animationsChanged(std::vector<Animation>& animations) {
 }
 void CANdleHWCommand::drainAnimations() {
     this->animations.clear();
+}
+
+void CANdleHWCommand::stopAnimations() {
+    this->stop_animations = true;
+}
+bool CANdleHWCommand::stopAnimationsChanged(bool& stop) {
+    if (this->stop_animations) {
+        stop = this->stop_animations;
+        this->stop_animations = false;
+        return true;
+    }
+    return false;
 }
 
 }
