@@ -189,6 +189,8 @@ class PathAction
 				ROS_ERROR_STREAM("Failed to load path");
 				preempted = true;
 			}
+			
+			int current_index = 0;
 
 			std_msgs::Bool enable_msg;
 			std_msgs::Float64 command_msg;
