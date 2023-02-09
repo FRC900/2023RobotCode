@@ -71,7 +71,7 @@ class TeleopCmdVel
 		{
 			x_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
 			y_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
-			rotation_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
+			//rotation_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
 		}
 
 		StrafeSpeeds generateCmdVel(const double translationX, const double translationY, const double imu_angle, const ros::Time &stamp, const ConfigT &config)

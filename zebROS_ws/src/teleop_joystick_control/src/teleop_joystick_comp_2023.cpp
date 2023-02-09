@@ -34,6 +34,8 @@
 #include "path_follower_msgs/holdPositionAction.h"
 
 #include <imu_zero/ImuZeroAngle.h>
+#include <math.h>
+#include "teleop_joystick_control/RobotOrientationDriver.h"
 
 struct DynamicReconfigVars
 {
@@ -55,6 +57,8 @@ struct DynamicReconfigVars
 } config;
 
 std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
+
+std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 
 bool diagnostics_mode = false;
 
@@ -157,11 +161,7 @@ void imuCallback(const sensor_msgs::Imu &imuState)
 	if (std::isfinite(yaw)) // ignore NaN results
 	{
 		imu_angle = -yaw;
-
-		// Pass along yaw state to orient PID node
-		std_msgs::Float64 imu_angle_msg;
-		imu_angle_msg.data = yaw; // TBD - invert or not?
-		orient_strafing_state_pub.publish(imu_angle_msg);
+		robot_orientation_driver->setRobotOrientation(yaw);
 	}
 }
 
@@ -520,48 +520,73 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	//Only do this for the first joystick
 	if(joystick_id == 0)
 	{
-		//ROS_INFO_STREAM("js0 callback running!");
+			//ROS_INFO_STREAM("js0 callback running!");
 
 		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
 
-		//ROS_INFO_STREAM("leftStick = " << joystick_states_array[0].leftStickX << " " << joystick_states_array[0].leftStickY);
-		teleop_cmd_vel->updateRateLimit(config);
-		geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], imu_angle, config);
-		//ROS_INFO_STREAM("cmd_vel out " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
-
-		if (cmd_vel.angular.z != 0.0) {
-			if (snappingToAngle) {
-				// Disable angle snapping, if enabled
-				std_msgs::Bool enable_align_msg;
-				enable_align_msg.data = false;
-				orient_strafing_enable_pub.publish(enable_align_msg);
-			}
-		} else {
-			if (snappingToAngle) {
-				// Re-enable angle snapping, if enabled
-				std_msgs::Bool enable_align_msg;
-				enable_align_msg.data = true;
-				orient_strafing_enable_pub.publish(enable_align_msg);
-			}
+		const StrafeSpeeds strafe_speeds = teleop_cmd_vel->generateCmdVel(joystick_states_array[0].leftStickX, joystick_states_array[0].leftStickY, imu_angle, joystick_states_array[0].header.stamp, config);
+		// Rotate the robot in response to a joystick request.
+		const double rotation_increment = teleop_cmd_vel->generateAngleIncrement(joystick_states_array[0].rightStickX, joystick_states_array[0].header.stamp, config);
+		if (rotation_increment != 0.0)
+		{
+			ROS_INFO_STREAM(__FUNCTION__ << " rotation_increment = " << rotation_increment);
+			robot_orientation_driver->incrementTargetOrientation(rotation_increment);
 		}
 
-		if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
+		// TODO : should we run this separately on a timer?
+		// Only send cmd_vel message from teleop if the PID loop is
+		// responding to a setpoint from the teleop node.  This will
+		// prevent command generated from setpoints from other nodes
+		// being processed in here instead of there.
+		if (robot_orientation_driver->mostRecentCommandIsFromTeleop())
 		{
-			std_srvs::Empty empty;
-			if (!BrakeSrv.call(empty))
+			const double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			// TODO : add a robot_orientation_driver->isRobotRotating to replace the last conditional?
+			// If x and y inputs are 0 and the PID controls have settled on a final orientation,
+			// trigger brake mode in the swerve controller
+			if ((strafe_speeds.x_ == 0) && (strafe_speeds.y_ == 0) && (fabs(rotation_velocity) < config.rotation_epsilon))
 			{
-				ROS_ERROR("BrakeSrv call failed in sendRobotZero_");
-			}
-			ROS_INFO("BrakeSrv called");
+				// Only send this once and then stop publishing
+				// This will let other, lower priority cmd_vel messages
+				// from auto code move to the highest priority in the
+				// cmd vel mux rather than overriding them with higher
+				// priority 0,0,0 speeds from the teleop code
+				if (!sendRobotZero)
+				{
+					geometry_msgs::Twist cmd_vel;
+					cmd_vel.linear.x = 0.0;
+					cmd_vel.linear.y = 0.0;
+					cmd_vel.linear.z = 0.0;
+					cmd_vel.angular.x = 0.0;
+					cmd_vel.angular.y = 0.0;
+					cmd_vel.angular.z = 0.0;
+					JoystickRobotVel.publish(cmd_vel);
 
-			JoystickRobotVel.publish(cmd_vel);
-			sendRobotZero = true;
-		}
-		else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
-		{
-			//ROS_INFO_STREAM("Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
-			JoystickRobotVel.publish(cmd_vel);
-			sendRobotZero = false;
+					std_srvs::Empty empty;
+					if (!BrakeSrv.call(empty))
+					{
+						ROS_ERROR("BrakeSrv call failed in sendRobotZero");
+					}
+					ROS_INFO("BrakeSrv called");
+					sendRobotZero = true;
+				}
+			}
+			else
+			{
+				// Drive the robot using the non-zero cmd_vel read
+				// from the joystick, a previous rotation setpoint,
+				// or a combination of both
+				geometry_msgs::Twist cmd_vel;
+				cmd_vel.linear.x = strafe_speeds.x_;
+				cmd_vel.linear.y = strafe_speeds.y_;
+				cmd_vel.linear.z = 0.0;
+				cmd_vel.angular.x = 0.0;
+				cmd_vel.angular.y = 0.0;
+				cmd_vel.angular.z = rotation_velocity;
+
+				JoystickRobotVel.publish(cmd_vel);
+				sendRobotZero = false;
+			}
 		}
 
 		if(!diagnostics_mode)
@@ -611,6 +636,17 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				ROS_INFO_STREAM("Stopping snapping to nearest cone and disabling robot relative driving mode!");
 				snappingToAngle = false;
 				sendRobotZero = false;
+				/*
+				//TODO - think if we want the robot to stop rotating when
+				//the button is released and hold at that orientation vs
+				//having the button press be enough to snap it to the desired
+				//angle no matter how long the button is held
+				robot_orientation_driver->stopRotation();
+				teleop_cmd_vel->restoreRobotOrient();
+				ROS_INFO_STREAM("Stopping snapping to nearest cargo and disabling robot relative driving mode!");
+				sendRobotZero = false;
+				 */
+
 			}
 
 			//Joystick1: buttonB
@@ -1044,6 +1080,7 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 	// TODO : if in diagnostic mode, zero all outputs on the
 	// transition from enabled to disabled
 	robot_is_disabled = msg.Disabled;
+	robot_orientation_driver->setRobotEnabled(msg.Enabled);
 }
 
 void coneAngleCallback(const std_msgs::Float64 &msg) {
