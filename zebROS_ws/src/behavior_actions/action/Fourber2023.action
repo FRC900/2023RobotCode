@@ -19,6 +19,7 @@ uint8 safety_position # looks up config value on where to go based on this, igno
 ---
 #result
 bool success # if we got there
+string message # debugging for errors
 ---
 #feedback
 bool success # if we got there

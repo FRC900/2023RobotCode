@@ -7,7 +7,7 @@ position_tolerance: 0.02 # meters, if fourbar position is +/- than the server se
 # purposly capitlized, same terminolgy in the elevater
 # all XXX_below is if the service call to the fourbar should have the "below" field set to
 cube:
-  intake: 1.00
+  intake: 0.50
   intake_below: true
 
   low_node: 2.05
@@ -60,7 +60,7 @@ base_away_us_cone:
 
 # minimum distance out the intake 
 safety_high: 
-  min_distace: 2.00
+  min_distance: 2.00
   below: false
 
 safety_intake:

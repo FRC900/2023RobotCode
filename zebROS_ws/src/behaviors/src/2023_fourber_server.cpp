@@ -83,6 +83,7 @@ class FourberAction2023
         double position_tolerance_ = 0.02;
         double fourbar_cur_setpoint_;
         double fourbar_cur_position_;
+        double fourbar_cur_speed_;
 
         std::atomic<SafteyState> saftey_state_;
         double previous_setpoint_;
@@ -100,7 +101,7 @@ class FourberAction2023
             const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
             // TODO check topic
             fourbar_srv_ = nh_.serviceClient<controllers_2023_msgs::FourBarSrv>("/frcrobot_jetson/four_bar_controller_2023/four_bar_service", false, service_connection_header);
-            if (!fourbar_srv_.waitForExistence(ros::Duration(5)))
+            if (!fourbar_srv_.waitForExistence())
             {
                 FourberERR("========Could not find fourbar service========");
             }
@@ -174,12 +175,12 @@ class FourberAction2023
             load_param_helper(nh_, "base_away_us_cone/high_node_below", res_bool, false);
             game_piece_lookup_[PieceMode(fourber_ns::BASE_AWAY_US_CONE, fourber_ns::HIGH_NODE)] = FourBarMessage(res, res_bool);
 
-            load_param_helper(nh_, "safety_high/distance", res, 0.4);
+            load_param_helper(nh_, "safety_high/min_distance", res, 0.4);
             safety_high_distance_ = res;
             load_param_helper(nh_, "safety_high/below", res_bool, false);
             safety_high_below_ = res_bool;
 
-            load_param_helper(nh_, "safety_intake/distance", res, 0.4);
+            load_param_helper(nh_, "safety_intake/min_distance", res, 0.4);
             safety_low_distance_ = res;
             load_param_helper(nh_, "safety_intake/below", res_bool, true);
             safety_low_below_ = res_bool;
@@ -192,12 +193,13 @@ class FourberAction2023
         {
         }
 
-        void publishFailure()
+        void publishFailure(std::string msg = "")
         {
             behavior_actions::Fourber2023Feedback feedback;
             behavior_actions::Fourber2023Result result;
             feedback.success = false;
             result.success = false;
+            result.message = msg;
             as_.publishFeedback(feedback);
             as_.setAborted(result);
         }
@@ -213,14 +215,24 @@ class FourberAction2023
         }
 
         // blocks until fourbar is at the correct position
-        bool waitForFourbar(double position)
+        bool waitForFourbar()
         {
+            // NOTE we can't check the talon position against the position passed into the four bar controller
+            // because it changes that linear position into an angular position.
+            // Check talon.set_point against talon.position instead
             ros::Rate r = ros::Rate(10);
+
+            while (fourbar_cur_speed_ == 0)
+            {
+                ros::spinOnce();
+                ROS_INFO_STREAM_THROTTLE(1, "Waiting for fourbar to move");
+                r.sleep();
+            }
 
             while (true)
             {
                 ros::spinOnce();
-                ROS_INFO_STREAM_THROTTLE(1, "Waiting for fourbar");
+                ROS_INFO_STREAM_THROTTLE(1, "Waiting for fourbar, " << fourbar_cur_position_ << " vs " << fourbar_cur_setpoint_);
 
                 // essentially just keep fourbar where it is now
                 if (as_.isPreemptRequested() || !ros::ok())
@@ -235,9 +247,9 @@ class FourberAction2023
                     return false;
                 }
 
-                if (fabs(fourbar_cur_setpoint_ - position) <= position_tolerance_)
+                if (fabs(fourbar_cur_position_ - fourbar_cur_setpoint_) <= position_tolerance_)
                 {
-                    FourberINFO("Elevator reached position!");
+                    FourberINFO("Elevator reached position! " << fourbar_cur_position_ << " vs " << fourbar_cur_setpoint_);
                     break;
                 }
                 r.sleep();
@@ -272,14 +284,14 @@ class FourberAction2023
             if (!fourbar_srv_.call(safety_req))
             {
                 FourberERR("Unable to call fourbar service in saftey code");
-                publishFailure();
+                publishFailure("Unable to call fourbar service in safety code: " + std::to_string(safety_req.request.position));
                 return;
             }
 
-            if (!waitForFourbar(safety_req.request.position))
+            if (!waitForFourbar())
             {
                 FourberERR("Failed calling fourber with message 'safety_req'");
-                publishFailure();
+                publishFailure("Failed calling fourber with message " + std::to_string(safety_req.request.position));
                 return;
             }
             else
@@ -308,7 +320,7 @@ class FourberAction2023
                 break;
             default:
                 FourberERR("Saftey position enum is invalid!! Ignoring request");
-                publishFailure();
+                publishFailure("Safety position enum is invalid!! Ignoring request");
                 return;
             }
 
@@ -346,13 +358,13 @@ class FourberAction2023
                 if (!fourbar_srv_.call(go_to_previous_req))
                 {
                     FourberERR("Failed calling fourber service with message 'go_to_previous_req'");
-                    publishFailure();
+                    publishFailure("Failed calling fourber service with message " + std::to_string(go_to_previous_req.request.position));
                     return;
                 }
 
-                if (!waitForFourbar(go_to_previous_req.request.position))
+                if (!waitForFourbar())
                 {
-                    publishFailure();
+                    publishFailure("Failed waiting for fourber service with message " + std::to_string(go_to_previous_req.request.position));
                     return;
                 }
 
@@ -370,7 +382,7 @@ class FourberAction2023
             }
             else {
                 FourberERR("Failed game piece lookup, ignoring message");
-                publishFailure();
+                publishFailure("Failed game piece lookup");
                 return;
             }
 
@@ -403,14 +415,14 @@ class FourberAction2023
             if (!fourbar_srv_.call(req))   // somehow fourbar has failed, set status and abort to pass error up
             {
                 FourberERR("Failed to moving fourbar :(");
-                publishFailure();
+                publishFailure("Failed to move fourbar to " + std::to_string(req.request.position));
                 return;
             }
 
             // failed
-            if (!waitForFourbar(req_position))
+            if (!waitForFourbar())
             {
-                publishFailure();
+                publishFailure("Failed to wait for fourbar to " + std::to_string(req.request.position));
                 return;
             }
 
@@ -429,7 +441,7 @@ class FourberAction2023
         void talonStateCallback(const talon_state_msgs::TalonState &talon_state)
         {
             // fourbar_master_idx == max of size_t at the start
-            if (fourbar_master_idx >= talon_state.name.size()) // could maybe just check for > 0
+            if (fourbar_master_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
             {
                 for (size_t i = 0; i < talon_state.name.size(); i++)
                 {
@@ -439,12 +451,15 @@ class FourberAction2023
                         break;
                     }
                 }
-                FourberERR("Can not find talong with name = " << "four_bar_leader");
             }
             if (!(fourbar_master_idx == std::numeric_limits<size_t>::max()))
             {
                 fourbar_cur_setpoint_ = talon_state.set_point[fourbar_master_idx];
                 fourbar_cur_position_ = talon_state.position[fourbar_master_idx];
+                fourbar_cur_speed_ = talon_state.speed[fourbar_master_idx];
+            }
+            else {
+                FourberERR("Can not find talon with name = " << "four_bar_leader");
             }
         }
 }; // FourberAction2023

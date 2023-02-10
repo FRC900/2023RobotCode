@@ -84,7 +84,7 @@ class ElevaterAction2023
 
         ElevaterAction2023(std::string name) :
             as_(nh_, name, boost::bind(&ElevaterAction2023::executeCB, this, _1), false),
-            ac_fourber_("/elevator/fourber_server_2023", true),
+            ac_fourber_("/fourber/fourber_server_2023", true),
             nh_params_(nh_, "elevater_server_2023"),
             action_name_(name),
             ddr_(nh_params_)
@@ -336,7 +336,7 @@ class ElevaterAction2023
         void talonStateCallback(const talon_state_msgs::TalonState &talon_state)
         {
             // fourbar_master_idx == max of size_t at the start
-            if (elevater_master_idx >= talon_state.name.size()) // could maybe just check for > 0
+            if (elevater_master_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
             {
                 for (size_t i = 0; i < talon_state.name.size(); i++)
                 {
@@ -346,11 +346,13 @@ class ElevaterAction2023
                         break;
                     }
                 }
-                ElevaterERR("Can not find talon with name = " << "elevator_master");
             }
             if (!(elevater_master_idx == std::numeric_limits<size_t>::max())) 
             {
                 elev_cur_position_ = talon_state.position[elevater_master_idx];
+            }
+            else {
+                ElevaterERR("Can not find talon with name = " << "elevator_master");
             }
         }
 
