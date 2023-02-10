@@ -161,7 +161,7 @@ void imuCallback(const sensor_msgs::Imu &imuState)
 	if (std::isfinite(yaw)) // ignore NaN results
 	{
 		imu_angle = -yaw;
-		robot_orientation_driver->setRobotOrientation(yaw);
+		robot_orientation_driver->setRobotOrientation(imu_angle);
 	}
 }
 

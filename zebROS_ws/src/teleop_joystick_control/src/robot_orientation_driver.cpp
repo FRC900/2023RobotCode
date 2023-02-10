@@ -36,7 +36,15 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub setpoint = " << pid_setpoint_msg.data );
 	// Make sure the PID node is enabled
 	std_msgs::Bool enable_pub_msg;
-	enable_pub_msg.data = true;
+	// don't run pid if we are within 1 degree
+	if (fabs(angle - robot_orientation_) < 0.0174533) {
+		ROS_WARN_STREAM_THROTTLE(0.2, "Not enabling pid node, angle is 'close enough'");
+		enable_pub_msg.data = false;
+	}
+	else {
+		enable_pub_msg.data = true;
+	}
+
 	pid_enable_pub_.publish(enable_pub_msg);
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub enable = " << (int)enable_pub_msg.data );
 }

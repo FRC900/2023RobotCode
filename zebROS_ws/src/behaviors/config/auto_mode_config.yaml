@@ -18,8 +18,8 @@
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_left_hub", "stop_intaking", "shoot", "drive_forward"]
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_right_hub", "stop_intaking", "shoot", "drive_forward"]
 
-auto_mode_1: ["mini_drive_test"]
-#auto_mode_2: ["mini_drive_test"]
+auto_mode_1: ["mini_drive_test_with_rotation"]
+auto_mode_2: ["mini_drive_test"]
 auto_mode_3: ["test_orientation"]
 
 # Examples
@@ -351,6 +351,20 @@ mini_drive_test:
       - [1.0, 1.0, 0.0]
       - [2.0, -1.0, 0.0]
       - [3.0, 0.0, 0.0]
+    frame_id: ""
+    point_frame_id: []
+    path_offset_limit:
+      - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+    optimize_final_velocity: true
+
+mini_drive_test_with_rotation:
+  type: "path"
+  goal:
+    apply_offset: false
+    points:
+      - [1.0, 1.0, 0.0]
+      - [2.0, -1.0, 1.75]
+      - [3.0, 0.0, 1.75]
     frame_id: ""
     point_frame_id: []
     path_offset_limit:
