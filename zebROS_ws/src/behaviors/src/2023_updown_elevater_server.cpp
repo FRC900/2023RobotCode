@@ -77,6 +77,9 @@ class ElevaterAction2023
         double safety_intake_position_min_;
         double safety_intake_position_max_;
 
+        double safety_mid_position_min_;
+        double safety_mid_position_max_;
+
         size_t elevater_master_idx;
         SafteyState fourber_safety_state_; // feels bad to also hold fourber state here but it is needed to be able to properly send transition state vs no safety
 
@@ -138,8 +141,11 @@ class ElevaterAction2023
             game_piece_lookup_[PieceMode(elevater_ns::BASE_AWAY_US_CONE, elevater_ns::HIGH_NODE)] = res;
 
 
-            load_param_helper(nh_, "saftey_high_min", safety_high_position_min_, 2.0);
-            load_param_helper(nh_, "saftey_high_max", safety_high_position_max_, 2.5);
+            load_param_helper(nh_, "safety_high_min", safety_high_position_min_, 2.0);
+            load_param_helper(nh_, "safety_high_max", safety_high_position_max_, 2.5);
+
+            load_param_helper(nh_, "safety_mid_min", safety_mid_position_min_, 0.6);
+            load_param_helper(nh_, "safety_mid_max", safety_mid_position_max_, 1.0);
 
             load_param_helper(nh_, "safety_intake_min", safety_intake_position_min_, 0.0);
             load_param_helper(nh_, "safety_intake_max", safety_intake_position_max_, 0.5);
@@ -253,8 +259,13 @@ class ElevaterAction2023
                 fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_INTAKE_LOW;
                 fourber_safety_state_ = SafteyState::SAFTEY_LOW;
             }
+            else if (safety_mid_position_min_ <= req_position && req_position <= safety_mid_position_max_)
+            {
+                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_MID;
+                fourber_safety_state_ = SafteyState::SAFETY_MID;
+            }
             // not going within eaither of those, so if the safety state is set, we can trainsition to it being unset
-            else if (fourber_safety_state_ == SafteyState::SAFTEY_HIGH || fourber_safety_state_ == SafteyState::SAFTEY_LOW)
+            else if (fourber_safety_state_ == SafteyState::SAFTEY_HIGH || fourber_safety_state_ == SafteyState::SAFTEY_LOW || fourber_safety_state_ == SafteyState::SAFETY_MID)
             {
                 fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY;
                 fourber_safety_state_ = SafteyState::NONE;
@@ -266,8 +277,9 @@ class ElevaterAction2023
 
             // have a meaningful message to send
             bool fourber_success = false;
-            if (!(fourber_goal.safety_position == behavior_actions::Fourber2023Goal::NO_SAFETY))
+            if (!(fourber_goal.safety_position == behavior_actions::Fourber2023Goal::NO_SAFETY || fourber_goal.safety_position == behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY))
             {
+                ElevaterINFO("Setting safety to " << fourber_goal.safety_position);
                 auto fourbar_result = ac_fourber_.sendGoalAndWait(fourber_goal, ros::Duration(5), ros::Duration(3));
                 if (!(fourbar_result == actionlib::SimpleClientGoalState::SUCCEEDED))
                 {
@@ -321,6 +333,12 @@ class ElevaterAction2023
             }
 
             ElevaterINFO("Succeeded moving elevator!");
+
+            if (fourber_goal.safety_position == behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY) {
+                ElevaterINFO("Setting safety to no safety needed");
+                ac_fourber_.sendGoal(fourber_goal);
+            }
+
             publishSuccess();
             // print_map();
             ros::spinOnce();

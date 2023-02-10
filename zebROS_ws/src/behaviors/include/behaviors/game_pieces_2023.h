@@ -4,6 +4,7 @@
 enum SafteyState {
   NONE,
   SAFTEY_HIGH,
+  SAFETY_MID,
   SAFTEY_LOW
 };
 
