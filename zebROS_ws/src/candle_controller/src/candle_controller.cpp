@@ -115,11 +115,8 @@ public:
         const AnimationStamped animation = *(this->animation_buffer.readFromRT());
         const BrightnessStamped brightness = *(this->brightness_buffer.readFromRT());
 
-        // BrightnessStamped isn't exclusive to colours/animations, so it gets special treatment
-        if (brightness.time > this->last_write) {
-            ROS_INFO_STREAM("Writing new brightness to CANdle");
-            this->candle_handle->setBrightness(brightness.brightness);
-        }
+        // Brightness isn't exclusive to colours/animations, so it gets special treatment
+        this->candle_handle->setBrightness(brightness.brightness);
 
         if (leds.time > this->last_write || animation.time > this->last_write) {
             if (leds.time > animation.time) {

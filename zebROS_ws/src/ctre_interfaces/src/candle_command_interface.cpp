@@ -80,6 +80,7 @@ void CANdleHWCommand::drainLEDGroups() {
 
 void CANdleHWCommand::setBrightness(double brightness) {
     if (this->brightness != brightness) {
+        ROS_INFO_STREAM("Setting CANdle brightness to: " << brightness);
         this->brightness = brightness;
         this->brightness_changed = true;
     }
