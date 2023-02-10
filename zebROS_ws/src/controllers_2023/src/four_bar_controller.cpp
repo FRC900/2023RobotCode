@@ -11,6 +11,7 @@
 #include <talon_controllers/talon_controller_interface.h> // "
 #include <pluginlib/class_list_macros.h> //to compile as a controller
 #include "controllers_2023_msgs/FourBarSrv.h"
+#include "controllers_2023_msgs/FourBarState.h"
 
 #include "ddynamic_reconfigure/ddynamic_reconfigure.h"
 
@@ -43,6 +44,8 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
 
         std::atomic<double> position_command_; //this is the buffer for percent output commands to be published
         ros::ServiceServer four_bar_service_; //service for receiving commands
+        ros::Publisher current_state_pub_;
+        ros::Publisher set_state_pub_;
 
         bool zeroed_;
         bool last_zeroed_;
@@ -85,6 +88,24 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
 
             double angle = acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_) - xAngle;
             return below ? acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_) + xAngle : angle;
+        }
+
+        controllers_2023_msgs::FourBarState stateFromAngle(double angle) const
+        {
+            double minAngle = acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_);
+            // if below, angle = minAngle + acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_). if above, angle = minAngle - acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_).
+            if (angle > minAngle) {
+                controllers_2023_msgs::FourBarState state;
+                state.below = true;
+                state.position = cos(angle - minAngle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_;
+                return state;
+            } else {
+                // (minAngle - (minAngle - angle)) = minAngle - minAngle + angle = angle
+                controllers_2023_msgs::FourBarState state;
+                state.below = false;
+                state.position = cos(minAngle - angle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_;
+                return state;
+            }
         }
 }; //class
 
@@ -361,6 +382,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     }
 
     four_bar_service_ = controller_nh.advertiseService("four_bar_service", &FourBarController_2023::cmdService, this);
+    current_state_pub_ = controller_nh.advertise<controllers_2023_msgs::FourBarState>("current_state", 1, true);
+    set_state_pub_ = controller_nh.advertise<controllers_2023_msgs::FourBarState>("set_state", 1, true);
 
     return true;
 }
@@ -441,6 +464,12 @@ void FourBarController_2023::update(const ros::Time &time, const ros::Duration &
     }
     last_angle_ = four_bar_joint_.getPosition();
     last_mode_ = four_bar_joint_.getMode();
+
+    auto current_state = stateFromAngle(last_angle_);
+    current_state_pub_.publish(current_state);
+
+    auto set_state = stateFromAngle(position_command_);
+    set_state_pub_.publish(set_state);
 }
 
 void FourBarController_2023::stopping(const ros::Time &/*time*/)
