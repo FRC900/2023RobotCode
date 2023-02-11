@@ -87,11 +87,18 @@ def new_config_callback(client, config):
 rospy.init_node('testclient_py', anonymous=True)
 
 client = DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', config_callback=config_callback, timeout=1)
-test_client = []
-test_client.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', config_callback=config_callback, timeout=1))
-test_client.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', config_callback=config_callback, timeout=1))
-test_client.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', config_callback=config_callback, timeout=1))
-test_client.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', config_callback=config_callback, timeout=1))
+speed_joints = []
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', config_callback=config_callback, timeout=4))
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', config_callback=config_callback, timeout=3))
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', config_callback=config_callback, timeout=1))
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', config_callback=config_callback, timeout=2))
+
+
+steering_joints = []
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', config_callback=config_callback, timeout=5))
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fl', config_callback=config_callback, timeout=9))
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_br', config_callback=config_callback, timeout=7))
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_bl', config_callback=config_callback, timeout=6))
 
 #takes input from client in the first parameter and sets it as aa client.
 #later the cfg of the client is outputted, ex printed.
