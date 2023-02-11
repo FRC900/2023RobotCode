@@ -37,6 +37,7 @@ find_package(Eigen3 REQUIRED)
 add_service_files (
 	FILES
 	RobotOrient.srv
+	OrientStrafingAngle.srv
 	)
 
 generate_messages (

@@ -53,6 +53,8 @@ public:
 	// Used to generate cmd_vel message in teleop code
 	double getOrientationVelocityPIDOutput(void) const;
 
+	double getCurrentOrientation(void) const;
+
 	// Publisher to publish orientation? Or can this be read from PID node?
 	// Timer to publish to PID nodes? Or only in callbacks from odom yaw or in response to set/inc orientation?
 	// match data subscriber

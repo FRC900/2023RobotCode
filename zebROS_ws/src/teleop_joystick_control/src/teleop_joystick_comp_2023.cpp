@@ -19,7 +19,6 @@
 
 #include <vector>
 #include "teleop_joystick_control/RobotOrient.h"
-#include "teleop_joystick_control/OrientStrafingAngle.h"
 
 #include "frc_msgs/ButtonBoxState.h"
 #include "frc_msgs/MatchSpecificData.h"
@@ -34,6 +33,7 @@
 #include "path_follower_msgs/holdPositionAction.h"
 
 #include <imu_zero/ImuZeroAngle.h>
+#include <angles/angles.h>
 #include <math.h>
 #include "teleop_joystick_control/RobotOrientationDriver.h"
 
@@ -182,13 +182,6 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 	return true;
 }
 
-bool orientStrafingAngleCallback(teleop_joystick_control::OrientStrafingAngle::Request& req,
-		teleop_joystick_control::OrientStrafingAngle::Response&/* res*/)
-{
-	orient_strafing_angle = req.angle;
-	return true;
-}
-
 bool sendRobotZero = false;
 bool snappingToAngle = false;
 
@@ -330,9 +323,13 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 
 	if(button_box.leftBluePress)
 	{
+		ROS_INFO_STREAM("Left blue button callback!");
+		// 10 degrees
+		robot_orientation_driver->incrementTargetOrientation(0.17453292519943295);
 	}
 	if(button_box.leftBlueButton)
 	{
+
 	}
 	if(button_box.leftBlueRelease)
 	{
@@ -340,6 +337,8 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 
 	if(button_box.rightBluePress)
 	{
+		ROS_INFO_STREAM("Right blue button callback!");
+		robot_orientation_driver->incrementTargetOrientation(-0.17453292519943295);
 	}
 	if(button_box.rightBlueButton)
 	{
@@ -540,7 +539,13 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		// being processed in here instead of there.
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop())
 		{
-			const double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			ROS_INFO_STREAM_THROTTLE(1, "target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation());
+			if (fabs(angles::shortest_angular_distance(robot_orientation_driver->getTargetOrientation(), robot_orientation_driver->getCurrentOrientation())) < 0.0174533) {
+				ROS_ERROR_STREAM("target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation() << " diff " << fabs(robot_orientation_driver->getTargetOrientation() -  robot_orientation_driver->getCurrentOrientation()));
+				ROS_ERROR_STREAM_THROTTLE(0.5, "Not rotating, angle is 'close enough'");
+				rotation_velocity = 0; 
+			}
 			ROS_INFO_STREAM_THROTTLE(1, " Teleop: Roation vel=" << rotation_velocity);
 			// TODO : add a robot_orientation_driver->isRobotRotating to replace the last conditional?
 			// If x and y inputs are 0 and the PID controls have settled on a final orientation,
@@ -1178,6 +1183,10 @@ int main(int argc, char **argv)
 	{
 		ROS_ERROR("Could not read rotation_axis_scale in teleop_joystick_comp");
 	}
+	if(!n_params.getParam("rotation_epsilon", config.rotation_epsilon))
+	{
+		ROS_ERROR("Could not read rotation_epsilon in teleop_joystick_comp");
+	}
 
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
 
@@ -1237,7 +1246,6 @@ int main(int argc, char **argv)
 		ROS_ERROR("Wait (1 sec) timed out, for IMU Zero Service in teleop_joystick_comp.cpp");
 	}
 
-	ros::ServiceServer orient_strafing_angle_service = n.advertiseService("orient_strafing_angle", orientStrafingAngleCallback);
 
 	//Read from _num_joysticks joysticks
 	// Set up this callback last, since it might use all of the various stuff

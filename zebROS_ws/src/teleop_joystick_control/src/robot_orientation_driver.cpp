@@ -18,6 +18,7 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 {
 	if (robot_enabled_)
 	{
+		ROS_ERROR_STREAM("ROBOT DISABLED=======");
 		target_orientation_ = angle;
 	}
 	else
@@ -32,21 +33,14 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	std_msgs::Float64 pid_setpoint_msg;
 	target_orientation_ = angles::normalize_angle(target_orientation_);
 	pid_setpoint_msg.data = target_orientation_;
-	ROS_INFO_STREAM("Publishing pid setpoid with value " << pid_setpoint_msg);
+	ROS_INFO_STREAM_THROTTLE(2, "Publishing pid setpoid with value " << pid_setpoint_msg);
 	pid_setpoint_pub_.publish(pid_setpoint_msg);
 
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub setpoint = " << pid_setpoint_msg.data );
 	// Make sure the PID node is enabled
 	std_msgs::Bool enable_pub_msg;
 	// don't run pid if we are within 1 degree
-	//if (fabs(angle - robot_orientation_) < 0.0174533) {
-	//	ROS_WARN_STREAM_THROTTLE(0.2, "Not enabling pid node, angle is 'close enough'");
-	//	enable_pub_msg.data = false;
-	//}
-	//else {
-		enable_pub_msg.data = true;
-	//}
-
+	enable_pub_msg.data = true;
 	pid_enable_pub_.publish(enable_pub_msg);
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub enable = " << (int)enable_pub_msg.data );
 }
@@ -106,6 +100,11 @@ void RobotOrientationDriver::setRobotEnabled(bool enabled)
 	{
 		setTargetOrientation(robot_orientation_, false);
 	}
+}
+
+double RobotOrientationDriver::getCurrentOrientation(void) const 
+{
+	return robot_orientation_; 
 }
 
 double RobotOrientationDriver::getTargetOrientation(void) const
