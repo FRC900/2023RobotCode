@@ -277,11 +277,6 @@ class ElevaterAction2023
                 fourber_goal.safety_positions.push_back(fourber_goal.SAFETY_MID);
                 previously_limited_ = true;
             }
-            else if (safety_mid_position_min_ <= req_position && req_position <= safety_mid_position_max_)
-            {
-                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_MID;
-                fourber_safety_state_ = SafteyState::SAFETY_MID;
-            }
             // not going within eaither of those, so if the safety state is set, we can trainsition to it being unset
             if (fourber_goal.safety_positions.size() == 0 && previously_limited_)
             {
