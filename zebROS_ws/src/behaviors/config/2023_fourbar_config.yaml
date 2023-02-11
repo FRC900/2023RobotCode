@@ -16,7 +16,7 @@ cube:
   middle_node: 0.5
   middle_node_below: false
 
-  high_node: 0.5
+  high_node: 0.55
   high_node_below: false
 
 vertical_cone:

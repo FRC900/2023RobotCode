@@ -286,14 +286,17 @@ class ElevaterAction2023
             // leave the list empty otherwise
 
             // have a meaningful message to send
-            bool fourber_success = false;
-            ElevaterINFO("Setting safety to " << std::to_string(fourber_goal.safety_positions.size()) << " zones");
-            auto fourbar_result = ac_fourber_.sendGoalAndWait(fourber_goal, ros::Duration(5), ros::Duration(3));
-            if (!(fourbar_result == actionlib::SimpleClientGoalState::SUCCEEDED))
-            {
-                ElevaterERR("Fourber actionlib called from elevater has failed. Unable to safely move elevator. Aborting");
-                publishFailure();
-                return;
+            if (fourber_goal.safety_positions.size() != 0) {
+                // don't send unless changing safety
+                bool fourber_success = false;
+                ElevaterINFO("Setting safety to " << std::to_string(fourber_goal.safety_positions.size()) << " zones");
+                auto fourbar_result = ac_fourber_.sendGoalAndWait(fourber_goal, ros::Duration(5), ros::Duration(3));
+                if (!(fourbar_result == actionlib::SimpleClientGoalState::SUCCEEDED))
+                {
+                    ElevaterERR("Fourber actionlib called from elevater has failed. Unable to safely move elevator. Aborting");
+                    publishFailure();
+                    return;
+                }
             }
 
             ElevaterINFO("Moving a " << piece_to_string[goal->piece] << " to the position " << mode_to_string[goal->mode] << " and the ELEVATOR to the position=" << req_position << " meters");

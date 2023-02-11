@@ -149,8 +149,19 @@ public:
 
 		if (goal->align_intake) {
 			path_follower_msgs::holdPositionGoal hold_position_goal_;
+			hold_position_goal_.pose.orientation.x = 0.0;
+			hold_position_goal_.pose.orientation.y = 0.0;
+			hold_position_goal_.pose.orientation.z = 0.0;
 			hold_position_goal_.pose.orientation.w = 1.0;
-			hold_position_goal_.pose.position.y = latest_game_piece_position_;
+
+			hold_position_goal_.pose.position.x = 0.0;
+			hold_position_goal_.pose.position.y = -latest_game_piece_position_;
+			hold_position_goal_.pose.position.z = 0.0;
+
+			hold_position_goal_.isAbsoluteCoord = false;
+
+			ROS_INFO_STREAM("2023_placing_server : holding position, y = " << hold_position_goal_.pose.position.y);
+
 			ac_hold_position_.sendGoal(hold_position_goal_);
 
 			if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_hold_position_, as_)) {
@@ -167,11 +178,6 @@ public:
 		fourber_goal.mode = goal->node + 1; // please don't change the actionlib files
 		ac_fourber_.sendGoal(fourber_goal);
 
-		behavior_actions::Elevater2023Goal elevater_goal;
-		elevater_goal.piece = latest_game_piece_;
-		elevater_goal.mode = goal->node + 1; // please don't change the actionlib files
-		ac_elevater_.sendGoal(elevater_goal);
-
 		if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_fourber_, as_)) {
 			ROS_INFO_STREAM("2023_placing_server : fourber timed out, aborting");
 			result_.timed_out = true;
@@ -180,6 +186,11 @@ public:
 			ac_elevater_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 			return;
 		}
+
+		behavior_actions::Elevater2023Goal elevater_goal;
+		elevater_goal.piece = latest_game_piece_;
+		elevater_goal.mode = goal->node + 1; // please don't change the actionlib files
+		ac_elevater_.sendGoal(elevater_goal);
 
 		if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_elevater_, as_)) {
 			ROS_INFO_STREAM("2023_placing_server : elevater timed out, aborting");
@@ -208,58 +219,7 @@ public:
 			}
 		}
 
-		// bool success = true;
-
-		// ROS_INFO_STREAM("2023_intake_server : calling intake controller with intake_arm_extend=true, percent_out=" << ((goal->outtake ? -1.0 : 1.0) * (goal->go_fast ? fast_speed_ : speed_)));
-		// std_msgs::Float64 percent_out;
-		// percent_out.data = (goal->outtake ? -1.0 : 1.0) * (goal->go_fast ? fast_speed_ : speed_);
-		// // if (!intake_client_.call(srv)) {
-		// // 	ROS_ERROR_STREAM("2023_intake_server : intake controller service call failed. exiting.");
-		// // 	result_.timed_out = false;
-		// // 	success = false;
-		// // 	as_.setAborted(result_);
-		// // 	return;
-		// // } else {
-		// // 	result_.timed_out = false;
-		// // 	success = true;
-		// // }
-		// make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
-		// ros::Time start = ros::Time::now();
-		// ros::Rate r(100);
-		// while (ros::ok() && !result_.timed_out && ros::Time::now() - start <= timeout_) {
-		// 	if (as_.isPreemptRequested() || !ros::ok()) {
-		// 		ROS_INFO_STREAM("2023_intake_server : preempted. retracting & stopping intake.");
-		// 		as_.setPreempted(result_);
-		// 		// srv.request.intake_arm_extend = false;
-		// 		// srv.request.percent_out = 0;
-		// 		// if (!intake_client_.call(srv)) {
-		// 		// 	ROS_ERROR_STREAM("2023_intake_server : failed to stop motors...");
-		// 		// 	as_.setAborted(result_);
-		// 		// 	return;
-		// 		// }
-		// 		std_msgs::Float64 percent_out;
-		// 		percent_out.data = 0.0;
-		// 		make_sure_publish(intake_pub_, percent_out);
-		// 		return;
-		// 	}
-		// 	r.sleep();
-		// }
-
-		// if (ros::Time::now() - start > timeout_) {
-		// 	ROS_INFO_STREAM("2023_intake_server: timed out!");
-		// 	std_msgs::Float64 percent_out;
-		// 	percent_out.data = 0.0;
-		// 	make_sure_publish(intake_pub_, percent_out);
-		// 	success = false;
-		// 	as_.setAborted(result_);
-		// }
-
-		// if(success)
-		// {
-		// 	ROS_INFO_STREAM("2023_intake_server : Succeeded");
-		// 	// set the action state to succeeded
-		// 	as_.setSucceeded(result_);
-		// }
+		as_.setSucceeded(result_);
 	}
 
 
