@@ -1,23 +1,23 @@
 position_tolerance: 0.02 # meters, if elevator position is +/- than the server set success
-cube:
-  intake: 1.00
-  low_node: 2.05
-  middle_node: 3.00
-  high_node: 4.00
+cube: # 0
+  intake: 1.00 # 0
+  low_node: 2.05 # 1
+  middle_node: 3.00 # 2
+  high_node: 4.00 # 3
 
-vertical_cone:
+vertical_cone: # 1
   intake: 0.20
   low_node: 2.00
   middle_node: 3.00
   high_node: 4.10
 
-base_towards_us_cone:
+base_towards_us_cone: # 2
   intake: 1.00
   low_node: 2.00
   middle_node: 3.00
   high_node: 4.00
 
-base_away_us_cone:
+base_away_us_cone: # 3
   intake: 1.00
   low_node: 2.00
   middle_node: 3.00

@@ -81,7 +81,7 @@ class ElevaterAction2023
         double safety_mid_position_max_;
 
         size_t elevater_master_idx;
-        SafteyState fourber_safety_state_; // feels bad to also hold fourber state here but it is needed to be able to properly send transition state vs no safety
+        bool previously_limited_;
 
     public:
 
@@ -248,45 +248,52 @@ class ElevaterAction2023
             assert(req_position >= 0); // probably done in elevator server also
             behavior_actions::Fourber2023Goal fourber_goal;
 
+            // ex. going from 0 to 1
+            // zones at [0.25, 0.5], [0.7, 0.8], and [-1, 2]
+            // 0.25 within [0, 1]
+            // 0.7 within [0, 1]
+
+            bool leaving_safety_zone = false;
+            double low = std::min(req_position, elev_cur_position_);
+            double high = std::max(req_position, elev_cur_position_);
+            ElevaterINFO(low << " to " << high);
+
             // high and low range checks
-            if (safety_high_position_min_ <= req_position && req_position <= safety_high_position_max_)
+            if ((safety_high_position_min_ <= req_position && req_position <= safety_high_position_max_) || (low <= safety_high_position_min_ && safety_high_position_min_ <= high))
             {
-                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_HIGH;
-                fourber_safety_state_ = SafteyState::SAFTEY_HIGH;
+                ROS_INFO_STREAM("High safety zone");
+                fourber_goal.safety_positions.push_back(fourber_goal.SAFETY_HIGH);
+                previously_limited_ = true;
             }
-            else if (safety_intake_position_min_ <= req_position && req_position <= safety_intake_position_max_)
+            if ((safety_intake_position_min_ <= req_position && req_position <= safety_intake_position_max_) || (low <= safety_intake_position_min_ && safety_intake_position_min_ <= high))
             {
-                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_INTAKE_LOW;
-                fourber_safety_state_ = SafteyState::SAFTEY_LOW;
+                ROS_INFO_STREAM("Intake safety zone");
+                fourber_goal.safety_positions.push_back(fourber_goal.SAFETY_INTAKE_LOW);
+                previously_limited_ = true;
             }
-            else if (safety_mid_position_min_ <= req_position && req_position <= safety_mid_position_max_)
+            if ((safety_mid_position_min_ <= req_position && req_position <= safety_mid_position_max_) || (low <= safety_mid_position_min_ && safety_mid_position_min_ <= high))
             {
-                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_MID;
-                fourber_safety_state_ = SafteyState::SAFETY_MID;
+                ROS_INFO_STREAM("Mid safety zone");
+                fourber_goal.safety_positions.push_back(fourber_goal.SAFETY_MID);
+                previously_limited_ = true;
             }
             // not going within eaither of those, so if the safety state is set, we can trainsition to it being unset
-            else if (fourber_safety_state_ == SafteyState::SAFTEY_HIGH || fourber_safety_state_ == SafteyState::SAFTEY_LOW || fourber_safety_state_ == SafteyState::SAFETY_MID)
+            if (fourber_goal.safety_positions.size() == 0 && previously_limited_)
             {
-                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY;
-                fourber_safety_state_ = SafteyState::NONE;
+                leaving_safety_zone = true;
+                previously_limited_ = false;
             }
-            else
-            {
-                fourber_goal.safety_position = behavior_actions::Fourber2023Goal::NO_SAFETY;
-            }
+            // leave the list empty otherwise
 
             // have a meaningful message to send
             bool fourber_success = false;
-            if (!(fourber_goal.safety_position == behavior_actions::Fourber2023Goal::NO_SAFETY || fourber_goal.safety_position == behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY))
+            ElevaterINFO("Setting safety to " << std::to_string(fourber_goal.safety_positions.size()) << " zones");
+            auto fourbar_result = ac_fourber_.sendGoalAndWait(fourber_goal, ros::Duration(5), ros::Duration(3));
+            if (!(fourbar_result == actionlib::SimpleClientGoalState::SUCCEEDED))
             {
-                ElevaterINFO("Setting safety to " << fourber_goal.safety_position);
-                auto fourbar_result = ac_fourber_.sendGoalAndWait(fourber_goal, ros::Duration(5), ros::Duration(3));
-                if (!(fourbar_result == actionlib::SimpleClientGoalState::SUCCEEDED))
-                {
-                    ElevaterERR("Fourber actionlib called from elevater has failed. Unable to safely move elevator. Aborting");
-                    publishFailure();
-                    return;
-                }
+                ElevaterERR("Fourber actionlib called from elevater has failed. Unable to safely move elevator. Aborting");
+                publishFailure();
+                return;
             }
 
             ElevaterINFO("Moving a " << piece_to_string[goal->piece] << " to the position " << mode_to_string[goal->mode] << " and the ELEVATOR to the position=" << req_position << " meters");
@@ -334,8 +341,9 @@ class ElevaterAction2023
 
             ElevaterINFO("Succeeded moving elevator!");
 
-            if (fourber_goal.safety_position == behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY) {
+            if (leaving_safety_zone) {
                 ElevaterINFO("Setting safety to no safety needed");
+                fourber_goal.safety_positions.assign({fourber_goal.SAFETY_TO_NO_SAFETY});
                 ac_fourber_.sendGoal(fourber_goal);
             }
 

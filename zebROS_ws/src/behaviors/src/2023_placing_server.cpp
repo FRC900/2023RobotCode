@@ -34,6 +34,7 @@ protected:
 
 	double server_timeout_;
 	double game_piece_timeout_;
+	double outtake_time_;
 
 public:
 
@@ -52,6 +53,10 @@ public:
 		if (!nh_.getParam("game_piece_timeout", game_piece_timeout_)) {
 			ROS_WARN_STREAM("2023_placing_server : could not find game_piece_timeout, defaulting to 1 second");
 			game_piece_timeout_ = 1;
+		}
+		if (!nh_.getParam("outtake_time", outtake_time_)) {
+			ROS_WARN_STREAM("2023_placing_server : could not find outtake_time, defaulting to 1 second");
+			outtake_time_ = 1;
 		}
 		game_piece_sub_ = nh_.subscribe("/game_piece", 1, &PlacingServer2023::gamePieceCallback, this);
 		game_piece_position_sub_ = nh_.subscribe("/game_piece_position", 1, &PlacingServer2023::gamePiecePositionCallback, this);
@@ -160,7 +165,6 @@ public:
 		behavior_actions::Fourber2023Goal fourber_goal;
 		fourber_goal.piece = latest_game_piece_;
 		fourber_goal.mode = goal->node + 1; // please don't change the actionlib files
-		fourber_goal.safety_position = fourber_goal.NO_SAFETY; // recklessness
 		ac_fourber_.sendGoal(fourber_goal);
 
 		behavior_actions::Elevater2023Goal elevater_goal;
@@ -191,12 +195,17 @@ public:
 		intake_goal_.outtake = true; // don't change this
 		ac_intake_.sendGoal(intake_goal_);
 
-		if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_intake_, as_)) {
-			ROS_INFO_STREAM("2023_placing_server : intake timed out, aborting");
-			result_.timed_out = true;
-			as_.setAborted(result_);
-			ac_intake_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-			return;
+		if (!waitForResultAndCheckForPreempt(ros::Duration(outtake_time_), ac_intake_, as_)) {
+			if (ac_intake_.getState() == actionlib::SimpleClientGoalState::ACTIVE || ac_intake_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+				ROS_INFO_STREAM("2023_placing_server : stopping outtaking");
+				ac_intake_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+			} else {
+				ROS_ERROR_STREAM("2023_placing_server : error with intake server! aborting!");
+				result_.timed_out = true;
+				as_.setAborted(result_);
+				ac_intake_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+				return;
+			}
 		}
 
 		// bool success = true;

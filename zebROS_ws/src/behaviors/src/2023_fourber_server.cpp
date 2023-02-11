@@ -91,7 +91,8 @@ class FourberAction2023
         bool fourbar_cur_position_below_;
         double fourbar_cur_speed_;
 
-        std::atomic<SafteyState> saftey_state_;
+        SafetyState safety_state_;
+        std::mutex safety_state_lock_;
         double previous_setpoint_;
 
         size_t fourbar_master_idx = std::numeric_limits<size_t>::max();
@@ -286,9 +287,11 @@ class FourberAction2023
         }
 
         // min distance is the minimum distance the forbar must be extended to not cause problems
-        void safetyBoundsAndCallService(double min_distance_above, double min_distance_below)
+        void safetyBoundsAndCallService()
         {
-            double min_distances[2] = {min_distance_above, min_distance_below};
+            safety_state_lock_.lock();
+            double min_distances[2] = {safety_state_.min_distance_above, safety_state_.min_distance_below};
+            safety_state_lock_.unlock();
             size_t set_below = fourbar_cur_setpoint_below_ ? 1 : 0;
             size_t current_below = fourbar_cur_position_below_ ? 1 : 0;
 
@@ -297,6 +300,7 @@ class FourberAction2023
             // wanting to go to safe position and already at a safe position
             if (fourbar_cur_setpoint_ >= min_distances[set_below] && fourbar_cur_position_ >= min_distances[current_below])
             {
+                publishSuccess();
                 // nothing to do
                 return;
             }
@@ -327,6 +331,7 @@ class FourberAction2023
             }
             else
             {
+                FourberINFO("Already in safe position");
                 publishSuccess();
                 return;
             }
@@ -335,81 +340,75 @@ class FourberAction2023
         void executeCB(const behavior_actions::Fourber2023GoalConstPtr &goal)
         {
             ros::spinOnce();
-            switch (goal->safety_position)
-            {
-            case fourber_ns::SAFETY_HIGH:
-                FourberINFO("Called with SAFETY_HIGH, will deploy fourbar to avoid high zone");
-                break;
-            case fourber_ns::SAFETY_MID:
-                FourberINFO("Called with SAFETY_MID, will deploy fourbar to avoid mid zone");
-                break;
-            case fourber_ns::SAFETY_INTAKE_LOW:
-                FourberINFO("Called with SAFETY_INTAKE_LOW, will deploy fourbar to avoid low zone");
-                break;
-            case fourber_ns::NO_SAFETY:
-                FourberINFO("Generic case, called with NO_SAFTEY, will use current saftey setting");
-                break;
-            case fourber_ns::SAFETY_TO_NO_SAFETY:
-                FourberINFO("Called with SAFETY_TO_NO_SAFETY, no illegal positions for the current elevator state");
-                break;
-            default:
-                FourberERR("Saftey position enum is invalid!! Ignoring request");
-                publishFailure("Safety position enum is invalid!! Ignoring request");
-                return;
-            }
+            FourberINFO("Called with " << goal->safety_positions.size() << " safety_positions");
 
-            // case where elevater node has given info that we are in a zone we need to be safe
-            if (goal->safety_position == fourber_ns::SAFETY_HIGH || goal->safety_position == fourber_ns::SAFETY_MID || goal->safety_position == fourber_ns::SAFETY_INTAKE_LOW)
-            {
-                // rememeber where we were when moving ot saftey mode as the only one that uses saftey mode is the elevatER
+            double max_minimum_distance_above;
+            double max_minimum_distance_below;
+
+            bool safety_set = false;
+
+            for (uint8_t position : goal->safety_positions) {
                 previous_setpoint_ = fourbar_cur_setpoint_;
-                if (goal->safety_position == fourber_ns::SAFETY_HIGH)
+                if (position == fourber_ns::SAFETY_HIGH)
                 {
-                    FourberINFO("Safey HIGH mode called for fourbar");
-                    saftey_state_ = SafteyState::SAFTEY_HIGH;
-                    safetyBoundsAndCallService(safety_high_distance_above_, safety_high_distance_below_);
+                    safety_set = true;
+                    FourberINFO("High");
+                    safety_state_lock_.lock();
+                    safety_state_.min_distance_above = std::max(safety_state_.min_distance_above, safety_high_distance_above_);
+                    safety_state_.min_distance_below = std::max(safety_state_.min_distance_below, safety_high_distance_below_);
+                    safety_state_lock_.unlock();
                 }
 
-                else if (goal->safety_position == fourber_ns::SAFETY_MID)
+                else if (position == fourber_ns::SAFETY_MID)
                 {
-                    FourberINFO("Safey MID mode called for fourbar");
-                    saftey_state_ = SafteyState::SAFETY_MID;
-                    safetyBoundsAndCallService(safety_mid_distance_above_, safety_mid_distance_below_);
+                    safety_set = true;
+                    FourberINFO("Mid");
+                    safety_state_lock_.lock();
+                    safety_state_.min_distance_above = std::max(safety_state_.min_distance_above, safety_mid_distance_above_);
+                    safety_state_.min_distance_below = std::max(safety_state_.min_distance_below, safety_mid_distance_below_);
+                    safety_state_lock_.unlock();
                 }
 
-                else if (goal->safety_position == fourber_ns::SAFETY_INTAKE_LOW)
+                else if (position == fourber_ns::SAFETY_INTAKE_LOW)
                 {
-                    FourberINFO("Safey LOW mode called for fourbar");
-                    saftey_state_ = SafteyState::SAFTEY_LOW;
-                    safetyBoundsAndCallService(safety_low_distance_above_, safety_low_distance_below_);
+                    safety_set = true;
+                    FourberINFO("Low");
+                    safety_state_lock_.lock();
+                    safety_state_.min_distance_above = std::max(safety_state_.min_distance_above, safety_low_distance_above_);
+                    safety_state_.min_distance_below = std::max(safety_state_.min_distance_below, safety_low_distance_below_);
+                    safety_state_lock_.unlock();
                 }
-                // we have moved to the required position to be safe or errored out
-                return;
+
+                else if (position == fourber_ns::SAFETY_TO_NO_SAFETY) {
+                    safety_state_lock_.lock();
+                    safety_state_.min_distance_above = 0;
+                    safety_state_.min_distance_below = 0;
+                    safety_state_lock_.unlock();
+                    controllers_2023_msgs::FourBarSrv go_to_previous_req;
+                    go_to_previous_req.request.position = previous_setpoint_;
+                    // should be good to hardcode this because the only time we want this to be true is when we are intaking which is in a restricted zone
+                    go_to_previous_req.request.below = false;
+
+                    if (!fourbar_srv_.call(go_to_previous_req))
+                    {
+                        FourberERR("Failed calling fourber service with message 'go_to_previous_req'");
+                        publishFailure("Failed calling fourber service with message " + std::to_string(go_to_previous_req.request.position));
+                        return;
+                    }
+
+                    if (!waitForFourbar(go_to_previous_req))
+                    {
+                        publishFailure("Failed waiting for fourber service with message " + std::to_string(go_to_previous_req.request.position));
+                        return;
+                    }
+
+                    publishSuccess();
+                    return;
+                }
             }
 
-            // case where we have move back to where we were
-            if (goal->safety_position == fourber_ns::SAFETY_TO_NO_SAFETY)
-            {
-                saftey_state_ = SafteyState::NONE;
-                controllers_2023_msgs::FourBarSrv go_to_previous_req;
-                go_to_previous_req.request.position = previous_setpoint_;
-                // should be good to hardcode this because the only time we want this to be true is when we are intaking which is in a restricted zone
-                go_to_previous_req.request.below = false;
-
-                if (!fourbar_srv_.call(go_to_previous_req))
-                {
-                    FourberERR("Failed calling fourber service with message 'go_to_previous_req'");
-                    publishFailure("Failed calling fourber service with message " + std::to_string(go_to_previous_req.request.position));
-                    return;
-                }
-
-                if (!waitForFourbar(go_to_previous_req))
-                {
-                    publishFailure("Failed waiting for fourber service with message " + std::to_string(go_to_previous_req.request.position));
-                    return;
-                }
-
-                publishSuccess();
+            if (safety_set) {
+                safetyBoundsAndCallService();
                 return;
             }
 
@@ -435,29 +434,13 @@ class FourberAction2023
             }
 
             // for movements when inside a safe zone
-            if (saftey_state_ == SafteyState::SAFTEY_HIGH)
-            {
-                if (req_bool) {
-                    req_position = std::max(req_position, safety_high_distance_below_);
-                } else {
-                    req_position = std::max(req_position, safety_high_distance_above_);
-                }
+            safety_state_lock_.lock();
+            if (req_bool) {
+                req_position = std::max(req_position, safety_state_.min_distance_below);
+            } else {
+                req_position = std::max(req_position, safety_state_.min_distance_above);
             }
-            if (saftey_state_ == SafteyState::SAFETY_MID) {
-                if (req_bool) {
-                    req_position = std::max(req_position, safety_mid_distance_below_);
-                } else {
-                    req_position = std::max(req_position, safety_mid_distance_above_);
-                }
-            }
-            if (saftey_state_ == SafteyState::SAFTEY_LOW)
-            {
-                if (req_bool) {
-                    req_position = std::max(req_position, safety_low_distance_below_);
-                } else {
-                    req_position = std::max(req_position, safety_low_distance_above_);
-                }
-            }
+            safety_state_lock_.unlock();
 
             FourberINFO("FourbERing a " << piece_to_string[goal->piece] << " to the position " << mode_to_string[goal->mode] << " and the FOURBAR to the position=" << req_position << " meters");
 
