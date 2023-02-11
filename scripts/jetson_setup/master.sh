@@ -11,19 +11,19 @@ sudo systemctl start systemd-networkd
 sudo systemctl enable systemd-networkd
 
 echo "====================================================="
-date >> /home/ubuntu/mounted.txt
+date >> /home/ubuntu/bagfiles/mounted.txt
 /home/ubuntu/2023RobotCode/scripts/jetson_setup/can_up.sh
-/home/ubuntu/2023RobotCode/scripts/jetson_setup/wait_for_ntp_sync.sh >> /home/ubuntu/mounted.txt
+/home/ubuntu/2023RobotCode/scripts/jetson_setup/wait_for_ntp_sync.sh >> /home/ubuntu/bagfiles/mounted.txt
 # Allow scheduling of RT threads without cgroups
 sysctl -w kernel.sched_rt_runtime_us=-1
 ulimit -r unlimited
 
-/home/ubuntu/2023RobotCode/scripts/jetson_setup/wait_for_ssh.sh 10.9.0.2 5801 >> /home/ubuntu/mounted.txt
-ssh 10.9.0.2 /etc/init.d/ntpd stop
-ssh 10.9.0.2 date -s @$(date -u +"%s")
-ssh 10.9.0.2 /etc/init.d/ntpd start
+/home/ubuntu/2023RobotCode/scripts/jetson_setup/wait_for_ssh.sh 10.9.0.2 5801 >> /home/ubuntu/bagfiles/mounted.txt
+#ssh 10.9.0.2 /etc/init.d/ntpd stop
+#ssh 10.9.0.2 date -s @$(date -u +"%s")
+#ssh 10.9.0.2 /etc/init.d/ntpd start
 
-/home/ubuntu/2023RobotCode/scripts/jetson_setup/wait_for_ssh.sh 10.9.0.9 5801 >> /home/ubuntu/mounted.txt
+/home/ubuntu/2023RobotCode/scripts/jetson_setup/wait_for_ssh.sh 10.9.0.9 5801 >> /home/ubuntu/bagfiles/mounted.txt
 echo ubuntu | ssh -tt 10.9.0.9 sudo -kS systemctl stop ntp.service
 echo ubuntu | ssh -tt 10.9.0.9 sudo -kS date -s @$(date -u +"%s")
 echo ubuntu | ssh -tt 10.9.0.9 sudo -kS systemctl start ntp.service
@@ -36,23 +36,18 @@ echo ubuntu | ssh -tt 10.9.0.9 sudo -kS systemctl start ntp.service
 
 # TODO - this should be handled by 10-local.rules 
 #sudo chmod a+rw /dev/ttyACM0
-sudo umount /mnt/900_2 --lazy
+#sudo umount /mnt/900_2 --lazy
 
 export CUDA_CACHE_MAXSIZE=104857600
 export CUDA_CACHE_PATH=/home/ubuntu/.nv/ComputeCache
 
 cd /home/ubuntu/2023RobotCode/scripts/jetson_setup/
+mkdir -p /home/ubuntu/bagfiles
+chmod 777 /home/ubuntu/bagfiles
+echo mounted / recording >> /home/ubuntu/bagfiles/mounted.txt
+roslaunch controller_node 2022_compbot_combined.launch record:=true
 
-if sudo mount /dev/nvme0n1p1 /mnt/900_2; then
-		echo mounted / recording >> /home/ubuntu/mounted.txt
-		sudo chmod a+rw /mnt/900_2/
-		roslaunch controller_node 2022_compbot_combined.launch record:=true
-else
-		echo did not mount >> /home/ubuntu/mounted.txt
-		roslaunch controller_node 2022_compbot_combined.launch record:=true 
-fi
-
-top -b > /mnt/900_2/$(date +%Y%m%d%H%M%S)_top_log.txt
+top -b > /home/ubuntu/2023RoboCode/bagfiles/$(date +%Y%m%d%H%M%S)_top_log.txt
 
 # Set brightness and exposure for C920 camera to low levels
 # for retro-tape detection
