@@ -363,10 +363,10 @@ mini_drive_test_with_rotation:
     apply_offset: false
     points:
       - [1.0, 1.0, 0.0]
-      - [2.0, -1.0, 1.75]
-      - [3.0, 0.0, 1.75]
+      - [2.0, 2.0, 0.78539816339]
+      - [3.0, 3.0, 0.0]
     frame_id: ""
     point_frame_id: []
     path_offset_limit:
       - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-    optimize_final_velocity: true
+    optimize_final_velocity: false

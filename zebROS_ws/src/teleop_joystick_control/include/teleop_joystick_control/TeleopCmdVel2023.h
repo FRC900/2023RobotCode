@@ -157,10 +157,12 @@ class TeleopCmdVel
 			last_stamp_ = stamp;
 			// Make sure the robot doesn't rotate if there's been
 			// too much time elapsed since the last joystick value
-			if (timestep.toSec() > 0.2)
+			if (timestep.toSec() > 0.2) {
+				ROS_WARN_STREAM("Timestep over 0.2");
 				return 0;
-
-			return angles::normalize_angle(rotation*timestep.toSec()*config.rotation_axis_scale);
+			}
+			ROS_INFO_STREAM_THROTTLE(1, "genAngleInc config.rotation_axis_scale " << config.rotation_axis_scale << " rotationZ " << rotationZ << " final rotation =  " << rotation*timestep.toSec()*config.rotation_axis_scale);
+			return angles::normalize_angle(rotation*timestep.toSec());
 		}
 
 	private:

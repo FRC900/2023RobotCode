@@ -161,7 +161,7 @@ void imuCallback(const sensor_msgs::Imu &imuState)
 	if (std::isfinite(yaw)) // ignore NaN results
 	{
 		imu_angle = -yaw;
-		robot_orientation_driver->setRobotOrientation(imu_angle);
+		robot_orientation_driver->setRobotOrientation(yaw);
 	}
 }
 
@@ -520,14 +520,14 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	//Only do this for the first joystick
 	if(joystick_id == 0)
 	{
-			//ROS_INFO_STREAM("js0 callback running!");
-
+		ROS_INFO_STREAM_THROTTLE(3, "js0 callback running!");
+		
 		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
 
 		const StrafeSpeeds strafe_speeds = teleop_cmd_vel->generateCmdVel(joystick_states_array[0].leftStickX, joystick_states_array[0].leftStickY, imu_angle, joystick_states_array[0].header.stamp, config);
 		// Rotate the robot in response to a joystick request.
 		const double rotation_increment = teleop_cmd_vel->generateAngleIncrement(joystick_states_array[0].rightStickX, joystick_states_array[0].header.stamp, config);
-		if (rotation_increment != 0.0)
+		if (rotation_increment != 0.0 || strafe_speeds.x_ != 0.0 || strafe_speeds.y_ != 0.0)
 		{
 			ROS_INFO_STREAM(__FUNCTION__ << " rotation_increment = " << rotation_increment);
 			robot_orientation_driver->incrementTargetOrientation(rotation_increment);
@@ -541,6 +541,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop())
 		{
 			const double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			ROS_INFO_STREAM_THROTTLE(1, " Teleop: Roation vel=" << rotation_velocity);
 			// TODO : add a robot_orientation_driver->isRobotRotating to replace the last conditional?
 			// If x and y inputs are 0 and the PID controls have settled on a final orientation,
 			// trigger brake mode in the swerve controller
@@ -560,6 +561,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 					cmd_vel.angular.x = 0.0;
 					cmd_vel.angular.y = 0.0;
 					cmd_vel.angular.z = 0.0;
+					ROS_WARN_STREAM("Publishing zero 2023 teleop ==========");
 					JoystickRobotVel.publish(cmd_vel);
 
 					std_srvs::Empty empty;
@@ -1172,6 +1174,9 @@ int main(int argc, char **argv)
 	if(!n_params.getParam("cone_cube_timeout", config.cone_cube_timeout))
 	{
 		ROS_ERROR("Could not read cone_cube_timeout in teleop_joystick_comp");
+	if(!n_params.getParam("rotation_axis_scale", config.rotation_axis_scale))
+	{
+		ROS_ERROR("Could not read rotation_axis_scale in teleop_joystick_comp");
 	}
 
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
