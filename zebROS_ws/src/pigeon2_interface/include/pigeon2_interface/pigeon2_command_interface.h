@@ -91,11 +91,11 @@ class Pigeon2HWCommand
 	private:
 		AxisDirection                mount_pose_forward_{AxisDirection::Undefined};
 		AxisDirection                mount_pose_up_{AxisDirection::Undefined};
-		bool                         mount_pose_axis_changed_{true};
+		bool                         mount_pose_axis_changed_{false};
 		double                       mount_pose_roll_{0};
 		double                       mount_pose_pitch_{0};
 		double                       mount_pose_yaw_{0};
-		bool                         mount_pose_rpy_changed_{true};
+		bool                         mount_pose_rpy_changed_{false};
 		double                       x_axis_gyro_error_{0};
 		bool                         x_axis_gyro_error_changed_{true};
 		double                       y_axis_gyro_error_{0};
@@ -108,8 +108,8 @@ class Pigeon2HWCommand
 		bool                         disable_temperature_compensation_changed_{true};
 		bool                         disable_no_motion_calibration_{false};
 		bool                         disable_no_motion_calibration_changed_{true};
-		bool                         clear_sticky_faults_;
-        bool                         zero_gyro_bias_now_;
+		bool                         clear_sticky_faults_{false};
+        bool                         zero_gyro_bias_now_{false};
 		double                       set_yaw_{0};
 		bool                         set_yaw_changed_{false};
 		double                       add_yaw_{0};

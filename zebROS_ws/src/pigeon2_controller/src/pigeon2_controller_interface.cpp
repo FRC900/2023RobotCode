@@ -1,4 +1,3 @@
-#include <cmath>
 #include "pigeon2_controller/pigeon2_controller_interface.h"
 
 namespace pigeon2_controller_interface
@@ -15,7 +14,7 @@ Pigeon2CIParams::Pigeon2CIParams(ros::NodeHandle n)
 	x_axis_gyro_error_ = 0;
 	y_axis_gyro_error_ = 0;
 	z_axis_gyro_error_ = 0;
-	compass_enable_ = true;
+	compass_enable_ = false;
 	disable_temperature_compensation_ = false;
 	disable_no_motion_calibration_ = false;
 
@@ -82,26 +81,16 @@ Pigeon2CIParams::Pigeon2CIParams(ros::NodeHandle n)
 void Pigeon2CIParams::setMountPoseAxis(int direction, std::atomic<hardware_interface::pigeon2::AxisDirection> &val, bool update_dynamic)
 {
 	const auto mount_pose = static_cast<hardware_interface::pigeon2::AxisDirection>(direction);
-	const bool publish_update = update_dynamic && (mount_pose != val);
-	val.store(mount_pose, std::memory_order_release);
 	use_mount_pose_rpy_ = false;
 	use_mount_pose_axis_ = true;
-	if (publish_update)
-	{
-		triggerDDRUpdate();
-	}
+	setVar(mount_pose, val, update_dynamic);
 }
 
 void Pigeon2CIParams::setMountPoseRPY(double direction, std::atomic<double> &val, bool update_dynamic)
 {
-	const bool publish_update = update_dynamic && (direction != val);
-	val.store(direction, std::memory_order_release);
-	use_mount_pose_axis_ = false;;
+	use_mount_pose_axis_ = false;
 	use_mount_pose_rpy_ = true;
-	if (publish_update)
-	{
-		triggerDDRUpdate();
-	}
+	setVar(direction, val, update_dynamic);
 }
 
 template <class T>
