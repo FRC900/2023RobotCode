@@ -18,11 +18,11 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 {
 	if (robot_enabled_)
 	{
-		ROS_ERROR_STREAM("ROBOT DISABLED=======");
 		target_orientation_ = angle;
 	}
 	else
 	{
+		ROS_ERROR_STREAM_THROTTLE(1, "=======ROBOT DISABLED=======");
 		// If the robot is disabled, set the desired orientation to the
 		// current orientation to prevent the robot from snapping to a
 		// random angle when reenabled

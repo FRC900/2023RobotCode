@@ -79,7 +79,7 @@ ros::Publisher JoystickRobotVel;
 ros::ServiceClient BrakeSrv;
 ros::ServiceClient IMUZeroSrv;
 
-double imu_angle;
+double imu_angle_for_swerve_only;
 
 bool robot_is_disabled{false};
 ros::Publisher auto_mode_select_pub;
@@ -160,7 +160,7 @@ void imuCallback(const sensor_msgs::Imu &imuState)
 
 	if (std::isfinite(yaw)) // ignore NaN results
 	{
-		imu_angle = -yaw;
+		imu_angle_for_swerve_only = -yaw;
 		robot_orientation_driver->setRobotOrientation(yaw);
 	}
 }
@@ -523,12 +523,12 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		
 		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
 
-		const StrafeSpeeds strafe_speeds = teleop_cmd_vel->generateCmdVel(joystick_states_array[0].leftStickX, joystick_states_array[0].leftStickY, imu_angle, joystick_states_array[0].header.stamp, config);
+		const StrafeSpeeds strafe_speeds = teleop_cmd_vel->generateCmdVel(joystick_states_array[0].leftStickX, joystick_states_array[0].leftStickY, imu_angle_for_swerve_only, joystick_states_array[0].header.stamp, config);
 		// Rotate the robot in response to a joystick request.
 		const double rotation_increment = teleop_cmd_vel->generateAngleIncrement(joystick_states_array[0].rightStickX, joystick_states_array[0].header.stamp, config);
 		if (rotation_increment != 0.0 || strafe_speeds.x_ != 0.0 || strafe_speeds.y_ != 0.0)
 		{
-			ROS_INFO_STREAM(__FUNCTION__ << " rotation_increment = " << rotation_increment);
+			ROS_INFO_STREAM_THROTTLE(3, __FUNCTION__ << " rotation_increment = " << rotation_increment);
 			robot_orientation_driver->incrementTargetOrientation(rotation_increment);
 		}
 
@@ -540,10 +540,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop())
 		{
 			double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
-			ROS_INFO_STREAM_THROTTLE(1, "target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation());
+			ROS_INFO_STREAM_THROTTLE(3, "target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation());
 			if (fabs(angles::shortest_angular_distance(robot_orientation_driver->getTargetOrientation(), robot_orientation_driver->getCurrentOrientation())) < 0.0174533) {
-				ROS_ERROR_STREAM("target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation() << " diff " << fabs(robot_orientation_driver->getTargetOrientation() -  robot_orientation_driver->getCurrentOrientation()));
-				ROS_ERROR_STREAM_THROTTLE(0.5, "Not rotating, angle is 'close enough'");
+				//ROS_ERROR_STREAM("target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation() << " diff " << fabs(robot_orientation_driver->getTargetOrientation() -  robot_orientation_driver->getCurrentOrientation()));
+				ROS_ERROR_STREAM_THROTTLE(3, "Not rotating, angle is 'close enough'");
 				rotation_velocity = 0; 
 			}
 			ROS_INFO_STREAM_THROTTLE(1, " Teleop: Roation vel=" << rotation_velocity);
@@ -576,6 +576,8 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 					}
 					ROS_INFO("BrakeSrv called");
 					sendRobotZero = true;
+					// hopefully solves the go into brake mode, move, go into brake move
+					robot_orientation_driver->stopRotation();
 				}
 			}
 			else
@@ -1209,7 +1211,7 @@ int main(int argc, char **argv)
 
 	teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
 
-	imu_angle = M_PI / 2.;
+	imu_angle_for_swerve_only = M_PI / 2.;
 
 	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
 
