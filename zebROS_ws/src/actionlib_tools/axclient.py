@@ -36,13 +36,12 @@
 # **********************************************************
 #  New Author: Christopher Holley
 """
-usage: %prog /action_name action_type
+usage: %prog
 """
 
-PKG = 'actionlib'
+PKG = 'actionlib_tools'
 
 import roslib.message
-
 from optparse import OptionParser
 import wx
 import rospy
@@ -55,6 +54,8 @@ from actionlib_tools.dynamic_action import DynamicAction
 from actionlib_msgs.msg import GoalStatus
 from collections import namedtuple
 import inspect
+import rospkg
+import os
 
 action_type = namedtuple("Action", ["topic", "type"])
 
@@ -72,6 +73,7 @@ class AXClientApp(wx.App):
         self.server_statuses = []
         self.server_status_bgs = []
         self.cancel_buttons = [] # bools
+        self.raw_message_yamls = [] # raw message files to view comments/enums
         
         self.current_client = None
         self.current_result = None
@@ -82,6 +84,8 @@ class AXClientApp(wx.App):
         self.current_server_status = None
         self.current_server_status_bgs = None
         self.current_cancel_button = None
+        self.current_raw_message = None
+
         self.FIRST_LOOP = True
 
         self.active_cbs = {} # master idx, function
@@ -176,6 +180,8 @@ class AXClientApp(wx.App):
             self.current_client = self.clients[idx]
             print("New client = ", self.current_client)
             self.current_goal.SetValue(self.goals[idx])
+            self.current_raw_message.SetValue(self.raw_message_yamls[idx])
+            self.current_raw_message.Refresh()
             self.current_goal.Refresh(eraseBackground=False)
             self.FIRST_LOOP = False
 
@@ -186,6 +192,7 @@ class AXClientApp(wx.App):
         self.current_status_bg.SetBackgroundColour(self.status_bgs[idx])
         self.current_server_status.SetLabel(self.server_statuses[idx])
         self.current_server_status_bg.SetBackgroundColour(self.server_status_bgs[idx])
+
         #self.print_state()
 
     def server_check(self, event):
@@ -332,7 +339,9 @@ class AXClientApp(wx.App):
             self.server_statuses.append(None)
             self.server_status_bgs.append(None)
             self.cancel_buttons.append(None)
+            self.raw_message_yamls.append(None)
 
+        rospack = rospkg.RosPack()
         for idx, (_, val) in enumerate(self.dynamic_actions.items()):
             self.goals[idx] = to_yaml(val.goal())
             self.results[idx] = ""
@@ -343,13 +352,23 @@ class AXClientApp(wx.App):
             self.server_statuses[idx] = "Disconnected from server :("
             self.server_status_bgs[idx] = wx.Colour(200, 0, 0)
             self.cancel_buttons[idx] = False
-
-
+            
+            THIS_DIR = os.path.join(rospack.get_path(self.action_topics_list[idx].type.split("/")[0]), 'action/')
+            THIS_DIR = THIS_DIR + self.action_topics_list[idx].type.split("/")[1].replace("Action", ".action")
+            THIS_DIR = THIS_DIR.replace(".2023RobotCode.readonly", "2023RobotCode")
+            print("THIS DIR ", THIS_DIR)
+            
+            with open(THIS_DIR, "r") as f:
+                data = f.read()
+                self.raw_message_yamls[idx] = data
+                print(data)
+            
         self.current_goal = wx.TextCtrl(self.frame, -1, style=wx.TE_MULTILINE)
         self.current_goal.SetValue(self.goals[self.master_idx])
         self.goal_st_bx = wx.StaticBox(self.frame, -1, "Goal")
         self.goal_st = wx.StaticBoxSizer(self.goal_st_bx, wx.VERTICAL)
         self.goal_st.Add(self.current_goal, 1, wx.EXPAND)
+        self.current_goal.AutoComplete
 
         self.current_feedback = wx.TextCtrl(self.frame, -1, style=(wx.TE_MULTILINE |
                                                            wx.TE_READONLY))
@@ -357,6 +376,12 @@ class AXClientApp(wx.App):
         self.feedback_st = wx.StaticBoxSizer(self.feedback_st_bx, wx.VERTICAL)
         self.feedback_st.Add(self.current_feedback, 1, wx.EXPAND)
 
+
+        self.current_raw_message = wx.TextCtrl(self.frame, -1, style=(wx.TE_MULTILINE |
+                                                         wx.TE_READONLY))
+        self.raw_message_st_bx = wx.StaticBox(self.frame, -1, "Raw Message")
+        self.raw_message_st = wx.StaticBoxSizer(self.raw_message_st_bx, wx.HORIZONTAL)
+        self.raw_message_st.Add(self.current_raw_message, 1, wx.EXPAND)
 
         self.current_result = wx.TextCtrl(self.frame, -1, style=(wx.TE_MULTILINE |
                                                          wx.TE_READONLY))
@@ -382,8 +407,9 @@ class AXClientApp(wx.App):
 
         self.sz.Add(self.action_selector_st, 1, wx.EXPAND)
         self.sz.Add(self.goal_st, 2, wx.EXPAND)
-        self.sz.Add(self.feedback_st, 2, wx.EXPAND)
-        self.sz.Add(self.result_st, 2, wx.EXPAND)
+        self.sz.Add(self.raw_message_st, 1, wx.EXPAND)
+        self.sz.Add(self.feedback_st, 1, wx.EXPAND)
+        self.sz.Add(self.result_st, 1, wx.EXPAND)
         self.sz.Add(self.send_goal, 0, wx.EXPAND)
         self.sz.Add(self.cancel_goal, 0, wx.EXPAND)
         self.sz.Add(self.current_status_bg, 0, wx.EXPAND)
@@ -433,7 +459,6 @@ def main():
             if not check_dupes_1_deep(action_topics, topic[1]):
                 action_topics.append(action_type(topic[0], topic[1]))
         '''
-
     dynactions = {}
     for action in action_topics:
         print(action.type)
