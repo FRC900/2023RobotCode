@@ -410,8 +410,8 @@ class AXClientApp(wx.App):
         self.current_server_status = wx.StaticText(self.current_server_status_bg, -1, label="Disconnected from server.")
 
         self.sz.Add(self.action_selector_st, 1, wx.EXPAND)
+        self.sz.Add(self.raw_message_st, 2, wx.EXPAND)
         self.sz.Add(self.goal_st, 2, wx.EXPAND)
-        self.sz.Add(self.raw_message_st, 1, wx.EXPAND)
         self.sz.Add(self.feedback_st, 1, wx.EXPAND)
         self.sz.Add(self.result_st, 1, wx.EXPAND)
         self.sz.Add(self.send_goal, 0, wx.EXPAND)
