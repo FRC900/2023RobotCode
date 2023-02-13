@@ -172,17 +172,21 @@ class AXClientApp(wx.App):
         self.goals[idx] = self.current_goal.GetValue()
         # need mutex?
         if selection != self.master_idx or self.FIRST_LOOP:
-            print("Master idx now = ", selection)
-            print("Goal type=", self.action_topics_list[selection].type)
+            #print("Master idx now = ", selection)
+            #print("Goal type=", self.action_topics_list[selection].type)
             idx = selection
             self.master_idx = selection
             #self.print_state()
             self.current_client = self.clients[idx]
-            print("New client = ", self.current_client)
+            #print("New client = ", self.current_client)
             self.current_goal.SetValue(self.goals[idx])
             self.current_raw_message.SetValue(self.raw_message_yamls[idx])
             self.current_raw_message.Refresh()
-            self.current_goal.Refresh(eraseBackground=False)
+            self.current_goal.Refresh()
+            self.current_raw_message.Update()
+            self.current_goal.Update()
+            self.action_selector.Refresh()
+            self.action_selector.Update()
             self.FIRST_LOOP = False
 
         #print("Current_server status", self.current_server_status.GetLabelText())
@@ -283,7 +287,7 @@ class AXClientApp(wx.App):
 
     def active_cb_maker(self):
         def active_cb():
-            print("Active callback")
+            #print("Active callback")
             wx.CallAfter(self.set_status, "Goal is active", wx.Colour(0, 200, 0))
         return active_cb
 
@@ -356,12 +360,12 @@ class AXClientApp(wx.App):
             THIS_DIR = os.path.join(rospack.get_path(self.action_topics_list[idx].type.split("/")[0]), 'action/')
             THIS_DIR = THIS_DIR + self.action_topics_list[idx].type.split("/")[1].replace("Action", ".action")
             THIS_DIR = THIS_DIR.replace(".2023RobotCode.readonly", "2023RobotCode")
-            print("THIS DIR ", THIS_DIR)
+            #print("THIS DIR ", THIS_DIR)
             
             with open(THIS_DIR, "r") as f:
                 data = f.read()
                 self.raw_message_yamls[idx] = data
-                print(data)
+                #print(data)
             
         self.current_goal = wx.TextCtrl(self.frame, -1, style=wx.TE_MULTILINE)
         self.current_goal.SetValue(self.goals[self.master_idx])
@@ -423,6 +427,7 @@ class AXClientApp(wx.App):
         self.server_check_timer.Start(100)
 
         self.sz.Layout()
+        
         self.frame.Show()
 
         return True
@@ -440,15 +445,12 @@ def main():
 
     topics = rospy.get_published_topics()
     action_topics = []
-    for topic in topics:
-        if "result" in topic[0]:
-            print(topic)
 
     for topic in topics: 
         if "ActionResult" in topic[1]:
             topic[0] = topic[0].replace("/result", "") 
             topic[1] = topic[1].replace("Result", "")
-            print(topic)
+            #print(topic)
             action_topics.append(action_type(topic[0], topic[1]))
 
         ''' 
@@ -461,9 +463,10 @@ def main():
         '''
     dynactions = {}
     for action in action_topics:
-        print(action.type)
+        #print(action.type)
         dynactions[action.topic] = DynamicAction(action.type)
     
+
     app = AXClientApp(dynactions, action_topics)
     app.MainLoop()
     app.OnQuit()
