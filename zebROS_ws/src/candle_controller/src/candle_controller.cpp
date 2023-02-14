@@ -87,7 +87,9 @@ AnimationClass getAnimationClass(AnimationType type) {
 namespace candle_controller {
 class CANdleController : public controller_interface::Controller<CANdleCommandInterface> {
 public:
-    CANdleController() {}
+    CANdleController() {
+        this->brightness_buffer.writeFromNonRT(1.0);
+    }
 
     bool init(
         CANdleCommandInterface* candle_command_interface,
@@ -113,10 +115,10 @@ public:
     void update(const ros::Time&, const ros::Duration&) override {
         const LEDGroupStamped leds = *(this->led_buffer.readFromRT());
         const AnimationStamped animation = *(this->animation_buffer.readFromRT());
-        const BrightnessStamped brightness = *(this->brightness_buffer.readFromRT());
+        const double brightness = *(this->brightness_buffer.readFromRT());
 
         // Brightness isn't exclusive to colours/animations, so it gets special treatment
-        this->candle_handle->setBrightness(brightness.brightness);
+        this->candle_handle->setBrightness(brightness);
 
         if (leds.time > this->last_write || animation.time > this->last_write) {
             if (leds.time > animation.time) {
@@ -128,11 +130,6 @@ public:
                 this->last_write = animation.time;
                 this->candle_handle->setAnimation(animation.animation);
             }
-        }
-
-        // Only overwrite last_write after the leds and animations have applied, since brightness isn't exclusive to them
-        if (brightness.time > this->last_write) {
-            this->last_write = brightness.time;
         }
     }
 
@@ -153,13 +150,6 @@ private:
         AnimationStamped() {}
     };
 
-    struct BrightnessStamped {
-        double brightness;
-        ros::Time time;
-
-        BrightnessStamped() {}
-    };
-
     CANdleCommandHandle candle_handle;
     ros::ServiceServer colour_service;
     ros::ServiceServer brightness_service;
@@ -168,7 +158,7 @@ private:
 
     realtime_tools::RealtimeBuffer<LEDGroupStamped> led_buffer;
     realtime_tools::RealtimeBuffer<AnimationStamped> animation_buffer;
-    realtime_tools::RealtimeBuffer<BrightnessStamped> brightness_buffer;
+    realtime_tools::RealtimeBuffer<double> brightness_buffer;
 
     bool colourCallback(candle_controller_msgs::Colour::Request& req, candle_controller_msgs::Colour::Response&) {
         if (this->isRunning()) {
@@ -187,11 +177,7 @@ private:
 
     bool brightnessCallback(candle_controller_msgs::Brightness::Request& req, candle_controller_msgs::Brightness::Response&) {
         if (this->isRunning()) {
-            BrightnessStamped brightness;
-            brightness.brightness = req.brightness;
-            brightness.time = ros::Time::now();
-
-            this->brightness_buffer.writeFromNonRT(brightness);
+            this->brightness_buffer.writeFromNonRT(req.brightness);
 
             return true;
         } else {

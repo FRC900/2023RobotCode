@@ -32,7 +32,7 @@ class CANdleHWCommand {
         CANdleHWCommand();
 
         // Set colour of LEDs
-        void setLEDGroup(LEDGroup leds);
+        void setLEDGroup(const LEDGroup& leds);
         bool ledGroupsChanged(std::vector<LEDGroup>& groups);
         void drainLEDGroups();
 

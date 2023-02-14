@@ -113,7 +113,6 @@ std::optional<LED> CANdleHWState::getLED(size_t id) {
     if (id < this->leds.size()) {
         return this->leds[id];
     } else {
-        ROS_INFO_STREAM("Warning: Attempting to get nonexistant LED");
         return std::nullopt;
     }
 }
@@ -139,29 +138,31 @@ bool CANdleHWState::getEnabled() {
     return this->enabled;
 }
 
-void CANdleHWState::setAnimation(Animation animation) {
+void CANdleHWState::setAnimation(const Animation& animation) {
     size_t animation_id = this->getNextAnimationSlot();
     this->animations[animation_id].emplace(animation);
     for (size_t led_id = animation.start; led_id < (size_t)(animation.start + animation.count); led_id++) {
         this->setLED(led_id, animation_id);
     }
 }
-void CANdleHWState::clearAnimation(int id) {
-    if (id < this->max_animations) {
+void CANdleHWState::clearAnimation(size_t id) {
+    if (id < this->animations.size()) {
         if (this->animations[id].has_value()) {
             Animation animation = this->animations[id].value();
             for (size_t led_id = animation.start; led_id < (size_t)(animation.start + animation.count); led_id++) {
                 this->setLEDOff(led_id);
             }
-            //this->animations.erase(animations.begin() + id);
             this->animations[id].reset();
         }
     } else {
         ROS_ERROR_STREAM("Attempted to clear CANdle animation with invalid ID!");
     }
 }
+void CANdleHWState::setMaxAnimations(size_t max) {
+    this->animations.resize(max, std::nullopt);
+}
 void CANdleHWState::clearAnimations() {
-    for (size_t i = 0; i < this->max_animations; i++) {
+    for (size_t i = 0; i < this->animations.size(); i++) {
         this->animations[i].reset();
     }
 }
@@ -173,13 +174,12 @@ std::optional<Animation> CANdleHWState::getAnimation(size_t id) {
     return std::optional<Animation>{std::nullopt};
 }
 size_t CANdleHWState::getNextAnimationSlot() {
-    //return this->animations.size();
-    for (size_t animation_id = 0; animation_id < this->max_animations; animation_id++) {
+    for (size_t animation_id = 0; animation_id < this->animations.size(); animation_id++) {
         if (!(this->animations[animation_id].has_value())) {
             return animation_id;
         }
     }
-    ROS_ERROR_STREAM("Failed to get available animation slot!");
+    ROS_ERROR_STREAM("Failed to get available animation slot for CANdle!");
     return 9;
 }
 

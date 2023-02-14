@@ -151,9 +151,10 @@ class CANdleHWState {
         bool getEnabled();
 
         // The CANdle's animation
-        void setAnimation(Animation animation);
-        void clearAnimation(int id);
+        void setAnimation(const Animation& animation);
+        void clearAnimation(size_t id);
         void clearAnimations();
+        void setMaxAnimations(size_t max);
         std::optional<Animation> getAnimation(size_t id);
         size_t getNextAnimationSlot();
 
@@ -169,8 +170,7 @@ class CANdleHWState {
         // If the CANdle is enabled
         bool enabled;
         // The CANdle's animations
-        const size_t max_animations = 8;
-        std::optional<Animation> animations[8];
+        std::vector<std::optional<Animation>> animations;
 };
 
 

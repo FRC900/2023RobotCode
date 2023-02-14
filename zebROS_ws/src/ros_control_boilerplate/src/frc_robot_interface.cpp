@@ -2646,10 +2646,22 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 			}
 		}
 
+		// Stop animations
+		bool stop_animations;
+		if (candle_command.stopAnimationsChanged(stop_animations)) {
+			size_t max_animations = (size_t)candle->GetMaxSimultaneousAnimationCount();
+			for (size_t i = 0; i < max_animations; i++) {
+				candle->ClearAnimation(i);
+			}
+
+			candle_command.drainAnimations();
+			candle_state.setMaxAnimations(max_animations);
+			candle_state.clearAnimations();
+		}
+
 		// Animation
 		std::vector<hardware_interface::candle::Animation> candle_animations;
 		if (candle_command.animationsChanged(candle_animations)) {
-			candle_command.drainAnimations();
 			for (hardware_interface::candle::Animation& candle_animation : candle_animations) {
 				// Clear any old animations
 				size_t group_max = (size_t)(candle_animation.start + candle_animation.count);
@@ -2657,7 +2669,6 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 					std::optional<hardware_interface::candle::LED> led = candle_state.getLED(led_id);
 					if (led.has_value() && led->type == hardware_interface::candle::LEDType::Animated) {
 						int animation_id = led->getAnimationID().value();
-						ROS_INFO_STREAM("Clearing animation with ID " << animation_id);
 						candle->ClearAnimation(animation_id);
 
 						hardware_interface::candle::Animation existing_animation = candle_state.getAnimation(animation_id).value();
@@ -2684,8 +2695,10 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 					animation = candle_convert::convertBaseTwoAnimation(candle_animation);
 				}
 
+				size_t slot = candle_state.getNextAnimationSlot();
+
 				if (safeTalonCall(
-					candle->Animate(*animation, candle_state.getNextAnimationSlot()),
+					candle->Animate(*animation, slot),
 					"candle->Animate",
 					candle_state.getDeviceID()
 				)) {
@@ -2696,19 +2709,7 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 					candle_command.setAnimation(candle_animation);
 				}
 			}
-		}
-
-		// Stop animations
-		bool stop_animations;
-		if (candle_command.stopAnimationsChanged(stop_animations)) {
-			int max_animations = candle->GetMaxSimultaneousAnimationCount();
-
-			for (size_t i = 0; i < max_animations; i++) {
-				candle->ClearAnimation(i);
-			}
-
 			candle_command.drainAnimations();
-			candle_state.clearAnimations();
 		}
 
 		// LEDs
@@ -2722,7 +2723,6 @@ void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period
 					std::optional<hardware_interface::candle::LED> led = candle_state.getLED(led_id);
 					if (led.has_value() && led->type == hardware_interface::candle::LEDType::Animated) {
 						int animation_id = led->getAnimationID().value();
-						ROS_INFO_STREAM("Clearing animation with ID " << animation_id);
 						candle->ClearAnimation(animation_id);
 
 						hardware_interface::candle::Animation animation = candle_state.getAnimation(animation_id).value();
