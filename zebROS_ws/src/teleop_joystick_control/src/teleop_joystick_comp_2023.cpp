@@ -55,6 +55,14 @@ std::vector <std::string> topic_array;
 ros::Publisher orient_strafing_enable_pub;
 ros::Publisher orient_strafing_setpoint_pub;
 ros::Publisher orient_strafing_state_pub;
+// diag controls
+ros::Publisher intake_pub; 
+ros::Publisher fourbar_pub; 
+ros::Publisher elevator_pub; 
+// I think its ok to have these start at zero? If everything is working then fourbar and elevator should zero on startup
+std_msgs::Float64 intake_cmd;
+std_msgs::Float64 fourbar_cmd;
+std_msgs::Float64 elevator_cmd;
 
 teleop_joystick_control::TeleopJoystickComp2023Config config;
 teleop_joystick_control::TeleopJoystickCompDiagnostics2023Config diagnostics_config;
@@ -120,16 +128,6 @@ void sendDirection() {
 	cmd_vel.angular.z = 0.0;
 
 	JoystickRobotVel.publish(cmd_vel);
-}
-
-void publish_diag_cmds(void)
-{
-	// should publish commands to the diagnostic mode nodes
-}
-
-void zero_all_diag_commands(void)
-{
-	// should zero out all diagnostic mode commands
 }
 
 std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
@@ -477,7 +475,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	last_header_stamp = button_box.header.stamp;
 	if (diagnostics_mode)
 	{
-		publish_diag_cmds();
 	}
 }
 
@@ -856,6 +853,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			if(joystick_states_array[0].buttonBPress)
 			{
 			}
+
 			if(joystick_states_array[0].buttonBButton)
 			{
 			}
@@ -1019,7 +1017,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	}
 	if (diagnostics_mode)
 	{
-		publish_diag_cmds();
 	}
 }
 
@@ -1143,13 +1140,13 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
 
+	
 	orient_strafing_enable_pub = n.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1);
 	orient_strafing_setpoint_pub = n.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1);
 	orient_strafing_state_pub = n.advertise<std_msgs::Float64>("orient_strafing/state", 1);
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	ros::Subscriber imu_heading = n.subscribe("/imu/zeroed_imu", 1, &imuCallback);
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
-
 	ros::Subscriber match_state_sub = n.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
 	ros::ServiceServer robot_orient_service = n.advertiseService("robot_orient", orientCallback);
 
