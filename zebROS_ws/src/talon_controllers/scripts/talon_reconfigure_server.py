@@ -55,14 +55,7 @@ def config_callback(config):
 
 
 
-def new_config_callback(client, config):
-    #global old_callback
-    #print("New callback is calling old callback...")
-    #old_callback(config)
-    print("New callback is done...")
-    print("done")
-    print_config(client.update_configuration(config))
-    print('')
+
 global speed_joints
 #first param is namespace path of the client.
 
@@ -80,6 +73,35 @@ steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_c
 steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fl', config_callback=config_callback, timeout=9))
 steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_br', config_callback=config_callback, timeout=7))
 steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_bl', config_callback=config_callback, timeout=6))
+
+
+global dummy_speed_joint
+
+dummy_speed_joint = []
+dummy_speed_joint.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', config_callback=config_callback, timeout=4))
+
+
+global dummy_steering_joint
+
+dummy_steering_joint = []
+dummy_steering_joint.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', config_callback=config_callback, timeout=5))
+
+
+
+def new_config_callback(client, config):
+    #global old_callback
+    #print("New callback is calling old callback...")
+    #old_callback(config)
+    global dummy_speed_joint
+    global speed_joints
+    print("New callback is done...")
+    print("done")
+    #print_config(client.update_configuration(config))
+    #print('')
+    
+
+
+
 
 
 def main():
@@ -112,15 +134,12 @@ def reconfigure(config, level):
     global steering_joints
     #print(config)
     #speed joints
-    new_config_callback(speed_joints[0], config)
-    new_config_callback(speed_joints[1], config)
-    new_config_callback(speed_joints[2], config)
-    new_config_callback(speed_joints[3], config)
+    new_config_callback(dummy_speed_joint[0], config)
+   
+    
     #steer joints
-    new_config_callback(steering_joints[0], config)
-    new_config_callback(steering_joints[1], config)
-    new_config_callback(steering_joints[2], config)
-    new_config_callback(steering_joints[3], config)
+    #new_config_callback(dummy_steering_joint[0], config)
+    
 
     
 
