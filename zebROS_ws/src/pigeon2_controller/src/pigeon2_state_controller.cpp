@@ -91,7 +91,7 @@ public:
 		return true;
 	}
 
-	void starting(const ros::Time &time)
+	void starting(const ros::Time &/*time*/)
 	{
 		interval_counter_->reset();
 	}

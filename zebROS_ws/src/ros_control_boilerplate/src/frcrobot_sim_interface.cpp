@@ -38,7 +38,8 @@ For a more detailed simulation example, see sim_hw_interface.cpp
 */
 #include <memory> // for make_unique()
 #include <ros/ros.h>
-#include <tf2/LinearMath/Transform.h>
+#include "tf2/LinearMath/Matrix3x3.h"                         // for Matrix3x3
+#include "tf2/LinearMath/Quaternion.h"                        // for Quaternion
 
 #include "ctre/phoenix/unmanaged/Unmanaged.h"
 #include "frc/DriverStation.h"

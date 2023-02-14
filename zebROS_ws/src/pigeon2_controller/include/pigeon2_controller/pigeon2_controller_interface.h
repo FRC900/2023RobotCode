@@ -2,7 +2,6 @@
 #define INC_PIGEON2_CONTROLLER_INTERFACE_H__
 
 #include <atomic>
-#include <mutex>
 #include "ddr_updater/ddr_updater.h"
 #include "pigeon2_interface/pigeon2_command_interface.h"
 
