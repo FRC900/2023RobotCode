@@ -255,7 +255,7 @@ class ElevaterAction2023
             else if (fourber_safety_state_ == SafteyState::SAFTEY_HIGH || fourber_safety_state_ == SafteyState::SAFTEY_LOW)
             {
                 fourber_goal.safety_position = behavior_actions::Fourber2023Goal::SAFETY_TO_NO_SAFETY;
-                fourber_safety_state_ == SafteyState::NONE;
+                fourber_safety_state_ = SafteyState::NONE;
             }
             else
             {
