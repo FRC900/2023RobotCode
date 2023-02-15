@@ -14,8 +14,7 @@
 	<include file="$(find controller_node)/launch/record_2023_compbot.launch" if="$(arg record)" />
 
 	<include file="$(find tf_object_detection)/launch/detection.launch">
-	<!-- As far as I can tell, args wraped in a group tag with an IF do not work and it what was actually breaking the ZED-->
-		<arg name="input_type" value="live_camera" />
+		<arg name="input_type" value="live_camera" if="$(eval hw_or_sim == 'hw')"/>
 	</include>
 	
 	<!-- 
