@@ -60,7 +60,6 @@ public:
 		}
 		game_piece_sub_ = nh_.subscribe("/game_piece", 1, &PlacingServer2023::gamePieceCallback, this);
 		game_piece_position_sub_ = nh_.subscribe("/game_piece_position", 1, &PlacingServer2023::gamePiecePositionCallback, this);
-		const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
 		as_.start();
 	}
 
@@ -69,7 +68,7 @@ public:
 	}
 
 	template<class C, class S>
-	bool waitForResultAndCheckForPreempt(const ros::Duration & timeout, const actionlib::SimpleActionClient<C> & ac, actionlib::SimpleActionServer<S> & as)
+	bool waitForResultAndCheckForPreempt(const ros::Duration & timeout, actionlib::SimpleActionClient<C> & ac, actionlib::SimpleActionServer<S> & as, bool preempt_at_timeout = false)
 	{
 		bool negative_timeout = false;
 		if (timeout < ros::Duration(0, 0)) {
@@ -79,7 +78,7 @@ public:
 
 		ros::Time timeout_time = ros::Time::now() + timeout;
 
-		ros::Rate r(100);
+		ros::Rate r(10);
 
 		while (ros::ok() && !as.isPreemptRequested()) {
 			ros::spinOnce();
@@ -88,6 +87,9 @@ public:
 
 			// Check if we're past the timeout time
 			if (timeout > ros::Duration(0, 0) && time_left <= ros::Duration(0, 0) && !negative_timeout) {
+				if (preempt_at_timeout) {
+					ac.cancelGoalsAtAndBeforeTime(ros::Time::now());
+				}
 				break;
 			}
 
@@ -108,6 +110,22 @@ public:
 	void gamePiecePositionCallback(const std_msgs::Float64 msg) {
 		latest_game_piece_position_ = msg.data;
 		latest_game_piece_position_time_ = ros::Time::now();
+	}
+
+	using pl = behavior_actions::Placing2023Goal;
+	using fb = behavior_actions::Fourber2023Goal;
+	behavior_actions::Fourber2023Goal::_mode_type nodeToMode(behavior_actions::Placing2023Goal::_node_type node) {
+		switch (node) {
+			case pl::HIGH:
+				return fb::HIGH_NODE;
+			case pl::MID:
+				return fb::MIDDLE_NODE;
+			case pl::HYBRID:
+				return fb::LOW_NODE;
+			default:
+				ROS_ERROR_STREAM("2023_placing_server : invalid node to convert to mode");
+				return 255;
+		}
 	}
 
 	void executeCB(const behavior_actions::Placing2023GoalConstPtr &goal)
@@ -175,10 +193,10 @@ public:
 
 		behavior_actions::Fourber2023Goal fourber_goal;
 		fourber_goal.piece = latest_game_piece_;
-		fourber_goal.mode = goal->node + 1; // please don't change the actionlib files
+		fourber_goal.mode = nodeToMode(goal->node); // please don't change the actionlib files
 		ac_fourber_.sendGoal(fourber_goal);
 
-		if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_fourber_, as_)) {
+		if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), ac_fourber_, as_) && ac_fourber_.getState() == ac_fourber_.getState().SUCCEEDED)) {
 			ROS_INFO_STREAM("2023_placing_server : fourber timed out, aborting");
 			result_.timed_out = true;
 			as_.setAborted(result_);
@@ -189,10 +207,10 @@ public:
 
 		behavior_actions::Elevater2023Goal elevater_goal;
 		elevater_goal.piece = latest_game_piece_;
-		elevater_goal.mode = goal->node + 1; // please don't change the actionlib files
+		elevater_goal.mode = nodeToMode(goal->node); // please don't change the actionlib files
 		ac_elevater_.sendGoal(elevater_goal);
 
-		if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_elevater_, as_)) {
+		if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), ac_elevater_, as_) && ac_elevater_.getState() == ac_elevater_.getState().SUCCEEDED)) {
 			ROS_INFO_STREAM("2023_placing_server : elevater timed out, aborting");
 			result_.timed_out = true;
 			as_.setAborted(result_);
@@ -206,7 +224,7 @@ public:
 		intake_goal_.outtake = true; // don't change this
 		ac_intake_.sendGoal(intake_goal_);
 
-		if (!waitForResultAndCheckForPreempt(ros::Duration(outtake_time_), ac_intake_, as_)) {
+		if (!(waitForResultAndCheckForPreempt(ros::Duration(outtake_time_), ac_intake_, as_, true) && ac_intake_.getState() == ac_intake_.getState().SUCCEEDED)) {
 			if (ac_intake_.getState() == actionlib::SimpleClientGoalState::ACTIVE || ac_intake_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
 				ROS_INFO_STREAM("2023_placing_server : stopping outtaking");
 				ac_intake_.cancelGoalsAtAndBeforeTime(ros::Time::now());

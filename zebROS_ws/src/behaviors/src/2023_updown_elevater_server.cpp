@@ -369,7 +369,7 @@ class ElevaterAction2023
             {
                 for (size_t i = 0; i < talon_state.name.size(); i++)
                 {
-                    if (talon_state.name[i] == "elevator_master")
+                    if (talon_state.name[i] == "elevator_leader")
                     {
                         elevater_master_idx = i;
                         break;
@@ -381,7 +381,7 @@ class ElevaterAction2023
                 elev_cur_position_ = talon_state.position[elevater_master_idx];
             }
             else {
-                ElevaterERR("Can not find talon with name = " << "elevator_master");
+                ElevaterERR("Can not find talon with name = " << "elevator_leader");
             }
         }
 

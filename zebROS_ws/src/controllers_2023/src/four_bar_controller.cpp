@@ -90,15 +90,21 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
             return below ? acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_) + xAngle : angle;
         }
 
-        std::pair<double, bool> stateFromAngle(double angle) const
+        controllers_2023_msgs::FourBarSrv::Request stateFromAngle(double angle) const
         {
             double minAngle = acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_);
             // if below, angle = minAngle + acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_). if above, angle = minAngle - acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_).
             if (angle > minAngle) {
-                return {cos(angle - minAngle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_, true};
+                controllers_2023_msgs::FourBarSrv::Request toReturn;
+                toReturn.position = cos(angle - minAngle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_;
+                toReturn.below = true;
+                return toReturn;
             } else {
                 // (minAngle - (minAngle - angle)) = minAngle - minAngle + angle = angle
-                return {cos(minAngle - angle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_, false};
+                controllers_2023_msgs::FourBarSrv::Request toReturn;
+                toReturn.position = cos(minAngle - angle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_;
+                toReturn.below = false;
+                return toReturn;
             }
         }
 
@@ -109,10 +115,10 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
             // bool current_below # if four bar can flip down, this being set to true makes it do that
             auto current_state = stateFromAngle(current_angle);
             auto set_state = stateFromAngle(set_angle);
-            state.set_position = set_state.first;
-            state.set_below = set_state.second;
-            state.current_position = current_state.first;
-            state.current_below = current_state.second;
+            state.set_position = set_state.position;
+            state.set_below = set_state.below;
+            state.current_position = current_state.position;
+            state.current_below = current_state.below;
         }
 }; //class
 

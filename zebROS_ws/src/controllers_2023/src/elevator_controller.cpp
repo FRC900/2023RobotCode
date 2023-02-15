@@ -94,10 +94,6 @@ class ElevatorController_2023 : public controller_interface::MultiInterfaceContr
 
 }; //class
 
-
- //namespac
-
-//END OF HPP CONTENTS
 template<typename T>
 bool readIntoScalar(ros::NodeHandle &n, const std::string &name, std::atomic<T> &scalar){
     T val;
