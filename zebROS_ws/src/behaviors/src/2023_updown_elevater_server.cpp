@@ -346,7 +346,7 @@ class ElevaterAction2023
                 }
                 ElevaterERR("Can not find talong with name = " << "elevater_master");
             }
-            if (!(elevater_master_idx == std::numeric_limits<size_t>::max()))
+            if (!(elevater_master_idx == std::numeric_limits<size_t>::max())) 
             {
                 elev_cur_position_ = talon_state.position[elevater_master_idx];
             }
