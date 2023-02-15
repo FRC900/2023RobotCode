@@ -526,6 +526,9 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		const StrafeSpeeds strafe_speeds = teleop_cmd_vel->generateCmdVel(joystick_states_array[0].leftStickX, joystick_states_array[0].leftStickY, imu_angle_for_swerve_only, joystick_states_array[0].header.stamp, config);
 		// Rotate the robot in response to a joystick request.
 		const double rotation_increment = teleop_cmd_vel->generateAngleIncrement(joystick_states_array[0].rightStickX, joystick_states_array[0].header.stamp, config);
+		if (!rotation_increment) {
+			robot_orientation_driver->stopRotation();
+		}
 		if (rotation_increment != 0.0 || strafe_speeds.x_ != 0.0 || strafe_speeds.y_ != 0.0)
 		{
 			ROS_INFO_STREAM_THROTTLE(3, __FUNCTION__ << " rotation_increment = " << rotation_increment);
@@ -540,6 +543,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop())
 		{
 			double rotation_velocity = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			
 			ROS_INFO_STREAM_THROTTLE(3, "target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation());
 			if (fabs(angles::shortest_angular_distance(robot_orientation_driver->getTargetOrientation(), robot_orientation_driver->getCurrentOrientation())) < 0.0174533) {
 				//ROS_ERROR_STREAM("target Orientation " << robot_orientation_driver->getTargetOrientation() << " imu_angle " <<  robot_orientation_driver->getCurrentOrientation() << " diff " << fabs(robot_orientation_driver->getTargetOrientation() -  robot_orientation_driver->getCurrentOrientation()));
