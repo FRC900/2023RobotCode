@@ -337,7 +337,7 @@ class FourberAction2023
             // case where we have move back to where we were
             if (goal->safety_position == fourber_ns::SAFETY_TO_NO_SAFETY)
             {
-                saftey_state_ == SafteyState::NONE;
+                saftey_state_ = SafteyState::NONE;
                 controllers_2023_msgs::FourBarSrv go_to_previous_req;
                 go_to_previous_req.request.position = previous_setpoint_;
                 // should be good to hardcode this because the only time we want this to be true is when we are intaking which is in a restricted zone
