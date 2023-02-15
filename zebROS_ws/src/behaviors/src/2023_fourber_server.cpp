@@ -441,7 +441,7 @@ class FourberAction2023
                 }
                 FourberERR("Can not find talong with name = " << "four_bar_leader");
             }
-            if (!fourbar_master_idx == std::numeric_limits<size_t>::max())
+            if (!(fourbar_master_idx == std::numeric_limits<size_t>::max()))
             {
                 fourbar_cur_setpoint_ = talon_state.set_point[fourbar_master_idx];
                 fourbar_cur_position_ = talon_state.position[fourbar_master_idx];
