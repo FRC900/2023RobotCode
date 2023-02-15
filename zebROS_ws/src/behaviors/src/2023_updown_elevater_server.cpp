@@ -264,7 +264,7 @@ class ElevaterAction2023
 
             // have a meaningful message to send
             bool fourber_success = false;
-            if (!fourber_goal.safety_position == behavior_actions::Fourber2023Goal::NO_SAFETY)
+            if (!(fourber_goal.safety_position == behavior_actions::Fourber2023Goal::NO_SAFETY))
             {
                 auto fourbar_result = ac_fourber_.sendGoalAndWait(fourber_goal, ros::Duration(5), ros::Duration(3));
                 if (!(fourbar_result == actionlib::SimpleClientGoalState::SUCCEEDED))
@@ -346,7 +346,7 @@ class ElevaterAction2023
                 }
                 ElevaterERR("Can not find talong with name = " << "elevater_master");
             }
-            if (!elevater_master_idx == std::numeric_limits<size_t>::max())
+            if (!(elevater_master_idx == std::numeric_limits<size_t>::max()))
             {
                 elev_cur_position_ = talon_state.position[elevater_master_idx];
             }
