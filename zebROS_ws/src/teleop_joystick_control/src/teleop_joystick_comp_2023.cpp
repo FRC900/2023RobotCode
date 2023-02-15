@@ -55,14 +55,6 @@ std::vector <std::string> topic_array;
 ros::Publisher orient_strafing_enable_pub;
 ros::Publisher orient_strafing_setpoint_pub;
 ros::Publisher orient_strafing_state_pub;
-// diag controls
-ros::Publisher intake_pub; 
-ros::Publisher fourbar_pub; 
-ros::Publisher elevator_pub; 
-// I think its ok to have these start at zero? If everything is working then fourbar and elevator should zero on startup
-std_msgs::Float64 intake_cmd;
-std_msgs::Float64 fourbar_cmd;
-std_msgs::Float64 elevator_cmd;
 
 teleop_joystick_control::TeleopJoystickComp2023Config config;
 teleop_joystick_control::TeleopJoystickCompDiagnostics2023Config diagnostics_config;
@@ -191,18 +183,18 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	{
 		// // Clear out pressed state when switching modes
 		// // so that the press will be seen by the new mode
-		// joystick1_left_trigger_pressed = false;
-		// joystick1_right_trigger_pressed = false;
-		// zero_all_diag_commands();
-		//
+		joystick1_left_trigger_pressed = false;
+		joystick1_right_trigger_pressed = false;
+
+
 		// // Disable snap-to-angle in diagnostics mode
 		// std_msgs::Bool enable_align_msg;
 		// enable_align_msg.data = false;
 		// orient_strafing_enable_pub.publish(enable_align_msg);
-		// diagnostics_mode = true;
-		// ROS_WARN_STREAM("Enabling diagnostics mode!");
-		teleop_cmd_vel->setRobotOrient(true, 0.0);
-		ROS_WARN_STREAM("Robot relative mode!");
+		diagnostics_mode = true;
+		ROS_WARN_STREAM("Enabling diagnostics mode!");
+		//teleop_cmd_vel->setRobotOrient(true, 0.0);
+		//ROS_WARN_STREAM("Robot relative mode!");
 	}
 
 	if(button_box.lockingSwitchButton)
@@ -216,17 +208,15 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	{
 		// // Clear out pressed state when switching modes
 		// // so that the press will be seen by the new mode
-		// joystick1_left_trigger_pressed = false;
-		// joystick1_right_trigger_pressed = false;
+		joystick1_left_trigger_pressed = false;
+		joystick1_right_trigger_pressed = false;
 		// // Force a publish 0 to all the diag mode
 		// // controllers here before switching out
 		// // of diagnostics mode
-		// zero_all_diag_commands();
-		// publish_diag_cmds();
-		// diagnostics_mode = false;
-		// ROS_WARN_STREAM("Disabling diagnostics mode!");
-		teleop_cmd_vel->setRobotOrient(false, 0.0);
-		ROS_WARN_STREAM("Field relative mode!");
+		diagnostics_mode = false;
+		ROS_WARN_STREAM("Disabling diagnostics mode!");
+		//teleop_cmd_vel->setRobotOrient(false, 0.0);
+		//ROS_WARN_STREAM("Field relative mode!");
 	}
 
 	if(button_box.topRedPress)
@@ -1140,7 +1130,6 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
 
-	
 	orient_strafing_enable_pub = n.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1);
 	orient_strafing_setpoint_pub = n.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1);
 	orient_strafing_state_pub = n.advertise<std_msgs::Float64>("orient_strafing/state", 1);
