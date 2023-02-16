@@ -72,18 +72,12 @@ ros::Publisher auto_mode_select_pub;
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
 
-// Diagnostic mode controls
 imu_zero::ImuZeroAngle imu_cmd;
-
-
 bool imu_service_needed = true;
 
 ros::Publisher dynamic_arm_piston_;
 double last_offset;
 bool last_robot_orient;
-
-// Diagnostic mode controls
-
 
 int direction_x{};
 int direction_y{};
