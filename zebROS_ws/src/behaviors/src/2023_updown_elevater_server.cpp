@@ -50,9 +50,9 @@ class ElevaterAction2023
     protected:
 
         ros::NodeHandle nh_;
-        ros::NodeHandle nh_params_;
         actionlib::SimpleActionServer<behavior_actions::Elevater2023Action> as_;
         actionlib::SimpleActionClient<behavior_actions::Fourber2023Action> ac_fourber_;
+        ros::NodeHandle nh_params_;
 
         ros::ServiceClient elevator_srv_;
         std::string action_name_;

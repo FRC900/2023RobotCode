@@ -64,8 +64,8 @@ class FourberAction2023
     protected:
 
         ros::NodeHandle nh_;
-        ros::NodeHandle nh_params_;
         actionlib::SimpleActionServer<behavior_actions::Fourber2023Action> as_;
+        ros::NodeHandle nh_params_;
 
         double safety_high_distance_;
         double safety_low_distance_;
