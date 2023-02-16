@@ -325,6 +325,7 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 				frame_id = std::string(xml_joint_frame_id);
 			}
 			pigeon2_names_.push_back(joint_name);
+			pigeon2_frame_ids_.push_back(frame_id);
 			pigeon2_can_ids_.push_back(can_id);
 			pigeon2_local_updates_.push_back(local_update);
 			pigeon2_local_hardwares_.push_back(local_hardware);
