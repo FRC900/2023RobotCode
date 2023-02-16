@@ -244,7 +244,7 @@ void FRCRobotInterface::readConfig(ros::NodeHandle rpnh)
 				throw std::runtime_error("A CANdle can_id was specified with local_hardware == false for joint " + joint_name);
 			}
 
-			int can_id;
+			int can_id = 0;
 			std::string can_bus;
 
 			if (local_hardware) {
