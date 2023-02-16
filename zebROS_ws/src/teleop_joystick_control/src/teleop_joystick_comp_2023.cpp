@@ -177,18 +177,14 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	{
 		// // Clear out pressed state when switching modes
 		// // so that the press will be seen by the new mode
-		joystick1_left_trigger_pressed = false;
-		joystick1_right_trigger_pressed = false;
-
-
 		// // Disable snap-to-angle in diagnostics mode
 		// std_msgs::Bool enable_align_msg;
 		// enable_align_msg.data = false;
 		// orient_strafing_enable_pub.publish(enable_align_msg);
-		diagnostics_mode = true;
-		ROS_WARN_STREAM("Enabling diagnostics mode!");
-		//teleop_cmd_vel->setRobotOrient(true, 0.0);
-		//ROS_WARN_STREAM("Robot relative mode!");
+		// diagnostics_mode = true;
+		// ROS_WARN_STREAM("Enabling diagnostics mode!");
+		teleop_cmd_vel->setRobotOrient(true, 0.0);
+		ROS_WARN_STREAM("Robot relative mode!");
 	}
 
 	if(button_box.lockingSwitchButton)
@@ -202,15 +198,17 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	{
 		// // Clear out pressed state when switching modes
 		// // so that the press will be seen by the new mode
-		joystick1_left_trigger_pressed = false;
-		joystick1_right_trigger_pressed = false;
+		// joystick1_left_trigger_pressed = false;
+		// joystick1_right_trigger_pressed = false;
 		// // Force a publish 0 to all the diag mode
 		// // controllers here before switching out
 		// // of diagnostics mode
-		diagnostics_mode = false;
-		ROS_WARN_STREAM("Disabling diagnostics mode!");
-		//teleop_cmd_vel->setRobotOrient(false, 0.0);
-		//ROS_WARN_STREAM("Field relative mode!");
+		// zero_all_diag_commands();
+		// publish_diag_cmds();
+		// diagnostics_mode = false;
+		// ROS_WARN_STREAM("Disabling diagnostics mode!");
+		teleop_cmd_vel->setRobotOrient(false, 0.0);
+		ROS_WARN_STREAM("Field relative mode!");
 	}
 
 	if(button_box.topRedPress)
@@ -837,7 +835,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			if(joystick_states_array[0].buttonBPress)
 			{
 			}
-
 			if(joystick_states_array[0].buttonBButton)
 			{
 			}
@@ -1130,6 +1127,7 @@ int main(int argc, char **argv)
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	ros::Subscriber imu_heading = n.subscribe("/imu/zeroed_imu", 1, &imuCallback);
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
+
 	ros::Subscriber match_state_sub = n.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
 	ros::ServiceServer robot_orient_service = n.advertiseService("robot_orient", orientCallback);
 
