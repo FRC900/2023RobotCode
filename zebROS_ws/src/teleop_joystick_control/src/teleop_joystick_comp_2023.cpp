@@ -72,12 +72,18 @@ ros::Publisher auto_mode_select_pub;
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
 
+// Diagnostic mode controls
 imu_zero::ImuZeroAngle imu_cmd;
+
+
 bool imu_service_needed = true;
 
 ros::Publisher dynamic_arm_piston_;
 double last_offset;
 bool last_robot_orient;
+
+// Diagnostic mode controls
+
 
 int direction_x{};
 int direction_y{};
@@ -114,6 +120,16 @@ void sendDirection() {
 	cmd_vel.angular.z = 0.0;
 
 	JoystickRobotVel.publish(cmd_vel);
+}
+
+void publish_diag_cmds(void)
+{
+	// should publish commands to the diagnostic mode nodes
+}
+
+void zero_all_diag_commands(void)
+{
+	// should zero out all diagnostic mode commands
 }
 
 std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
@@ -177,6 +193,10 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	{
 		// // Clear out pressed state when switching modes
 		// // so that the press will be seen by the new mode
+		// joystick1_left_trigger_pressed = false;
+		// joystick1_right_trigger_pressed = false;
+		// zero_all_diag_commands();
+		//
 		// // Disable snap-to-angle in diagnostics mode
 		// std_msgs::Bool enable_align_msg;
 		// enable_align_msg.data = false;
@@ -457,6 +477,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 	last_header_stamp = button_box.header.stamp;
 	if (diagnostics_mode)
 	{
+		publish_diag_cmds();
 	}
 }
 
@@ -998,6 +1019,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	}
 	if (diagnostics_mode)
 	{
+		publish_diag_cmds();
 	}
 }
 
