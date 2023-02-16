@@ -40,6 +40,9 @@ hardware_interface:
        - {name: br_angle, type: can_talon_fx, can_bus: CANivore, can_id: 14, local: true}
        - {name: bl_drive, type: can_talon_fx, can_bus: CANivore, can_id: 23, local: true}
        - {name: bl_angle, type: can_talon_fx, can_bus: CANivore, can_id: 13, local: true}
+       
+       #- {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
+       #- {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
 
        - {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        - {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
@@ -52,6 +55,8 @@ hardware_interface:
        - {name: robot_code_ready_rio, local: false, type: ready} # Probably not really needed?
 
        - {name: babys_first_orchestra, type: orchestra, id: 1}
+
+       - {name: candle1, can_id: 0, can_bus: CANivore, type: candle, local: true}
 
 # Create controllers for each joint
 #
@@ -146,3 +151,7 @@ pigeon2_imu_state_controller:
     type: imu_sensor_controller/ImuSensorController
     joint_name: pigeon2
     publish_rate: 100
+
+candle_controller:
+    type: candle_controller/CANdleController
+    name: candle1
