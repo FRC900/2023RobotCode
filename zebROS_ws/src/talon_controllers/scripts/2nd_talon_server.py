@@ -60,20 +60,20 @@ def config_callback(config):
 global speed_joints
 #first param is namespace path of the client.
 
-speed_joints = []
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', timeout=4))
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', timeout=3))
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', timeout=1))
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', timeout=2))
+#speed_joints = []
+#speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', timeout=4))
+#speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', timeout=3))
+#speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', timeout=1))
+#speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', timeout=2))
 #
 #global steer_joints
 #
 ##first param is namespace path of the client.
-#steering_joints = []
-#steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', timeout=5))
-#steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fl', timeout=9))
-#steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_br', timeout=7))
-#steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_bl', timeout=6))
+steering_joints = []
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', timeout=5))
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fl', timeout=9))
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_br', timeout=7))
+steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_bl', timeout=6))
 
 
 global dummy_speed_joint
@@ -109,7 +109,7 @@ def new_config_callback(client, config):
 
 
 def main():
-    rospy.init_node("talon_reconfigure_server_speed")
+    rospy.init_node("talon_reconfigure_server_steering")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
     
@@ -134,8 +134,8 @@ def main():
 
 
 def reconfigure(config, level):
-    global speed_joints
-    #global steering_joints
+    #global speed_joints
+    global steering_joints
     #global dummy_speed_joint
     #global dummy_steering_joint
     #print(config)
@@ -143,10 +143,10 @@ def reconfigure(config, level):
     #new_config_callback(dummy_speed_joint[0], config)
     #new_config_callback(dummy_steering_joint[0], config)
 
-    new_config_callback(speed_joints[0], config)
-    new_config_callback(speed_joints[1], config)
-    new_config_callback(speed_joints[2], config)
-    new_config_callback(speed_joints[3], config)
+    new_config_callback(steering_joints[0], config)
+    new_config_callback(steering_joints[1], config)
+    new_config_callback(steering_joints[2], config)
+    new_config_callback(steering_joints[3], config)
     #runs new_config_callback function using the client as well as the config file from the cfg.
    
     

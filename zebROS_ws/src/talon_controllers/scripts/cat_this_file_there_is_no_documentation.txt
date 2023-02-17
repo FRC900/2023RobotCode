@@ -1,0 +1,14 @@
+yeah uh
+im going to add documetnation later but just cat the file lol
+
+anyways
+
+so run
+talon reconfigure 1 and 2
+as well as the client py thing
+
+and uh
+run rqt_reconfigure rqt_reconfigure
+from there you shold see a steerign and speed topic thing in rqt reconfigure
+it doenst have the drop down item
+you can adjust them and the values you adjust are reflected accordingly
