@@ -40,12 +40,13 @@ import dynamic_reconfigure.server
 import dynamic_reconfigure.client
 from talon_controllers.cfg import TalonConfigConfig
 import time
-global steering_joints
-steering_joints = []
-steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', timeout=5))
-steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fl', timeout=9))
-steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_br', timeout=7))
-steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_bl', timeout=6))
+
+global speed_joints
+speed_joints = []
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', timeout=4))
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', timeout=3))
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', timeout=1))
+speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', timeout=2))
 
 def print_config(config):
     for k, v in config.items():
@@ -66,40 +67,24 @@ def new_config_callback(client, config):
     print("done")
     print_config(client.update_configuration(config))
 
+    #print('')
+    #maybe update the confs to sync from here?
+    
 def reconfigure(config, level):
-    global steering_joints
-    new_config_callback(steering_joints[0], config)
-    new_config_callback(steering_joints[1], config)
-    new_config_callback(steering_joints[2], config)
-    new_config_callback(steering_joints[3], config)
-    #runs new_config_callback function using the client as well as the config file from the cfg.
-
+    global speed_joints
+    new_config_callback(speed_joints[0], config)
+    new_config_callback(speed_joints[1], config)
+    new_config_callback(speed_joints[2], config)
+    new_config_callback(speed_joints[3], config)
     return config  # Returns the updated configuration.
 
-
 def main():
-    rospy.init_node("talon_reconfigure_server_steering")
+    rospy.init_node("talon_reconfigure_server_speed")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
-    
-    #dynamic_reconfigure.server.Server(TestConfig, reconfigure_alternate_ns,
-     #                                 "~alternate_ns")
-    #dynamic_reconfigure.server.Server(TestConfig, reconfigure_2lvls_ns,
-    #                                  "~alternate_ns/second_lvl")
-    #dynamic_reconfigure.server.Server(TestConfig, reconfigure_absolute_ns,
-    #                                  "/absolute_ns")
-    #commented out multiple dyanmic reconfigure servers which are there for no apparent reason?
-    #idk i'm not really sure i need to mess around with this a bit more
-    
 
- 
-
-    
-    
-    #print(speed_joints[1])
     while not rospy.is_shutdown():
         time.sleep(0.1)
-
 if __name__ == '__main__':
     main()
 
