@@ -115,7 +115,8 @@ bool readIntoScalar(ros::NodeHandle &n, const std::string &name, std::atomic<T> 
 bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
                                    ros::NodeHandle             &/*root_nh*/,
                                    ros::NodeHandle             &controller_nh)
-{
+{   
+    std::make_unique<DDynamicReconfigure>(controller_nh) ddr_;
     //create the interface used to initialize the talon joint
     hardware_interface::TalonCommandInterface *const talon_command_iface = hw->get<hardware_interface::TalonCommandInterface>();
 
@@ -192,7 +193,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         ROS_ERROR("Cannot initialize elevator joint!");
     }
 
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("arb_feed_forward_high",
      [this]()
     {
@@ -203,7 +204,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         arb_feed_forward_high.store(b);
     },
     "Arb feedforward high");
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("arb_feed_forward_low",
      [this]()
     {
@@ -214,7 +215,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         arb_feed_forward_low.store(b);
     },
     "Arb feedforward low");
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("elevator_zeroing_percent_output",
      [this]()
     {
@@ -225,7 +226,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         elevator_zeroing_percent_output.store(b);
     },
     "Elevator Zeroing Percent Output");
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("elevator_zeroing_timeout",
      [this]()
     {
@@ -236,7 +237,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         elevator_zeroing_timeout.store(b);
     },
     "Elevator Zeroing Timeout");
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("stage_2_height",
      [this]()
     {
@@ -247,7 +248,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         stage_2_height.store(b);
     },
     "Stage 2 Height");
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("motion_magic_velocity_fast",
      [this]()
     {
@@ -258,7 +259,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         motion_magic_velocity_fast.store(b);
     },
     "fast Motion Magic Velocity");
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double, 0.0, 0.5>
     ("motion_magic_acceleration_fast",
      [this]()
     {
@@ -269,7 +270,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         motion_magic_acceleration_fast.store(b);
     },
     "Fast Motion Magic Acceleration");
-    ddr_.registerVariable<int>
+    ddr_->registerVariable<int, 0, 1>
     ("motion_s_curve_strength",
      [this]()
     {
@@ -281,7 +282,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     },
     "S Curve Strength");
     
-    ddr_.publishServicesTopics();
+    ddr_->publishServicesTopics();
 
     //initialize the elevator joint
     if (!elevator_joint_.initWithNode(talon_command_iface, nullptr, controller_nh, elevator_params))
