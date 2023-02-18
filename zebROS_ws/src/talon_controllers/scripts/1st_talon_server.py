@@ -77,11 +77,14 @@ def reconfigure(config, level):
     new_config_callback(speed_joints[2], config)
     new_config_callback(speed_joints[3], config)
     return config  # Returns the updated configuration.
+#all of tehese need to be intialized with callback so that the reconfigure server can
+#actaulyll find the updates on these joints
 
 def main():
     rospy.init_node("talon_reconfigure_server_speed")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
+    #creates server for the reconfigure server.
 
     while not rospy.is_shutdown():
         time.sleep(0.1)
