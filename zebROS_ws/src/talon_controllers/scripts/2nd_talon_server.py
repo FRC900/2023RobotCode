@@ -72,7 +72,9 @@ def reconfigure(config, level):
     new_config_callback(steering_joints[1], config)
     new_config_callback(steering_joints[2], config)
     new_config_callback(steering_joints[3], config)
-    #runs new_config_callback function using the client as well as the config file from the cfg.
+    #runs new_config_callback function using the client as well as the config file from the cfg
+    #all of tehese need to be intialized with callback so that the reconfigure server can
+    #actaulyll find the updates on these joints
 
     return config  # Returns the updated configuration.
 
@@ -81,22 +83,7 @@ def main():
     rospy.init_node("talon_reconfigure_server_steering")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
-    
-    #dynamic_reconfigure.server.Server(TestConfig, reconfigure_alternate_ns,
-     #                                 "~alternate_ns")
-    #dynamic_reconfigure.server.Server(TestConfig, reconfigure_2lvls_ns,
-    #                                  "~alternate_ns/second_lvl")
-    #dynamic_reconfigure.server.Server(TestConfig, reconfigure_absolute_ns,
-    #                                  "/absolute_ns")
-    #commented out multiple dyanmic reconfigure servers which are there for no apparent reason?
-    #idk i'm not really sure i need to mess around with this a bit more
-    
-
- 
-
-    
-    
-    #print(speed_joints[1])
+  
     while not rospy.is_shutdown():
         time.sleep(0.1)
 
