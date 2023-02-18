@@ -205,9 +205,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward_high.store(b);
     },
-
-    "Arb feedforward high",
-    0.0, 0.5
+    0.0, 0.5,
+    "Arb feedforward high"
     );
 
     ddr_->registerVariable<double>
@@ -220,8 +219,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward_low.store(b);
     },
-    "Arb feedforward low",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Arb feedforward low");
     
     ddr_->registerVariable<double>
     ("elevator_zeroing_percent_output",
@@ -233,8 +232,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         elevator_zeroing_percent_output.store(b);
     },
-    "Elevator Zeroing Percent Output",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Elevator Zeroing Percent Output");
 
 
 
@@ -248,8 +247,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         elevator_zeroing_timeout.store(b);
     },
-    "Elevator Zeroing Timeout",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Elevator Zeroing Timeout");
 
 
     ddr_->registerVariable<double>
@@ -262,8 +261,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         stage_2_height.store(b);
     },
-    "Stage 2 Height",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Stage 2 Height");
 
 
     ddr_->registerVariable<double>
@@ -276,8 +275,9 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         motion_magic_velocity_fast.store(b);
     },
-    "fast Motion Magic Velocity",
-    0.0, 0.5);
+    0.0, 0.5,
+
+    "fast Motion Magic Velocity");
 
 
     ddr_->registerVariable<double>
@@ -290,8 +290,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         motion_magic_acceleration_fast.store(b);
     },
-    "Fast Motion Magic Acceleration",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Fast Motion Magic Acceleration");
 
     
     ddr_->registerVariable<int>
@@ -303,8 +303,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     [this](int b)
     {
         motion_s_curve_strength.store(b);
-    },
-    "S Curve Strength", 0, 1);
+    }, 0, 1,
+    "S Curve Strength";
     
     
     ddr_->publishServicesTopics();

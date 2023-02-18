@@ -230,8 +230,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
             ROS_WARN_STREAM("ddr: max_extension_ set to greater than the theoretical maximum. setting to calculated maximum instead.");
         }
     },
-    "Max extension",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Max extension");
 
     ddr_->registerVariable<double>
     ("min_extension",
@@ -250,8 +250,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
             ROS_WARN_STREAM("ddr: min_extension_ set to less than the theoretical minimum. setting to calculated minimum instead.");
         }
     },
-    "Min extension",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Min extension");
 
     ddr_->registerVariable<double>
     ("parallel_bar_length",
@@ -263,8 +263,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         parallel_bar_length_.store(b);
     },
-    "Parallel bar length",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Parallel bar length");
 
     ddr_->registerVariable<double>
     ("diagonal_bar_length",
@@ -276,8 +276,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         diagonal_bar_length_.store(b);
     },
-    "Diagonal bar length",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Diagonal bar length");
 
     ddr_->registerVariable<double>
     ("intake_length",
@@ -289,8 +289,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         intake_length_.store(b);
     },
-    "Intake/static attachment length",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Intake/static attachment length");
 
     ddr_->registerVariable<double>
     ("arb_feed_forward",
@@ -302,8 +302,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward.store(b);
     },
-    "Arb feedforward",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Arb feedforward");
     ddr_->registerVariable<double>
     ("four_bar_zeroing_percent_output",
      [this]()
@@ -325,8 +325,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         four_bar_zeroing_timeout.store(b);
     },
-    "FourBar Zeroing Timeout",
-    0.0, 0.5);
+    0.0, 0.5,
+    "FourBar Zeroing Timeout");
     ddr_->registerVariable<double>
     ("motion_magic_velocity",
      [this]()
@@ -337,8 +337,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         motion_magic_velocity.store(b);
     },
-    "Motion Magic Velocity",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Motion Magic Velocity");
 
     ddr_->registerVariable<double>
     ("motion_magic_acceleration",
@@ -350,8 +350,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         motion_magic_acceleration.store(b);
     },
-    "Motion Magic Acceleration",
-    0.0, 0.5);
+    0.0, 0.5,
+    "Motion Magic Acceleration");
     
     ddr_->registerVariable<int>
     ("motion_s_curve_strength",
@@ -362,8 +362,8 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     [this](int b)
     {
         motion_s_curve_strength.store(b);
-    },
-    "S Curve Strength", 0, 1);
+    }, 0, 1,
+    "S Curve Strength");
 
     ddr_->publishServicesTopics();
 
