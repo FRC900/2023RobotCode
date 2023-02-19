@@ -106,6 +106,7 @@ public:
       t.location = p;
       t.rotation = tag->second[3];
       tags_[std::stoi(tag->first.substr(3))] = t;
+      ROS_INFO_STREAM("tag " << p.x << " " << p.y << " " << p.z << " #" << tag->first.substr(3));
     }
 
     for (XmlRpc::XmlRpcValue::iterator grid=gridList.begin(); grid!=gridList.end(); ++grid) {
@@ -163,7 +164,7 @@ public:
     auto closestTag = findClosestApriltag(latest_);
     if (closestTag == std::nullopt) {
       as_.setAborted(result_); // no tag found
-      ROS_ERROR_STREAM("[2023_align_to_grid] No AprilTags found :(");
+      ROS_ERROR_STREAM("2023_align_to_grid : No AprilTags found :(");
       return;
     }
     int closestId = closestTag.value();
@@ -181,12 +182,9 @@ public:
     geometry_msgs::Point offset;
     offset.x = -xOffset_; // TODO consider going to a bit behind this and then driving forward for a preset amount of time? (in case we overshoot)
     ROS_INFO_STREAM("xOffset: " << offset.x);
-    if (goal->alliance == 1) {
-      offset.y = gridLocation.y - tag.location.y; // should be gridLocation.y - tag.location.y
-    } else {
-      offset.y = -(gridLocation.y - tag.location.y);
-    }
+    offset.y = gridLocation.y - tag.location.y; // should be gridLocation.y - tag.location.y
     offset.z = 0;
+    ROS_INFO_STREAM("grid " << gridLocation.y << " tag " << tag.location.y);
     ROS_INFO_STREAM("ydif: " << gridLocation.y - tag.location.y);
 
     geometry_msgs::Pose pose;
