@@ -4,8 +4,6 @@
 # assumes that the robot is already aligned with the charging station
 # ALSO assumes that negative is up 
 
-
-
 # imports for actionlib server and messages
 import rospy
 import actionlib
@@ -13,9 +11,10 @@ import behavior_actions.msg
 import sensor_msgs.msg
 import std_msgs.msg
 import math
-import geometry_msgs.msg._Quaternion
+import geometry_msgs.msg
 from enum import Enum
 from tf.transformations import euler_from_quaternion # may look like tf1 but is actually tf2
+import std_srvs.srv
 
 class States(Enum):
     # we only actually care about two states, the one with no wheels and all the rest as one state
@@ -52,12 +51,16 @@ class AutoBalancing:
         
         self.balancer_client = actionlib.SimpleActionClient("balancer_server", behavior_actions.msg.Balancer2023Action)
         self.balancer_client.wait_for_server(rospy.Duration(5)) # 5 sec timeout
-        
+        rospy.wait_for_service('/frcrobot_jetson/swerve_drive_controller/brake', rospy.Duration(5))
+        self.brake_srv = rospy.ServiceProxy('/frcrobot_jetson/swerve_drive_controller/brake', std_srvs.srv.Empty)
+        self.cmd_vel_topic = "/balance_position/balancer_server/swerve_drive_controller/cmd_vel"
+        self.pub_cmd_vel = rospy.Publisher(self.cmd_vel_topic, geometry_msgs.msg.Twist, queue_size=1)
+
         self.angle_to_add = math.radians(20)
         self.PID_enabled = False
         self.current_pitch = -999
         self.current_pitch_time = -1000
-        self.state = States.NO_WEELS_ON 
+        self.state = States.NO_WEELS_ON
         self.sub_imu = rospy.Subscriber(imu_sub_topic, sensor_msgs.msg.Imu, self.imu_callback)
         self.down_measurements = 0
         self.threshold = math.radians(0.5) # how much a measurement must change by to be counted
@@ -88,10 +91,11 @@ class AutoBalancing:
         rospy.loginfo(f"Auto Balancing Actionlib called with goal {goal}")
         # TODO, make sure we are aligned with 0 degrees (or 180 depending on how it works out)d
         
-        goal_to_send = behavior_actions.msg.Balancer2023Goal()
-        goal_to_send.angle_offset = self.angle_to_add
-    
-        self.balancer_client.send_goal(goal_to_send)
+        # TODO, remove this when new method workds
+        #goal_to_send = behavior_actions.msg.Balancer2023Goal()
+        #goal_to_send.angle_offset = self.angle_to_add
+
+        #self.balancer_client.send_goal(goal_to_send)
         
         # angle when we are on the ramp where balancer can take over = 0.259rad ~ 15 degrees
         # going to try and run pid to get to that and then run balancer? 
@@ -104,16 +108,51 @@ class AutoBalancing:
                 self.preempt() # stop pid
                 self._as.set_preempted()
                 break
+            
+            if self.state == States.NO_WEELS_ON:
+                cmd_vel_msg = geometry_msgs.msg.Twist()
+                cmd_vel_msg.angular.x = 1 # todo, tune me
+                cmd_vel_msg.angular.y = 0
+                cmd_vel_msg.angular.z = 0
+                cmd_vel_msg.linear.x = 0
+                cmd_vel_msg.linear.y = 0
+                cmd_vel_msg.linear.z = 0
+                self.pub_cmd_vel.publish(cmd_vel_msg)
 
-            if abs(self.current_pitch) >= math.radians(10) and self.state == States.NO_WEELS_ON:
+            if abs(self.current_pitch) >= math.radians(12) and self.state == States.NO_WEELS_ON:
                 rospy.logwarn("Recalled balancer with 0 offset=======================")
-                self.balancer_client.cancel_all_goals()
                 r.sleep()
+                self.state = States.ONE_WHEEL_ON_RAMP
+
+            # ramp is going down, we need to hard stop
+            # normal extension for charging station is 11 degrees when fully pushed down
+            if self.state == States.ONE_WHEEL_ON_RAMP and abs(self.current_pitch) <= math.radians(10):
+                rospy.loginfo("Brake mode called!")
+                self.balancer_client.cancel_all_goals()
+                if not self.brake_srv(std_srvs.srv.Empty()):
+                    rospy.logerr("Could not call brake service in balancing!")
+
+                start_time = rospy.Time.now()
+                success = False
+                r = rospy.Rate(100)
+                while (rospy.Time.now() - start_time < 1):
+                    if self._as.is_preempt_requested():
+                        rospy.loginfo('%s: Preempted' % self._action_name)
+                        self.preempt() # stop pid
+                        self._as.set_preempted()
+                        break
+                    r.sleep()
+
+                if not success:
+                    rospy.loginfo("Preempted while waiting for balance!")
+                    break
+                # run pid to finish off balancing, should already be balanced but if we are off a little this will fix it
                 goal_to_send = behavior_actions.msg.Balancer2023Goal()
                 goal_to_send.angle_offset = 0
                 self.balancer_client.send_goal(goal_to_send)
-                self.state = States.ONE_WHEEL_ON_RAMP
-
+                self.state = States.TWO_WHEELS_ON_CENTER
+                rospy.loginfo("Finished balancing!")
+            
             # publish the feedback
             self._as.publish_feedback(self._feedback)
             r.sleep()
