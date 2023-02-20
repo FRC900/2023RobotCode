@@ -28,7 +28,7 @@ def step(msg):
     #print(f"Callback {n}")
     n +=1
     ##print(f"angle {charging_station.angle*180/np.pi}")
-    charging_station.step(msg.linear.x*0.2, TIME_STEP)
+    charging_station.step(msg.linear.x, TIME_STEP)
     charging_station.x_cmd_vel = msg.linear.x
     #sim_clock.clock = rospy.Time.from_sec(charging_station.time)
     #clock_pub.publish(sim_clock)
