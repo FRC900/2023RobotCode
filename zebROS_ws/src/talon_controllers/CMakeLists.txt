@@ -7,6 +7,7 @@ include ("../cmake_modules/CMakeOpt.cmake")
 find_package(catkin REQUIRED COMPONENTS
   controller_interface
   dynamic_reconfigure
+  ddr_updater
   message_generation
   realtime_tools
   roscpp
@@ -33,6 +34,9 @@ include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}
   src/talon_controller.cpp
+  src/talon_controller_interface.cpp
+  src/talonfxpro_controller.cpp
+  src/talonfxpro_controller_interface.cpp
 )
 
 ## Add cmake target dependencies of the executable

@@ -15,6 +15,16 @@
 			The talon config controller publishes the current talon config as a talon_state_msgs/TalonConfig message. The talon config controller expects a TalonStateInterface type of hardware interface.
 		</description>
 	</class>
+	<class name="talonfxpro_state_controller/TalonFXProStateController" type="talonfxpro_state_controller::TalonFXProStateController" base_class_type="controller_interface::ControllerBase">
+		<description>
+			The talonfxpro state controller publishes the current talonfxpro state as a talonfxpro_state_msgs/TalonFXProState message. The talonfxpro state controller expects a TalonFXProStateInterface type of hardware interface.
+		</description>
+	</class>
+	<class name="talonfxpro_config_controller/TalonFXProConfigController" type="talonfxpro_config_controller::TalonFXProConfigController" base_class_type="controller_interface::ControllerBase">
+		<description>
+			The talonfxpro config controller publishes the current talonfxpro config as a talonfxpro_config_msgs/TalonFXProConfig message. The talonfxpro config controller expects a TalonFXProConfigInterface type of hardware interface.
+		</description>
+	</class>
 	<class name="canifier_state_controller/CANifierStateController" type="canifier_state_controller::CANifierStateController" base_class_type="controller_interface::ControllerBase">
 		<description>
 			The CANifier state controller publishes the current CANifier State as a talon_state_msgs/CANifierConfig message. The CANifierState controller expects a CANifierStateInterface type of hardware interface.

@@ -1,0 +1,49 @@
+four_bar_controller_2023:
+    type: four_bar_controller_2023/FourBarController_2023_Phoenix6
+
+    feed_forward_map:
+        - [-1, 0]
+        - [2, 0]
+
+    four_bar_joint: [ 'four_bar' ]
+    dynamic_reconfigure: True
+    min_angle: 0.0 # for sure. this is slightly less than vertical (it's where the limit switch hits)
+    max_angle: 1.8 # measured
+
+    # don't even care about lenghts because we are using angles
+
+    # 0.11-0.12 worked well for holding max extension
+    arb_feed_forward_angle: 0.10
+    straight_up_angle: 0.0
+
+    #motion_magic_velocity: 15.0
+    #motion_magic_acceleration: 8.0
+    #motion_magic_jerk: 20.0
+    motion_magic_velocity: 0.5
+    motion_magic_acceleration: 1.0
+    motion_s_curve_strength: 2.0 # Maps to v6 motion magic jerk value
+
+    # How quickly the four bar moves down when zeroing itself
+    four_bar_zeroing_percent_output: -0.10
+
+    # If there are no negative velocity readings while zeroing
+    # for this amount of time, assume the four bar is stuck
+    # or has hit bottom and the limit switch is broken.  Stop
+    # trying to drive down to prevent killing the motor
+    four_bar_zeroing_timeout:  2.0
+    four_bar:
+        type: talon_controllers/TalonFXProControllerInterface 
+        joint: four_bar
+        close_loop_values:
+            - {kP: 2.88, kI: 0.000, kD: 0.0, kV: 0.156, kS: 0.0}
+        invert: clockwise_positive
+        
+        neutral_mode: Brake
+
+        reverse_limit_switch_type: "NormallyOpen"
+        reverse_limit_enable: True
+
+        sensor_to_mechanism_ratio: 13.35 # set from chad = rad / m
+        command_deadband: 0.01 # set to be higher
+
+        dynamic_reconfigure: True

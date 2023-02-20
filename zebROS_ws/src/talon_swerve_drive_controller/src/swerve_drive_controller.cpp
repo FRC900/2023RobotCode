@@ -52,6 +52,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <talon_controllers/talon_controller_interface.h>
+#include <talon_controllers/talonfxpro_controller_interface.h>
 
 #include "talon_swerve_drive_controller/SetXY.h"
 #include <talon_swerve_drive_controller/Swerve.h>
@@ -59,17 +60,13 @@
 namespace talon_swerve_drive_controller
 {
 
-template <size_t WHEELCOUNT>
+template <size_t WHEELCOUNT, typename COMMAND_INTERFACE_TYPE>
 class TalonSwerveDriveController
-	: public controller_interface::Controller<hardware_interface::TalonCommandInterface>
+	: public controller_interface::Controller<COMMAND_INTERFACE_TYPE>
 {
-	public:
+public:
 
-TalonSwerveDriveController()
-{
-}
-
-bool init(hardware_interface::TalonCommandInterface *hw,
+bool init(COMMAND_INTERFACE_TYPE *hw,
 		ros::NodeHandle &/*root_nh*/,
 		ros::NodeHandle &controller_nh)
 {
@@ -96,7 +93,7 @@ bool init(hardware_interface::TalonCommandInterface *hw,
 	if (speed_names.size() != WHEELCOUNT)
 	{
 		ROS_ERROR_STREAM_NAMED(name_,
-							   "#speed (" << speed_names.size() << ") != " <<
+							   "#speed/steering (" << speed_names.size() << ") != " <<
 							   "WHEELCOUNT (" << WHEELCOUNT << ").");
 		return false;
 	}
@@ -797,7 +794,7 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 
 void cmdVelCallback(const geometry_msgs::Twist &command)
 {
-	if (isRunning())
+	if (this->isRunning())
 	{
 		const auto now = ros::Time::now();
 		// check that we don't have multiple publishers on the command topic
@@ -856,7 +853,7 @@ void cmdVelCallback(const geometry_msgs::Twist &command)
 
 bool changeCenterOfRotationService(talon_swerve_drive_controller::SetXY::Request& req, talon_swerve_drive_controller::SetXY::Response &/*res*/)
 {
-	if(isRunning())
+	if(this->isRunning())
 	{
 		Eigen::Vector2d vector;
 		vector[0] = req.x;
@@ -873,7 +870,7 @@ bool changeCenterOfRotationService(talon_swerve_drive_controller::SetXY::Request
 
 bool setNeturalModeService(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response&/*res*/)
 {
-	if(isRunning())
+	if(this->isRunning())
 	{
 		if (req.data) {
 			neutral_mode_ = hardware_interface::NeutralMode::NeutralMode_Coast;
@@ -892,7 +889,7 @@ bool setNeturalModeService(std_srvs::SetBool::Request& req, std_srvs::SetBool::R
 
 bool resetOdomService(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*res*/)
 {
-	if (isRunning())
+	if (this->isRunning())
 	{
 		reset_odom_.exchange(true);
 		return true;
@@ -907,7 +904,7 @@ bool resetOdomService(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Respon
 
 bool brakeService(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*res*/)
 {
-	if (isRunning())
+	if (this->isRunning())
 	{
 		Commands brake_struct;
 		brake_struct.lin[0] = 0;
@@ -928,7 +925,7 @@ bool brakeService(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &
 
 bool parkService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
-	if (isRunning())
+	if (this->isRunning())
 	{
 		ROS_WARN_STREAM("swerve_drive_controller : park when stopped = " << std::to_string(req.data));
 		park_when_stopped_.store(req.data, std::memory_order_relaxed);
@@ -945,7 +942,7 @@ bool parkService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &r
 
 bool dontSetAngleModeService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
-	if (isRunning())
+	if (this->isRunning())
 	{
 		ROS_WARN_STREAM("dont_set_angle_mode_ set to = " << static_cast<int>(req.data));
 		dont_set_angle_mode_.store(req.data, std::memory_order_relaxed);
@@ -964,7 +961,7 @@ bool dontSetAngleModeService(std_srvs::SetBool::Request &req, std_srvs::SetBool:
 
 bool percentOutDriveModeService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
-	if (isRunning())
+	if (this->isRunning())
 	{
 		ROS_WARN_STREAM("percent_out_drive_mode_mode_ set to = " << static_cast<int>(req.data));
 		percent_out_drive_mode_.store(req.data, std::memory_order_relaxed);
@@ -1050,8 +1047,10 @@ std::string name_;
 std::unique_ptr<swerve<WHEELCOUNT>> swerveC_;
 
 /// Hardware handles:
-std::array<talon_controllers::TalonControllerInterface, WHEELCOUNT> speed_joints_;
-std::array<talon_controllers::TalonControllerInterface, WHEELCOUNT> steering_joints_;
+//  Select type based onm the controller interface type
+using CONTROLLER_INTERFACE_TYPE = typename std::conditional_t<std::is_same_v<COMMAND_INTERFACE_TYPE, hardware_interface::TalonCommandInterface>, talon_controllers::TalonControllerInterface, talonfxpro_controllers::TalonFXProControllerInterface>;
+std::array<CONTROLLER_INTERFACE_TYPE, WHEELCOUNT> speed_joints_;
+std::array<CONTROLLER_INTERFACE_TYPE, WHEELCOUNT> steering_joints_;
 
 /// Velocity command related:
 struct Commands
@@ -1068,15 +1067,14 @@ struct Commands
 
 realtime_tools::RealtimeBuffer<Commands> command_;
 
-std::atomic<bool> dont_set_angle_mode_; // used to lock wheels into place
-std::atomic<bool> percent_out_drive_mode_; // run drive wheels in open-loop mode
-std::atomic<bool> park_when_stopped_;
+std::atomic<bool> dont_set_angle_mode_{false}; // used to lock wheels into place
+std::atomic<bool> percent_out_drive_mode_{false}; // run drive wheels in open-loop mode
+std::atomic<bool> park_when_stopped_{false};
 double brake_last_{ros::Time::now().toSec()};
 double time_before_brake_{0};
 double parking_config_time_delay_{0.1};
 double drive_speed_time_delay_{0.1};
 std::array<Eigen::Vector2d, WHEELCOUNT> speeds_angles_;
-
 
 ros::Subscriber sub_command_;
 
@@ -1106,12 +1104,12 @@ swerveVar::ratios driveRatios_;
 swerveVar::encoderUnits units_;
 
 // Feed forward terms
-double f_s_;
-double f_a_;
-double f_v_;
-double f_s_v_;
-double f_s_s_;
-double stopping_ff_;
+double f_s_{0};
+double f_a_{0};
+double f_v_{0};
+double f_s_v_{0};
+double f_s_s_{0};
+double stopping_ff_{0};
 /// Timeout to consider cmd_vel commands old:
 double cmd_vel_timeout_{0.5};
 
@@ -1128,8 +1126,8 @@ size_t wheel_joints_size_{0};
 bool publish_cmd_{true};
 
 static constexpr double DEF_ODOM_PUB_FREQ{100.};
-static const std::string DEF_ODOM_FRAME;
-static const std::string DEF_BASE_FRAME;
+inline static const std::string DEF_ODOM_FRAME{"odom"};
+inline static const std::string DEF_BASE_FRAME{"base_link"};
 static constexpr double DEF_INIT_X{0};
 static constexpr double DEF_INIT_Y{0};
 static constexpr double DEF_INIT_YAW{0};
@@ -1156,11 +1154,18 @@ bool use_cos_scaling_{false};
 
 }; // class definition
 
-template <size_t WHEELCOUNT> const std::string TalonSwerveDriveController<WHEELCOUNT>::DEF_ODOM_FRAME = "odom";
-template <size_t WHEELCOUNT> const std::string TalonSwerveDriveController<WHEELCOUNT>::DEF_BASE_FRAME = "base_link";
+
+// The PLUGINLIB_EXPORT_CLASS() call below can't handle classes with more than 1 template arg, su 
+// use partial specialization here to remove one of them for the 4-wheel definition
+template <typename COMMAND_INTERFACE_TYPE>
+class TalonSwerveDriveController4 : public TalonSwerveDriveController<4, COMMAND_INTERFACE_TYPE>
+{
+};
 
 } // namespace talon_swerve_drive_controller
 
 #include <pluginlib/class_list_macros.h>
-template class talon_swerve_drive_controller::TalonSwerveDriveController<4>;
-PLUGINLIB_EXPORT_CLASS(talon_swerve_drive_controller::TalonSwerveDriveController<4>, controller_interface::ControllerBase)
+template class talon_swerve_drive_controller::TalonSwerveDriveController4<hardware_interface::TalonCommandInterface>;
+template class talon_swerve_drive_controller::TalonSwerveDriveController4<hardware_interface::talonfxpro::TalonFXProCommandInterface>;
+PLUGINLIB_EXPORT_CLASS(talon_swerve_drive_controller::TalonSwerveDriveController4<hardware_interface::TalonCommandInterface>, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(talon_swerve_drive_controller::TalonSwerveDriveController4<hardware_interface::talonfxpro::TalonFXProCommandInterface>, controller_interface::ControllerBase)

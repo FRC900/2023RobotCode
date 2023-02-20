@@ -49,10 +49,12 @@ add_message_files(
   FILES
   CANCoderState.msg
   CANifierState.msg
-  TalonConfig.msg
-  TalonState.msg
   InstrumentList.msg
   OrchestraState.msg
+  TalonConfig.msg
+  TalonState.msg
+  TalonFXProConfig.msg
+  TalonFXProState.msg
 )
 
 ## Generate services in the 'srv' folder

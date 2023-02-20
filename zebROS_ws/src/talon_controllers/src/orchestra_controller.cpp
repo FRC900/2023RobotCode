@@ -32,7 +32,7 @@ bool OrchestraController::init(hardware_interface::OrchestraCommandInterface *hw
 
 void OrchestraController::starting(const ros::Time &time)
 {
-	state_.writeFromNonRT(2);
+	orchestra_state_.writeFromNonRT(2);
 	instruments_.writeFromNonRT({});
 	music_file_path_.writeFromNonRT("");
 
@@ -41,7 +41,7 @@ void OrchestraController::starting(const ros::Time &time)
 
 void OrchestraController::update(const ros::Time &time, const ros::Duration &)
 {
-	int state = *(state_.readFromRT());
+	int state = *(orchestra_state_.readFromRT());
 	if(state != previous_state_)
 	{
 		ROS_INFO_STREAM("Changed state in OrchestraController");
@@ -101,7 +101,7 @@ bool OrchestraController::setStateService(talon_controller_msgs::SetOrchestraSta
 	{
 		if(req.state == 0 || req.state == 1 || req.state == 2)
 		{
-			state_.writeFromNonRT(req.state);
+			orchestra_state_.writeFromNonRT(req.state);
 			res.success = true;
 			return true;
 		}
