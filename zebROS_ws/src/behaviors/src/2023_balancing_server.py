@@ -51,7 +51,7 @@ class AutoBalancing:
         
         self.balancer_client = actionlib.SimpleActionClient("balancer_server", behavior_actions.msg.Balancer2023Action)
         self.balancer_client.wait_for_server(rospy.Duration(5)) # 5 sec timeout
-        rospy.wait_for_service('/frcrobot_jetson/swerve_drive_controller/brake', rospy.Duration(5))
+        #rospy.wait_for_service('/frcrobot_jetson/swerve_drive_controller/brake', rospy.Duration(5))
         self.brake_srv = rospy.ServiceProxy('/frcrobot_jetson/swerve_drive_controller/brake', std_srvs.srv.Empty)
         self.cmd_vel_topic = "/balance_position/balancer_server/swerve_drive_controller/cmd_vel"
         self.pub_cmd_vel = rospy.Publisher(self.cmd_vel_topic, geometry_msgs.msg.Twist, queue_size=1)
@@ -103,24 +103,26 @@ class AutoBalancing:
         while True:                
             # I think subscribers should update without spinOnce... it doesn't exist in python
             # check that preempt has not been requested by the client
-            if self._as.is_preempt_requested():
+            if self._as.is_preempt_requested() or rospy.is_shutdown():
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self.preempt() # stop pid
                 self._as.set_preempted()
                 break
             
             if self.state == States.NO_WEELS_ON:
+                rospy.loginfo_throttle(2, "Sending cmd of 1")
                 cmd_vel_msg = geometry_msgs.msg.Twist()
-                cmd_vel_msg.angular.x = 1 # todo, tune me
+                cmd_vel_msg.angular.x = 0 # todo, tune me
                 cmd_vel_msg.angular.y = 0
                 cmd_vel_msg.angular.z = 0
-                cmd_vel_msg.linear.x = 0
+                cmd_vel_msg.linear.x = 1
                 cmd_vel_msg.linear.y = 0
                 cmd_vel_msg.linear.z = 0
                 self.pub_cmd_vel.publish(cmd_vel_msg)
 
             if abs(self.current_pitch) >= math.radians(12) and self.state == States.NO_WEELS_ON:
                 rospy.logwarn("Recalled balancer with 0 offset=======================")
+                self.
                 r.sleep()
                 self.state = States.ONE_WHEEL_ON_RAMP
 
@@ -129,7 +131,8 @@ class AutoBalancing:
             if self.state == States.ONE_WHEEL_ON_RAMP and abs(self.current_pitch) <= math.radians(10):
                 rospy.loginfo("Brake mode called!")
                 self.balancer_client.cancel_all_goals()
-                if not self.brake_srv(std_srvs.srv.Empty()):
+                empty_msg = std_srvs.srv.Empty
+                if not self.brake_srv(empty_msg):
                     rospy.logerr("Could not call brake service in balancing!")
 
                 start_time = rospy.Time.now()

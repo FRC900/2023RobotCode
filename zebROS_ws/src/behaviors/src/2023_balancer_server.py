@@ -107,8 +107,8 @@ class Balancer:
         self.current_pitch = pitch
         self.current_pitch_time = imu_msg.header.stamp.secs
         if self.debug:
-            rospy.loginfo_throttle(0.5, f"Balancer server - Pitch in degrees {round(pitch*(180/math.pi), 4)}\nBalancer server - offset {round(self.pitch_offset, 4)}")
-        
+            #rospy.loginfo_throttle(0.5, f"Balancer server - Pitch in degrees {round(pitch*(180/math.pi), 4)}\nBalancer server - offset {round(self.pitch_offset, 4)}")
+            pass
         self.pub_pitch_state.publish(pitch - self.pitch_offset)
 
     def preempt(self):
