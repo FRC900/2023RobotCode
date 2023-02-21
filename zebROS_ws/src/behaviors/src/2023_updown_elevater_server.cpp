@@ -33,6 +33,8 @@ uint8 BASE_TOWARDS_US_CONE=2
 uint8 BASE_AWAY_US_CONE=3
 uint8 piece
 */
+//constexpr std::array<const char *, 4> mode_to_string {"INTAKE", "LOW_NODE", "MIDDLE_NODE", "HIGH_NODE"};
+//constexpr std::array<const char *, 4> piece_to_string {"CUBE", "VERTICAL_CONE", "BASE_TOWARDS_US_CONE", "BASE_AWAY_US_CONE"};
 
 template <class T>
 void load_param_helper(const ros::NodeHandle &nh, std::string name, T &result, T default_val)
@@ -50,9 +52,9 @@ class ElevaterAction2023
     protected:
 
         ros::NodeHandle nh_;
-        ros::NodeHandle nh_params_;
         actionlib::SimpleActionServer<behavior_actions::Elevater2023Action> as_;
         actionlib::SimpleActionClient<behavior_actions::Fourber2023Action> ac_fourber_;
+        ros::NodeHandle nh_params_;
 
         ros::ServiceClient elevator_srv_;
         std::string action_name_;
