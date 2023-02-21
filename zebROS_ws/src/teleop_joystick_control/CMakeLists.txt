@@ -190,7 +190,7 @@ add_dependencies(snap_to_conecube_node_2023
 
 # Install ------------------------------------------------------------
 # Install header files
-install(TARGETS teleop_joystick_comp_2022 teleop_joystick_comp_2023 teleop_joints_keyboard orient_strafing_node snap_to_conecube_node_2023
+install(TARGETS teleop_joystick_comp_2022 teleop_joystick_comp_2023 teleop_joints_keyboard snap_to_conecube_node_2023
 	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

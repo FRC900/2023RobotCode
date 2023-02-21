@@ -70,7 +70,7 @@ frc_msgs::ButtonBoxState button_box;
 std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
 
-ros::Publisher orient_strafing_enfable_pub;
+ros::Publisher orient_strafing_enable_pub;
 ros::Publisher orient_strafing_setpoint_pub;
 ros::Publisher orient_strafing_state_pub;
 
@@ -1185,6 +1185,7 @@ int main(int argc, char **argv)
 	if(!n_params.getParam("cone_cube_timeout", config.cone_cube_timeout))
 	{
 		ROS_ERROR("Could not read cone_cube_timeout in teleop_joystick_comp");
+	}
 	if(!n_params.getParam("rotation_axis_scale", config.rotation_axis_scale))
 	{
 		ROS_ERROR("Could not read rotation_axis_scale in teleop_joystick_comp");
