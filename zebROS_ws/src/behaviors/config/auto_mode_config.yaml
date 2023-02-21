@@ -28,6 +28,11 @@ auto_mode_4: ["place_starting_pos_1", "engage_after_place_starting_pos_1", "bala
 auto_mode_5: ["place_starting_pos_2", "engage_starting_pos_2", "balance"] # , "place_cube_high" after place path
 auto_mode_6: ["place_starting_pos_3", "engage_starting_pos_3", "balance"] # , "place_cube_high" after place path
 
+# Place (No Engage)
+auto_mode_7: ["place_starting_pos_1", "drive_back_4m"] # , "place_cone_high" after place path
+auto_mode_8: ["place_starting_pos_2", "drive_back_4m"] # , "place_cube_high" after place path
+auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cube_high" after place path
+
 #auto_mode_2: ["mini_drive_test"]
 
 # Examples
@@ -129,6 +134,16 @@ engage_after_place_starting_pos_3:
       points:
         - [ -3.75, -0.34, 0.0 ]
         - [ -3.75, -2.23, 0.0 ]
+      frame_id: ""
+      optimize_final_velocity: true
+
+
+drive_back_4m:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ -4.0, 0.0, 0.0 ]
       frame_id: ""
       optimize_final_velocity: true
 
