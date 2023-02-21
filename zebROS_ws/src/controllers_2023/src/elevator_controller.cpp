@@ -205,8 +205,9 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward_high.store(b);
     },
-    0.0, 0.5,
-    "Arb feedforward high"
+
+    "Arb feedforward high",
+    0.0, 0.5
     );
 
     ddr_->registerVariable<double>
@@ -219,8 +220,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward_low.store(b);
     },
-    0.0, 0.5,
-    "Arb feedforward low");
+    "Arb feedforward low",
+    0.0, 0.5);
     
     ddr_->registerVariable<double>
     ("elevator_zeroing_percent_output",
@@ -232,8 +233,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         elevator_zeroing_percent_output.store(b);
     },
-    0.0, 0.5,
-    "Elevator Zeroing Percent Output");
+    "Elevator Zeroing Percent Output",
+    0.0, 0.5);
 
 
 
@@ -247,8 +248,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         elevator_zeroing_timeout.store(b);
     },
-    0.0, 0.5,
-    "Elevator Zeroing Timeout");
+    "Elevator Zeroing Timeout",
+    0.0, 0.5);
 
 
     ddr_->registerVariable<double>
@@ -261,8 +262,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         stage_2_height.store(b);
     },
-    0.0, 0.5,
-    "Stage 2 Height");
+    "Stage 2 Height",
+    0.0, 2.0);
 
 
     ddr_->registerVariable<double>
@@ -275,9 +276,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         motion_magic_velocity_fast.store(b);
     },
-    0.0, 0.5,
-
-    "fast Motion Magic Velocity");
+    "fast Motion Magic Velocity",
+    0.0, 3.0); //might be 4, 3 to be safe
 
 
     ddr_->registerVariable<double>
@@ -290,8 +290,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         motion_magic_acceleration_fast.store(b);
     },
-    0.0, 0.5,
-    "Fast Motion Magic Acceleration");
+    "Fast Motion Magic Acceleration",
+    0.0, 5.0; //might be 10, 5 to be safe
 
     
     ddr_->registerVariable<int>
@@ -303,8 +303,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     [this](int b)
     {
         motion_s_curve_strength.store(b);
-    }, 0, 1,
-    "S Curve Strength";
+    },
+    "S Curve Strength", 0, 8);
     
     
     ddr_->publishServicesTopics();
@@ -467,5 +467,4 @@ bool ElevatorController_2023::cmdService(controllers_2023_msgs::ElevatorSrv::Req
 
 //DON'T FORGET TO EXPORT THE CLASS SO CONTROLLER_MANAGER RECOGNIZES THIS AS A TYPE
 PLUGINLIB_EXPORT_CLASS(elevator_controller_2023::ElevatorController_2023, controller_interface::ControllerBase)
-
 
