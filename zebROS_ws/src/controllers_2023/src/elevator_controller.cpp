@@ -291,7 +291,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         motion_magic_acceleration_fast.store(b);
     },
     "Fast Motion Magic Acceleration",
-    0.0, 5.0; //might be 10, 5 to be safe
+    0.0, 5.0); //might be 10, 5 to be safe
 
     
     ddr_->registerVariable<int>
