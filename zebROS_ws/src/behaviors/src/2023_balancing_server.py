@@ -96,6 +96,9 @@ class AutoBalancing:
         # angle when we are on the ramp where balancer can take over = 0.259rad ~ 15 degrees
         # going to try and run pid to get to that and then run balancer? 
         r = rospy.Rate(100)
+
+        success = True
+
         while True:                
             # I think subscribers should update without spinOnce... it doesn't exist in python
             # check that preempt has not been requested by the client
@@ -103,6 +106,7 @@ class AutoBalancing:
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self.preempt() # stop pid
                 self._as.set_preempted()
+                success = False
                 break
 
             if abs(self.current_pitch) >= math.radians(10) and self.state == States.NO_WEELS_ON:
@@ -117,6 +121,10 @@ class AutoBalancing:
             # publish the feedback
             self._as.publish_feedback(self._feedback)
             r.sleep()
+        
+        if success:
+            self._result.success = True
+            self._as.set_succeeded(self._result)
 
 if __name__ == '__main__':
     rospy.logwarn("Initalizing balancing server")

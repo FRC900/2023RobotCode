@@ -18,9 +18,9 @@
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_left_hub", "stop_intaking", "shoot", "drive_forward"]
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_right_hub", "stop_intaking", "shoot", "drive_forward"]
 
-auto_mode_1: ["engage_starting_pos_1"]
-auto_mode_2: ["engage_starting_pos_2"]
-auto_mode_3: ["engage_starting_pos_3"]
+auto_mode_1: ["engage_starting_pos_1", "balance"]
+auto_mode_2: ["engage_starting_pos_2", "balance"]
+auto_mode_3: ["engage_starting_pos_3", "balance"]
 #auto_mode_2: ["mini_drive_test"]
 
 # Examples
@@ -73,6 +73,12 @@ engage_starting_pos_3:
         - [ -3.08, 1.89, 0.0 ]
       frame_id: ""
       optimize_final_velocity: true
+
+
+balance:
+    type: "balancing_actionlib_server"
+    timeout: 30.0
+
 
 cmd_vel_1:
     type: cmd_vel
@@ -281,21 +287,6 @@ galactic_search_path:
   drive_path_test_1
 
 #examples:
-
-start_intaking:
-    type: "intaking_actionlib_server"
-    goal:
-        "start"
-
-stop_intaking:
-    type: "intaking_actionlib_server"
-    goal:
-        "stop"
-
-shoot:
-    type: "shooting_actionlib_server"
-    goal:
-        ""
         
 drive_back:
     type: "path"

@@ -12,6 +12,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <behavior_actions/Placing2023Action.h>
 #include <behavior_actions/Intaking2023Action.h>
+#include <behavior_actions/Balancing2023Action.h>
 #include <behavior_actions/GamePieceState2023.h>
 #include <behavior_actions/DynamicPath.h>
 #include <path_follower_msgs/PathAction.h>
@@ -86,6 +87,7 @@ class AutoNode {
 		actionlib::SimpleActionClient<path_follower_msgs::PathAction> path_ac_; //TODO fix this path
 		actionlib::SimpleActionClient<behavior_actions::Placing2023Action> placing_ac_;
 		actionlib::SimpleActionClient<behavior_actions::Intaking2023Action> intaking_ac_;
+		actionlib::SimpleActionClient<behavior_actions::Balancing2023Action> balancing_ac_;
 
 		// path follower and feedback
 		std::map<std::string, nav_msgs::Path> premade_paths_;
@@ -105,6 +107,7 @@ class AutoNode {
 		, path_ac_("/path_follower/path_follower_server", true)
 		, placing_ac_("/placing/placing_server_2023", true)
 		, intaking_ac_("/intaking/intaking_server_2023", true)
+		, balancing_ac_("/balance_position/balancing_server", true)
 
 	// Constructor
 	{
@@ -150,6 +153,7 @@ class AutoNode {
 		functionMap_["pause"] = &AutoNode::pausefn;
 		functionMap_["intaking_actionlib_server"] = &AutoNode::intakefn;
 		functionMap_["placing_actionlib_server"] = &AutoNode::placefn;
+		functionMap_["balancing_actionlib_server"] = &AutoNode::balancefn;
 		functionMap_["path"] = &AutoNode::pathfn;
 		functionMap_["cmd_vel"] = &AutoNode::cmdvelfn;
 
@@ -698,6 +702,28 @@ class AutoNode {
 		}
 		intaking_ac_.sendGoal(goal);
 		waitForActionlibServer(intaking_ac_, 10.0, "intaking_server");
+		return true;
+	}
+
+	bool balancefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		//for some reason this is necessary, even if the server has been up and running for a while
+		if(!balancing_ac_.waitForServer(ros::Duration(5))){
+			shutdownNode(ERROR,"Auto node - couldn't find balancing actionlib server");
+			return false;
+		}
+
+		double timeout;
+		if (!readFloatParam("timeout", action_data, timeout))
+		{
+			timeout = 10.0;
+			ROS_INFO_STREAM("auto_node : no balancing timeout, setting to 10 seconds");
+		}
+
+		behavior_actions::Balancing2023Goal goal;
+		goal.isAlignedWithChargingStation = true;
+		goal.solo = true;
+		balancing_ac_.sendGoal(goal);
+		waitForActionlibServer(balancing_ac_, timeout, "balancing_server");
 		return true;
 	}
 	

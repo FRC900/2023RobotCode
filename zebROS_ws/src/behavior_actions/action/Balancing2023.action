@@ -3,5 +3,6 @@ bool isAlignedWithChargingStation # must be true for anything to happen, just he
 bool solo # true if the robot is alone (auto), false if it is with other robots (endgame)
 ---
 # result
+bool success
 ---
 # feedback
