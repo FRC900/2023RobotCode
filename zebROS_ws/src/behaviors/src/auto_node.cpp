@@ -740,16 +740,37 @@ class AutoNode {
 
 		if (action_data.hasMember("piece"))
 		{
-			if (action_data["goal"] == "cone") {
+			if (action_data["piece"] == "cone") {
 				requested_game_piece = behavior_actions::GamePieceState2023::BASE_TOWARDS_US_CONE;
 			}
-			else if (action_data["goal"] == "cube") {
+			else if (action_data["piece"] == "cube") {
 				requested_game_piece = behavior_actions::GamePieceState2023::CUBE;
 			}
 			else {
-				shutdownNode(ERROR,"Auto node - intaking_actionlib_server call \"piece\" field is not \"cone\" or \"cube\". Exiting!");
+				shutdownNode(ERROR,"Auto node - placing_actionlib_server call \"piece\" field is not \"cone\" or \"cube\". Exiting!");
 				return false;
 			}
+		}
+
+		if (action_data.hasMember("node"))
+		{
+			if (action_data["node"] == "high") {
+				goal.node = goal.HIGH;
+			}
+			else if (action_data["node"] == "mid") {
+				goal.node = goal.MID;
+			}
+			else if (action_data["node"] == "hybrid") {
+				goal.node = goal.HYBRID;
+			}
+			else {
+				shutdownNode(ERROR,"Auto node - placing_actionlib_server call \"node\" field is not \"high\", \"mid\",  or \"hybrid\". Exiting!");
+				return false;
+			}
+		}
+		else {
+			shutdownNode(ERROR, "Auto node - placing_actionlib_server: no node specified");
+			return false;
 		}
 
 		if (requested_game_piece != 255) {
