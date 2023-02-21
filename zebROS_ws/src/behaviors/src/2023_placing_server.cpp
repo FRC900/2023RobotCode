@@ -130,37 +130,38 @@ public:
 
 	void executeCB(const behavior_actions::Placing2023GoalConstPtr &goal)
 	{
+		result_.success = true; // default to true, set to false if fails
 		if (!ac_fourber_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_placing_server : timed out connecting to fourber server, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			return;
 		}
 
 		if (!ac_elevater_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_placing_server : timed out connecting to elevater server, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			return;
 		}
 
 		if (!ac_intake_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_placing_server : timed out connecting to intake server, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			return;
 		}
 
 		if (ros::Time::now() - latest_game_piece_time_ > ros::Duration(game_piece_timeout_)) {
 			ROS_ERROR_STREAM("2023_placing_server : game piece data too old, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			return;
 		}
 
 		if (ros::Time::now() - latest_game_piece_position_time_ > ros::Duration(game_piece_timeout_)) {
 			ROS_ERROR_STREAM("2023_placing_server : game piece position data too old, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			return;
 		}
@@ -184,7 +185,7 @@ public:
 
 			if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_hold_position_, as_)) {
 				ROS_INFO_STREAM("2023_placing_server : hold position server timed out, aborting");
-				result_.timed_out = true;
+				result_.success = false;
 				as_.setAborted(result_);
 				ac_hold_position_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 				return;
@@ -192,13 +193,20 @@ public:
 		}
 
 		behavior_actions::Fourber2023Goal fourber_goal;
-		fourber_goal.piece = latest_game_piece_;
+		if (!goal->override_game_piece) {
+			fourber_goal.piece = latest_game_piece_;
+			ROS_INFO_STREAM("2023_placing_server : detected game piece = " << std::to_string(latest_game_piece_));
+		}
+		else {
+			fourber_goal.piece = goal->piece;
+			ROS_INFO_STREAM("2023_placing_server : game piece override. detected = " << std::to_string(latest_game_piece_) << ", requested = " << std::to_string(goal->piece) << ". using requested value");
+		}
 		fourber_goal.mode = nodeToMode(goal->node); // please don't change the actionlib files
 		ac_fourber_.sendGoal(fourber_goal);
 
 		if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), ac_fourber_, as_) && ac_fourber_.getState() == ac_fourber_.getState().SUCCEEDED)) {
 			ROS_INFO_STREAM("2023_placing_server : fourber timed out, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			ac_fourber_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 			ac_elevater_.cancelGoalsAtAndBeforeTime(ros::Time::now());
@@ -212,7 +220,7 @@ public:
 
 		if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), ac_elevater_, as_) && ac_elevater_.getState() == ac_elevater_.getState().SUCCEEDED)) {
 			ROS_INFO_STREAM("2023_placing_server : elevater timed out, aborting");
-			result_.timed_out = true;
+			result_.success = false;
 			as_.setAborted(result_);
 			ac_fourber_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 			ac_elevater_.cancelGoalsAtAndBeforeTime(ros::Time::now());
@@ -230,7 +238,7 @@ public:
 				ac_intake_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 			} else {
 				ROS_ERROR_STREAM("2023_placing_server : error with intake server! aborting!");
-				result_.timed_out = true;
+				result_.success = false;
 				as_.setAborted(result_);
 				ac_intake_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 				return;

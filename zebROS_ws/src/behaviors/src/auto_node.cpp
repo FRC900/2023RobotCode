@@ -10,8 +10,9 @@
 #include "base_trajectory_msgs/GenerateSpline.h"
 #include "base_trajectory_msgs/PathOffsetLimit.h"
 #include <actionlib/client/simple_action_client.h>
-#include <behavior_actions/Shooting2022Action.h>
-#include "behavior_actions/Intaking2022Action.h"
+#include <behavior_actions/Placing2023Action.h>
+#include <behavior_actions/Intaking2023Action.h>
+#include <behavior_actions/GamePieceState2023.h>
 #include <behavior_actions/DynamicPath.h>
 #include <path_follower_msgs/PathAction.h>
 #include <path_follower_msgs/PathFeedback.h>
@@ -83,8 +84,8 @@ class AutoNode {
 		// START probably changing year to year, mostly year specific actions but also custom stuff based on what is needed
 		//actionlib clients
 		actionlib::SimpleActionClient<path_follower_msgs::PathAction> path_ac_; //TODO fix this path
-		actionlib::SimpleActionClient<behavior_actions::Shooting2022Action> shooting_ac_;
-		actionlib::SimpleActionClient<behavior_actions::Intaking2022Action> intaking_ac_;
+		actionlib::SimpleActionClient<behavior_actions::Placing2023Action> placing_ac_;
+		actionlib::SimpleActionClient<behavior_actions::Intaking2023Action> intaking_ac_;
 
 		// path follower and feedback
 		std::map<std::string, nav_msgs::Path> premade_paths_;
@@ -102,8 +103,8 @@ class AutoNode {
 		AutoNode(const ros::NodeHandle &nh) 
 		: nh_(nh)
 		, path_ac_("/path_follower/path_follower_server", true)
-		, shooting_ac_("/shooting2022/shooting2022_server", true)
-		, intaking_ac_("/intaking2022/intaking2022_server", true)
+		, placing_ac_("/placing/placing_server_2023", true)
+		, intaking_ac_("/intaking/intaking_server_2023", true)
 
 	// Constructor
 	{
@@ -148,14 +149,14 @@ class AutoNode {
 		// better way to initalize?
 		functionMap_["pause"] = &AutoNode::pausefn;
 		functionMap_["intaking_actionlib_server"] = &AutoNode::intakefn;
-		functionMap_["shooting_actionlib_server"] = &AutoNode::shootfn;
+		functionMap_["placing_actionlib_server"] = &AutoNode::placefn;
 		functionMap_["path"] = &AutoNode::pathfn;
 		functionMap_["cmd_vel"] = &AutoNode::cmdvelfn;
 
 		// cool trick to bring all class variables into scope of lambda
 		preemptAll_ = [this](){ // must include all actions called
 			path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-			shooting_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+			placing_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 			intaking_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 		};
 		// END change year to year
@@ -670,41 +671,67 @@ class AutoNode {
 	}
 
 	bool intakefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
-		
 		//for some reason this is necessary, even if the server has been up and running for a while
 		if(!intaking_ac_.waitForServer(ros::Duration(5))){
 			shutdownNode(ERROR,"Auto node - couldn't find intaking actionlib server");
 			return false;
 		}
 
-		if (!action_data.hasMember("goal"))
+		if (!action_data.hasMember("piece"))
 		{
-			shutdownNode(ERROR,"Auto node - intaking_actionlib_server call missing \"goal\" field");
+			shutdownNode(ERROR,"Auto node - intaking_actionlib_server call missing \"piece\" field");
 			return false;
 		}
-		if(action_data["goal"] == "stop") {
-			intaking_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-		} else {
-			behavior_actions::Intaking2022Goal goal;
-			intaking_ac_.sendGoal(goal);
+		behavior_actions::Intaking2023Goal goal;
+		if (action_data["piece"] == "vertical_cone") {
+			goal.piece = goal.VERTICAL_CONE;
 		}
+		else if (action_data["goal"] == "cone") {
+			goal.piece = goal.BASE_TOWARDS_US_CONE;
+		}
+		else if (action_data["goal"] == "cube") {
+			goal.piece = goal.CUBE;
+		}
+		else {
+			shutdownNode(ERROR,"Auto node - intaking_actionlib_server call \"piece\" field is not \"cone\", \"vertical_cone\", or \"cube\". Exiting!");
+			return false;
+		}
+		intaking_ac_.sendGoal(goal);
+		waitForActionlibServer(intaking_ac_, 10.0, "intaking_server");
 		return true;
 	}
 	
-	// will never be used again but would be cool to make it AlignedShooting
-	bool shootfn(XmlRpc::XmlRpcValue action_data, const std::string&  auto_step) {
-		if(!shooting_ac_.waitForServer(ros::Duration(5))){
-			
-			shutdownNode(ERROR, "Auto node - couldn't find shooting actionlib server");
+	bool placefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		//for some reason this is necessary, even if the server has been up and running for a while
+		if(!placing_ac_.waitForServer(ros::Duration(5))){
+			shutdownNode(ERROR,"Auto node - couldn't find placing actionlib server");
 			return false;
-		} //for some reason this is necessary, even if the server has been up and running for a while
-		behavior_actions::Shooting2022Goal goal;
-		goal.num_cargo = 2;
-		goal.eject = false;
-		goal.distance = 1.48; // hub
+		}
 
-		shooting_ac_.sendGoal(goal);
-		waitForActionlibServer(shooting_ac_, 100, "shooting server");
+		behavior_actions::Placing2023Goal goal;
+
+		uint8_t requested_game_piece = 255;
+
+		if (action_data.hasMember("piece"))
+		{
+			if (action_data["goal"] == "cone") {
+				requested_game_piece = behavior_actions::GamePieceState2023::BASE_TOWARDS_US_CONE;
+			}
+			else if (action_data["goal"] == "cube") {
+				requested_game_piece = behavior_actions::GamePieceState2023::CUBE;
+			}
+			else {
+				shutdownNode(ERROR,"Auto node - intaking_actionlib_server call \"piece\" field is not \"cone\" or \"cube\". Exiting!");
+				return false;
+			}
+		}
+
+		if (requested_game_piece != 255) {
+			goal.override_game_piece = true;
+			goal.piece = requested_game_piece;
+		}
+		placing_ac_.sendGoal(goal);
+		waitForActionlibServer(placing_ac_, 10.0, "placing_server");
 		return true;
 	}
 

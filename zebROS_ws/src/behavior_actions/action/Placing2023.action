@@ -5,8 +5,12 @@ uint8 HIGH=2
 uint8 node
 
 bool align_intake # if this is true, move sideways: centered to the node -> game piece in intake centered to node (using terabees or something)
+
+# if override_game_piece is true, will use `piece` instead of the detected game piece
+bool override_game_piece
+uint8 piece
 ---
 # result
-bool timed_out
+bool success
 ---
 # feedback

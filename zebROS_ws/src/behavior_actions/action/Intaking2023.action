@@ -6,7 +6,7 @@ uint8 BASE_AWAY_US_CONE=3
 uint8 piece
 ---
 # result
-bool timed_out
+bool success
 ---
 # feedback
 uint8 FOURBER=0

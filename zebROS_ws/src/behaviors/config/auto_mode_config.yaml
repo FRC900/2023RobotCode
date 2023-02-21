@@ -18,9 +18,10 @@
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_left_hub", "stop_intaking", "shoot", "drive_forward"]
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_right_hub", "stop_intaking", "shoot", "drive_forward"]
 
-auto_mode_1: ["mini_drive_test_with_rotation"]
-auto_mode_2: ["mini_drive_test"]
-auto_mode_3: ["test_orientation"]
+auto_mode_1: ["engage_starting_pos_1"]
+auto_mode_2: ["engage_starting_pos_2"]
+auto_mode_3: ["engage_starting_pos_3"]
+#auto_mode_2: ["mini_drive_test"]
 
 # Examples
 #auto_mode_1: ["tuning"]
@@ -41,6 +42,37 @@ auto_mode_3: ["test_orientation"]
 # must have a value for "type", other stuff varies
 #valid action types: "intake_actionlib_server", "pause", "elevator_actionlib_server"
 ros_rate: 10 # in ms, used for all ros rate calls
+
+# 2023:
+# remember starting positions are facing OUR DS
+engage_starting_pos_1:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ -2.16, -0.0, 0.0 ]
+        - [ -2.16, -2.0, 0.0 ]
+      frame_id: ""
+      optimize_final_velocity: true
+
+engage_starting_pos_2:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ -3.38, -0.0, 0.0 ]
+      frame_id: ""
+      optimize_final_velocity: true
+
+engage_starting_pos_3:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ -3.08, -0.0, 0.0 ]
+        - [ -3.08, 1.89, 0.0 ]
+      frame_id: ""
+      optimize_final_velocity: true
 
 cmd_vel_1:
     type: cmd_vel
