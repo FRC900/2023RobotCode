@@ -234,7 +234,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         elevator_zeroing_percent_output.store(b);
     },
     "Elevator Zeroing Percent Output",
-    0.0, 0.5);
+    -0.2, 0.0);
 
 
 

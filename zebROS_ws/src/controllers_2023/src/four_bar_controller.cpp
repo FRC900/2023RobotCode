@@ -231,7 +231,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
         }
     },
     "Max extension",
-    0.0, 2.0); //idk might be 3? i'm not really sure, 2 to be safe
+    0.0, math_max_extension_); //idk might be 3? i'm not really sure, 2 to be safe
 
     ddr_->registerVariable<double>
     ("min_extension",
@@ -351,7 +351,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
         motion_magic_acceleration.store(b);
     },
     "Motion Magic Acceleration",
-    0.0, 200.0);
+    0.0, 200.0); //20?
     
     ddr_->registerVariable<int>
     ("motion_s_curve_strength",
