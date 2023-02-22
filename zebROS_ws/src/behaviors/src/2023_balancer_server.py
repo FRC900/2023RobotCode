@@ -140,6 +140,7 @@ class Balancer:
                 rospy.logwarn('%s: Preempted' % self._action_name)
                 self.preempt() # stop pid
                 self._as.set_preempted()
+                self._as.publish_feedback(self._feedback)
                 break
             
             error = abs(self.current_pitch - self.desired_pitch)
