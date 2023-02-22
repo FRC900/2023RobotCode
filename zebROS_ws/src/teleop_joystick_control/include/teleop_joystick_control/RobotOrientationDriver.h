@@ -39,7 +39,6 @@ public:
 	RobotOrientationDriver(const ros::NodeHandle &nh);
 
 	void setTargetOrientation(double angle, bool from_teleop = true);
-	void incrementTargetOrientation(double deltaAngle);
 	void stopRotation(void);
 	// subscriber to read setTargetOrientation as needed
 
@@ -67,6 +66,7 @@ private:
 	ros::Publisher  pid_enable_pub_;
 	ros::Publisher  pid_state_pub_;    // current IMU orientation
 	ros::Publisher  pid_setpoint_pub_; // desired robot orientation
+	ros::Publisher  cmd_vel_pub_;      // for when we are in teleop mode and want normal robot control
 	ros::Subscriber pid_control_effort_sub_; // PID output - angular Z velocity
 
 	// The current orientation (angular-Z) setpoint for the drive base

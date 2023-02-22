@@ -10,6 +10,7 @@ RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	, pid_enable_pub_{nh_.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1)}
 	, pid_state_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/state", 1)}
 	, pid_setpoint_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1)}
+	, cmd_vel_pub_{nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1)} // TODO, find the cmd_vel for this so the mux works
 	, pid_control_effort_sub_{nh_.subscribe("orient_strafing/control_effort", 1, &RobotOrientationDriver::controlEffortCallback, this)}
 {
 }
@@ -22,7 +23,7 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	}
 	else
 	{
-		ROS_ERROR_STREAM_THROTTLE(1, "=======ROBOT DISABLED=======");
+		ROS_ERROR_STREAM_THROTTLE(2, "=======ROBOT DISABLED=======");
 		// If the robot is disabled, set the desired orientation to the
 		// current orientation to prevent the robot from snapping to a
 		// random angle when reenabled
@@ -39,16 +40,15 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub setpoint = " << pid_setpoint_msg.data );
 	// Make sure the PID node is enabled
 	std_msgs::Bool enable_pub_msg;
-	// don't run pid if we are within 1 degree
-	enable_pub_msg.data = true;
+	// only run pid if not teleop
+	if (from_teleop) {
+		enable_pub_msg.data = false;
+	}
+	else {
+		enable_pub_msg.data = true;
+	}
 	pid_enable_pub_.publish(enable_pub_msg);
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub enable = " << (int)enable_pub_msg.data );
-}
-
-void RobotOrientationDriver::incrementTargetOrientation(double deltaAngle)
-{
-	//ROS_INFO_STREAM(__FUNCTION__ << " deltaAngle = " << deltaAngle);
-	setTargetOrientation(target_orientation_ + deltaAngle);
 }
 
 // Set the desired orientation to the current IMU orientation
