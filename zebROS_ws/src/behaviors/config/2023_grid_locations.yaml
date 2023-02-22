@@ -19,3 +19,5 @@ grid_locations:
 # aka the distance to be back from the tag
 # if this is too low we will hit the wall
 offset_from_cube_tag_to_end: 0.5
+
+hold_position_timeout: 0.5 # seconds
