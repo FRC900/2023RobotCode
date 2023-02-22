@@ -159,7 +159,7 @@ get_near_rightmost_game_piece_pos_1:
       frame_id: ""
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.03, max_y: 0.03} # go in a straight line while rotating (very limited space)
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       optimize_final_velocity: true
 
@@ -178,12 +178,12 @@ place_rightmost_game_piece_pos_1:
       apply_offset: false
       points:
         - [ 0.0, -0.17, 0.0 ]
-        - [ -3.00, -0.17, 3.14159 ]
-        - [ -5.00, -0.40, 3.14159 ]
-        - [ -5.45, -0.40, 3.14159 ]
+        - [ -5.00, -0.17, 3.14159 ]
+        - [ -5.2, 0.72, 3.14159 ]
+        - [ -5.45, 0.72, 3.14159 ]
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.03, max_y: 0.03} # go in a straight line while rotating (very limited space)
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       frame_id: ""
