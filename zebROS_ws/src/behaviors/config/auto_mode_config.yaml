@@ -18,6 +18,8 @@
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_left_hub", "stop_intaking", "shoot", "drive_forward"]
 # auto_moe_2: ["shoot", "start_intaking", "path_for_balls_right_hub", "stop_intaking", "shoot", "drive_forward"]
 
+auto_mode_25: ["test_rot"]
+
 # Engage
 auto_mode_1: ["engage_starting_pos_1", "balance"]
 auto_mode_2: ["engage_starting_pos_2", "balance"]
@@ -151,10 +153,14 @@ get_near_rightmost_game_piece_pos_1:
     goal:
       apply_offset: false
       points:
-        - [ -0.25, -0.20, 0.0 ]
+        - [ -0.25, -0.23, 0.0 ]
         - [ -4.25, -0.23, 3.14159 ] # make this centered because the robot covers more y space when it is turning
         - [ -4.25, -0.40, 3.14159 ]
       frame_id: ""
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: -0.03, max_y: 0.03} # go in a straight line while rotating (very limited space)
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       optimize_final_velocity: true
 
 drive_through_game_piece_pos_1:
@@ -172,9 +178,14 @@ place_rightmost_game_piece_pos_1:
       apply_offset: false
       points:
         - [ 0.0, -0.17, 0.0 ]
-        - [ -5.00, -0.17, 3.14159 ]
-        - [ -5.20, -0.40, 3.14159 ]
+        - [ -3.00, -0.17, 3.14159 ]
+        - [ -5.00, -0.40, 3.14159 ]
         - [ -5.45, -0.40, 3.14159 ]
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: -0.03, max_y: 0.03} # go in a straight line while rotating (very limited space)
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       frame_id: ""
       optimize_final_velocity: true
 
@@ -515,3 +526,13 @@ mini_drive_test_with_rotation:
     path_offset_limit:
       - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
     optimize_final_velocity: false
+
+test_rot:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ 1.0, 0.0, 3.14159]
+        - [ -0.5, 0.0, 0.0 ]
+      frame_id: ""
+      optimize_final_velocity: true
