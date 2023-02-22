@@ -47,6 +47,7 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	else {
 		enable_pub_msg.data = true;
 	}
+	ROS_INFO_STREAM("Enable pub" << enable_pub_msg.data);
 	pid_enable_pub_.publish(enable_pub_msg);
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub enable = " << (int)enable_pub_msg.data );
 }

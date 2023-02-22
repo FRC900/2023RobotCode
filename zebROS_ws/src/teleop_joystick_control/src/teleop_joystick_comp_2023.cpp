@@ -524,7 +524,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
 
 		teleop_cmd_vel->updateRateLimit(config);
-		geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], robot_orientation_driver->getCurrentOrientation(), config);
+		geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], imu_angle_for_swerve_only, config);
 		
 		if (cmd_vel.angular.z != 0.0) {
 			if (snappingToAngle) {
@@ -561,7 +561,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		}
 		else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
 		{
-			//ROS_INFO_STREAM("Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
+			ROS_INFO_STREAM_THROTTLE(2, "2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
 			JoystickRobotVel.publish(cmd_vel);
 			sendRobotZero = false;
 			robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), true /* from telop */);
