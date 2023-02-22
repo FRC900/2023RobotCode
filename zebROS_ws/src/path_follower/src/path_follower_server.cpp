@@ -12,6 +12,7 @@
 #include <std_msgs/Bool.h>
 #include <vector>
 #include <algorithm>
+#include <angles/angles.h>
 
 class PathAction
 {
@@ -280,7 +281,7 @@ class PathAction
 
 				if ((fabs(final_pose_transformed.position.x - odom_.pose.pose.position.x) < final_pos_tol_) &&
 					(fabs(final_pose_transformed.position.y - odom_.pose.pose.position.y) < final_pos_tol_) &&
-					(fabs(path_follower_.getYaw(final_pose_transformed.orientation) - orientation_state) < final_rot_tol_))
+					(fabs(angles::shortest_angular_distance(path_follower_.getYaw(final_pose_transformed.orientation), orientation_state)) < final_rot_tol_))
 				{
 					ROS_INFO_STREAM(action_name_ << ": succeeded");
 					ROS_INFO_STREAM("    endpoint_x = " << final_pose_transformed.position.x << ", odom_x = " << odom_.pose.pose.position.x);
