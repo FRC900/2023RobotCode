@@ -44,4 +44,4 @@ for point in points:
     ps.header.frame_id = "map"
     #print(ps)
     new_pose = tf2_geometry_msgs.do_transform_pose(ps, tfs)
-    print(f"- [{round(new_pose.pose.position.x,2)}, {round(new_pose.pose.position.y,2)}, {round(t.euler_from_quaternion([new_pose.pose.orientation.x,new_pose.pose.orientation.y,new_pose.pose.orientation.z,new_pose.pose.orientation.w])[2], 2)}]")
+    print(f"- [{round(new_pose.pose.position.x,2)}, {round(new_pose.pose.position.y,2)}, {-round(t.euler_from_quaternion([new_pose.pose.orientation.x,new_pose.pose.orientation.y,new_pose.pose.orientation.z,new_pose.pose.orientation.w])[2], 2)}] # origin: [{origin[0]}, {origin[1]}, {origin[2]}], map-relative: [{point[0]}, {point[1]}, {point[2]}]")

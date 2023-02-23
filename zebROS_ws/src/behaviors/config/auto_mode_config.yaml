@@ -64,6 +64,7 @@ ros_rate: 10 # in ms, used for all ros rate calls
 
 # 2023:
 # remember starting positions are facing OUR DS
+# NOTE facingOurDS -> facingOppDS = pi. facingOppDS -> facingOurDS = -pi. This shouldn't matter but it does...?
 engage_starting_pos_1:
     type: path
     goal:
@@ -100,8 +101,8 @@ place_starting_pos_1:
     goal:
       apply_offset: false
       points:
-        - [ 1.34, 0.23, 0.0 ]
-        - [ 1.59, 0.23, 0.0 ]
+        - [1.34, 0.23, -0.0] # origin: [3.34, 0.75, 3.14], map-relative: [2.0, 0.52, 3.14]
+        - [1.59, 0.23, -0.0] # origin: [3.34, 0.75, 3.14], map-relative: [1.75, 0.52, 3.14]
       frame_id: ""
       optimize_final_velocity: false
 
@@ -153,9 +154,9 @@ get_near_rightmost_cone_pos_1:
     goal:
       apply_offset: false
       points:
-        - [ -0.25, -0.23, 0.0 ]
-        - [ -4.25, -0.23, 3.14159 ] # make this centered because the robot covers more y space when it is turning
-        - [ -4.25, -0.40, 3.14159 ]
+        - [-0.25, -0.23, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [2.0, 0.75, 3.14]
+        - [-4.25, -0.24, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.0, 0.75, 0]
+        - [-4.25, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.0, 0.92, 0]
       frame_id: ""
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
@@ -168,7 +169,7 @@ drive_through_game_piece:
     goal:
       apply_offset: false
       points:
-        - [ 1.20, 0.0, 0.0 ]
+        - [ 1.20, 0.0, 0.0 ] # if origin [6.0, 0.92, 0] then [7.2, 0.92, 0]
       frame_id: ""
       optimize_final_velocity: false
 
@@ -177,15 +178,14 @@ place_rightmost_cone_pos_1:
     goal:
       apply_offset: false
       points:
-        - [ 0.0, -0.05, 0.0 ]
-        - [ -5.00, -0.05, 3.14159 ]
-        - [ -5.2, 0.72, 3.14159 ]
-        - [ -5.45, 0.72, 3.14159 ]
+        - [-5.0, 0.03, -3.14] # origin: [7.2, 0.92, 0], map-relative: [2.2, 0.95, 3.14]
+        - [-5.0, 0.72, -3.14] # origin: [7.2, 0.92, 0], map-relative: [2.2, 1.64, 3.14]
+        - [-5.45, 0.72, -3.14] # origin: [7.2, 0.92, 0], map-relative: [1.75, 1.64, 3.14]
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
       frame_id: "base_link"
       optimize_final_velocity: false
 
@@ -235,8 +235,8 @@ get_near_leftmost_cone_pos_3:
       apply_offset: false
       points:
         - [-0.25, 0.27, -0.0]
-        - [-4.25, 0.26, -3.14]
-        - [-4.25, 0.42, -3.14]
+        - [-4.25, 0.26, 3.14]
+        - [-4.25, 0.42, 3.14]
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
@@ -247,17 +247,20 @@ get_near_leftmost_cone_pos_3:
 place_leftmost_cone_pos_3:
     type: path
     goal:
-      apply_offset: false
+      apply_offset: true
       points:
         - [-1.2, 0.16, 0.0]
-        - [-5.0, 0.16, 3.14]
-        - [-5.0, -0.69, 3.14]
-        - [-5.2, -0.69, 3.14]
-        - [-5.45, -0.69, 3.14]
+        - [-5.0, -0.06, -3.14]
+        - [-5.0, -0.69, -3.14]
+        - [-5.2, -0.69, -3.14]
+        - [-5.45, -0.69, -3.14]
       path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
-      frame_id: ""
+        - {min_x: 0, max_x: 0, min_y: -0.01, max_y: 0.01}
+        - {min_x: 0, max_x: 0, min_y: -0.01, max_y: 0.01}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      frame_id: "base_link"
       optimize_final_velocity: false
 
 
