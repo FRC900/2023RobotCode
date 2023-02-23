@@ -553,7 +553,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			ROS_INFO_STREAM_THROTTLE(1, "Sending a not from teleop");
 			// enables pid
 			robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getTargetOrientation(), false /* from telop */);
-			cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			double output = robot_orientation_driver->getOrientationVelocityPIDOutput();
+			if (fabs(output) > config.rotation_epsilon) {
+				cmd_vel.angular.z = output;
+			}
 		}
 
 		if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
