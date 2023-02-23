@@ -169,7 +169,7 @@ pick_up_rightmost_cone_pos_1:
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       optimize_final_velocity: false
-    waypoint_actions: ["null", "null", "intake_vertical_cone", "null"]
+    waypoint_actions: {intake_vertical_cone: 2}
 
 drive_through_game_piece:
     type: path
@@ -190,8 +190,7 @@ place_rightmost_cone_pos_1:
         - [-5.45, 0.72, -3.14] # origin: [7.2, 0.92, 0], map-relative: [1.75, 1.64, 3.14]
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01} # go in a straight line while rotating (very limited space)
         - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
       frame_id: ""
       optimize_final_velocity: false

@@ -878,13 +878,12 @@ class AutoNode {
 		if (action_data.hasMember("waypoint_actions")) {
 			XmlRpc::XmlRpcValue wpas = action_data["waypoint_actions"];
 			ROS_INFO_STREAM("Waypoint actions exist! Type is " << wpas.getType());
-			if (wpas.getType() == wpas.TypeArray) {
-				for (int i = 0; i < wpas.size(); i++) {
-					std::string str = static_cast<std::string>(wpas[i]);
-					ROS_INFO_STREAM("** Running " << str << " @ " << i);
-					if (str != "null") {
-						waypoint_actions[i] = str;
-					}
+			if (wpas.getType() == wpas.TypeStruct) {
+				for(auto it = wpas.begin(); it != wpas.end(); ++it) {
+					std::string str = static_cast<std::string>(it->first);
+					int wp = static_cast<int>(it->second);
+					ROS_INFO_STREAM("** Running " << str << " @ " << wp);
+					waypoint_actions[wp] = str;
 				}
 			}
 		}
