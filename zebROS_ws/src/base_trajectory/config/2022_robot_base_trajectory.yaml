@@ -46,7 +46,7 @@ optimization_counter_max: 100
 regularization_lambda: 0.0025
 
 # how far robot can diverge from straight-line path between waypoints (meters)
-path_distance_limit: 1.0
+path_distance_limit: 1.0 # i feel like this should be in the service call
 
 # Max robot translational velocity (meters/sec)
 max_vel: 3.0
@@ -61,7 +61,7 @@ max_linear_dec: 3.0
 max_cent_acc: 5.0
 
 # Robot drivebase radius (meters)
-drive_base_radius: 0.38615
+drive_base_radius: 0.4065
 
 # what frame to generate the path coords in
 path_frame_id: "base_link"

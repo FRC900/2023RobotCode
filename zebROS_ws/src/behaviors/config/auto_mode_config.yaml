@@ -39,6 +39,8 @@ auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" aft
 auto_mode_10: ["place_starting_pos_1", "get_near_rightmost_cone_pos_1", "drive_through_game_piece", "place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
 auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2_step_1", "hold_pos_180", "place_center_left_cone_pos_2_step_2"] # , "place_cube_high" after place path
 auto_mode_12: ["place_starting_pos_3", "get_near_leftmost_cone_pos_3", "drive_through_game_piece", "place_leftmost_cone_pos_3"] # , "place_cone_high" after place path
+auto_mode_13: ["get_near_leftmost_cone_pos_3"]
+auto_mode_14: ["place_starting_pos_3"]
 
 #auto_mode_2: ["mini_drive_test"]
 
@@ -64,7 +66,7 @@ ros_rate: 10 # in ms, used for all ros rate calls
 
 # 2023:
 # remember starting positions are facing OUR DS
-# NOTE facingOurDS -> facingOppDS = pi. facingOppDS -> facingOurDS = -pi. This shouldn't matter but it does...?
+# NOTE +pi vs -pi matters. see pos 1 and 3 for examples of correct usage. it's something about rotating in the direction you're going i think
 engage_starting_pos_1:
     type: path
     goal:
@@ -132,8 +134,11 @@ place_starting_pos_3:
     goal:
       apply_offset: false
       points:
-        - [0.42, -0.27, -0.0]
-        - [0.67, -0.27, -0.0]
+        - [0.42, -0.27, -0.0] # origin: [2.42, 4.72, 3.14], map-relative: [2.0, 4.99, 3.14]
+        - [0.67, -0.27, -0.0] # origin: [2.42, 4.72, 3.14], map-relative: [1.75, 4.99, 3.14]
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       frame_id: ""
       optimize_final_velocity: false
 
@@ -186,7 +191,7 @@ place_rightmost_cone_pos_1:
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
-      frame_id: "base_link"
+      frame_id: ""
       optimize_final_velocity: false
 
 
@@ -234,35 +239,31 @@ get_near_leftmost_cone_pos_3:
     goal:
       apply_offset: false
       points:
-        - [-0.25, 0.27, -0.0]
-        - [-4.25, 0.26, 3.14]
-        - [-4.25, 0.42, 3.14]
+        - [-0.25, 0.27, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.0, 4.72, 3.14]
+        - [-4.25, 0.26, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.72, 0.0]
+        - [-4.25, 0.42, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.56, 0.0]
       path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
-      frame_id: "base_link"
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+      frame_id: ""
       optimize_final_velocity: false
 
 place_leftmost_cone_pos_3:
     type: path
     goal:
-      apply_offset: true
+      apply_offset: false
       points:
-        - [-1.2, 0.16, 0.0]
-        - [-5.0, -0.06, -3.14]
-        - [-5.0, -0.69, -3.14]
-        - [-5.2, -0.69, -3.14]
-        - [-5.45, -0.69, -3.14]
+        - [-5.0, -0.03, 3.14] # origin: [7.2, 4.56, 0.0], map-relative: [2.2, 4.53, 3.14]
+        - [-5.0, -0.69, 3.14] # origin: [7.2, 4.56, 0.0], map-relative: [2.2, 3.87, 3.14]
+        - [-5.45, -0.69, 3.14] # origin: [7.2, 4.56, 0.0], map-relative: [1.75, 3.87, 3.14]
       path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: -0.01, max_y: 0.01}
-        - {min_x: 0, max_x: 0, min_y: -0.01, max_y: 0.01}
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
-        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
-        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
-      frame_id: "base_link"
+      frame_id: ""
       optimize_final_velocity: false
-
 
 hold_pos_180:
     type: "hold_position_server"
