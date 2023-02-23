@@ -10,7 +10,6 @@ RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	, pid_enable_pub_{nh_.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1)}
 	, pid_state_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/state", 1)}
 	, pid_setpoint_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1)}
-	, cmd_vel_pub_{nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1)} // TODO, find the cmd_vel for this so the mux works
 	, pid_control_effort_sub_{nh_.subscribe("orient_strafing/control_effort", 1, &RobotOrientationDriver::controlEffortCallback, this)}
 {
 }
@@ -43,11 +42,13 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	// only run pid if not teleop
 	if (from_teleop) {
 		enable_pub_msg.data = false;
+		ROS_INFO_STREAM("Enable pub is false");
 	}
 	else {
+		ROS_INFO_STREAM("Enable pub is true");
 		enable_pub_msg.data = true;
 	}
-	ROS_INFO_STREAM("Enable pub" << enable_pub_msg.data);
+	ROS_INFO_STREAM("Target orientation = " << target_orientation_ << " state = " << robot_orientation_);
 	pid_enable_pub_.publish(enable_pub_msg);
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub enable = " << (int)enable_pub_msg.data );
 }
