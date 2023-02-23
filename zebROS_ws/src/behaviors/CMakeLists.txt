@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   controllers_2022_msgs
   controllers_2023_msgs
   ddynamic_reconfigure
+  dynamic_reconfigure
   frc_msgs
   field_obj
   geometry_msgs
@@ -113,9 +114,9 @@ include_directories(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#  cfg/Shooter2022.cfg
-# )
+generate_dynamic_reconfigure_options(
+ cfg/GamePieceState2023.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -173,6 +174,14 @@ add_dependencies(2023_intake_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin
 add_executable(2023_fourber_server src/2023_fourber_server.cpp)
 target_link_libraries(2023_fourber_server ${catkin_LIBRARIES})
 add_dependencies(2023_fourber_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(2023_placing_server src/2023_placing_server.cpp)
+target_link_libraries(2023_placing_server ${catkin_LIBRARIES})
+add_dependencies(2023_placing_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(2023_intaking_server src/2023_intaking_server.cpp)
+target_link_libraries(2023_intaking_server ${catkin_LIBRARIES})
+add_dependencies(2023_intaking_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # 2022 actionlib servers
 add_executable(2022_shooting_server_node src/2022_shooting_server.cpp)

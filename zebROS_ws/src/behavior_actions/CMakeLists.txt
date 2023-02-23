@@ -54,6 +54,8 @@ add_message_files(
   AutoMode.msg
   AutoState.msg
   ShooterOffset.msg
+  GamePieceState2023.msg
+  IntakeState2023.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -94,6 +96,9 @@ add_action_files(
 		Fourber2023.action
 		PathToAprilTag.action
 		Intake2023.action
+		Fourber2023.action
+		Placing2023.action
+		Intaking2023.action
 		#GoToColor.action
 		#RotatePanel.action
 )
