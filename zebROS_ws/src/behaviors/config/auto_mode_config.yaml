@@ -38,7 +38,7 @@ auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" aft
 # Place, Pick, Place (No Engage)
 auto_mode_10: ["place_starting_pos_1", "get_near_rightmost_cone_pos_1", "drive_through_game_piece", "place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
 auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2_step_1", "hold_pos_180", "place_center_left_cone_pos_2_step_2"] # , "place_cube_high" after place path
-auto_mode_12: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" after place path
+auto_mode_12: ["place_starting_pos_3", "get_near_leftmost_cone_pos_3", "drive_through_game_piece", "place_leftmost_cone_pos_3"] # , "place_cone_high" after place path
 
 #auto_mode_2: ["mini_drive_test"]
 
@@ -88,8 +88,8 @@ engage_starting_pos_3:
     goal:
       apply_offset: false
       points:
-        - [ -3.08, -0.0, 0.0 ]
-        - [ -3.08, 1.89, 0.0 ]
+        - [-3.08, -0.0, -0.0]
+        - [-3.08, 1.97, -0.0]
       frame_id: ""
       optimize_final_velocity: false
 
@@ -131,8 +131,8 @@ place_starting_pos_3:
     goal:
       apply_offset: false
       points:
-        - [ 0.42, -0.35, 0.0 ]
-        - [ 0.67, -0.35, 0.0 ]
+        - [0.42, -0.27, -0.0]
+        - [0.67, -0.27, -0.0]
       frame_id: ""
       optimize_final_velocity: false
 
@@ -224,6 +224,38 @@ place_center_left_cone_pos_2_step_2:
       points:
         - [ 1.0, 0.0, 0.0 ]
       path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
+      frame_id: ""
+      optimize_final_velocity: false
+
+
+get_near_leftmost_cone_pos_3:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [-0.25, 0.27, -0.0]
+        - [-4.25, 0.26, -3.14]
+        - [-4.25, 0.42, -3.14]
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
+      frame_id: "base_link"
+      optimize_final_velocity: false
+
+place_leftmost_cone_pos_3:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [-1.2, 0.16, 0.0]
+        - [-5.0, 0.16, 3.14]
+        - [-5.0, -0.69, 3.14]
+        - [-5.2, -0.69, 3.14]
+        - [-5.45, -0.69, 3.14]
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
       frame_id: ""
       optimize_final_velocity: false
