@@ -36,8 +36,8 @@ auto_mode_8: ["place_starting_pos_2", "drive_back_4m"] # , "place_cube_high" aft
 auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" after place path
 
 # Place, Pick, Place (No Engage)
-auto_mode_10: ["place_starting_pos_1", "get_near_rightmost_game_piece_pos_1", "drive_through_game_piece_pos_1", "place_rightmost_game_piece_pos_1"] # , "place_cone_high" after place path
-auto_mode_11: ["place_starting_pos_2", "drive_back_4m"] # , "place_cube_high" after place path
+auto_mode_10: ["place_starting_pos_1", "get_near_rightmost_cone_pos_1", "drive_through_game_piece", "place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
+auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2"] # , "place_cube_high" after place path
 auto_mode_12: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" after place path
 
 #auto_mode_2: ["mini_drive_test"]
@@ -148,7 +148,7 @@ engage_after_place_starting_pos_3:
 
 
 
-get_near_rightmost_game_piece_pos_1:
+get_near_rightmost_cone_pos_1:
     type: path
     goal:
       apply_offset: false
@@ -163,7 +163,7 @@ get_near_rightmost_game_piece_pos_1:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       optimize_final_velocity: true
 
-drive_through_game_piece_pos_1:
+drive_through_game_piece:
     type: path
     goal:
       apply_offset: false
@@ -172,7 +172,7 @@ drive_through_game_piece_pos_1:
       frame_id: ""
       optimize_final_velocity: true
 
-place_rightmost_game_piece_pos_1:
+place_rightmost_cone_pos_1:
     type: path
     goal:
       apply_offset: false
@@ -186,6 +186,36 @@ place_rightmost_game_piece_pos_1:
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+      frame_id: ""
+      optimize_final_velocity: true
+
+
+get_near_center_left_cone_pos_2:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ -4.25, 0.0, 3.14159 ]
+        - [ -4.25, -0.60, 3.14159 ]
+      frame_id: ""
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
+      optimize_final_velocity: true
+
+place_center_left_cone_pos_2:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ 0.0, -0.04, 0.0 ]
+        - [ -5.00, -0.04, 3.14159 ]
+        - [ -5.45, -0.04, 3.14159 ]
+      path_offset_limit:
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
       frame_id: ""
       optimize_final_velocity: true
 

@@ -38,7 +38,7 @@ define omnidir_robot position
   localization "odom"
   odom_error [ 0.02 0.02 0.0 0.002 ]
 
-  size [ 0.889 0.889 0.60 ]
+  size [ 0.813 0.813 0.60 ]
   origin [ 0.0 0.0 0.0 0.0 ]
   gui_nose 1
   color "red"
