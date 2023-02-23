@@ -37,7 +37,7 @@ auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" aft
 
 # Place, Pick, Place (No Engage)
 auto_mode_10: ["place_starting_pos_1", "get_near_rightmost_cone_pos_1", "drive_through_game_piece", "place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
-auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2"] # , "place_cube_high" after place path
+auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2_step_1", "hold_pos_180", "place_center_left_cone_pos_2_step_2"] # , "place_cube_high" after place path
 auto_mode_12: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" after place path
 
 #auto_mode_2: ["mini_drive_test"]
@@ -72,7 +72,7 @@ engage_starting_pos_1:
         - [ -2.16, -0.0, 0.0 ]
         - [ -2.16, -2.0, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 engage_starting_pos_2:
     type: path
@@ -81,7 +81,7 @@ engage_starting_pos_2:
       points:
         - [ -3.38, -0.0, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 engage_starting_pos_3:
     type: path
@@ -91,7 +91,7 @@ engage_starting_pos_3:
         - [ -3.08, -0.0, 0.0 ]
         - [ -3.08, 1.89, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 
 
@@ -103,7 +103,7 @@ place_starting_pos_1:
         - [ 1.34, 0.23, 0.0 ]
         - [ 1.59, 0.23, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 engage_after_place_starting_pos_1:
     type: path
@@ -113,7 +113,7 @@ engage_after_place_starting_pos_1:
         - [ -3.75, -0.23, 0.0 ]
         - [ -3.75, -2.23, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 
 place_starting_pos_2:
@@ -123,7 +123,7 @@ place_starting_pos_2:
       points:
         - [ 0.37, -0.0, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 
 place_starting_pos_3:
@@ -134,7 +134,7 @@ place_starting_pos_3:
         - [ 0.42, -0.35, 0.0 ]
         - [ 0.67, -0.35, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 engage_after_place_starting_pos_3:
     type: path
@@ -144,7 +144,7 @@ engage_after_place_starting_pos_3:
         - [ -3.75, -0.34, 0.0 ]
         - [ -3.75, -2.23, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 
 
@@ -161,7 +161,7 @@ get_near_rightmost_cone_pos_1:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 drive_through_game_piece:
     type: path
@@ -170,15 +170,15 @@ drive_through_game_piece:
       points:
         - [ 1.20, 0.0, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 place_rightmost_cone_pos_1:
     type: path
     goal:
       apply_offset: false
       points:
-        - [ 0.0, -0.17, 0.0 ]
-        - [ -5.00, -0.17, 3.14159 ]
+        - [ 0.0, -0.05, 0.0 ]
+        - [ -5.00, -0.05, 3.14159 ]
         - [ -5.2, 0.72, 3.14159 ]
         - [ -5.45, 0.72, 3.14159 ]
       path_offset_limit:
@@ -186,8 +186,8 @@ place_rightmost_cone_pos_1:
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-      frame_id: ""
-      optimize_final_velocity: true
+      frame_id: "base_link"
+      optimize_final_velocity: false
 
 
 get_near_center_left_cone_pos_2:
@@ -195,30 +195,48 @@ get_near_center_left_cone_pos_2:
     goal:
       apply_offset: false
       points:
+        - [ -4.25, 0.0, 0.0 ]
+        - [ -4.25, 0.0, 3.14159 ]
         - [ -4.25, 0.0, 3.14159 ]
         - [ -4.25, -0.60, 3.14159 ]
-      frame_id: ""
+      frame_id: "base_link"
+      point_frame_ids: ["base_link", "base_link", "base_link", "base_link"]
       path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: -0.001, max_x: 0.001, min_y: -0.001, max_y: 0.001}
+        - {min_x: -0.001, max_x: 0.001, min_y: -0.001, max_y: 0.001}
+        - {min_x: -0.001, max_x: 0.001, min_y: -0.001, max_y: 0.001}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
-place_center_left_cone_pos_2:
+place_center_left_cone_pos_2_step_1:
     type: path
     goal:
       apply_offset: false
       points:
         - [ 0.0, -0.04, 0.0 ]
-        - [ -5.00, -0.04, 3.14159 ]
-        - [ -5.45, -0.04, 3.14159 ]
+        - [ -4.70, -0.04, 0.0 ]
+      optimize_final_velocity: false
+
+place_center_left_cone_pos_2_step_2:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [ 1.0, 0.0, 0.0 ]
       path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
+
+hold_pos_180:
+    type: "hold_position_server"
+    position:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    yaw: 3.14159
+    exit_when_aligned: true
 
 drive_back_4m:
     type: path
@@ -227,7 +245,7 @@ drive_back_4m:
       points:
         - [ -4.0, 0.0, 0.0 ]
       frame_id: ""
-      optimize_final_velocity: true
+      optimize_final_velocity: false
 
 balance:
     type: "balancing_actionlib_server"
@@ -411,7 +429,7 @@ map_relative_bounce_path:
       - [ 7.100, 2.540, 0.0 ]
       - [ 9.000, 2.286, 0.0 ]
     frame_id: "map"
-    optimize_final_velocity: true
+    optimize_final_velocity: false
 
 map_relative_slalom_path:
   type: "path"
@@ -431,7 +449,7 @@ map_relative_slalom_path:
       - [2.29, 2.09, 0.0]
       - [0.76, 2.29, 0.0]
     frame_id: "map"
-    optimize_final_velocity: true
+    optimize_final_velocity: false
     path_offset_limit:
       - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
@@ -527,7 +545,7 @@ drive_path_test_1:
     point_frame_id: []
     path_offset_limit:
       - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-    optimize_final_velocity: true
+    optimize_final_velocity: false
 
 mini_drive_test:
   type: "path"
@@ -541,7 +559,7 @@ mini_drive_test:
     point_frame_id: []
     path_offset_limit:
       - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-    optimize_final_velocity: true
+    optimize_final_velocity: false
 
 mini_drive_test_with_rotation:
   type: "path"
@@ -560,7 +578,7 @@ mini_drive_test_with_rotation:
 test_rot:
     type: path
     goal:
-      apply_offset: false
+      # apply_offset: false
       points:
         - [ 1.0, 0.0, 3.14159]
         - [ -0.5, 0.0, 0.0 ]

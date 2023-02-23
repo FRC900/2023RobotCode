@@ -12,6 +12,6 @@ path_follower:
     final_pos_tol: 0.01
     final_rot_tol: 0.005
     ros_rate: 100
-    server_timeout: 15
+    server_timeout: 30 # this should be 15 for auto, but we want to run slowly for testing so it's >15 seconds
     start_point_radius: 0.05
     time_offset: 0.0

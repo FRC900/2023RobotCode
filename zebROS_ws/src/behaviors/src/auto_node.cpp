@@ -17,6 +17,9 @@
 #include <behavior_actions/DynamicPath.h>
 #include <path_follower_msgs/PathAction.h>
 #include <path_follower_msgs/PathFeedback.h>
+#include <path_follower_msgs/holdPositionAction.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <string>
 #include <atomic>
 #include <functional>
@@ -88,6 +91,7 @@ class AutoNode {
 		actionlib::SimpleActionClient<behavior_actions::Placing2023Action> placing_ac_;
 		actionlib::SimpleActionClient<behavior_actions::Intaking2023Action> intaking_ac_;
 		actionlib::SimpleActionClient<behavior_actions::Balancing2023Action> balancing_ac_;
+		actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction> hold_position_ac_;
 
 		// path follower and feedback
 		std::map<std::string, nav_msgs::Path> premade_paths_;
@@ -108,6 +112,7 @@ class AutoNode {
 		, placing_ac_("/placing/placing_server_2023", true)
 		, intaking_ac_("/intaking/intaking_server_2023", true)
 		, balancing_ac_("/balance_position/balancing_server", true)
+		, hold_position_ac_("/hold_position/hold_position_server", true)
 
 	// Constructor
 	{
@@ -154,6 +159,7 @@ class AutoNode {
 		functionMap_["intaking_actionlib_server"] = &AutoNode::intakefn;
 		functionMap_["placing_actionlib_server"] = &AutoNode::placefn;
 		functionMap_["balancing_actionlib_server"] = &AutoNode::balancefn;
+		functionMap_["hold_position_server"] = &AutoNode::holdposfn;
 		functionMap_["path"] = &AutoNode::pathfn;
 		functionMap_["cmd_vel"] = &AutoNode::cmdvelfn;
 
@@ -702,6 +708,82 @@ class AutoNode {
 		}
 		intaking_ac_.sendGoal(goal);
 		waitForActionlibServer(intaking_ac_, 10.0, "intaking_server");
+		return true;
+	}
+
+	bool holdposfn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		//for some reason this is necessary, even if the server has been up and running for a while
+		if(!hold_position_ac_.waitForServer(ros::Duration(5))){
+			shutdownNode(ERROR,"Auto node - couldn't find hold position actionlib server");
+			return false;
+		}
+
+		if (!action_data.hasMember("position"))
+		{
+			shutdownNode(ERROR,"Auto node - hold_position_server call missing \"position\" field");
+			return false;
+		}
+		if (!action_data.hasMember("yaw"))
+		{
+			shutdownNode(ERROR,"Auto node - hold_position_server call missing \"yaw\" field");
+			return false;
+		}
+
+		XmlRpc::XmlRpcValue position_data = action_data["position"];
+
+		path_follower_msgs::holdPositionGoal goal;
+
+		double yaw;
+		if (!readFloatParam("yaw", action_data, yaw))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " error reading hold_position_server 'yaw' field");
+			return false;
+		}
+
+		tf2::Quaternion q;
+		q.setRPY(0, 0, yaw);
+		goal.pose.orientation = tf2::toMsg(q);
+
+		if (!readFloatParam("x", position_data, goal.pose.position.x))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " error reading hold_position_server 'position/x' field");
+			return false;
+		}
+		if (!readFloatParam("y", position_data, goal.pose.position.y))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " error reading hold_position_server 'position/y' field");
+			return false;
+		}
+		if (!readFloatParam("z", position_data, goal.pose.position.z))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " error reading hold_position_server 'position/z' field");
+			return false;
+		}
+
+		double timeout;
+		if (!readFloatParam("timeout", action_data, timeout))
+		{
+			timeout = 10.0;
+			ROS_INFO_STREAM("auto_node : no hold_position_server timeout, setting to 10 seconds");
+		}
+
+		bool exitWhenAligned = false;
+		if (!readBoolParam("exit_when_aligned", action_data, exitWhenAligned))
+		{
+			ROS_INFO_STREAM("auto_node : hold_position_server defaulting to not exiting when aligned");
+		}
+
+		bool aligned = false;
+
+		hold_position_ac_.sendGoal(goal, actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>::SimpleDoneCallback(), actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>::SimpleActiveCallback(), [&aligned](const path_follower_msgs::holdPositionFeedbackConstPtr &feedback) { aligned = feedback->isAligned; });
+		
+		auto start = ros::Time::now();
+		while(!auto_stopped_ && ros::ok() && (ros::Time::now() - start) < ros::Duration(timeout) && (!aligned && exitWhenAligned))
+		{
+			ROS_INFO_STREAM_THROTTLE(0.1, "auto_node: waiting for hold position server");
+			r_.sleep();
+		}
+		hold_position_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 		return true;
 	}
 
