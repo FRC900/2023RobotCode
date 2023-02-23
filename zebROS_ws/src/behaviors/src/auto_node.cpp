@@ -696,10 +696,10 @@ class AutoNode {
 		if (action_data["piece"] == "vertical_cone") {
 			goal.piece = goal.VERTICAL_CONE;
 		}
-		else if (action_data["goal"] == "cone") {
+		else if (action_data["piece"] == "cone") {
 			goal.piece = goal.BASE_TOWARDS_US_CONE;
 		}
-		else if (action_data["goal"] == "cube") {
+		else if (action_data["piece"] == "cube") {
 			goal.piece = goal.CUBE;
 		}
 		else {
@@ -874,6 +874,21 @@ class AutoNode {
 			// could this fail?
 			readIntParam("iterations", action_data["goal"], iteration_value);
 
+		std::map<int, std::string> waypoint_actions;
+		if (action_data.hasMember("waypoint_actions")) {
+			XmlRpc::XmlRpcValue wpas = action_data["waypoint_actions"];
+			ROS_INFO_STREAM("Waypoint actions exist! Type is " << wpas.getType());
+			if (wpas.getType() == wpas.TypeArray) {
+				for (int i = 0; i < wpas.size(); i++) {
+					std::string str = static_cast<std::string>(wpas[i]);
+					ROS_INFO_STREAM("** Running " << str << " @ " << i);
+					if (str != "null") {
+						waypoint_actions[i] = str;
+					}
+				}
+			}
+		}
+
 		while(iteration_value > 0)
 		{
 			path_follower_msgs::PathGoal goal;
@@ -884,7 +899,24 @@ class AutoNode {
 			goal.waypoints = premade_waypoints_[auto_step];
 			goal.waypointsIdx = waypointsIdxs_[auto_step];
 			// Sends the goal and sets feedbackCb to be run when feedback is updated
-			path_ac_.sendGoal(goal, NULL, NULL, boost::bind(&AutoNode::feedbackCb, this, _1));
+			int last_waypoint = -1;
+			path_ac_.sendGoal(goal, NULL, NULL, [&](const path_follower_msgs::PathFeedbackConstPtr& feedback){
+				int waypoint = feedback->current_waypoint;
+				if (last_waypoint != waypoint) {
+					ROS_INFO_STREAM_THROTTLE(0.1, "**** WAYPOINT " << std::to_string(waypoint) << " ****");
+					if (waypoint_actions.find(waypoint) == waypoint_actions.end()) {
+						// not found
+						ROS_INFO_STREAM("No waypoint action");
+					} else {
+						// found
+						std::string action_name = waypoint_actions[waypoint];
+						ROS_INFO_STREAM("********** WAYPOINT ACTION " << action_name << " EXISTS!!!");
+						ROS_INFO_STREAM("Running action " << action_name);
+						runStep(action_name);
+					}
+				}
+				last_waypoint = waypoint;
+			});
 
 			// wait for actionlib server to finish
 			waitForActionlibServer(path_ac_, 100, "running path");
@@ -984,6 +1016,39 @@ class AutoNode {
 	}
 
 
+	int runStep(const std::string &name) {
+		//read data from config needed to carry out the action
+		XmlRpc::XmlRpcValue action_data;
+		if(! nh_.getParam(name, action_data)){
+			//shutdownNode(ERROR, "Auto node - Couldn't read data for '" + auto_steps_[i] + "' auto action from config file");
+			//return 1;
+		}
+		
+		//figure out what to do based on the action type, and do it
+		std::string action_data_type;
+		if (action_data.hasMember("type"))
+		{
+			action_data_type = static_cast<std::string>(action_data["type"]);
+				ROS_INFO_STREAM("auto_node: Running " << action_data_type);
+			// amazing syntax 
+			// passes in the config data and which auto step is running
+			bool result = (this->*functionMap_[action_data_type])(action_data, std::string(name));
+			if (!result)
+			{
+				std::string error_msg = "Auto node - Error running auto action " + name;
+				ROS_ERROR_STREAM(error_msg);
+				shutdownNode(ERROR, error_msg);
+				return 1;
+			}
+		}
+		else
+		{
+			ROS_ERROR_STREAM("Data for action " << name << " missing 'type' field");
+			return 1;
+		}
+		return 0;
+	}
+
 	int init()
 	{	
 		if (!spline_gen_cli_.waitForExistence(ros::Duration(15.0)))
@@ -1017,35 +1082,10 @@ class AutoNode {
 				{
 					ROS_INFO_STREAM("Auto node - running step " << i << ": " << auto_steps_[i]);
 
-					//read data from config needed to carry out the action
-					XmlRpc::XmlRpcValue action_data;
-					if(! nh_.getParam(auto_steps_[i], action_data)){
-						//shutdownNode(ERROR, "Auto node - Couldn't read data for '" + auto_steps_[i] + "' auto action from config file");
-						//return 1;
+					int result = runStep(auto_steps_[i]);
+					if (result != 0) {
+						return result;
 					}
-					
-					//figure out what to do based on the action type, and do it
-					std::string action_data_type;
-					if (action_data.hasMember("type"))
-					{
-						action_data_type = static_cast<std::string>(action_data["type"]);
-							ROS_INFO_STREAM("auto_node: Running " << action_data_type);
-						// amazing syntax 
-						// passes in the config data and which auto step is running
-						bool result = (this->*functionMap_[action_data_type])(action_data, std::string(auto_steps_[i]));
-						if (!result)
-						{
-							std::string error_msg = "Auto node - Error running auto action " + auto_steps_[i];
-							ROS_ERROR_STREAM(error_msg);
-							shutdownNode(ERROR, error_msg);
-							return 1;
-						}
-					}
-					else
-					{
-						ROS_ERROR_STREAM("Data for action " << auto_steps_[i] << " missing 'type' field");
-					}
-
 
 
 				}
