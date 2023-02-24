@@ -289,15 +289,18 @@ pick_place_leftmost_cone_pos_3:
     goal:
       apply_offset: false
       points:
-        - [-0.25, 0.27, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.0, 4.72, 3.14]
-        - [-4.25, 0.26, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.72, 0.0]
+        - [-0.25, 0.22, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.0, 4.72, 3.14]
+        # should be 0.26
+        - [-4.25, 0.21, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.72, 0.0]
         # should be 0.42, offset to 0.54 (consistently missing in sim)
         - [-4.25, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.56, 0.0]
-        - [-4.85, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.6, 4.56, 0.0]
-        - [-5.05, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.8, 4.56, 0.0]
-        - [-5.25, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [7.0, 4.56, 0.0]
+        # rotate a bit too far to rotate back
+        - [-4.45, 0.54, -3.24] # origin: [1.75, 4.99, 3.14], map-relative: [6.2, 4.56, 0.0]
+        - [-4.65, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.4, 4.56, 0.0]
+        - [-4.85, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [7.6, 4.56, 0.0]
         - [-5.45, 0.54, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [7.2, 4.56, 0.0]
-        - [-0.45, 0.46, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.2, 4.53, 3.14]
+        # should be 0.46
+        - [-0.45, 0.53, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.2, 4.53, 3.14]
         # should be 1.12, but it was wrong so make it 1.36 instead
         - [-0.45, 1.36, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.2, 3.87, 3.14]
         - [-0.25, 1.36, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.0, 3.87, 3.14]
@@ -305,6 +308,10 @@ pick_place_leftmost_cone_pos_3:
         # so 0.25 instead to make absolutely sure it gets there
         - [0.25, 1.36, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [1.75, 3.87, 3.14]
       path_offset_limit:
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
         - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
         - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
         - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
