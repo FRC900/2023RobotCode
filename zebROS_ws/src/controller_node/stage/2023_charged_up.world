@@ -62,7 +62,7 @@ omnidir_robot
   # starting pos 1 is (3.34 0.75)
   # starting pos 2 is (2.12 2.75)
   # starting pos 3 is (2.42 4.72)
-  pose [ 3.34 0.75 0.000 180.0 ]
+  pose [ 2.42 4.72 0.000 180.0 ]
   # Slalom pose [ 1.0414 .762 0.0 0.0 ]
   name "robot"
 )
