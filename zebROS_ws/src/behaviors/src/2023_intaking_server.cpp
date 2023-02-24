@@ -77,28 +77,23 @@ public:
 
 	void executeCB(const behavior_actions::Intaking2023GoalConstPtr &goal)
 	{
-		result_.success = true;
-		as_.setSucceeded(result_);
-		ROS_INFO_STREAM("intake yay");
-		return;
-		result_.success = true;
 		if (!elevater_ac_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to elevater server, aborting");
-			result_.success = false;
+			result_.timed_out = true;
 			as_.setAborted(result_);
 			return;
 		}
 
 		if (!fourber_ac_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to fourber server, aborting");
-			result_.success = false;
+			result_.timed_out = true;
 			as_.setAborted(result_);
 			return;
 		}
 
 		if (!intake_ac_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to intake server, aborting");
-			result_.success = false;
+			result_.timed_out = true;
 			as_.setAborted(result_);
 			return;
 		}
