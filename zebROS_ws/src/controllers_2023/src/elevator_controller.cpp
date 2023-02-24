@@ -75,7 +75,7 @@ class ElevatorController_2023 : public controller_interface::MultiInterfaceContr
         std::atomic<double> motion_magic_acceleration_fast;
         std::atomic<int> motion_s_curve_strength;
 
-        ddynamic_reconfigure::DDynamicReconfigure ddr_;
+        std::unique_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddr_;
 
 }; //class
 
@@ -97,7 +97,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
                                    ros::NodeHandle             &controller_nh)
 
 {   
-    std::unique_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddr_;
+    
     ddr_ = std::make_unique<ddynamic_reconfigure::DDynamicReconfigure>(controller_nh);
 
 
@@ -287,7 +287,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
 
     "S Curve Strength", 0, 8);
    
-    ddr_.publishServicesTopics();
+    ddr_->publishServicesTopics();
 
     elevator_service_ = controller_nh.advertiseService("elevator_service", &ElevatorController_2023::cmdService, this);
     ROS_INFO_STREAM("===========ELEVATOR INIT RETURNS TRUE================");

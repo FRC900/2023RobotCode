@@ -62,7 +62,7 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
         std::atomic<double> motion_magic_acceleration;
         std::atomic<int> motion_s_curve_strength;
 
-        ddynamic_reconfigure::DDynamicReconfigure ddr_;
+        std::unique_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddr_;
 
         bool cmdService(controllers_2023_msgs::FourBarSrv::Request &req,
                         controllers_2023_msgs::FourBarSrv::Response &res);
@@ -137,7 +137,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
                                   ros::NodeHandle             &/*root_nh*/,
                                   ros::NodeHandle             &controller_nh)
 {
-    std::unique_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddr_;
+    
     ddr_ = std::make_unique<ddynamic_reconfigure::DDynamicReconfigure>(controller_nh);
     //create the interface used to initialize the talon joint
     hardware_interface::TalonCommandInterface *const talon_command_iface = hw->get<hardware_interface::TalonCommandInterface>();
