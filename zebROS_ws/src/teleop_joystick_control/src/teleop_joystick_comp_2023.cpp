@@ -54,6 +54,8 @@ struct DynamicReconfigVars
 	double stick_threshold{0.5};          // "Amount stick has to be moved to trigger diag mode action"
 	double imu_zero_angle{0.0};           // "Value to pass to imu/set_zero when zeroing"
 	double cone_cube_timeout{1.0};        // "Ignore game pieces older than this when aligning to them"
+	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
+	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
 } config;
 
 std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
