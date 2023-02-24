@@ -38,9 +38,7 @@ auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" aft
 # Place, Pick, Place (No Engage)
 auto_mode_10: ["place_starting_pos_1", "pick_up_rightmost_cone_pos_1", "place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
 auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2_step_1", "hold_pos_180", "place_center_left_cone_pos_2_step_2"] # , "place_cube_high" after place path
-auto_mode_12: ["place_starting_pos_3", "get_near_leftmost_cone_pos_3", "drive_through_game_piece", "place_leftmost_cone_pos_3"] # , "place_cone_high" after place path
-auto_mode_13: ["get_near_leftmost_cone_pos_3"]
-auto_mode_14: ["place_starting_pos_3"]
+auto_mode_12: ["place_starting_pos_3", "pick_up_leftmost_cone_pos_3", "place_leftmost_cone_pos_3"] # , "place_cone_high" after place path
 
 #auto_mode_2: ["mini_drive_test"]
 
@@ -235,7 +233,7 @@ place_center_left_cone_pos_2_step_2:
       optimize_final_velocity: false
 
 
-get_near_leftmost_cone_pos_3:
+pick_up_leftmost_cone_pos_3:
     type: path
     goal:
       apply_offset: false
@@ -243,12 +241,16 @@ get_near_leftmost_cone_pos_3:
         - [-0.25, 0.27, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.0, 4.72, 3.14]
         - [-4.25, 0.26, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.72, 0.0]
         - [-4.25, 0.42, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.56, 0.0]
+        - [-5.45, 0.42, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [7.2, 4.56, 0.0]
       path_offset_limit:
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
         - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
         - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
+        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
       frame_id: ""
       optimize_final_velocity: false
+    waypoint_actions: {intake_vertical_cone: 2}
+    
 
 place_leftmost_cone_pos_3:
     type: path
