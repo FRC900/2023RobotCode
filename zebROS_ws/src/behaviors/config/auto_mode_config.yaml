@@ -36,7 +36,7 @@ auto_mode_8: ["place_starting_pos_2", "drive_back_4m"] # , "place_cube_high" aft
 auto_mode_9: ["place_starting_pos_3", "drive_back_4m"] # , "place_cone_high" after place path
 
 # Place, Pick, Place (No Engage)
-auto_mode_10: ["place_starting_pos_1", "pick_up_rightmost_cone_pos_1", "place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
+auto_mode_10: ["place_starting_pos_1", "pick_place_rightmost_cone_pos_1"] # , "place_cone_high" after place path
 auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2_step_1", "hold_pos_180", "place_center_left_cone_pos_2_step_2"] # , "place_cube_high" after place path
 auto_mode_12: ["place_starting_pos_3", "pick_up_leftmost_cone_pos_3", "place_leftmost_cone_pos_3"] # , "place_cone_high" after place path
 
@@ -152,23 +152,6 @@ engage_after_place_starting_pos_3:
 
 
 
-pick_up_rightmost_cone_pos_1:
-    type: path
-    goal:
-      apply_offset: false
-      points:
-        - [-0.25, -0.23, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [2.0, 0.75, 3.14]
-        - [-4.25, -0.24, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.0, 0.75, 0]
-        - [-4.25, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.0, 0.92, 0]
-        - [-5.45, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [7.2, 0.92, 0]
-      frame_id: ""
-      path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-      optimize_final_velocity: false
-    waypoint_actions: {intake_vertical_cone: 2}
-
 drive_through_game_piece:
     type: path
     goal:
@@ -193,6 +176,39 @@ place_rightmost_cone_pos_1:
       frame_id: ""
       optimize_final_velocity: false
 
+pick_place_rightmost_cone_pos_1:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [-0.25, -0.23, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [2.0, 0.75, 3.14]
+        - [-4.25, -0.24, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.0, 0.75, 0]
+        - [-4.25, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.0, 0.92, 0]
+        - [-4.85, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.6, 0.92, 0]
+        - [-5.05, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [6.8, 0.92, 0]
+        - [-5.25, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [7.0, 0.92, 0]
+        - [-5.45, -0.41, 3.14] # origin: [1.75, 0.52, 3.14], map-relative: [7.2, 0.92, 0]
+        - [-0.45, -0.41, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [2.2, 0.92, 3.14]
+        # ones below should be -1.12 but adjusted because it was consistently offset in sim
+        - [-0.45, -1.32, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [2.2, 1.64, 3.14]
+        - [-0.25, -1.32, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [2.0, 1.64, 3.14]
+        - [0.0, -1.32, 0.0] # origin: [1.75, 0.52, 3.14], map-relative: [1.75, 1.64, 3.14]
+      # path_offset_limit:
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      #   - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
+      frame_id: ""
+      optimize_final_velocity: false
+    waypoint_actions: {intake_vertical_cone: 2}
+  
 
 get_near_center_left_cone_pos_2:
     type: path
