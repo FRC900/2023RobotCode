@@ -43,6 +43,8 @@ auto_mode_12: ["place_starting_pos_3", "pick_place_leftmost_cone_pos_3"] # , "pl
 # Place, Pick, Place, Engage!
 auto_mode_13: ["place_starting_pos_1", "pick_place_rightmost_cone_pos_1", "engage_after_placing_second_cone_pos_1", "balance"] # , "place_cone_high" after place path
 
+auto_mode_15: ["place_starting_pos_3", "pick_place_leftmost_cone_pos_3", "engage_after_placing_second_cone_pos_3", "balance"]
+
 #auto_mode_2: ["mini_drive_test"]
 
 # Examples
@@ -164,21 +166,6 @@ drive_through_game_piece:
       frame_id: ""
       optimize_final_velocity: false
 
-place_rightmost_cone_pos_1:
-    type: path
-    goal:
-      apply_offset: false
-      points:
-        - [-5.0, 0.03, -3.14] # origin: [7.2, 0.92, 0], map-relative: [2.2, 0.95, 3.14]
-        - [-5.0, 0.72, -3.14] # origin: [7.2, 0.92, 0], map-relative: [2.2, 1.64, 3.14]
-        - [-5.45, 0.72, -3.14] # origin: [7.2, 0.92, 0], map-relative: [1.75, 1.64, 3.14]
-      path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01} # go in a straight line while rotating (very limited space)
-        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
-      frame_id: ""
-      optimize_final_velocity: false
-
 pick_place_rightmost_cone_pos_1:
     type: path
     goal:
@@ -217,7 +204,7 @@ engage_after_placing_second_cone_pos_1:
     goal:
       apply_offset: false
       points:
-        - [-0.55, -0.41, -0.0] # origin: [1.75, 1.64, 3.14], map-relative: [2.3, 2.05, 3.14]
+        - [-0.55, -0.55, -0.0] # origin: [1.75, 1.64, 3.14], map-relative: [2.3, 2.05, 3.14]
       frame_id: ""
       optimize_final_velocity: false
 
@@ -261,41 +248,6 @@ place_center_left_cone_pos_2_step_2:
       optimize_final_velocity: false
 
 
-pick_up_leftmost_cone_pos_3:
-    type: path
-    goal:
-      apply_offset: false
-      points:
-        - [-0.25, 0.27, -0.0] # origin: [1.75, 4.99, 3.14], map-relative: [2.0, 4.72, 3.14]
-        - [-4.25, 0.26, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.72, 0.0]
-        - [-4.25, 0.42, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [6.0, 4.56, 0.0]
-        - [-5.45, 0.42, -3.14] # origin: [1.75, 4.99, 3.14], map-relative: [7.2, 4.56, 0.0]
-      path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02}
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-      frame_id: ""
-      optimize_final_velocity: false
-    waypoint_actions: {intake_vertical_cone: 2}
-    
-
-place_leftmost_cone_pos_3:
-    type: path
-    goal:
-      apply_offset: false
-      points:
-        - [-5.0, -0.03, 3.14] # origin: [7.2, 4.56, 0.0], map-relative: [2.2, 4.53, 3.14]
-        - [-5.0, -0.69, 3.14] # origin: [7.2, 4.56, 0.0], map-relative: [2.2, 3.87, 3.14]
-        - [-5.45, -0.69, 3.14] # origin: [7.2, 4.56, 0.0], map-relative: [1.75, 3.87, 3.14]
-      path_offset_limit:
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: 0, max_x: 0, min_y: -0.02, max_y: 0.02} # go in a straight line while rotating (very limited space)
-        - {min_x: 0, max_x: 0, min_y: 0, max_y: 0}
-        - {min_x: -0.01, max_x: 0.01, min_y: -0.01, max_y: 0.01}
-      frame_id: ""
-      optimize_final_velocity: false
-
 pick_place_leftmost_cone_pos_3:
     type: path
     goal:
@@ -334,6 +286,17 @@ pick_place_leftmost_cone_pos_3:
       frame_id: ""
       optimize_final_velocity: false
     waypoint_actions: {intake_vertical_cone: 2}
+
+engage_after_placing_second_cone_pos_3:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [-0.55, 0.55, -0.0] # origin: [1.75, 3.87, 3.14], map-relative: [2.3, 3.4, 3.14]
+      frame_id: ""
+      optimize_final_velocity: false
+
+
 
 hold_pos_180:
     type: "hold_position_server"
