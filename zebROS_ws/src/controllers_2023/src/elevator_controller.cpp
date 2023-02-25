@@ -101,10 +101,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
                                    ros::NodeHandle             &/*root_nh*/,
                                    ros::NodeHandle             &controller_nh)
 
-{   
-    
+{
     ddr_ = std::make_unique<ddynamic_reconfigure::DDynamicReconfigure>(controller_nh);
-
 
     ROS_INFO_STREAM("INIT CALLED FOR ELEVATOR CONTROLLER============");
 
