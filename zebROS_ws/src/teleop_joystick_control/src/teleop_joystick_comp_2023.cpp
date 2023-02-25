@@ -91,6 +91,7 @@ bool last_robot_orient;
 int direction_x{};
 int direction_y{};
 int direction_z{};
+double intake_speed{};
 
 ros::ServiceClient snapConeCubeSrv;
 
@@ -241,6 +242,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 
 	if(button_box.leftSwitchUpPress)
 	{
+		intake_speed += 0.05;
 	}
 	if(button_box.leftSwitchUpButton)
 	{
@@ -252,6 +254,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState const>& 
 
 	if(button_box.leftSwitchDownPress)
 	{
+		intake_speed -= 0.05;
 	}
 	if(button_box.leftSwitchDownButton)
 	{
@@ -721,9 +724,9 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: rightTrigger
 			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
 			{
-				ROS_INFO_STREAM("Publishing Intake");
+				ROS_INFO_STREAM("Publishing Intake speed " << intake_speed);
 				std_msgs::Float64 intake_msg;
-				intake_msg.data = 0.25;
+				intake_msg.data = intake_speed;
 				intake_cmd_pub.publish(intake_msg);
 				joystick1_right_trigger_pressed = true;
 				// RIP aligned shooting... worked awesome on the practice field
@@ -886,6 +889,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(!joystick1_left_trigger_pressed)
 				{
+
 					//zero_all_diag_commands();
 				}
 
