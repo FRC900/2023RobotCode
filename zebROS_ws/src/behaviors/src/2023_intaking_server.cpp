@@ -222,7 +222,7 @@ public:
 			return;
 		}
 
-		if (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::CUBE || current_exceeded_) {
+		if (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::CUBE || (current_exceeded_ && (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::NONE || game_piece_state_.game_piece == behavior_actions::GamePieceState2023::UNKNOWN))) {
 			ROS_INFO_STREAM("2023_intaking_server : " << (current_exceeded_ ? "current exceeded" : "cube detected") << ", waiting " << cube_time_ << " seconds");
 			ros::Time start = ros::Time::now();
 			while (ros::Time::now() - start < ros::Duration(cube_time_)) {
