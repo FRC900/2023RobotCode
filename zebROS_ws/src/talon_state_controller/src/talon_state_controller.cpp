@@ -74,6 +74,8 @@ public:
 			m.speed.push_back(0.0);
 			m.output_voltage.push_back(0.0);
 			m.output_current.push_back(0.0);
+			m.stator_current.push_back(0.0);
+			m.supply_current.push_back(0.0);
 			m.bus_voltage.push_back(0.0);
 			m.motor_output_percent.push_back(0.0);
 			m.temperature.push_back(0.0);
