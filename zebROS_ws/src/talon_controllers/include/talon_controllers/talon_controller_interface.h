@@ -1631,16 +1631,6 @@ class TalonControllerInterface
 			return talon_.state()->getOutputCurrent();
 		}
 
-		double getStatorCurrent(void) const
-		{
-			return talon_.state()->getStatorCurrent();
-		}
-
-		double getSupplyCurrent(void) const
-		{
-			return talon_.state()->getSupplyCurrent();
-		}
-
 		bool getForwardLimitSwitch(void) const
 		{
 			return talon_.state()->getForwardLimitSwitch();
