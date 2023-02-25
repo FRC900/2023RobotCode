@@ -20,7 +20,7 @@ four_bar_controller_2023:
     motion_s_curve_strength: 0 
 
     # How quickly the four bar moves down when zeroing itself
-    four_bar_zeroing_percent_output: -0.05 # TODO : tune me
+    four_bar_zeroing_percent_output: 0.0 # TODO : tune me
 
     # If there are no negative velocity readings while zeroing
     # for this amount of time, assume the four bar is stuck
@@ -32,8 +32,7 @@ four_bar_controller_2023:
         type: talon_controllers/TalonControllerInterface 
         joint: four_bar
         close_loop_values:
-            - {p: 1.0, i: 0.00001, d: 0.0, f: 0.0, i_zone: 0, closed_loop_peak_output: 1.0}
-            - {p: 0.25, i: 0.0, d: 0, f: 0.58, i_zone: 4096, closed_loop_peak_output: 1.0}
+            - {p: 0.0, i: 0.0000, d: 0.0, f: 0.0, i_zone: 0, closed_loop_peak_output: 1.0}
 
         invert_output: True
         sensor_phase: True
@@ -54,8 +53,8 @@ four_bar_controller_2023:
         voltage_compensation_enable: True
         voltage_compensation_saturation: 12
         
-        conversion_factor: 0.086021505 # should be 12:62 * 24:54 since that's the gear ratio for the prototype
-        neutral_deadband: 0.001
+        conversion_factor: 0.074906367 # set from chad
+        neutral_deadband: 0.01 # set to be higher
 
         dynamic_reconfigure: False
         motion_s_curve_strength: 0

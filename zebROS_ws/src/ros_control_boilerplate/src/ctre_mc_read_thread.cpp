@@ -96,8 +96,6 @@ void FRCRobotInterface::ctre_mc_read_thread(std::shared_ptr<ctre::phoenix::motor
 		const double velocity = victor->GetSelectedSensorVelocity(pidIdx) * radians_per_second_scale;
 		safeTalonCall(victor->GetLastError(), "GetSelectedSensorVelocity", state->getCANID());
 
-		double stator_current = -1;
-		double supply_current = -1;
 		double output_current = -1;
 		if (talon)
 		{

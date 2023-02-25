@@ -67,6 +67,11 @@ frc_msgs::ButtonBoxState button_box;
 std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
 
+ros::Publisher orient_strafing_enable_pub;
+ros::Publisher orient_strafing_setpoint_pub;
+ros::Publisher orient_strafing_state_pub;
+ros::Publisher intake_cmd_pub;
+
 ros::Publisher JoystickRobotVel;
 
 ros::ServiceClient BrakeSrv;
@@ -716,17 +721,26 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: rightTrigger
 			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
 			{
+				ROS_INFO_STREAM("Publishing Intake");
+				std_msgs::Float64 intake_msg;
+				intake_msg.data = 0.25;
+				intake_cmd_pub.publish(intake_msg);
+				joystick1_right_trigger_pressed = true;
 				// RIP aligned shooting... worked awesome on the practice field
 				behavior_actions::Intake2023Goal goal;
 				goal.outtake = true;
 				intake_ac->sendGoal(goal);
 			}
 			else
-			{	
+			{
 				if(joystick1_right_trigger_pressed){
 					intake_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
+				ROS_INFO_STREAM_THROTTLE(3, "Sending 0 to intake!");
+				std_msgs::Float64 intake_msg;
+				intake_msg.data = 0;
+				intake_cmd_pub.publish(intake_msg);
 				// teleop_cmd_vel->setSlowMode(false);
 				joystick1_right_trigger_pressed = false;
 			}
@@ -1070,6 +1084,12 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
 	snapConeCubeSrv = n.serviceClient<teleop_joystick_control::SnapConeCube>("/snap_to_angle/snap_cone_cube", false, service_connection_header);
+
+	orient_strafing_enable_pub = n.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1);
+	orient_strafing_setpoint_pub = n.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1);
+	orient_strafing_state_pub = n.advertise<std_msgs::Float64>("orient_strafing/state", 1);
+
+	intake_cmd_pub = n.advertise<std_msgs::Float64>("/frcrobot_jetson/intake_leader_controller/command", 1);
 
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
