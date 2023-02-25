@@ -32,7 +32,12 @@
 #define INC_ROBOT_ORIENTATION_DRIVER_H
 
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 #include <std_msgs/Float64.h>
+
+#include "frc_msgs/MatchSpecificData.h"
+
+constexpr double INITIAL_ROBOT_ORIENTATION = M_PI / 2.0;
 class RobotOrientationDriver
 {
 public:
@@ -53,6 +58,7 @@ public:
 	double getOrientationVelocityPIDOutput(void) const;
 
 	double getCurrentOrientation(void) const;
+	bool   getRobotEnabled(void) const;
 
 	// Publisher to publish orientation? Or can this be read from PID node?
 	// Timer to publish to PID nodes? Or only in callbacks from odom yaw or in response to set/inc orientation?
@@ -68,12 +74,14 @@ private:
 	ros::Publisher  pid_setpoint_pub_; // desired robot orientation
 	ros::Publisher  cmd_vel_pub_;      // for when we are in teleop mode and want normal robot control
 	ros::Subscriber pid_control_effort_sub_; // PID output - angular Z velocity
+	ros::Subscriber imu_sub_; // subscriber to zereod yaw output
+	ros::Subscriber match_data_sub_; // subscriber to match data, used to get enable/disable
 
 	// The current orientation (angular-Z) setpoint for the drive base
-	double target_orientation_{0.0};
+	double target_orientation_{INITIAL_ROBOT_ORIENTATION};
 
 	// The current orientation of the robot itself
-	double robot_orientation_{0.0};
+	double robot_orientation_{INITIAL_ROBOT_ORIENTATION};
 
 	// Current angular-Z velocity setting from PID node output
 	double orientation_command_effort_{0.0};
@@ -86,8 +94,8 @@ private:
 
 	void orientationCmdCallback(const std_msgs::Float64::ConstPtr &orientation_cmd);
 	void controlEffortCallback(const std_msgs::Float64::ConstPtr &control_effort);
+	void imuCallback(const sensor_msgs::Imu &imuState);
+	void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
 };
 
-
 #endif
-
