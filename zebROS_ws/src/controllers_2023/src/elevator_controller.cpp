@@ -327,7 +327,6 @@ void ElevatorController_2023::starting(const ros::Time &time)
 void ElevatorController_2023::update(const ros::Time &time, const ros::Duration &/*duration*/)
 {
     double fourbar_ff = arb_feed_forward_maximum - fabs(sin(fourbar_joint_->getPosition())) * arb_feed_forward_angle;
-    ROS_INFO_STREAM_THROTTLE(0.1, "FF: " << fourbar_ff);
     // If we hit the limit switch, (re)zero the position.
     if (elevator_joint_.getReverseLimitSwitch())
     {
