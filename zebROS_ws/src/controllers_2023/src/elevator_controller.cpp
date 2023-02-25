@@ -226,7 +226,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         arb_feed_forward_low.store(b);
     },
     "Arb feedforward low", 0.0, 1.0);
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double>
     ("arb_feed_forward_angle",
      [this]()
     {
@@ -237,7 +237,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         arb_feed_forward_angle.store(b);
     },
     "Arb feedforward angle. calculation: arb_ff_low_or_high + ff_max - |sin(four bar angle)| * this", -1.0, 1.0);
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double>
     ("straight_up_angle",
      [this]()
     {
@@ -248,7 +248,7 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         straight_up_angle.store(b);
     },
     "Angle which makes the four bar straight up", 0.0, M_PI);
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double>
     ("elevator_zeroing_percent_output",
      [this]()
     {

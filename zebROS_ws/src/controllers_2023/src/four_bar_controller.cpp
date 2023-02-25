@@ -336,7 +336,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     },
     "Arb feedforward angle. calculation: cos(angle) * this", -1.0, 1.0);
 
-    ddr_.registerVariable<double>
+    ddr_->registerVariable<double>
     ("straight_up_angle",
      [this]()
     {
