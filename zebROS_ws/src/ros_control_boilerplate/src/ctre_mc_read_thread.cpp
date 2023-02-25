@@ -96,11 +96,20 @@ void FRCRobotInterface::ctre_mc_read_thread(std::shared_ptr<ctre::phoenix::motor
 		const double velocity = victor->GetSelectedSensorVelocity(pidIdx) * radians_per_second_scale;
 		safeTalonCall(victor->GetLastError(), "GetSelectedSensorVelocity", state->getCANID());
 
+		double stator_current = -1;
+		double supply_current = -1;
 		double output_current = -1;
 		if (talon)
 		{
 			output_current = talon->GetOutputCurrent();
 			safeTalonCall(victor->GetLastError(), "GetOutputCurrent", state->getCANID());
+		}
+		if (talonsrx)
+		{
+			stator_current = talonsrx->GetStatorCurrent();
+			safeTalonCall(victor->GetLastError(), "GetStatorCurrent", state->getCANID());
+			supply_current = talonsrx->GetSupplyCurrent();
+			safeTalonCall(victor->GetLastError(), "GetSupplyCurrent", state->getCANID());
 		}
 
 		ctre::phoenix::motorcontrol::StickyFaults sticky_faults;

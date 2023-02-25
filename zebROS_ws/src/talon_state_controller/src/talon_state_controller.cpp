@@ -145,6 +145,8 @@ public:
 					m.speed[i] = ts->getSpeed();
 					m.output_voltage[i] = ts->getOutputVoltage();
 					m.output_current[i] = ts->getOutputCurrent();
+					m.stator_current[i] = ts->getStatorCurrent();
+					m.supply_current[i] = ts->getSupplyCurrent();
 					m.bus_voltage[i] = ts->getBusVoltage();
 					m.motor_output_percent[i] = ts->getMotorOutputPercent();
 					m.temperature[i] = ts->getTemperature();
