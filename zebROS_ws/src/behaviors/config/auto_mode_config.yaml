@@ -40,6 +40,9 @@ auto_mode_10: ["place_starting_pos_1", "pick_place_rightmost_cone_pos_1"] # , "p
 auto_mode_11: ["place_starting_pos_2", "get_near_center_left_cone_pos_2", "drive_through_game_piece", "place_center_left_cone_pos_2_step_1", "hold_pos_180", "place_center_left_cone_pos_2_step_2"] # , "place_cube_high" after place path
 auto_mode_12: ["place_starting_pos_3", "pick_place_leftmost_cone_pos_3"] # , "place_cone_high" after place path
 
+# Place, Pick, Place, Engage!
+auto_mode_13: ["place_starting_pos_1", "pick_place_rightmost_cone_pos_1", "engage_after_placing_second_cone_pos_1", "balance"] # , "place_cone_high" after place path
+
 #auto_mode_2: ["mini_drive_test"]
 
 # Examples
@@ -208,7 +211,16 @@ pick_place_rightmost_cone_pos_1:
       frame_id: ""
       optimize_final_velocity: false
     waypoint_actions: {intake_vertical_cone: 2}
-  
+
+engage_after_placing_second_cone_pos_1:
+    type: path
+    goal:
+      apply_offset: false
+      points:
+        - [-0.55, -0.41, -0.0] # origin: [1.75, 1.64, 3.14], map-relative: [2.3, 2.05, 3.14]
+      frame_id: ""
+      optimize_final_velocity: false
+
 
 get_near_center_left_cone_pos_2:
     type: path
