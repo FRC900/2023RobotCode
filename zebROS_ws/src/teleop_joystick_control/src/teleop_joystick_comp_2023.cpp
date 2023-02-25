@@ -69,6 +69,11 @@ frc_msgs::ButtonBoxState2023 button_box;
 std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
 
+ros::Publisher orient_strafing_enable_pub;
+ros::Publisher orient_strafing_setpoint_pub;
+ros::Publisher orient_strafing_state_pub;
+ros::Publisher intake_cmd_pub;
+
 ros::Publisher JoystickRobotVel;
 
 ros::ServiceClient BrakeSrv;
@@ -1093,6 +1098,12 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
 	snapConeCubeSrv = n.serviceClient<teleop_joystick_control::SnapConeCube>("/snap_to_angle/snap_cone_cube", false, service_connection_header);
+
+	orient_strafing_enable_pub = n.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1);
+	orient_strafing_setpoint_pub = n.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1);
+	orient_strafing_state_pub = n.advertise<std_msgs::Float64>("orient_strafing/state", 1);
+
+	intake_cmd_pub = n.advertise<std_msgs::Float64>("/frcrobot_jetson/intake_leader_controller/command", 1);
 
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
