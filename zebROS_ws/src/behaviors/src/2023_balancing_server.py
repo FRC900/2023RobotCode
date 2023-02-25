@@ -58,10 +58,10 @@ class AutoBalancing:
         self.derivative = -999
         self.angle_to_add = math.radians(20)
         self.PID_enabled = False
-        self.current_pitch = -999
-        self.old_pitch = -1000
-        self.old_pitch_time = -1000
-        self.current_pitch_time = -1000
+        self.current_pitch = rospy.Time.now()
+        #self.old_pitch = -1000
+        #self.old_pitch_time = -1000
+        self.current_pitch_time = rospy.Time.now()
         self.state = States.NO_WEELS_ON
         self.sub_imu = rospy.Subscriber(imu_sub_topic, sensor_msgs.msg.Imu, self.imu_callback)
         self.derivative_pub = rospy.Publisher("derivative", std_msgs.msg.Float64, queue_size=0)
@@ -77,14 +77,15 @@ class AutoBalancing:
         #roll = euler[0]
         pitch = euler[1]
         #yaw = euler[2]
-        self.old_pitch = self.current_pitch
-        self.old_pitch_time = self.current_pitch_time
+        # self.old_pitch = self.current_pitch
+        # self.old_pitch_time = self.current_pitch_time
         self.current_pitch = pitch
         self.current_pitch_time = imu_msg.header.stamp
         # (y2-y1)/(x2-x1)
         # print(f"Time delta {(self.current_pitch_time - self.old_pitch_time).to_sec()}")
-        self.derivative = (self.current_pitch - self.old_pitch) / (self.current_pitch_time - self.old_pitch_time).to_sec()
-        self.derivative_pub.publish(self.derivative)
+
+        # self.derivative = (self.current_pitch - self.old_pitch) / (self.current_pitch_time - self.old_pitch_time).to_sec()
+        # self.derivative_pub.publish(self.derivative)
         if self.debug:
             rospy.loginfo_throttle(1, f"Balancing server - Pitch in degrees {round(pitch*(180/math.pi), 4)}")
 
@@ -124,14 +125,15 @@ class AutoBalancing:
                 cmd_vel_msg.angular.x = 0 # todo, tune me
                 cmd_vel_msg.angular.y = 0
                 cmd_vel_msg.angular.z = 0
-                cmd_vel_msg.linear.x = 1
+                cmd_vel_msg.linear.x = 1.5
                 cmd_vel_msg.linear.y = 0
                 cmd_vel_msg.linear.z = 0
                 self.pub_cmd_vel.publish(cmd_vel_msg)
 
             if abs(self.current_pitch) >= math.radians(13) and self.state == States.NO_WEELS_ON:
+                start_time = rospy.Time.now()
                 rospy.logwarn("Recalled balancer with 0 offset=======================")
-                while (rospy.Time.now() - start_time <= rospy.Duration(0.25)):
+                while (rospy.Time.now() - start_time <= rospy.Duration(0.75)):
                     if self._as.is_preempt_requested():
                         rospy.loginfo('%s: Preempted' % self._action_name)
                         self.preempt() # stop pid
@@ -141,7 +143,7 @@ class AutoBalancing:
                     cmd_vel_msg.angular.x = 0 # todo, tune me
                     cmd_vel_msg.angular.y = 0
                     cmd_vel_msg.angular.z = 0
-                    cmd_vel_msg.linear.x = 0.7
+                    cmd_vel_msg.linear.x = 1.5
                     cmd_vel_msg.linear.y = 0
                     cmd_vel_msg.linear.z = 0
                     self.pub_cmd_vel.publish(cmd_vel_msg)
@@ -149,18 +151,24 @@ class AutoBalancing:
                 r.sleep()
                 self.state = States.ONE_WHEEL_ON_RAMP
 
+            if self.state == States.ONE_WHEEL_ON_RAMP:
+                rospy.loginfo("Running PID!")
+                goal_to_send = behavior_actions.msg.Balancer2023Goal()
+                goal_to_send.angle_offset = 0
+                self.balancer_client.send_goal(goal_to_send)
+                self.state = States.TWO_WHEELS_ON_CENTER
+            
             # ramp is going down, we need to hard stop
             # normal extension for charging station is 11 degrees when fully pushed down
-            if self.state == States.ONE_WHEEL_ON_RAMP and abs(self.current_pitch) <= math.radians(10):
-                rospy.loginfo("Brake mode called!")
-                self.balancer_client.cancel_all_goals()
+            ''' 
+            if self.state == States.TWO_WHEELS_ON_CENTER and abs(self.current_pitch) <= math.radians(5):
+                rospy.loginfo("Brake mode called!, Angle less than 7 degrees")
                 try:
                     self.brake_srv()
                 except Exception as e:
                     rospy.logerr("Could not call brake service in balancing!")
                     rospy.logerr("Stack trace\n" + str(e))
                 
-
                 start_time = rospy.Time.now()
                 success = False
                 r = rospy.Rate(100)
@@ -169,18 +177,19 @@ class AutoBalancing:
                         rospy.loginfo('%s: Preempted' % self._action_name)
                         self.preempt() # stop pid
                         self._as.set_preempted()
-                        break
+                        return
                     r.sleep()
 
                 if not success:
                     rospy.loginfo("Preempted while waiting for balance!")
-                    break
+                    return
                 # run pid to finish off balancing, should already be balanced but if we are off a little this will fix it
                 goal_to_send = behavior_actions.msg.Balancer2023Goal()
                 goal_to_send.angle_offset = 0
                 self.balancer_client.send_goal(goal_to_send)
                 self.state = States.TWO_WHEELS_ON_CENTER
                 rospy.loginfo("Finished balancing!")
+            '''
             
             # publish the feedback
             self._as.publish_feedback(self._feedback)
