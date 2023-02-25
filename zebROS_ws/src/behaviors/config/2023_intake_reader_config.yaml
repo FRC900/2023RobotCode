@@ -1,4 +1,6 @@
-port: /dev/ttyACM0
+port: /dev/PICOBEE
+# put the udev rule below in /etc/udev/rules.d/99-terabee-pico.rules
+# SUBSYSTEM=="tty",SUBSYSTEMS=="usb",DRIVERS=="usb",ATTRS{idVendor}=="2e8a",ATTRS{idProduct}=="0003",ATTRS{manufacturer}=="Raspberry Pi",ATTRS{product}=="PicoArduino",SYMLINK+="PICOBEE"
 baud: 921600
 samples: 2
 min_range: 0.05
