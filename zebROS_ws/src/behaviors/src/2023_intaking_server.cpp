@@ -41,6 +41,8 @@ protected:
 	actionlib::SimpleActionClient<behavior_actions::Elevater2023Action> elevater_ac_;
 	actionlib::SimpleActionClient<behavior_actions::Fourber2023Action> fourber_ac_;
 
+	ros::Subscriber talon_states_sub_;
+
 	// output_current in talon states
 
 public:
@@ -84,6 +86,8 @@ public:
 		elevater_ac_("/elevater/elevater_server_2023", true),
 		fourber_ac_("/fourber/fourber_server_2023", true)
 	{
+		talon_states_sub_ = nh_.subscribe("/frcrobot_jetson/talon_states", 1, &IntakingServer2023::talonStateCallback, this);
+		game_piece_state_.game_piece = game_piece_state_.NONE; // default to no game piece
 		if (!nh_.getParam("cube_time", cube_time_))
 		{
 			ROS_ERROR_STREAM("2023_intaking_server : could not find cube_time");
