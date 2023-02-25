@@ -96,6 +96,7 @@ bool last_robot_orient;
 int direction_x{};
 int direction_y{};
 int direction_z{};
+double intake_speed{};
 
 bool robot_is_disabled{false};
 
