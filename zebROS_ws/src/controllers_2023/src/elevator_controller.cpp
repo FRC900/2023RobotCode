@@ -70,8 +70,8 @@ class ElevatorController_2023 : public controller_interface::MultiInterfaceContr
 
         std::atomic<double> arb_feed_forward_high;
         std::atomic<double> arb_feed_forward_low;
-        std::atomic<double> arb_feed_forward_maximum;
         std::atomic<double> arb_feed_forward_angle;
+        std::atomic<double> straight_up_angle;
         // feed forward calculation: low_or_high_ff + maximum - |sin(four bar angular position)|*ff_angle
         std::atomic<double> elevator_zeroing_percent_output;
         std::atomic<double> elevator_zeroing_timeout;
@@ -123,9 +123,9 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         return false;
     }
 
-    if (!readIntoScalar(controller_nh, "arb_feed_forward_maximum", arb_feed_forward_maximum))
+    if (!readIntoScalar(controller_nh, "straight_up_angle", straight_up_angle))
     {
-        ROS_ERROR("Could not find arb_feed_forward_maximum");
+        ROS_ERROR("Could not find straight_up_angle");
         return false;
     }
 
@@ -225,21 +225,8 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward_low.store(b);
     },
-    "Arb feedforward low",
-    0.0, 1.0);
-    
-    ddr_->registerVariable<double>
-    ("arb_feed_forward_maximum",
-     [this]()
-    {
-        return arb_feed_forward_maximum.load();
-    },
-    [this](double b)
-    {
-        arb_feed_forward_maximum.store(b);
-    },
-    "Arb feedforward maximum (maximum horizontal length)", -1.0, 1.0);
-    ddr_->registerVariable<double>
+    "Arb feedforward low", 0.0, 1.0);
+    ddr_.registerVariable<double>
     ("arb_feed_forward_angle",
      [this]()
     {
@@ -249,9 +236,19 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
     {
         arb_feed_forward_angle.store(b);
     },
-    "Arb feedforward angle. calculation: arb_ff_low_or_high + ff_max - |sin(four bar angle)| * this",
-    -1.0, 1.0);
-    ddr_->registerVariable<double>
+    "Arb feedforward angle. calculation: arb_ff_low_or_high + ff_max - |sin(four bar angle)| * this", -1.0, 1.0);
+    ddr_.registerVariable<double>
+    ("straight_up_angle",
+     [this]()
+    {
+        return straight_up_angle.load();
+    },
+    [this](double b)
+    {
+        straight_up_angle.store(b);
+    },
+    "Angle which makes the four bar straight up", 0.0, M_PI);
+    ddr_.registerVariable<double>
     ("elevator_zeroing_percent_output",
      [this]()
     {
@@ -347,7 +344,7 @@ void ElevatorController_2023::starting(const ros::Time &time)
 
 void ElevatorController_2023::update(const ros::Time &time, const ros::Duration &/*duration*/)
 {
-    double fourbar_ff = arb_feed_forward_maximum - fabs(sin(fourbar_joint_->getPosition())) * arb_feed_forward_angle;
+    double fourbar_ff = fabs(cos(fourbar_joint_->getPosition() - straight_up_angle)) * arb_feed_forward_angle;
     // If we hit the limit switch, (re)zero the position.
     if (elevator_joint_.getReverseLimitSwitch())
     {

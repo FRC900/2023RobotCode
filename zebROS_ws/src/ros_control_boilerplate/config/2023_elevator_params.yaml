@@ -8,8 +8,8 @@ elevator_controller_2023:
     arb_feed_forward_high: 0.032
     arb_feed_forward_low: 0.025
 
-    arb_feed_forward_maximum: 0.05
     arb_feed_forward_angle: 0.04
+    straight_up_angle: 0.52
     
     motion_magic_velocity: 2.1
     motion_magic_acceleration: 11.0
