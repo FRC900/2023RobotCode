@@ -71,6 +71,7 @@ if __name__ == "__main__":
         roll, pitch, yaw = 0, angle_to_pub, 0
         q = quaternion_from_euler(roll, pitch, yaw)
         msg = sensor_msgs.msg.Imu()
+        msg.header.stamp = rospy.Time.now()
         msg.orientation.x = q[0]
         msg.orientation.y = q[1]
         msg.orientation.z = q[2]

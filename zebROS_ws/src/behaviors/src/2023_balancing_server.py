@@ -55,13 +55,16 @@ class AutoBalancing:
         self.brake_srv = rospy.ServiceProxy('/frcrobot_jetson/swerve_drive_controller/brake', std_srvs.srv.Empty)
         self.cmd_vel_topic = "/balance_position/balancer_server/swerve_drive_controller/cmd_vel"
         self.pub_cmd_vel = rospy.Publisher(self.cmd_vel_topic, geometry_msgs.msg.Twist, queue_size=1)
-
+        self.derivative = -999
         self.angle_to_add = math.radians(20)
         self.PID_enabled = False
         self.current_pitch = -999
+        self.old_pitch = -1000
+        self.old_pitch_time = -1000
         self.current_pitch_time = -1000
         self.state = States.NO_WEELS_ON
         self.sub_imu = rospy.Subscriber(imu_sub_topic, sensor_msgs.msg.Imu, self.imu_callback)
+        self.derivative_pub = rospy.Publisher("derivative", std_msgs.msg.Float64, queue_size=0)
         self.down_measurements = 0
         self.threshold = math.radians(0.5) # how much a measurement must change by to be counted
         
@@ -74,8 +77,14 @@ class AutoBalancing:
         #roll = euler[0]
         pitch = euler[1]
         #yaw = euler[2]
+        self.old_pitch = self.current_pitch
+        self.old_pitch_time = self.current_pitch_time
         self.current_pitch = pitch
-        self.current_pitch_time = imu_msg.header.stamp.secs
+        self.current_pitch_time = imu_msg.header.stamp
+        # (y2-y1)/(x2-x1)
+        # print(f"Time delta {(self.current_pitch_time - self.old_pitch_time).to_sec()}")
+        self.derivative = (self.current_pitch - self.old_pitch) / (self.current_pitch_time - self.old_pitch_time).to_sec()
+        self.derivative_pub.publish(self.derivative)
         if self.debug:
             rospy.loginfo_throttle(1, f"Balancing server - Pitch in degrees {round(pitch*(180/math.pi), 4)}")
 
@@ -115,16 +124,28 @@ class AutoBalancing:
                 cmd_vel_msg.angular.x = 0 # todo, tune me
                 cmd_vel_msg.angular.y = 0
                 cmd_vel_msg.angular.z = 0
-                cmd_vel_msg.linear.x = 0.2
+                cmd_vel_msg.linear.x = 1
                 cmd_vel_msg.linear.y = 0
                 cmd_vel_msg.linear.z = 0
                 self.pub_cmd_vel.publish(cmd_vel_msg)
 
-            if abs(self.current_pitch) >= math.radians(12) and self.state == States.NO_WEELS_ON:
+            if abs(self.current_pitch) >= math.radians(13) and self.state == States.NO_WEELS_ON:
                 rospy.logwarn("Recalled balancer with 0 offset=======================")
-                goal_to_send = behavior_actions.msg.Balancer2023Goal()
-                goal_to_send.angle_offset = 0
-                self.balancer_client.send_goal(goal_to_send)
+                while (rospy.Time.now() - start_time <= rospy.Duration(0.25)):
+                    if self._as.is_preempt_requested():
+                        rospy.loginfo('%s: Preempted' % self._action_name)
+                        self.preempt() # stop pid
+                        self._as.set_preempted()
+                        break
+                    cmd_vel_msg = geometry_msgs.msg.Twist()
+                    cmd_vel_msg.angular.x = 0 # todo, tune me
+                    cmd_vel_msg.angular.y = 0
+                    cmd_vel_msg.angular.z = 0
+                    cmd_vel_msg.linear.x = 0.7
+                    cmd_vel_msg.linear.y = 0
+                    cmd_vel_msg.linear.z = 0
+                    self.pub_cmd_vel.publish(cmd_vel_msg)
+                    r.sleep()
                 r.sleep()
                 self.state = States.ONE_WHEEL_ON_RAMP
 
