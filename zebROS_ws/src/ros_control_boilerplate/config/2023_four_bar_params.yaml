@@ -2,7 +2,7 @@ four_bar_controller_2023:
     type: four_bar_controller_2023/FourBarController_2023
 
     four_bar_joint: [ 'four_bar' ]
-    max_extension: 0.65 # tbd, in meters
+    max_extension: 2 # tbd, in meters
     min_extension: 0.24 # tbd, in meters
 
     parallel_bar_length: 0.205
