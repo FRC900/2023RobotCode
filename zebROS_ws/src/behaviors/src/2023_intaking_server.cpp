@@ -123,19 +123,19 @@ public:
 
 	void executeCB(const behavior_actions::Intaking2023GoalConstPtr &goal)
 	{
-		// if (!elevater_ac_.waitForServer(ros::Duration(server_timeout_))) {
-		// 	ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to elevater server, aborting");
-		// 	result_.timed_out = true;
-		// 	as_.setAborted(result_);
-		// 	return;
-		// }
+		if (!elevater_ac_.waitForServer(ros::Duration(server_timeout_))) {
+			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to elevater server, aborting");
+			result_.timed_out = true;
+			as_.setAborted(result_);
+			return;
+		}
 
-		// if (!fourber_ac_.waitForServer(ros::Duration(server_timeout_))) {
-		// 	ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to fourber server, aborting");
-		// 	result_.timed_out = true;
-		// 	as_.setAborted(result_);
-		// 	return;
-		// }
+		if (!fourber_ac_.waitForServer(ros::Duration(server_timeout_))) {
+			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to fourber server, aborting");
+			result_.timed_out = true;
+			as_.setAborted(result_);
+			return;
+		}
 
 		if (!intake_ac_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to intake server, aborting");
