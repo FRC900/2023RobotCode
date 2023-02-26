@@ -528,40 +528,43 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			robot_orientation_driver->stopRotation();
 		}
 		*/
-		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z); 
-		double original_angular_z = cmd_vel.angular.z; 
-		if (cmd_vel.angular.z == 0.0) {
-			//ROS_INFO_STREAM_THROTTLE(1, "Sending a not from teleop");
-			// enables pid
-			robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getTargetOrientation(), false /* from telop */);
-			double output = robot_orientation_driver->getOrientationVelocityPIDOutput();
-			if (fabs(output) > config.rotation_epsilon) {
-				cmd_vel.angular.z = output;
+		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z);
+		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.angular.z != 0.0) {
+			double original_angular_z = cmd_vel.angular.z; 
+			if (cmd_vel.angular.z == 0.0) {
+				//ROS_INFO_STREAM_THROTTLE(1, "Sending a not from teleop");
+				// enables pid
+				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getTargetOrientation(), false /* from telop */);
+				double output = robot_orientation_driver->getOrientationVelocityPIDOutput();
+				if (fabs(output) > config.rotation_epsilon) {
+					cmd_vel.angular.z = output;
+				}
 			}
-		}
 
-		if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
-		{
-			std_srvs::Empty empty;
-			if (!BrakeSrv.call(empty))
+			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
 			{
-				ROS_ERROR("BrakeSrv call failed in sendRobotZero_");
-			}
-			ROS_INFO("BrakeSrv called");
+				std_srvs::Empty empty;
+				if (!BrakeSrv.call(empty))
+				{
+					ROS_ERROR("BrakeSrv call failed in sendRobotZero_");
+				}
+				ROS_INFO("BrakeSrv called");
 
-			JoystickRobotVel.publish(cmd_vel);
-			sendRobotZero = true;
-		}
-		else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
-		{
-			//ROS_INFO_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
-			JoystickRobotVel.publish(cmd_vel);
-			sendRobotZero = false;
-			// if the original command was not zero, then teleop was controlling rotation
-			if (original_angular_z != 0.0) {
-				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), true /* from telop */);
+				JoystickRobotVel.publish(cmd_vel);
+				sendRobotZero = true;
 			}
-		}
+			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
+			{
+				//ROS_INFO_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
+				JoystickRobotVel.publish(cmd_vel);
+				sendRobotZero = false;
+				// if the original command was not zero, then teleop was controlling rotation
+				if (original_angular_z != 0.0) {
+					robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), true /* from telop */);
+				}
+			}
+		} 
+
 
 		if(!diagnostics_mode)
 		{

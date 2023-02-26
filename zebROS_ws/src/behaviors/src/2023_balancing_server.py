@@ -106,7 +106,6 @@ class AutoBalancing:
         #goal_to_send.angle_offset = self.angle_to_add
 
         #self.balancer_client.send_goal(goal_to_send)
-        
         # angle when we are on the ramp where balancer can take over = 0.259rad ~ 15 degrees
         # going to try and run pid to get to that and then run balancer? 
         r = rospy.Rate(100)
@@ -121,7 +120,7 @@ class AutoBalancing:
                 return
             
             if self.state == States.NO_WEELS_ON:
-                if rospy.Time.now() - start_time >= rospy.Duration(2):
+                if rospy.Time.now() - start_time >= rospy.Duration(3):
                     rospy.logwarn("2 seconds of driving has not lead to a large enough angle increase, stopping balance!")
                     self.preempt()
                     self._as.set_preempted()
@@ -131,7 +130,7 @@ class AutoBalancing:
                 cmd_vel_msg.angular.x = 0 # todo, tune me
                 cmd_vel_msg.angular.y = 0
                 cmd_vel_msg.angular.z = 0
-                cmd_vel_msg.linear.x = 1.5
+                cmd_vel_msg.linear.x = 0.9
                 cmd_vel_msg.linear.y = 0
                 cmd_vel_msg.linear.z = 0
                 self.pub_cmd_vel.publish(cmd_vel_msg)
@@ -139,7 +138,7 @@ class AutoBalancing:
             if abs(self.current_pitch) >= math.radians(13) and self.state == States.NO_WEELS_ON:
                 start_time = rospy.Time.now()
                 rospy.logwarn("Recalled balancer with 0 offset=======================")
-                while (rospy.Time.now() - start_time <= rospy.Duration(0.75)):
+                while (rospy.Time.now() - start_time <= rospy.Duration(1)):
                     if self._as.is_preempt_requested():
                         rospy.loginfo('%s: Preempted' % self._action_name)
                         self.preempt() # stop pid
@@ -149,7 +148,7 @@ class AutoBalancing:
                     cmd_vel_msg.angular.x = 0 # todo, tune me
                     cmd_vel_msg.angular.y = 0
                     cmd_vel_msg.angular.z = 0
-                    cmd_vel_msg.linear.x = 1.5
+                    cmd_vel_msg.linear.x = 0.6
                     cmd_vel_msg.linear.y = 0
                     cmd_vel_msg.linear.z = 0
                     self.pub_cmd_vel.publish(cmd_vel_msg)
@@ -158,12 +157,19 @@ class AutoBalancing:
                 self.state = States.ONE_WHEEL_ON_RAMP
 
             if self.state == States.ONE_WHEEL_ON_RAMP:
+
                 rospy.loginfo("Running PID!")
                 goal_to_send = behavior_actions.msg.Balancer2023Goal()
                 goal_to_send.angle_offset = 0
                 self.balancer_client.send_goal(goal_to_send)
                 self.state = States.TWO_WHEELS_ON_CENTER
             
+            if self.state == States.TWO_WHEELS_ON_CENTER:
+                if -1 < math.degrees(self.current_pitch) < 1:
+                    rospy.loginfo("Within tolerance, stopping!")
+                    self.preempt()
+                    self._as.set_preempted()
+                    return
             # ramp is going down, we need to hard stop
             # normal extension for charging station is 11 degrees when fully pushed down
             ''' 
