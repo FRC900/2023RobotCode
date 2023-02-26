@@ -9,13 +9,15 @@
 
 RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	: nh_(nh)
-	, orientation_command_sub_{nh_.subscribe("orientation_command", 2, &RobotOrientationDriver::orientationCmdCallback, this)}
+	, orientation_command_sub_{nh_.subscribe("orientation_command", 1, &RobotOrientationDriver::orientationCmdCallback, this)}
 	, pid_enable_pub_{nh_.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1)}
 	, pid_state_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/state", 1)}
 	, pid_setpoint_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1)}
 	, pid_control_effort_sub_{nh_.subscribe("orient_strafing/control_effort", 1, &RobotOrientationDriver::controlEffortCallback, this)}
 	, imu_sub_{nh_.subscribe("/imu/zeroed_imu", 1, &RobotOrientationDriver::imuCallback, this)}
 	, match_data_sub_{nh_.subscribe("/frcrobot_rio/match_data", 1, &RobotOrientationDriver::matchStateCallback, this)}
+	// one_shot = true, auto_start = false
+	, most_recent_teleop_timer_{nh_.createTimer(RESET_TO_TELEOP_CMDVEL_TIMEOUT, &RobotOrientationDriver::checkFromTeleopTimeout, this, true, false)}
 {
 }
 
@@ -45,6 +47,8 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	// Make sure the PID node is enabled
 	std_msgs::Bool enable_pub_msg;
 	// only run pid if not teleop
+	// TODO - should we just run PID full time and ignore the output
+	// if we don't neet it?
 	if (from_teleop) {
 		enable_pub_msg.data = false;
 		//ROS_INFO_STREAM("Enable pub is false");
@@ -52,6 +56,9 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	else {
 		//ROS_INFO_STREAM("Enable pub is true");
 		enable_pub_msg.data = true;
+		// Reset the "non-teleop mode had timed-out" timer
+		most_recent_teleop_timer_.stop();
+		most_recent_teleop_timer_.start();
 	}
 	//ROS_INFO_STREAM("Target orientation = " << target_orientation_ << " state = " << robot_orientation_);
 	pid_enable_pub_.publish(enable_pub_msg);
@@ -153,4 +160,11 @@ void RobotOrientationDriver::matchStateCallback(const frc_msgs::MatchSpecificDat
 	// TODO : if in diagnostic mode, zero all outputs on the
 	// transition from enabled to disabled
 	setRobotEnabled(msg.Enabled);
+}
+
+// Used to time-out control from external sources and return
+// it to teleop after messages from the external sources stop
+void RobotOrientationDriver::checkFromTeleopTimeout(const ros::TimerEvent & /*event*/)
+{
+	most_recent_is_teleop_ = true;
 }
