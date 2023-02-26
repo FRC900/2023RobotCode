@@ -69,54 +69,10 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
         bool cmdService(controllers_2023_msgs::FourBarSrv::Request &req,
                         controllers_2023_msgs::FourBarSrv::Response &res);
 
-        double angleFromX(double x, bool below) const
-        {
-            // motor reads clockwise as positive, but angles are counterclockwise.
-            // so, this angle needs to be negative.
-            double xAngle;
-            if ((x - intake_length_ - parallel_bar_length_) >= diagonal_bar_length_)
-            {
-                xAngle = 0;
-                ROS_WARN_STREAM("Desired x was >= maximum x, setting to maximum angle");
-            }
-            else
-            {
-                xAngle = acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_);
-            }
-
-            double angle = acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_) - xAngle;
-            return below ? acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_) + xAngle : angle;
-        }
-
-        controllers_2023_msgs::FourBarSrv::Request stateFromAngle(double angle) const
-        {
-            double minAngle = acos((min_extension_ - intake_length_ - parallel_bar_length_) / diagonal_bar_length_);
-            // if below, angle = minAngle + acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_). if above, angle = minAngle - acos((x - intake_length_ - parallel_bar_length_) / diagonal_bar_length_).
-            if (angle > minAngle) {
-                controllers_2023_msgs::FourBarSrv::Request toReturn;
-                toReturn.position = cos(angle - minAngle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_;
-                toReturn.below = true;
-                return toReturn;
-            } else {
-                // (minAngle - (minAngle - angle)) = minAngle - minAngle + angle = angle
-                controllers_2023_msgs::FourBarSrv::Request toReturn;
-                toReturn.position = cos(minAngle - angle) * diagonal_bar_length_ + intake_length_ + parallel_bar_length_;
-                toReturn.below = false;
-                return toReturn;
-            }
-        }
 
         void stateMsg(double current_angle, double set_angle, controllers_2023_msgs::FourBarState &state) {
-            // float64 set_position # x distance outward (negative is backwards and may be invalid)
-            // bool set_below # if four bar can flip down, this being set to true makes it do that
-            // float64 current_position # x distance outward (negative is backwards and may be invalid)
-            // bool current_below # if four bar can flip down, this being set to true makes it do that
-            auto current_state = stateFromAngle(current_angle);
-            auto set_state = stateFromAngle(set_angle);
-            state.set_position = set_state.position;
-            state.set_below = set_state.below;
-            state.current_position = current_state.position;
-            state.current_below = current_state.below;
+            state.current_angle = current_angle;
+            state.setpoint_angle = set_angle;
         }
 }; //class
 
@@ -424,7 +380,7 @@ void FourBarController_2023::starting(const ros::Time &time)
     last_zeroed_  = false;
     last_mode_ = hardware_interface::TalonMode_Disabled;
     last_angle_ = -1; // give nonsense position to force update on first time through update()
-    position_command_ = angleFromX(min_extension_, false);
+    position_command_ = 0.0 // 0 is when we are fully retracted
 }
 
 void FourBarController_2023::update(const ros::Time &time, const ros::Duration &/*duration*/)
@@ -446,7 +402,7 @@ void FourBarController_2023::update(const ros::Time &time, const ros::Duration &
     {
         last_zeroed_ = false;
     }
-
+    
     if (zeroed_) // run normally, seeking to various positions
     {
         four_bar_joint_.setMode(hardware_interface::TalonMode_MotionMagic);
@@ -508,28 +464,22 @@ void FourBarController_2023::stopping(const ros::Time &/*time*/)
 bool FourBarController_2023::cmdService(controllers_2023_msgs::FourBarSrv::Request  &req,
                                         controllers_2023_msgs::FourBarSrv::Response &/*response*/)
 {
-    if (req.position > max_extension_)
+    if (req.angle > max_angle)
     {
-        ROS_ERROR_STREAM("FourBar controller: req.position too forward : " << req.position << ". Stop violating physics!");
+        ROS_ERROR_STREAM("FourBar controller: requested angle too high : " << req.angle << ".");
         return false;
     }
-    if (req.position < min_extension_)
+    if (req.position < min_angle)
     {
-        ROS_ERROR_STREAM("FourBar controller: req.position too backward : " << req.position << ". Stop violating physics!");
+        ROS_ERROR_STREAM("FourBar controller: requested angle too low : " << req.angle << ".");
         return false;
     }
 
     if (isRunning())
     {
         //adjust talon mode, arb feed forward, and PID slot appropriately
-        double calcAngle = angleFromX(req.position, req.below);
-        if (!std::isfinite(calcAngle))
-        {
-            ROS_ERROR_STREAM("FourBar controller: req.position resulted in a NaN angle! The robot can't derive meaning of not a number!");
-            return false;
-        }
-        position_command_ = calcAngle;
-        ROS_INFO_STREAM("writing " << std::to_string(calcAngle) << " radians to four_bar_controller");
+        position_command_ = req.angle;
+        ROS_INFO_STREAM("writing " << std::to_string(req.angle) << " radians to four_bar_controller");
     }
     else
     {

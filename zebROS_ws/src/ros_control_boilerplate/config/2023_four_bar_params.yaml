@@ -2,12 +2,10 @@ four_bar_controller_2023:
     type: four_bar_controller_2023/FourBarController_2023
 
     four_bar_joint: [ 'four_bar' ]
-    max_extension: 2 # tbd, in meters
-    min_extension: 0.24 # tbd, in meters
+    min_angle: 0 # for sure
+    max_angle: 2.443460952792061 # tbd, 140 degrees, might be too much
 
-    parallel_bar_length: 0.205
-    diagonal_bar_length: 0.355
-    intake_length: 0.065
+    # don't even care about lenghts because we are using angles
 
     # 0.11-0.12 worked well for holding max extension
     arb_feed_forward_angle: 0.04
@@ -15,9 +13,6 @@ four_bar_controller_2023:
 
     motion_magic_velocity: 0.5
     motion_magic_acceleration: 0.5
-
-    # not sure if this needs to be here and below
-    motion_s_curve_strength: 0 
 
     # How quickly the four bar moves down when zeroing itself
     four_bar_zeroing_percent_output: 0.0 # TODO : tune me
@@ -56,5 +51,5 @@ four_bar_controller_2023:
         conversion_factor: 0.074906367 # set from chad
         neutral_deadband: 0.01 # set to be higher
 
-        dynamic_reconfigure: False
-        motion_s_curve_strength: 0
+        dynamic_reconfigure: False # true breaks code 
+        motion_s_curve_strength: 8
