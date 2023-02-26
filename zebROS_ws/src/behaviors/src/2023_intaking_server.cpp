@@ -144,51 +144,51 @@ public:
 			return;
 		}
 
-		// behavior_actions::Fourber2023Goal fourberGoal;
-		// fourberGoal.piece = requested_game_piece_;
-		// fourberGoal.mode = fourberGoal.INTAKE;
-		// fourberGoal.safety_positions = {};
+		behavior_actions::Fourber2023Goal fourberGoal;
+		fourberGoal.piece = requested_game_piece_;
+		fourberGoal.mode = fourberGoal.INTAKE;
+		fourberGoal.safety_positions = {};
 
-		// feedback_.status = feedback_.FOURBER;
-		// as_.publishFeedback(feedback_);
+		feedback_.status = feedback_.FOURBER;
+		as_.publishFeedback(feedback_);
 
-		// fourber_ac_.sendGoal(fourberGoal);
+		fourber_ac_.sendGoal(fourberGoal);
 
 		ros::Rate r(10);
-		// while (!fourber_ac_.getState().isDone()) {
-		// 	ros::spinOnce();
-		// 	ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for fourber...");
-		// 	if (as_.isPreemptRequested() || !ros::ok()) {
-		// 		ROS_INFO_STREAM("2023_intaking_server : preempted.");
-		// 		as_.setPreempted(result_);
-		// 		fourber_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-		// 		return;
-		// 	}
-		// 	r.sleep();
-		// }
+		while (!fourber_ac_.getState().isDone()) {
+			ros::spinOnce();
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for fourber...");
+			if (as_.isPreemptRequested() || !ros::ok()) {
+				ROS_INFO_STREAM("2023_intaking_server : preempted.");
+				as_.setPreempted(result_);
+				fourber_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+				return;
+			}
+			r.sleep();
+		}
 
-		// ROS_INFO_STREAM("2023_intaking_server : fourber moved");
+		ROS_INFO_STREAM("2023_intaking_server : fourber moved");
 
-		// behavior_actions::Elevater2023Goal elevaterGoal;
-		// elevaterGoal.piece = requested_game_piece_;
-		// elevaterGoal.mode = elevaterGoal.INTAKE;
+		behavior_actions::Elevater2023Goal elevaterGoal;
+		elevaterGoal.piece = requested_game_piece_;
+		elevaterGoal.mode = elevaterGoal.INTAKE;
 
-		// feedback_.status = feedback_.ELEVATER;
-		// as_.publishFeedback(feedback_);
+		feedback_.status = feedback_.ELEVATER;
+		as_.publishFeedback(feedback_);
 
-		// elevater_ac_.sendGoal(elevaterGoal);
+		elevater_ac_.sendGoal(elevaterGoal);
 
-		// while (!elevater_ac_.getState().isDone()) {
-		// 	ros::spinOnce();
-		// 	ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for elevater...");
-		// 	if (as_.isPreemptRequested() || !ros::ok()) {
-		// 		ROS_INFO_STREAM("2023_intaking_server : preempted.");
-		// 		as_.setPreempted(result_);
-		// 		elevater_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-		// 		return;
-		// 	}
-		// 	r.sleep();
-		// }
+		while (!elevater_ac_.getState().isDone()) {
+			ros::spinOnce();
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for elevater...");
+			if (as_.isPreemptRequested() || !ros::ok()) {
+				ROS_INFO_STREAM("2023_intaking_server : preempted.");
+				as_.setPreempted(result_);
+				elevater_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+				return;
+			}
+			r.sleep();
+		}
 
 		behavior_actions::Intake2023Goal intakeGoal;
 		intakeGoal.outtake = false;
