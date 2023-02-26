@@ -9,7 +9,6 @@
 #include <pluginlib/class_list_macros.h> //to compile as a controller
 #include "controllers_2023_msgs/FourBarSrv.h"
 #include "controllers_2023_msgs/FourBarState.h"
-#include <realtime_tools/realtime_publisher.h>
 
 #include "ddynamic_reconfigure/ddynamic_reconfigure.h"
 
@@ -41,7 +40,6 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
 
         std::atomic<double> position_command_; //this is the buffer for percent output commands to be published
         ros::ServiceServer four_bar_service_; //service for receiving commands
-        std::unique_ptr<realtime_tools::RealtimePublisher<controllers_2023_msgs::FourBarState>> realtime_pub_;
 
         bool zeroed_;
         bool last_zeroed_;
@@ -66,11 +64,6 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
         bool cmdService(controllers_2023_msgs::FourBarSrv::Request &req,
                         controllers_2023_msgs::FourBarSrv::Response &res);
 
-
-        void stateMsg(double current_angle, double set_angle, controllers_2023_msgs::FourBarState &state) {
-            state.current_angle = current_angle;
-            state.setpoint_angle = set_angle;
-        }
 }; //class
 
 // Set the conversion_factor so that 1 rad = 1 turn of the 4bar
@@ -277,7 +270,6 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     ddr_->publishServicesTopics();
 
     four_bar_service_ = controller_nh.advertiseService("four_bar_service", &FourBarController_2023::cmdService, this);
-    realtime_pub_.reset(new realtime_tools::RealtimePublisher<controllers_2023_msgs::FourBarState>(controller_nh, "state", 1));
 
     return true;
 }
@@ -359,10 +351,6 @@ void FourBarController_2023::update(const ros::Time &time, const ros::Duration &
     last_angle_ = four_bar_joint_.getPosition();
     last_mode_ = four_bar_joint_.getMode();
 
-    if (realtime_pub_->trylock()) {
-        stateMsg(last_angle_, position_command_, realtime_pub_->msg_);
-        realtime_pub_->unlockAndPublish();
-    }
 }
 
 void FourBarController_2023::stopping(const ros::Time &/*time*/)
