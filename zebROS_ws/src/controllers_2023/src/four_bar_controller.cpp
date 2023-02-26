@@ -49,11 +49,8 @@ class FourBarController_2023 : public controller_interface::MultiInterfaceContro
         //double last_setpoint_;
         hardware_interface::TalonMode last_mode_;
 
-        std::atomic<double> max_extension_;
-        std::atomic<double> min_extension_;
-        std::atomic<double> parallel_bar_length_;
-        std::atomic<double> diagonal_bar_length_;
-        std::atomic<double> intake_length_;
+        std::atomic<double> max_angle_;
+        std::atomic<double> min_angle_;
 
         std::atomic<double> arb_feed_forward_angle;
         std::atomic<double> straight_up_angle;
@@ -100,50 +97,14 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     //create the interface used to initialize the talon joint
     hardware_interface::TalonCommandInterface *const talon_command_iface = hw->get<hardware_interface::TalonCommandInterface>();
 
-    if (!readIntoScalar(controller_nh, "parallel_bar_length", parallel_bar_length_))
-    {
-        ROS_ERROR("Could not find parallel_bar_length");
-        return false;
-    }
-
-    if (!readIntoScalar(controller_nh, "diagonal_bar_length", diagonal_bar_length_))
-    {
-        ROS_ERROR("Could not find diagonal_bar_length");
-        return false;
-    }
-
-    if (!readIntoScalar(controller_nh, "intake_length", intake_length_))
-    {
-        ROS_ERROR("Could not find intake_length");
-        return false;
-    }
-
-    // set defaults
-    double math_max_extension_ = parallel_bar_length_ + diagonal_bar_length_ + intake_length_;
-    double math_min_extension_ = -diagonal_bar_length_ + parallel_bar_length_ + intake_length_;
-
-    ROS_INFO_STREAM("math. max: " << math_max_extension_ << ", " << "min: " << math_min_extension_);
-
-    if (!readIntoScalar(controller_nh, "max_extension", max_extension_))
+    if (!readIntoScalar(controller_nh, "max_angle", max_angle_))
     {
         ROS_WARN("Could not find max_extension, using default");
     }
 
-    if (!readIntoScalar(controller_nh, "min_extension", min_extension_))
+    if (!readIntoScalar(controller_nh, "min_extension", min_angle_))
     {
         ROS_WARN("Could not find min_extension, using default");
-    }
-
-    if (max_extension_ > math_max_extension_)
-    {
-        ROS_WARN_STREAM("max_extension_ > math_max_extension_, setting to math_max_extension_: " << math_max_extension_);
-        max_extension_ = math_max_extension_;
-        // if we set max_extension_ higher than math_max_extension_, we will get NaN because that physically won't work
-    }
-    if (min_extension_ < math_min_extension_)
-    {
-        ROS_WARN_STREAM("min_extension_ < math_min_extension_, setting to math_max_extension_: " << math_min_extension_);
-        min_extension_ = math_min_extension_;
     }
 
     if (!readIntoScalar(controller_nh, "arb_feed_forward_angle", arb_feed_forward_angle))
@@ -206,79 +167,26 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     ("max_extension",
     [this]()
     {
-        return max_extension_.load();
+        return max_angle_.load();
     },
-    [this, math_max_extension_](double b)
+    [this](double b)
     {
-        if (b > math_max_extension_)
-        {
-            max_extension_.store(b);
-        }
-        else
-        {
-            ROS_WARN_STREAM("ddr: max_extension_ set to greater than the theoretical maximum. setting to calculated maximum instead.");
-        }
+        max_angle_.store(b);
     },
     "Max extension",
-    0.0, math_max_extension_); //idk might be 3? i'm not really sure, 2 to be safe
+    0.0, 6.28);
 
     ddr_->registerVariable<double>
     ("min_extension",
     [this]()
     {
-        return min_extension_.load();
+        return min_angle_.load();
     },
-    [this, math_min_extension_](double b)
+    [this](double b)
     {
-        if (b < math_min_extension_)
-        {
-            min_extension_.store(b);
-        }
-        else
-        {
-            ROS_WARN_STREAM("ddr: min_extension_ set to less than the theoretical minimum. setting to calculated minimum instead.");
-        }
+        min_angle_.store(b);
     },
     "Min extension",
-    0.0, math_min_extension_);
-
-    ddr_->registerVariable<double>
-    ("parallel_bar_length",
-     [this]()
-    {
-        return parallel_bar_length_.load();
-    },
-    [this](double b)
-    {
-        parallel_bar_length_.store(b);
-    },
-    "Parallel bar length",
-    0.0, 1.0);
-
-    ddr_->registerVariable<double>
-    ("diagonal_bar_length",
-     [this]()
-    {
-        return diagonal_bar_length_.load();
-    },
-    [this](double b)
-    {
-        diagonal_bar_length_.store(b);
-    },
-    "Diagonal bar length",
-    0.0, 1.0);
-
-    ddr_->registerVariable<double>
-    ("intake_length",
-     [this]()
-    {
-        return intake_length_.load();
-    },
-    [this](double b)
-    {
-        intake_length_.store(b);
-    },
-    "Intake/static attachment length", 0.0, 1.0);
 
     ddr_->registerVariable<double>
     ("arb_feed_forward_angle",
@@ -380,7 +288,7 @@ void FourBarController_2023::starting(const ros::Time &time)
     last_zeroed_  = false;
     last_mode_ = hardware_interface::TalonMode_Disabled;
     last_angle_ = -1; // give nonsense position to force update on first time through update()
-    position_command_ = 0.0 // 0 is when we are fully retracted
+    position_command_ = 0.0; // 0 is when we are fully retracted
 }
 
 void FourBarController_2023::update(const ros::Time &time, const ros::Duration &/*duration*/)
@@ -464,12 +372,12 @@ void FourBarController_2023::stopping(const ros::Time &/*time*/)
 bool FourBarController_2023::cmdService(controllers_2023_msgs::FourBarSrv::Request  &req,
                                         controllers_2023_msgs::FourBarSrv::Response &/*response*/)
 {
-    if (req.angle > max_angle)
+    if (req.angle > max_angle_)
     {
         ROS_ERROR_STREAM("FourBar controller: requested angle too high : " << req.angle << ".");
         return false;
     }
-    if (req.position < min_angle)
+    if (req.angle < min_angle_)
     {
         ROS_ERROR_STREAM("FourBar controller: requested angle too low : " << req.angle << ".");
         return false;
