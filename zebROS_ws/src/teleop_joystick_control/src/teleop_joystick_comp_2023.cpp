@@ -540,7 +540,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 					cmd_vel.angular.z = output;
 				}
 			}
-
+			
 			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
 			{
 				std_srvs::Empty empty;
