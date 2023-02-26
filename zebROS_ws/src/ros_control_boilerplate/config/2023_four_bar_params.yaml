@@ -22,7 +22,7 @@ four_bar_controller_2023:
     # or has hit bottom and the limit switch is broken.  Stop
     # trying to drive down to prevent killing the motor
     four_bar_zeroing_timeout:  2.0
-
+    motion_s_curve_strength: 8
     four_bar:
         type: talon_controllers/TalonControllerInterface 
         joint: four_bar
