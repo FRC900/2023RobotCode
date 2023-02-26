@@ -86,6 +86,7 @@ public:
 		elevater_ac_("/elevater/elevater_server_2023", true),
 		fourber_ac_("/fourber/fourber_server_2023", true)
 	{
+		intake_idx = std::numeric_limits<size_t>::max();
 		talon_states_sub_ = nh_.subscribe("/frcrobot_jetson/talon_states", 1, &IntakingServer2023::talonStateCallback, this);
 		game_piece_state_.game_piece = game_piece_state_.NONE; // default to no game piece
 		if (!nh_.getParam("cube_time", cube_time_))
@@ -122,19 +123,19 @@ public:
 
 	void executeCB(const behavior_actions::Intaking2023GoalConstPtr &goal)
 	{
-		if (!elevater_ac_.waitForServer(ros::Duration(server_timeout_))) {
-			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to elevater server, aborting");
-			result_.timed_out = true;
-			as_.setAborted(result_);
-			return;
-		}
+		// if (!elevater_ac_.waitForServer(ros::Duration(server_timeout_))) {
+		// 	ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to elevater server, aborting");
+		// 	result_.timed_out = true;
+		// 	as_.setAborted(result_);
+		// 	return;
+		// }
 
-		if (!fourber_ac_.waitForServer(ros::Duration(server_timeout_))) {
-			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to fourber server, aborting");
-			result_.timed_out = true;
-			as_.setAborted(result_);
-			return;
-		}
+		// if (!fourber_ac_.waitForServer(ros::Duration(server_timeout_))) {
+		// 	ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to fourber server, aborting");
+		// 	result_.timed_out = true;
+		// 	as_.setAborted(result_);
+		// 	return;
+		// }
 
 		if (!intake_ac_.waitForServer(ros::Duration(server_timeout_))) {
 			ROS_ERROR_STREAM("2023_intaking_server : timed out connecting to intake server, aborting");
@@ -143,51 +144,51 @@ public:
 			return;
 		}
 
-		behavior_actions::Fourber2023Goal fourberGoal;
-		fourberGoal.piece = requested_game_piece_;
-		fourberGoal.mode = fourberGoal.INTAKE;
-		fourberGoal.safety_positions = {};
+		// behavior_actions::Fourber2023Goal fourberGoal;
+		// fourberGoal.piece = requested_game_piece_;
+		// fourberGoal.mode = fourberGoal.INTAKE;
+		// fourberGoal.safety_positions = {};
 
-		feedback_.status = feedback_.FOURBER;
-		as_.publishFeedback(feedback_);
+		// feedback_.status = feedback_.FOURBER;
+		// as_.publishFeedback(feedback_);
 
-		fourber_ac_.sendGoal(fourberGoal);
+		// fourber_ac_.sendGoal(fourberGoal);
 
 		ros::Rate r(10);
-		while (!fourber_ac_.getState().isDone()) {
-			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for fourber...");
-			if (as_.isPreemptRequested() || !ros::ok()) {
-				ROS_INFO_STREAM("2023_intaking_server : preempted.");
-				as_.setPreempted(result_);
-				fourber_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-				return;
-			}
-			r.sleep();
-		}
+		// while (!fourber_ac_.getState().isDone()) {
+		// 	ros::spinOnce();
+		// 	ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for fourber...");
+		// 	if (as_.isPreemptRequested() || !ros::ok()) {
+		// 		ROS_INFO_STREAM("2023_intaking_server : preempted.");
+		// 		as_.setPreempted(result_);
+		// 		fourber_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+		// 		return;
+		// 	}
+		// 	r.sleep();
+		// }
 
-		ROS_INFO_STREAM("2023_intaking_server : fourber moved");
+		// ROS_INFO_STREAM("2023_intaking_server : fourber moved");
 
-		behavior_actions::Elevater2023Goal elevaterGoal;
-		elevaterGoal.piece = requested_game_piece_;
-		elevaterGoal.mode = elevaterGoal.INTAKE;
+		// behavior_actions::Elevater2023Goal elevaterGoal;
+		// elevaterGoal.piece = requested_game_piece_;
+		// elevaterGoal.mode = elevaterGoal.INTAKE;
 
-		feedback_.status = feedback_.ELEVATER;
-		as_.publishFeedback(feedback_);
+		// feedback_.status = feedback_.ELEVATER;
+		// as_.publishFeedback(feedback_);
 
-		elevater_ac_.sendGoal(elevaterGoal);
+		// elevater_ac_.sendGoal(elevaterGoal);
 
-		while (!elevater_ac_.getState().isDone()) {
-			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for elevater...");
-			if (as_.isPreemptRequested() || !ros::ok()) {
-				ROS_INFO_STREAM("2023_intaking_server : preempted.");
-				as_.setPreempted(result_);
-				elevater_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-				return;
-			}
-			r.sleep();
-		}
+		// while (!elevater_ac_.getState().isDone()) {
+		// 	ros::spinOnce();
+		// 	ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for elevater...");
+		// 	if (as_.isPreemptRequested() || !ros::ok()) {
+		// 		ROS_INFO_STREAM("2023_intaking_server : preempted.");
+		// 		as_.setPreempted(result_);
+		// 		elevater_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+		// 		return;
+		// 	}
+		// 	r.sleep();
+		// }
 
 		behavior_actions::Intake2023Goal intakeGoal;
 		intakeGoal.outtake = false;
@@ -200,7 +201,7 @@ public:
 
 		ROS_INFO_STREAM("current: " << current_current_ << " threshold: " << current_threshold_ << " state: " << intake_ac_.getState().state_ << " aka " << intake_ac_.getState().getText() << " isdone? " << intake_ac_.getState().isDone());
 		
-		while (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::NONE && !(intake_ac_.getState().isDone()) && current_current_ < current_threshold_) {
+		while (/*game_piece_state_.game_piece == behavior_actions::GamePieceState2023::NONE && */!(intake_ac_.getState().isDone()) && current_current_ < current_threshold_) {
 			ros::spinOnce();
 			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for a game piece... current = " << current_current_);
 			if (as_.isPreemptRequested() || !ros::ok()) {
@@ -222,7 +223,7 @@ public:
 			return;
 		}
 
-		if (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::CUBE || (current_exceeded_ && (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::NONE || game_piece_state_.game_piece == behavior_actions::GamePieceState2023::UNKNOWN))) {
+		if (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::CUBE || current_exceeded_) {
 			ROS_INFO_STREAM("2023_intaking_server : " << (current_exceeded_ ? "current exceeded" : "cube detected") << ", waiting " << cube_time_ << " seconds");
 			ros::Time start = ros::Time::now();
 			while (ros::Time::now() - start < ros::Duration(cube_time_)) {

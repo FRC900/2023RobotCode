@@ -18,7 +18,7 @@ elevator_controller_2023:
     motion_s_curve_strength: 8
 
     # How quickly the elevator moves down when zeroing itself
-    elevator_zeroing_percent_output: -0.2 # TODO : tune me
+    elevator_zeroing_percent_output: 0.0 # TODO : tune me
 
     # If there are no negative velocity readings while zeroing
     # for this amount of time, assume the elevator is stuck
