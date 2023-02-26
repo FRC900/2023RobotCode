@@ -58,7 +58,7 @@ class AutoBalancing:
         self.derivative = -999
         self.angle_to_add = math.radians(20)
         self.PID_enabled = False
-        self.current_pitch = rospy.Time.now()
+        self.current_pitch = -1000
         #self.old_pitch = -1000
         #self.old_pitch_time = -1000
         self.current_pitch_time = rospy.Time.now()
@@ -110,6 +110,7 @@ class AutoBalancing:
         # angle when we are on the ramp where balancer can take over = 0.259rad ~ 15 degrees
         # going to try and run pid to get to that and then run balancer? 
         r = rospy.Rate(100)
+        start_time = rospy.Time.now()
         while True:                
             # I think subscribers should update without spinOnce... it doesn't exist in python
             # check that preempt has not been requested by the client
@@ -117,9 +118,14 @@ class AutoBalancing:
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self.preempt() # stop pid
                 self._as.set_preempted()
-                break
+                return
             
             if self.state == States.NO_WEELS_ON:
+                if rospy.Time.now() - start_time >= rospy.Duration(2):
+                    rospy.logwarn("2 seconds of driving has not lead to a large enough angle increase, stopping balance!")
+                    self.preempt()
+                    self._as.set_preempted()
+                    return
                 rospy.loginfo_throttle(2, "Sending cmd of 1")
                 cmd_vel_msg = geometry_msgs.msg.Twist()
                 cmd_vel_msg.angular.x = 0 # todo, tune me
