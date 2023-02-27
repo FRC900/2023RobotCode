@@ -179,7 +179,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         min_angle_.store(b);
     },
-    "Min extension",
+    "Min extension", -3.14, 3.14);
 
     ddr_->registerVariable<double>
     ("arb_feed_forward_angle",
