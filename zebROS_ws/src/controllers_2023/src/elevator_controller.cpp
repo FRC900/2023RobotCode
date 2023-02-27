@@ -120,7 +120,6 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
                                    ros::NodeHandle             &controller_nh)
 
 {
-    ddr_ = std::make_unique<ddynamic_reconfigure::DDynamicReconfigure>(controller_nh);
 
     ROS_INFO_STREAM("INIT CALLED FOR ELEVATOR CONTROLLER============");
 
@@ -243,185 +242,113 @@ bool ElevatorController_2023::init(hardware_interface::RobotHW *hw,
         return false;
     }
 
-    ddr_->registerVariable<double>
-    ("arb_feed_forward_high",
-     [this]()
-    {
-        return arb_feed_forward_high.load();
-    },
-    [this](double b)
-    {
-        arb_feed_forward_high.store(b);
-    },
+    bool dynamic_reconfigure = true;
+    controller_nh.param("dynamic_reconfigure", dynamic_reconfigure, dynamic_reconfigure);
 
-    "Arb feedforward high",
-    0.0, 0.5
-    );
+    if (dynamic_reconfigure)
+    {
+        ddr_ = std::make_unique<ddynamic_reconfigure::DDynamicReconfigure>(controller_nh);
 
-    ddr_->registerVariable<double>
-    ("max_extension",
-    [this]()
-    {
-        return max_extension_.load();
-    },
-    [this](double b)
-    {
-        max_extension_.store(b);
-    },
-    "Max extension",
-    0.0, 1.0);
+        ddr_->registerVariable<double>
+            ("arb_feed_forward_high",
+            [this]() { return arb_feed_forward_high.load(); },
+            [this](double b) { arb_feed_forward_high.store(b); },
+            "Arb feedforward high",
+            0.0, 0.5);
 
-    ddr_->registerVariable<double>
-    ("min_extension",
-    [this]()
-    {
-        return min_extension_.load();
-    },
-    [this](double b)
-    {
-        min_extension_.store(b);
-    },
-    "Min extension",
-    0.0, 1.0);
+        ddr_->registerVariable<double>
+            ("max_extension",
+            [this]() { return max_extension_.load(); },
+            [this](double b) { max_extension_.store(b); },
+            "Max extension",
+            0.0, 1.0);
 
-    ddr_->registerVariable<double>
-    ("parallel_bar_length",
-     [this]()
-    {
-        return parallel_bar_length_.load();
-    },
-    [this](double b)
-    {
-        parallel_bar_length_.store(b);
-    },
-    "Parallel bar length",
-    0.0, 1.0);
+        ddr_->registerVariable<double>
+            ("min_extension",
+            [this]() { return min_extension_.load(); },
+            [this](double b) { min_extension_.store(b); },
+            "Min extension",
+            0.0, 1.0);
 
-    ddr_->registerVariable<double>
-    ("diagonal_bar_length",
-     [this]()
-    {
-        return diagonal_bar_length_.load();
-    },
-    [this](double b)
-    {
-        diagonal_bar_length_.store(b);
-    },
-    "Diagonal bar length",
-    0.0, 1.0);
+        ddr_->registerVariable<double>
+            ("parallel_bar_length",
+            [this]() { return parallel_bar_length_.load(); },
+            [this](double b) { parallel_bar_length_.store(b); },
+            "Parallel bar length",
+            0.0, 1.0);
 
-    ddr_->registerVariable<double>
-    ("intake_length",
-     [this]()
-    {
-        return intake_length_.load();
-    },
-    [this](double b)
-    {
-        intake_length_.store(b);
-    },
-    "Intake/static attachment length", 0.0, 1.0);
+        ddr_->registerVariable<double>
+            ("diagonal_bar_length",
+            [this]() { return diagonal_bar_length_.load(); },
+            [this](double b) { diagonal_bar_length_.store(b); },
+            "Diagonal bar length",
+            0.0, 1.0);
 
-    ddr_->registerVariable<double>
-    ("arb_feed_forward_low",
-     [this]()
-    {
-        return arb_feed_forward_low.load();
-    },
-    [this](double b)
-    {
-        arb_feed_forward_low.store(b);
-    },
-    "Arb feedforward low", 0.0, 1.0);
-    ddr_->registerVariable<double>
-    ("arb_feed_forward_angle",
-     [this]()
-    {
-        return arb_feed_forward_angle.load();
-    },
-    [this](double b)
-    {
-        arb_feed_forward_angle.store(b);
-    },
-    "Arb feedforward angle. calculation: arb_ff_low_or_high + ff_max - |sin(four bar angle)| * this", -1.0, 1.0);
-    ddr_->registerVariable<double>
-    ("elevator_zeroing_percent_output",
-     [this]()
-    {
-        return elevator_zeroing_percent_output.load();
-    },
-    [this](double b)
-    {
-        elevator_zeroing_percent_output.store(b);
-    },
-    "Elevator Zeroing Percent Output",
-    -1.0, 0.0);
+        ddr_->registerVariable<double>
+            ("intake_length",
+            [this]() { return intake_length_.load(); },
+            [this](double b) { intake_length_.store(b); },
+            "Intake/static attachment length",
+             0.0, 1.0);
+
+        ddr_->registerVariable<double>
+            ("arb_feed_forward_low",
+            [this]() { return arb_feed_forward_low.load(); },
+            [this](double b) { arb_feed_forward_low.store(b); },
+            "Arb feedforward low",
+             0.0, 1.0);
+
+        ddr_->registerVariable<double>
+            ("arb_feed_forward_angle",
+            [this]() { return arb_feed_forward_angle.load(); },
+            [this](double b) { arb_feed_forward_angle.store(b); },
+            "Arb feedforward angle. calculation: arb_ff_low_or_high + ff_max - |sin(four bar angle)| * this",
+             -1.0, 1.0);
+
+        ddr_->registerVariable<double>
+            ("elevator_zeroing_percent_output",
+            [this]() { return elevator_zeroing_percent_output.load(); },
+            [this](double b) { elevator_zeroing_percent_output.store(b); },
+            "Elevator Zeroing Percent Output",
+            -1.0, 0.0);
+        
+        ddr_->registerVariable<double>
+            ("elevator_zeroing_timeout",
+            [this]() { return elevator_zeroing_timeout.load(); },
+            [this](double b) { elevator_zeroing_timeout.store(b); },
+            "Elevator Zeroing Timeout",
+            0.0, 15.0);
+        
+        ddr_->registerVariable<double>
+            ("stage_2_height",
+            [this]() { return stage_2_height.load(); },
+            [this](double b) { stage_2_height.store(b); },
+            "Stage 2 Height",
+            0.0, 2.0);
+
+        ddr_->registerVariable<double>
+            ("motion_magic_velocity_fast",
+            [this]() { return motion_magic_velocity_fast.load(); },
+            [this](double b) { motion_magic_velocity_fast.store(b); },
+            "fast Motion Magic Velocity",
+            0.0, 10); 
+        
+        ddr_->registerVariable<double>
+            ("motion_magic_acceleration_fast",
+            [this]() { return motion_magic_acceleration_fast.load(); },
+            [this](double b) { motion_magic_acceleration_fast.store(b); },
+            "Fast Motion Magic Acceleration",
+            0.0, 20.0);
+        
+        ddr_->registerVariable<int>
+            ("motion_s_curve_strength",
+            [this]() { return motion_s_curve_strength.load(); },
+            [this](int b) { motion_s_curve_strength.store(b); },
+            "S Curve Strength",
+             0, 8);
     
-    ddr_->registerVariable<double>
-    ("elevator_zeroing_timeout",
-     [this]()
-    {
-        return elevator_zeroing_timeout.load();
-    },
-    [this](double b)
-    {
-        elevator_zeroing_timeout.store(b);
-    },
-    "Elevator Zeroing Timeout",
-    0.0, 15.0);
-    
-    ddr_->registerVariable<double>
-    ("stage_2_height",
-     [this]()
-    {
-        return stage_2_height.load();
-    },
-    [this](double b)
-    {
-        stage_2_height.store(b);
-    },
-    "Stage 2 Height",
-    0.0, 2.0);
-
-    ddr_->registerVariable<double>
-    ("motion_magic_velocity_fast",
-     [this]()
-    {
-        return motion_magic_velocity_fast.load();
-    },
-    [this](double b)
-    {
-        motion_magic_velocity_fast.store(b);
-    },
-    "fast Motion Magic Velocity",
-    0.0, 10); 
-    
-    ddr_->registerVariable<double>
-    ("motion_magic_acceleration_fast",
-     [this]()
-    {
-        return motion_magic_acceleration_fast.load();
-    },
-    [this](double b)
-    {
-        motion_magic_acceleration_fast.store(b);
-    },
-    "Fast Motion Magic Acceleration",
-    0.0, 20.0);
-    
-    ddr_->registerVariable<int>
-    ("motion_s_curve_strength",
-     [this]()
-    {
-        return motion_s_curve_strength.load();
-    },
-    [this](int b)
-    {
-        motion_s_curve_strength.store(b);
-    },
-    "S Curve Strength", 0, 8);
-   
-    ddr_->publishServicesTopics();
+        ddr_->publishServicesTopics();
+    }
 
     elevator_service_ = controller_nh.advertiseService("elevator_service", &ElevatorController_2023::cmdService, this);
     ROS_INFO_STREAM("===========ELEVATOR INIT RETURNS TRUE================");

@@ -1,6 +1,3 @@
-//HPP CONTENTS INTO CPP
-//added _2023 to the two lines above ^
-
 #include <ros/ros.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <realtime_tools/realtime_buffer.h>
@@ -8,7 +5,6 @@
 #include <talon_controllers/talon_controller_interface.h> // "
 #include <pluginlib/class_list_macros.h> //to compile as a controller
 #include "controllers_2023_msgs/FourBarSrv.h"
-#include "controllers_2023_msgs/FourBarState.h"
 
 #include "ddynamic_reconfigure/ddynamic_reconfigure.h"
 
@@ -86,7 +82,6 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
                                   ros::NodeHandle             &controller_nh)
 {
     
-    ddr_ = std::make_unique<ddynamic_reconfigure::DDynamicReconfigure>(controller_nh);
     //create the interface used to initialize the talon joint
     hardware_interface::TalonCommandInterface *const talon_command_iface = hw->get<hardware_interface::TalonCommandInterface>();
 
@@ -157,119 +152,75 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         ROS_ERROR("Cannot initialize four_bar joint!");
     }
+    bool dynamic_reconfigure = true;
+    controller_nh.param("dynamic_reconfigure", dynamic_reconfigure, dynamic_reconfigure);
 
-    ddr_->registerVariable<double>
-    ("max_angle",
-    [this]()
+    if (dynamic_reconfigure)
     {
-        return max_angle_.load();
-    },
-    [this](double b)
-    {
-        max_angle_.store(b);
-    },
-    "Max angle",
-    0.0, 6.28);
+        ddr_->registerVariable<double>
+            ("max_angle",
+            [this]() { return max_angle_.load(); },
+            [this](double b) { max_angle_.store(b); },
+            "Max angle",
+            0.0, 6.28);
 
-    ddr_->registerVariable<double>
-    ("min_angle",
-    [this]()
-    {
-        return min_angle_.load();
-    },
-    [this](double b)
-    {
-        min_angle_.store(b);
-    },
-    "Min angle", 0.0, 3.14);
+        ddr_->registerVariable<double>
+            ("min_angle",
+            [this]() { return min_angle_.load(); },
+            [this](double b) { min_angle_.store(b); },
+            "Min angle", 0.0, 3.14);
 
-    ddr_->registerVariable<double>
-    ("arb_feed_forward_angle",
-     [this]()
-    {
-        return arb_feed_forward_angle.load();
-    },
-    [this](double b)
-    {
-        arb_feed_forward_angle.store(b);
-    },
-    "Arb feedforward angle. calculation: cos(angle) * this", -1.0, 1.0);
+        ddr_->registerVariable<double>
+            ("arb_feed_forward_angle",
+            [this]() { return arb_feed_forward_angle.load(); },
+            [this](double b) { arb_feed_forward_angle.store(b); },
+            "Arb feedforward angle. calculation: cos(angle) * this",
+             -1.0, 1.0);
 
-    ddr_->registerVariable<double>
-    ("straight_up_angle",
-     [this]()
-    {
-        return straight_up_angle.load();
-    },
-    [this](double b)
-    {
-        straight_up_angle.store(b);
-    },
-    "Angle which makes the four bar straight up", 0.0, 3.14159265);
+        ddr_->registerVariable<double>
+            ("straight_up_angle",
+            [this]() { return straight_up_angle.load(); },
+            [this](double b) { straight_up_angle.store(b); },
+            "Angle which makes the four bar straight up",
+             0.0, 3.14159265);
 
-    ddr_->registerVariable<double>
-    ("four_bar_zeroing_percent_output",
-     [this]()
-    {
-        return four_bar_zeroing_percent_output.load();
-    },
-    [this](double b)
-    {
-        four_bar_zeroing_percent_output.store(b);
-    },
-    "FourBar Zeroing Percent Output", -1.0, 1.0);
-    ddr_->registerVariable<double>
-    ("four_bar_zeroing_timeout",
-     [this]()
-    {
-        return four_bar_zeroing_timeout.load();
-    },
-    [this](double b)
-    {
-        four_bar_zeroing_timeout.store(b);
-    },
-    "FourBar Zeroing Timeout",
-    0.0, 15.0);
-    
-    ddr_->registerVariable<double>
-    ("motion_magic_velocity",
-     [this]()
-    {
-        return motion_magic_velocity.load();
-    },
-    [this](double b)
-    {
-        motion_magic_velocity.store(b);
-    },
-    "Motion Magic Velocity",
-    0.0, 20.0);
+        ddr_->registerVariable<double>
+            ("four_bar_zeroing_percent_output",
+            [this]() { return four_bar_zeroing_percent_output.load(); },
+            [this](double b) { four_bar_zeroing_percent_output.store(b); },
+            "FourBar Zeroing Percent Output",
+             -1.0, 1.0);
 
-    ddr_->registerVariable<double>
-    ("motion_magic_acceleration",
-     [this]()
-    {
-        return motion_magic_acceleration.load();
-    },
-    [this](double b)
-    {
-        motion_magic_acceleration.store(b);
-    },
-    "Motion Magic Acceleration",
-    0.0, 200.0); //20?
-    
-    ddr_->registerVariable<int>
-    ("motion_s_curve_strength",
-     [this]()
-    {
-        return motion_s_curve_strength.load();
-    },
-    [this](int b)
-    {
-        motion_s_curve_strength.store(b);
-    },
-    "S Curve Strength", 0, 8);
+        ddr_->registerVariable<double>
+            ("four_bar_zeroing_timeout",
+            [this]() { return four_bar_zeroing_timeout.load(); },
+            [this](double b) { four_bar_zeroing_timeout.store(b); },
+            "FourBar Zeroing Timeout",
+            0.0, 15.0);
+        
+        ddr_->registerVariable<double>
+            ("motion_magic_velocity",
+            [this]() { return motion_magic_velocity.load(); },
+            [this](double b) { motion_magic_velocity.store(b); },
+            "Motion Magic Velocity",
+            0.0, 20.0);
 
-    ddr_->publishServicesTopics();
+        ddr_->registerVariable<double>
+            ("motion_magic_acceleration",
+            [this]() { return motion_magic_acceleration.load(); },
+            [this](double b) { motion_magic_acceleration.store(b); },
+            "Motion Magic Acceleration",
+            0.0, 200.0);
+        
+        ddr_->registerVariable<int>
+            ("motion_s_curve_strength",
+            [this]() { return motion_s_curve_strength.load(); },
+            [this](int b) { motion_s_curve_strength.store(b); },
+            "S Curve Strength",
+             0, 8);
+
+        ddr_->publishServicesTopics();
+    }
 
     four_bar_service_ = controller_nh.advertiseService("four_bar_service", &FourBarController_2023::cmdService, this);
 
