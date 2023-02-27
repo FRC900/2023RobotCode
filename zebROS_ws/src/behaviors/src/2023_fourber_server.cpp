@@ -181,12 +181,13 @@ class FourberAction2023
         {
         }
 
-        void publishFailure(std::string msg = "")
+        void publishFailure(std::string msg = "", uint8_t error_code = 0)
         {
             behavior_actions::Fourber2023Feedback feedback;
             behavior_actions::Fourber2023Result result;
             feedback.success = false;
             result.success = false;
+            result.error_code = error_code;
             result.message = msg;
             as_.publishFeedback(feedback);
             as_.setAborted(result);
@@ -393,7 +394,12 @@ class FourberAction2023
             // SAFETY_TO_NO_SAFETY sets both to maximum and minimum doubles so this is fine
             // do we want to throw an error or just clamp?
             safety_state_lock_.lock();
-            req_position = std::clamp(req_position, safety_state_.min_angle, safety_state_.max_angle);
+            if (req_position < safety_state_.min_angle || req_position > safety_state_.max_angle) {
+                FourberERR("Commanded position of " << req_position << " is unsafe! Not moving four bar and throwing an error");
+                publishFailure("Unsafe position", behavior_actions::Fourber2023Result::UNSAFE_ANGLE);
+                safety_state_lock_.unlock();
+                return;
+            }
             safety_state_lock_.unlock();
 
             FourberINFO("FourbERing a " << piece_to_string[goal->piece] << " to the position " << mode_to_string[goal->mode] << " and the FOURBAR to the position=" << req_position << " meters");
