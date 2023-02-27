@@ -37,13 +37,13 @@ base_away_us_cone:
 # will clamp angles within this amount
 # there should be an overlap between all three states, if not that is bad
 safety_high:
-  min_angle: 0.24
-  max_angle: 0.3
+  min_angle: 0.0
+  max_angle: 1.57
 
 safety_mid:
-  min_angle: 0.5
-  max_angle: 0.5
+  min_angle: 0.6
+  max_angle: 0.9
 
 safety_intake:
-  min_angle: 0.3
-  max_angle: 0.24
+  min_angle: 0.7
+  max_angle: 0.8

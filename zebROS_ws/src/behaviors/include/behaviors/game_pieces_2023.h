@@ -5,8 +5,8 @@ struct SafetyState {
   double max_angle;
   double min_angle;
   SafetyState() {
-    max_angle = 0;
-    min_angle = 0;
+    max_angle = std::numeric_limits<double>::max();
+    min_angle = std::numeric_limits<double>::min();
   }
   SafetyState(double above, double below) {
     max_angle = above;

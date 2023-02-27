@@ -92,12 +92,14 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
 
     if (!readIntoScalar(controller_nh, "max_angle", max_angle_))
     {
-        ROS_WARN("Could not find max_extension, using default");
+        ROS_WARN("Could not find max_angle");
+        return false;
     }
 
-    if (!readIntoScalar(controller_nh, "min_extension", min_angle_))
+    if (!readIntoScalar(controller_nh, "min_angle", min_angle_))
     {
-        ROS_WARN("Could not find min_extension, using default");
+        ROS_WARN("Could not find min_angle");
+        return false;
     }
 
     if (!readIntoScalar(controller_nh, "arb_feed_forward_angle", arb_feed_forward_angle))
@@ -157,7 +159,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     }
 
     ddr_->registerVariable<double>
-    ("max_extension",
+    ("max_angle",
     [this]()
     {
         return max_angle_.load();
@@ -166,11 +168,11 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         max_angle_.store(b);
     },
-    "Max extension",
+    "Max angle",
     0.0, 6.28);
 
     ddr_->registerVariable<double>
-    ("min_extension",
+    ("min_angle",
     [this]()
     {
         return min_angle_.load();
@@ -179,7 +181,7 @@ bool FourBarController_2023::init(hardware_interface::RobotHW *hw,
     {
         min_angle_.store(b);
     },
-    "Min extension", -3.14, 3.14);
+    "Min angle", 0.0, 3.14);
 
     ddr_->registerVariable<double>
     ("arb_feed_forward_angle",

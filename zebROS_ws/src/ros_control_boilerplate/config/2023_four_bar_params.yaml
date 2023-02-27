@@ -2,7 +2,7 @@ four_bar_controller_2023:
     type: four_bar_controller_2023/FourBarController_2023
 
     four_bar_joint: [ 'four_bar' ]
-    min_angle: 0 # for sure
+    min_angle: 0.0 # for sure. this is slightly less than vertical (it's where the limit switch hits)
     max_angle: 2.443460952792061 # tbd, 140 degrees, might be too much
 
     # don't even care about lenghts because we are using angles
