@@ -55,6 +55,7 @@ struct DynamicReconfigVars
 	double imu_zero_angle{0.0};           // "Value to pass to imu/set_zero when zeroing"
 	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
 	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
+	double angle_to_add{angles::from_degrees(2)}
 } config;
 
 std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
@@ -188,6 +189,8 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 }
 
 bool sendRobotZero = false;
+bool sendSetAngle = false;
+double old_angular_z = 0.0;
 
 void place() {
 	behavior_actions::Placing2023Goal goal;
@@ -532,16 +535,34 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.angular.z != 0.0) {
 			double original_angular_z = cmd_vel.angular.z; 
-			if (cmd_vel.angular.z == 0.0) {
-				//ROS_INFO_STREAM_THROTTLE(1, "Sending a not from teleop");
-				// enables pid
-				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getTargetOrientation(), false /* from telop */);
-				double output = robot_orientation_driver->getOrientationVelocityPIDOutput();
-				if (fabs(output) > config.rotation_epsilon) {
-					cmd_vel.angular.z = output;
+
+			if (original_angular_z == 0.0 && old_angular_z != 0.0) {
+				sendSetAngle = false;
+			}
+			else {
+				sendSetAngle = true;
+			}
+
+			if (original_angular_z == 0.0 && !sendSetAngle) {
+				double multiplier = 1;
+				if (signbit(old_angular_z))
+					multiplier = -1;
+				}
+				if (old_angular_z == 0.0) {
+					ROS_INFO_STREAM("Old angular z is zero, wierd");
+				} 
+				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multipler * config.angle_to_add , true /* from telop */);
+				sendSetAngle = true;
+			}
+
+			if (cmd_vel.angular.z == 0.0) 
+			{
+				cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
+				if (cmd_vel.angular.z < config.rotation_epsilon) {
+					cmd_vel.angular.z = 0.0;
 				}
 			}
-			
+		
 			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
 			{
 				std_srvs::Empty empty;
@@ -560,12 +581,11 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				JoystickRobotVel.publish(cmd_vel);
 				sendRobotZero = false;
 				// if the original command was not zero, then teleop was controlling rotation
-				if (original_angular_z != 0.0) {
-					robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), true /* from telop */);
-				}
-			}
-		} 
 
+			}
+			old_angular_z = original_angular_z;
+		} 
+		
 
 		if(!diagnostics_mode)
 		{
@@ -1075,6 +1095,11 @@ int main(int argc, char **argv)
 	if(!n_params.getParam("rotation_epsilon", config.rotation_epsilon))
 	{
 		ROS_ERROR("Could not read rotation_epsilon in teleop_joystick_comp");
+	}
+
+	if(!n_params.getParam("angle_to_add", config.angle_to_add))
+	{
+		ROS_ERROR("Could not read angle_to_add in teleop_joystick_comp");
 	}
 
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
