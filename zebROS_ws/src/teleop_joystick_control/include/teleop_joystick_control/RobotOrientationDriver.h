@@ -108,7 +108,7 @@ private:
 	bool robot_enabled_{false};
 
 	// True if most recent target sent to PID is from teleop commands
-	bool most_recent_is_teleop_{false};
+	bool most_recent_is_teleop_{true};
 	ros::Timer most_recent_teleop_timer_;
 
 	void orientationCmdCallback(const std_msgs::Float64::ConstPtr &orientation_cmd);

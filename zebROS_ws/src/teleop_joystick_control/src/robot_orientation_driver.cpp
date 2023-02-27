@@ -7,6 +7,7 @@
 
 #include "teleop_joystick_control/RobotOrientationDriver.h"
 
+
 RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	: nh_(nh)
 	, orientation_command_sub_{nh_.subscribe("orientation_command", 1, &RobotOrientationDriver::orientationCmdCallback, this)}
@@ -17,12 +18,15 @@ RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	, imu_sub_{nh_.subscribe("/imu/zeroed_imu", 1, &RobotOrientationDriver::imuCallback, this)}
 	, match_data_sub_{nh_.subscribe("/frcrobot_rio/match_data", 1, &RobotOrientationDriver::matchStateCallback, this)}
 	// one_shot = true, auto_start = false
-	, most_recent_teleop_timer_{nh_.createTimer(RESET_TO_TELEOP_CMDVEL_TIMEOUT, &RobotOrientationDriver::checkFromTeleopTimeout, this, true, false)}
+	// inversting that
+	, most_recent_teleop_timer_{nh_.createTimer(RESET_TO_TELEOP_CMDVEL_TIMEOUT, &RobotOrientationDriver::checkFromTeleopTimeout, this, false, true)}
 {
 }
 
+
 void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop)
 {
+	ROS_INFO_STREAM("Setting orientation with from teleop =" << from_teleop);
 	if (robot_enabled_)
 	{
 		target_orientation_ = angle;
