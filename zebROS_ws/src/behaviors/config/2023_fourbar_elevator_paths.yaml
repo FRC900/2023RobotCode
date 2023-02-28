@@ -1,5 +1,5 @@
 # [elevator, fourbar]
-# they move in that order
+# they move in that order going forward, opposite going back
 # these are absolute positions
 # home = [0, 0], must come first in a path
 

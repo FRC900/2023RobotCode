@@ -4,6 +4,8 @@
 #include <behavior_actions/FourbarElevatorPath2023Action.h>
 #include <std_msgs/Float64.h>
 #include <talon_state_msgs/TalonState.h>
+#include <controllers_2023_msgs/ElevatorSrv.h>
+#include <controllers_2023_msgs/FourBarSrv.h>
 
 struct ElevatorFourbarPoint {
 	// in that order
@@ -60,6 +62,20 @@ public:
 				ROS_INFO_STREAM("(" << pt.elevator << ", " << pt.fourbar << ")");
 			}
 			path_map_[path->first] = p;
+		}
+
+		const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
+
+		elevator_srv_ = nh_.serviceClient<controllers_2023_msgs::ElevatorSrv>("/frcrobot_jetson/elevator_controller_2023/elevator_service", false, service_connection_header);
+		if (!elevator_srv_.waitForExistence(ros::Duration(5)))
+		{
+			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : =======Could not find elevator service========");
+		}
+
+		fourbar_srv_ = nh_.serviceClient<controllers_2023_msgs::FourBarSrv>("/frcrobot_jetson/four_bar_controller_2023/four_bar_service", false, service_connection_header);
+		if (!fourbar_srv_.waitForExistence(ros::Duration(5)))
+		{
+			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : =======Could not find fourbar service========");
 		}
 		as_.start();
 	}
@@ -144,9 +160,137 @@ public:
 		return ac.getState().isDone();
 	}
 
+	bool waitForMotor(bool fourbar, double setpoint) {
+		ros::Rate r = ros::Rate(10);
+
+		while (true)
+		{
+			ros::spinOnce();
+			double position;
+			if (fourbar) {
+				position = fourbar_position_;
+			} else {
+				position = elevator_position_;
+			}
+			ROS_INFO_STREAM_THROTTLE(1, "2023_fourbar_elevator_path_server: Waiting for " << (fourbar ? std::string("fourbar") : std::string("elevator")) << ", " << position << " vs " << setpoint);
+
+			// essentially just keep fourbar where it is now
+			if (as_.isPreemptRequested() || !ros::ok())
+			{
+				ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : preempted");
+				if (fourbar) {
+					controllers_2023_msgs::FourBarSrv last_req;
+					last_req.request.angle = fourbar_position_;
+					if (!fourbar_srv_.call(last_req))
+					{
+						ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : Could not set fourbar to the current setpoint!");
+						result_.success = false;
+						as_.setAborted(result_);
+						return false;
+					}
+				} else {
+					controllers_2023_msgs::ElevatorSrv last_req;
+					last_req.request.position = elevator_position_;
+					if (!elevator_srv_.call(last_req))
+					{
+						ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : Could not set elevator to the current setpoint!");
+						result_.success = false;
+						as_.setAborted(result_);
+						return false;
+					}
+				}
+				return false;
+			}
+
+			if (fabs((fourbar ? fourbar_position_ : elevator_position_) - setpoint) <= 0.05) // make this tolerance configurable
+			{
+				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : " << (fourbar ? std::string("fourbar") : std::string("elevator")) << " reached position! ");
+				break;
+			}
+			r.sleep();
+		}
+		return true;
+	}
+
+	bool waitForFourbar(double setpoint) {
+		return waitForMotor(true, setpoint);
+	}
+
+	bool waitForElevator(double setpoint) {
+		return waitForMotor(false, setpoint);
+	}
+
 	void executeCB(const behavior_actions::FourbarElevatorPath2023GoalConstPtr &goal)
 	{
+		if (path_map_.find(goal->path) == path_map_.end()) {
+			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : path " << goal->path << " not found! Exiting.");
+			result_.success = false;
+			as_.setAborted(result_);
+			return;
+		}
 
+		Path path = path_map_[goal->path];
+		if (goal->reverse) {
+			std::reverse(path.begin(), path.end());
+		}
+		for (const ElevatorFourbarPoint &pt : path) {
+			if (goal->reverse) {
+				// fourbar elevator
+				controllers_2023_msgs::FourBarSrv f;
+				f.request.angle = pt.fourbar;
+				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : calling fourbar with " << pt.fourbar);
+				if (!fourbar_srv_.call(f)) {
+					ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : four bar controller failed! Exiting.");
+					result_.success = false;
+					as_.setAborted(result_);
+					return;
+				}
+				if (!waitForFourbar(pt.fourbar)) {
+					return;
+				}
+
+				controllers_2023_msgs::ElevatorSrv e;
+				e.request.position = pt.elevator;
+				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : calling elevator with " << pt.elevator);
+				if (!elevator_srv_.call(e)) {
+					ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : elevator controller failed! Exiting.");
+					result_.success = false;
+					as_.setAborted(result_);
+					return;
+				}
+				if (!waitForElevator(pt.elevator)) {
+					return;
+				}
+			} else {
+				// elevator fourbar
+				controllers_2023_msgs::ElevatorSrv e;
+				e.request.position = pt.elevator;
+				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : calling elevator with " << pt.elevator);
+				if (!elevator_srv_.call(e)) {
+					ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : elevator controller failed! Exiting.");
+					result_.success = false;
+					as_.setAborted(result_);
+					return;
+				}
+				if (!waitForElevator(pt.elevator)) {
+					return;
+				}
+
+				controllers_2023_msgs::FourBarSrv f;
+				f.request.angle = pt.fourbar;
+				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : calling fourbar with " << pt.fourbar);
+				if (!fourbar_srv_.call(f)) {
+					ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : four bar controller failed! Exiting.");
+					result_.success = false;
+					as_.setAborted(result_);
+					return;
+				}
+				if (!waitForFourbar(pt.fourbar)) {
+					return;
+				}
+			}
+		}
+		result_.success = true;
 		as_.setSucceeded(result_);
 	}
 
