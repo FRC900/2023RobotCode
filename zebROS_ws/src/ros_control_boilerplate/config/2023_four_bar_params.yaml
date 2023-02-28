@@ -30,7 +30,7 @@ four_bar_controller_2023:
             - {p: 0.04, i: 0.0000, d: 0.0, f: 0.0755, i_zone: 0, closed_loop_peak_output: 1.0}
 
         invert_output: True
-        sensor_phase: True  
+        sensor_phase: True
         
         neutral_mode: Brake
 
@@ -51,5 +51,5 @@ four_bar_controller_2023:
         conversion_factor: 0.074906367 # set from chad
         neutral_deadband: 0.01 # set to be higher
 
-        dynamic_reconfigure: True # true breaks code 
+        dynamic_reconfigure: True
         motion_s_curve_strength: 8
