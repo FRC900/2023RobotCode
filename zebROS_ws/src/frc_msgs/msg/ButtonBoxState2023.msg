@@ -6,9 +6,9 @@ bool lockingSwitchPress
 bool lockingSwitchRelease
 
 # Only red button, preempt all
-bool RedButton
-bool RedPress
-bool RedRelease
+bool redButton
+bool redPress
+bool redRelease
 
 # top three buttons for setting elevator heights
 bool topLeftConeButton
