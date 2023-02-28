@@ -115,12 +115,12 @@ public:
 				}
 			}
 		}
-		if (!(fourbar_idx_ == std::numeric_limits<size_t>::max())) 
+		if (fourbar_idx_ != std::numeric_limits<size_t>::max()) 
 		{
 			fourbar_position_ = talon_state.position[fourbar_idx_];
 		}
 		else {
-			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : cannot find talon with name = four_bar");
+			ROS_ERROR_STREAM_THROTTLE(0.1, "2023_fourbar_elevator_path_server : cannot find talon with name = four_bar");
 		}
 
 		if (elevator_idx_ == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
@@ -134,12 +134,12 @@ public:
 				}
 			}
 		}
-		if (!(elevator_idx_ == std::numeric_limits<size_t>::max())) 
+		if (elevator_idx_ != std::numeric_limits<size_t>::max()) 
 		{
 			elevator_position_ = talon_state.position[elevator_idx_];
 		}
 		else {
-			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : cannot find talon with name = elevator_leader");
+			ROS_ERROR_STREAM_THROTTLE(0.1, "2023_fourbar_elevator_path_server : cannot find talon with name = elevator_leader");
 		}
 	}
 
@@ -220,7 +220,7 @@ public:
 				return false;
 			}
 
-			if (fabs((fourbar ? fourbar_position_ : elevator_position_) - setpoint) <= (fourbar ? fourbar_tolerance_ : elevator_tolerance_)) // make this tolerance configurable
+			if (fabs(position - setpoint) <= (fourbar ? fourbar_tolerance_ : elevator_tolerance_)) // make this tolerance configurable
 			{
 				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : " << (fourbar ? std::string("fourbar") : std::string("elevator")) << " reached position! ");
 				break;
@@ -240,6 +240,18 @@ public:
 
 	void executeCB(const behavior_actions::FourbarElevatorPath2023GoalConstPtr &goal)
 	{
+		if (!elevator_srv_.waitForExistence(ros::Duration(5)))
+		{
+			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : =======Could not find elevator service========");
+			return;
+		}
+
+		if (!fourbar_srv_.waitForExistence(ros::Duration(5)))
+		{
+			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : =======Could not find fourbar service========");
+			return;
+		}
+
 		if (path_map_.find(goal->path) == path_map_.end()) {
 			ROS_ERROR_STREAM("2023_fourbar_elevator_path_server : path " << goal->path << " not found! Exiting.");
 			result_.success = false;
