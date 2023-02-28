@@ -3,16 +3,16 @@ four_bar_controller_2023:
 
     four_bar_joint: [ 'four_bar' ]
     min_angle: 0.0 # for sure. this is slightly less than vertical (it's where the limit switch hits)
-    max_angle: 2.443460952792061 # tbd, 140 degrees, might be too much
+    max_angle: 3.95 # measured
 
     # don't even care about lenghts because we are using angles
 
     # 0.11-0.12 worked well for holding max extension
-    arb_feed_forward_angle: -0.10
-    straight_up_angle: 0.537
+    arb_feed_forward_angle: -0.10 # possibly -0.08 but we have gone back and forth
+    straight_up_angle: 0.537 
 
-    motion_magic_velocity: 0.5
-    motion_magic_acceleration: 0.5
+    motion_magic_velocity: 4.0
+    motion_magic_acceleration: 10.0
 
     # How quickly the four bar moves down when zeroing itself
     four_bar_zeroing_percent_output: 0.0 # TODO : tune me
@@ -51,5 +51,5 @@ four_bar_controller_2023:
         conversion_factor: 0.074906367 # set from chad
         neutral_deadband: 0.01 # set to be higher
 
-        dynamic_reconfigure: False # true breaks code 
+        dynamic_reconfigure: True # true breaks code 
         motion_s_curve_strength: 8
