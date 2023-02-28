@@ -55,7 +55,7 @@ struct DynamicReconfigVars
 	double imu_zero_angle{0.0};           // "Value to pass to imu/set_zero when zeroing"
 	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
 	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
-	double angle_to_add{angles::from_degrees(2)}
+	double angle_to_add{angles::from_degrees(2)};
 } config;
 
 std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
@@ -545,13 +545,13 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 
 			if (original_angular_z == 0.0 && !sendSetAngle) {
 				double multiplier = 1;
-				if (signbit(old_angular_z))
+				if (signbit(old_angular_z)) {
 					multiplier = -1;
 				}
 				if (old_angular_z == 0.0) {
 					ROS_INFO_STREAM("Old angular z is zero, wierd");
 				} 
-				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multipler * config.angle_to_add , true /* from telop */);
+				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
 				sendSetAngle = true;
 			}
 
