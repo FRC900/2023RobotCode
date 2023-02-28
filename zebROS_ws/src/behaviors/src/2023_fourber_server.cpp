@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
-
+#include <talon_state_msgs/TalonState.h>
 #include <behavior_actions/Fourber2023Action.h>
 #include <ddynamic_reconfigure/ddynamic_reconfigure.h>
 #include <std_msgs/Float64.h>
@@ -103,7 +103,7 @@ class FourberAction2023
                 FourberERR("========Could not find fourbar service========");
             }
             fourbar_offset_sub_ = nh_.subscribe("/fourbar_position_offset", 1, &FourberAction2023::heightOffsetCallback, this);
-            fourbar_state_sub_ = nh_.subscribe("/frcrobot_jetson/four_bar_controller_2023/state", 1, &FourberAction2023::currentStateCallback, this);
+            talon_states_sub_ = nh_.subscribe("/frcrobot_jetson/talon_states", 1, &FourberAction2023::talonStateCallback, this);
 
             load_param_helper(nh_, "position_tolerance", position_tolerance_, 0.02);
 
@@ -433,11 +433,30 @@ class FourberAction2023
             position_offset_ = position_offset_msg.data;
         }
 
-        void currentStateCallback(const controllers_2023_msgs::FourBarState &msg) {
-            fourbar_cur_position_ = msg.current_angle;
-            fourbar_cur_setpoint_ = msg.setpoint_angle;
+        // "borrowed" from 2019 climb server
+        void talonStateCallback(const talon_state_msgs::TalonState &talon_state)
+        {
+            // fourbar_master_idx == max of size_t at the start
+            if (fourbar_master_idx == std::numeric_limits<size_t>::max())
+            {
+                for (size_t i = 0; i < talon_state.name.size(); i++)
+                {
+                    if (talon_state.name[i] == "four_bar")
+                    {
+                        fourbar_master_idx = i;
+                        break;
+                    }
+                }
+            }
+            if (!(fourbar_master_idx == std::numeric_limits<size_t>::max())) 
+            {
+                fourbar_cur_position_ = talon_state.position[fourbar_master_idx];
+                fourbar_cur_setpoint_ = talon_state.set_point[fourbar_master_idx];
+            }
+            else {
+                FourberERR("Can not find talon with name = " << "four_bar");
+            }
         }
-
 }; // FourberAction2023
 
 
