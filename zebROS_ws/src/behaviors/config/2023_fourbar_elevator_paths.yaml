@@ -3,6 +3,9 @@
 # these are absolute positions
 # home = [0, 0], must come first in a path
 
+fourbar_tolerance: 0.03
+elevator_tolerance: 0.03
+
 paths:
   mid_cone: [[0.0, 0.0], [0.55, 0.82], [0.7, 0.64]]
   high_cone: [[0.0, 0.0], [0.55, 0.82], [0.7, 0.64], [1.2, 1.0]]

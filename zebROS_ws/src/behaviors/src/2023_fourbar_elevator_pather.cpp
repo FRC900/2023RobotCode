@@ -33,6 +33,9 @@ protected:
 	double fourbar_position_;
 	double elevator_position_;
 
+	double fourbar_tolerance_;
+	double elevator_tolerance_;
+
 	ros::Subscriber talon_states_sub_;
 
 	std::map<std::string, Path> path_map_;
@@ -48,6 +51,21 @@ public:
 		talon_states_sub_ = nh_.subscribe("/frcrobot_jetson/talon_states", 1, &FourbarElevatorPathServer2023::talonStateCallback, this);
 		XmlRpc::XmlRpcValue pathList;
     	nh_.getParam("paths", pathList);
+
+		fourbar_tolerance_ = 0.03;
+		elevator_tolerance_ = 0.03;
+
+		if (!nh_.hasParam("fourbar_tolerance")) {
+			nh_.getParam("fourbar_tolerance", fourbar_tolerance_);
+		} else {
+			ROS_INFO_STREAM("2023_fourbar_elevator_path_server : fourbar_tolerance defaulting to 0.03 radians");
+		}
+
+		if (!nh_.hasParam("elevator_tolerance")) {
+			nh_.getParam("elevator_tolerance", elevator_tolerance_);
+		} else {
+			ROS_INFO_STREAM("2023_fourbar_elevator_path_server : elevator_tolerance defaulting to 0.03 meters");
+		}
 
 		for (XmlRpc::XmlRpcValue::iterator path=pathList.begin(); path!=pathList.end(); ++path) {
 			// path->first = name
@@ -202,7 +220,7 @@ public:
 				return false;
 			}
 
-			if (fabs((fourbar ? fourbar_position_ : elevator_position_) - setpoint) <= 0.05) // make this tolerance configurable
+			if (fabs((fourbar ? fourbar_position_ : elevator_position_) - setpoint) <= (fourbar ? fourbar_tolerance_ : elevator_tolerance_)) // make this tolerance configurable
 			{
 				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : " << (fourbar ? std::string("fourbar") : std::string("elevator")) << " reached position! ");
 				break;
