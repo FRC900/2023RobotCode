@@ -109,6 +109,7 @@ uint8_t autoMode() {
 	// up = 1, 2, and 3
 	// mid = 4, 5, and 6
 	// down = 7, 8, and 9
+	ROS_INFO_STREAM("teleop_joystick_comp_2023 : auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
 	return auto_mode * 3 + auto_starting_pos;
 }
 
@@ -272,19 +273,19 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 
 	if(button_box.gridSelectConeLeftButton) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
-		place();
 	}
 	if(button_box.gridSelectConeLeftPress) {
+		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+		place();
 	}
 	if(button_box.gridSelectConeLeftRelease) {
 	}
 
 	if(button_box.gridSelectCubeButton) {
-		game_piece = behavior_actions::Placing2023Goal::CUBE;
-		place();
 	}
 	if(button_box.gridSelectCubePress) {
+		game_piece = behavior_actions::Placing2023Goal::CUBE;
+		place();
 	}
 	if(button_box.gridSelectCubeRelease) {
 	}
