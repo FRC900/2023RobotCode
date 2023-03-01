@@ -84,8 +84,6 @@ bool joystick1_right_trigger_pressed = false;
 bool up_down_switch_mid = false;
 bool left_right_switch_mid = false;
 
-bool imu_service_needed = true;
-
 double last_offset;
 bool last_robot_orient;
 
@@ -513,15 +511,15 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	if(joystick_id == 0)
 	{
 		//ROS_INFO_STREAM_THROTTLE(3, "2023 js0 callback running!");
-		
+
 		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
 
 		teleop_cmd_vel->updateRateLimit(config);
 		// TODO : make swerve invert the yaw so we can deal in ccw-positive angles
 		// everywhere outside of that code
 		geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], -robot_orientation_driver->getCurrentOrientation(), config);
-		
-		/* 
+
+		/*
 		if (!rotation_increment) {
 			robot_orientation_driver->stopRotation();
 		}
@@ -529,7 +527,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z);
 		ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.angular.z != 0.0) {
-			double original_angular_z = cmd_vel.angular.z; 
+			double original_angular_z = cmd_vel.angular.z;
 
 			if (original_angular_z == 0.0 && old_angular_z != 0.0) {
 				sendSetAngle = false;
@@ -548,14 +546,14 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				sendSetAngle = true;
 			}
 
-			if (cmd_vel.angular.z == 0.0) 
+			if (cmd_vel.angular.z == 0.0)
 			{
 				cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
 				if (fabs(cmd_vel.angular.z) < config.rotation_epsilon) {
 					cmd_vel.angular.z = 0.0;
 				}
 			}
-		
+
 			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (cmd_vel.angular.z == 0.0) && !sendRobotZero)
 			{
 				std_srvs::Empty empty;
@@ -577,8 +575,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 
 			}
 			old_angular_z = original_angular_z;
-		} 
-		
+		}
 
 		if(!diagnostics_mode)
 		{
@@ -594,11 +591,11 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonAButton)
 			{
-				
+
 			}
 			if(joystick_states_array[0].buttonARelease)
 			{
-				
+
 			}
 
 			//Joystick1: buttonB
@@ -616,7 +613,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonBRelease)
 			{
-				
+
 			}
 
 			//Joystick1: buttonX
@@ -1111,7 +1108,7 @@ int main(int argc, char **argv)
 	ddr.registerVariable<double>("trigger_threshold", &config.trigger_threshold, "Amount trigger has to be pressed to trigger action", 0., 1.);
 	ddr.registerVariable<double>("stick_threshold", &config.stick_threshold, "Amount stick has to be moved to trigger diag mode action", 0., 1.);
 	ddr.registerVariable<double>("imu_zero_angle", &config.imu_zero_angle, "Value to pass to imu/set_zero when zeroing", -360., 360.);
-	
+
 	ddr.registerVariable<double>("rotation_epsilon", &config.rotation_epsilon, "rotation_epsilon", 0.0, 1.0);
 	ddr.registerVariable<double>("angle_to_add", &config.angle_to_add, "angle_to_add", 0.0, 10);
 
