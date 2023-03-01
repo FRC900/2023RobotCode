@@ -3,6 +3,14 @@
 #include "talon_state_msgs/TalonState.h"
 #include <fstream>
 
+/*
+Procedure
+- Bevel facing right
+- Run old dump offsets  
+- 2pi - each offset
+- that + pi
+*/
+
 talon_state_msgs::TalonState talon_state_msg;
 
 bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Response& /*res*/)
@@ -27,7 +35,8 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 		if (it != offset_joint_names.end())
 		{
 			offsets_file << "    " << it->second << ":" << std::endl;
-			double offset = fmod(talon_state_msg.position[i] - M_PI / 2., 2. * M_PI);
+			// Subtracing from pi because that is what worked before
+			double offset = M_PI - fmod(talon_state_msg.position[i] - M_PI / 2.0, 2.0 * M_PI);
 			ROS_INFO_STREAM("OFFSET: " << offset);
 			offsets_file << "        offset: " << offset << std::endl;
 		}
