@@ -36,7 +36,7 @@ class PathAction
 		double final_pos_tol_;
 		double final_rot_tol_;
 		double server_timeout_;
-
+		double inital_angle_offset_; // to keep robot relative, whatever angle we are at the start of the path to all of the orientation
 		bool debug_;
 		int ros_rate_;
 
@@ -149,7 +149,6 @@ class PathAction
 			std::vector<int> waypointsIdx = goal->waypointsIdx;
 			// Spin once to get the most up to date odom and yaw info
 			ros::spinOnce();
-
 			// Since paths are robot-centric, the initial odom value is 0,0,0 for the path.
 			// Set this up as a transfrom to apply to each point in the path. This has the
 			// effect of changing robot centric coordinates into odom-centric coordinates
@@ -167,6 +166,7 @@ class PathAction
 			{
 				odom_to_base_link_tf.transform.rotation = orientation_;
 			}
+			inital_angle_offset_ = path_follower_.getYaw(odom_.pose.pose.orientation);
 			//ros::message_operations::Printer< ::geometry_msgs::TransformStamped_<std::allocator<void>> >::stream(std::cout, "", odom_to_base_link_tf);
 
 			// Transform the final point from robot to odom coordinates. Used each iteration to
@@ -258,7 +258,8 @@ class PathAction
 				y_axis.setEnable(true);
 				y_axis.setCommand(next_waypoint.position.y);
 
-				command_msg.data = path_follower_.getYaw(next_waypoint.orientation);
+				command_msg.data = path_follower_.getYaw(next_waypoint.orientation) + inital_angle_offset_;
+				ROS_ERROR_STREAM("Command msg " << command_msg.data << " offset " << inital_angle_offset_);
 				if (std::isfinite(command_msg.data))
 				{
 					orientation_command_pub_.publish(command_msg);
