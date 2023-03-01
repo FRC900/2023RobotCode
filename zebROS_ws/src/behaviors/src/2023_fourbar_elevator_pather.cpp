@@ -55,14 +55,16 @@ public:
 		fourbar_tolerance_ = 0.03;
 		elevator_tolerance_ = 0.03;
 
-		if (!nh_.hasParam("fourbar_tolerance")) {
+		if (nh_.hasParam("fourbar_tolerance")) {
 			nh_.getParam("fourbar_tolerance", fourbar_tolerance_);
+			ROS_INFO_STREAM("2023_fourbar_elevator_path_server : fourbar_tolerance is " << fourbar_tolerance_ << " radians");
 		} else {
 			ROS_INFO_STREAM("2023_fourbar_elevator_path_server : fourbar_tolerance defaulting to 0.03 radians");
 		}
 
-		if (!nh_.hasParam("elevator_tolerance")) {
+		if (nh_.hasParam("elevator_tolerance")) {
 			nh_.getParam("elevator_tolerance", elevator_tolerance_);
+			ROS_INFO_STREAM("2023_fourbar_elevator_path_server : elevator_tolerance is " << elevator_tolerance_ << " meters");
 		} else {
 			ROS_INFO_STREAM("2023_fourbar_elevator_path_server : elevator_tolerance defaulting to 0.03 meters");
 		}
