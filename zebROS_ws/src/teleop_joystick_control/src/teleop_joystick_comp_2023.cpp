@@ -17,6 +17,7 @@
 #include "teleop_joystick_control/RobotOrient.h"
 
 #include "frc_msgs/ButtonBoxState2023.h"
+#include "frc_msgs/MatchSpecificData.h"
 
 #include "actionlib/client/simple_action_client.h"
 
@@ -78,6 +79,9 @@ ros::Publisher auto_mode_select_pub;
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
 
+bool up_down_switch_mid = false;
+bool left_right_switch_mid = false;
+
 bool imu_service_needed = true;
 
 double last_offset;
@@ -88,9 +92,32 @@ int direction_x{};
 int direction_y{};
 int direction_z{};
 
+bool robot_is_disabled{false};
+
 uint8_t grid;
 uint8_t game_piece;
 uint8_t node;
+
+uint8_t auto_starting_pos = 1; // 1 indexed
+uint8_t auto_mode = 0; // 0 indexed
+
+imu_zero::ImuZeroAngle imu_cmd;
+
+uint8_t autoMode() {
+	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
+	//      L  M      R
+	// up = 1, 2, and 3
+	// mid = 4, 5, and 6
+	// down = 7, 8, and 9
+	return auto_mode * 3 + auto_starting_pos;
+}
+
+void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
+{
+	// TODO : if in diagnostic mode, zero all outputs on the
+	// transition from enabled to disabled
+	robot_is_disabled = msg.Disabled;
+}
 
 ros::ServiceClient snapConeCubeSrv;
 
@@ -154,6 +181,15 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 }
 
 bool sendRobotZero = false;
+
+void place() {
+	behavior_actions::Placing2023Goal goal;
+	goal.node = node;
+	goal.piece = game_piece;
+	goal.override_game_piece = true;
+	goal.align_intake = false;
+	placing_ac->sendGoal(goal);
+}
 
 void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
 {
@@ -236,13 +272,8 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 
 	if(button_box.gridSelectConeLeftButton) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
-		behavior_actions::Placing2023Goal goal;
-		goal.node = node;
-		goal.piece = game_piece;
-		goal.override_game_piece = true;
-		goal.align_intake = false;
-		placing_ac->sendGoal(goal);
+		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+		place();
 	}
 	if(button_box.gridSelectConeLeftPress) {
 	}
@@ -251,12 +282,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 	if(button_box.gridSelectCubeButton) {
 		game_piece = behavior_actions::Placing2023Goal::CUBE;
-		behavior_actions::Placing2023Goal goal;
-		goal.node = node;
-		goal.piece = game_piece;
-		goal.override_game_piece = true;
-		goal.align_intake = false;
-		placing_ac->sendGoal(goal);
+		place();
 	}
 	if(button_box.gridSelectCubePress) {
 	}
@@ -266,13 +292,8 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectConeRightButton) {
 	}
 	if(button_box.gridSelectConeRightPress) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
-		behavior_actions::Placing2023Goal goal;
-		goal.node = node;
-		goal.piece = game_piece;
-		goal.override_game_piece = true;
-		goal.align_intake = false;
-		placing_ac->sendGoal(goal);
+		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+		place();
 	}
 	if(button_box.gridSelectConeRightRelease) {
 	}
@@ -280,19 +301,52 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.heightSelectSwitchUpButton) {
 	}
 	if(button_box.heightSelectSwitchUpPress) {
+		if (robot_is_disabled)
+		{
+			auto_mode = 0;
+			// should we be worried about messages being dropped here?
+			behavior_actions::AutoMode auto_mode_msg;
+			auto_mode_msg.header.stamp = ros::Time::now();
+			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_select_pub.publish(auto_mode_msg);
+		}
 		node = behavior_actions::Placing2023Goal::HIGH;
 	}
 	if(button_box.heightSelectSwitchUpRelease) {
 	}
 
 	if(!(button_box.heightSelectSwitchUpButton || button_box.heightSelectSwitchDownButton)) {
-		node = behavior_actions::Placing2023Goal::MID;
+		if (!up_down_switch_mid) {
+			node = behavior_actions::Placing2023Goal::MID;
+			if (robot_is_disabled)
+			{
+				auto_mode = 1;
+				// should we be worried about messages being dropped here?
+				behavior_actions::AutoMode auto_mode_msg;
+				auto_mode_msg.header.stamp = ros::Time::now();
+				auto_mode_msg.auto_mode = autoMode();
+				auto_mode_select_pub.publish(auto_mode_msg);
+			}
+		}
+
+		up_down_switch_mid = true;
+	} else {
+		up_down_switch_mid = false;
 	}
 
 	if(button_box.heightSelectSwitchDownButton) {
 	}
 	if(button_box.heightSelectSwitchDownPress) {
 		node = behavior_actions::Placing2023Goal::HYBRID;
+		if (robot_is_disabled)
+		{
+			auto_mode = 2;
+			// should we be worried about messages being dropped here?
+			behavior_actions::AutoMode auto_mode_msg;
+			auto_mode_msg.header.stamp = ros::Time::now();
+			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_select_pub.publish(auto_mode_msg);
+		}
 	}
 	if(button_box.heightSelectSwitchDownRelease) {
 	}
@@ -300,13 +354,50 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.heightSelectSwitchLeftButton) {
 	}
 	if(button_box.heightSelectSwitchLeftPress) {
+		if (robot_is_disabled)
+		{
+			auto_starting_pos = 1;
+			// should we be worried about messages being dropped here?
+			behavior_actions::AutoMode auto_mode_msg;
+			auto_mode_msg.header.stamp = ros::Time::now();
+			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_select_pub.publish(auto_mode_msg);
+		}
 	}
 	if(button_box.heightSelectSwitchLeftRelease) {
+	}
+
+	if(!(button_box.heightSelectSwitchLeftButton || button_box.heightSelectSwitchRightButton)) {
+		if (!left_right_switch_mid) {
+			node = behavior_actions::Placing2023Goal::MID;
+			if (robot_is_disabled)
+			{
+				auto_starting_pos = 2;
+				// should we be worried about messages being dropped here?
+				behavior_actions::AutoMode auto_mode_msg;
+				auto_mode_msg.header.stamp = ros::Time::now();
+				auto_mode_msg.auto_mode = autoMode();
+				auto_mode_select_pub.publish(auto_mode_msg);
+			}
+		}
+
+		left_right_switch_mid = true;
+	} else {
+		left_right_switch_mid = false;
 	}
 
 	if(button_box.heightSelectSwitchRightButton) {
 	}
 	if(button_box.heightSelectSwitchRightPress) {
+		if (robot_is_disabled)
+		{
+			auto_starting_pos = 3;
+			// should we be worried about messages being dropped here?
+			behavior_actions::AutoMode auto_mode_msg;
+			auto_mode_msg.header.stamp = ros::Time::now();
+			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_select_pub.publish(auto_mode_msg);
+		}
 	}
 	if(button_box.heightSelectSwitchRightRelease) {
 	}
@@ -328,6 +419,9 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.bottomRightWhiteButton) {
 	}
 	if(button_box.bottomRightWhitePress) {
+		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU");
+		imu_cmd.request.angle = 0.0;
+		IMUZeroSrv.call(imu_cmd);
 	}
 	if(button_box.bottomRightWhiteRelease) {
 	}
@@ -1002,6 +1096,7 @@ int main(int argc, char **argv)
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
 
+	ros::Subscriber match_state_sub = n.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
 	ros::ServiceServer robot_orient_service = n.advertiseService("robot_orient", orientCallback);
 
 	auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
