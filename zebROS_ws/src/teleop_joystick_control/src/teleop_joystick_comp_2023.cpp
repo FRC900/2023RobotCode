@@ -639,9 +639,14 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: rightTrigger
 			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
 			{
-				behavior_actions::Intaking2023Goal goal;
-				goal.piece = goal.VERTICAL_CONE;
-				intaking_ac->sendGoal(goal);
+				if(!joystick1_right_trigger_pressed)
+				{
+					behavior_actions::Intaking2023Goal goal;
+					goal.piece = goal.VERTICAL_CONE;
+					intaking_ac->sendGoal(goal);
+				}
+
+				joystick1_right_trigger_pressed = true;
 			}
 			else
 			{
