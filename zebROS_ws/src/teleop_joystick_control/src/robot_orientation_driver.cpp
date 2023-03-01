@@ -53,11 +53,9 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub setpoint = " << pid_setpoint_msg.data );
 	// Make sure the PID node is enabled
 
-	// only run pid if not teleop
-	// TODO - should we just run PID full time and ignore the output
-	// if we don't neet it?
-	if (!from_teleop) {
-		// Reset the "non-teleop mode had timed-out" timer
+	// Reset the "non-teleop mode has timed-out" timer
+	if (!from_teleop)
+	{
 		most_recent_teleop_timer_.stop();
 		most_recent_teleop_timer_.start();
 	}
