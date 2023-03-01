@@ -70,9 +70,6 @@ frc_msgs::ButtonBoxState2023 button_box;
 std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
 
-ros::Publisher orient_strafing_enable_pub;
-ros::Publisher orient_strafing_setpoint_pub;
-ros::Publisher orient_strafing_state_pub;
 ros::Publisher intake_cmd_pub;
 
 ros::Publisher JoystickRobotVel;
@@ -539,9 +536,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			if (original_angular_z == 0.0 && old_angular_z != 0.0) {
 				sendSetAngle = false;
 			}
-			else {
-				sendSetAngle = true;
-			}
 
 			if (original_angular_z == 0.0 && !sendSetAngle) {
 				double multiplier = 1;
@@ -550,7 +544,8 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				}
 				if (old_angular_z == 0.0) {
 					ROS_INFO_STREAM("Old angular z is zero, wierd");
-				} 
+				}
+				ROS_INFO_STREAM("Locking to current orientation!");
 				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
 				sendSetAngle = true;
 			}
@@ -558,7 +553,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			if (cmd_vel.angular.z == 0.0) 
 			{
 				cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
-				if (cmd_vel.angular.z < config.rotation_epsilon) {
+				if (fabs(cmd_vel.angular.z) < config.rotation_epsilon) {
 					cmd_vel.angular.z = 0.0;
 				}
 			}
@@ -1118,6 +1113,10 @@ int main(int argc, char **argv)
 	ddr.registerVariable<double>("trigger_threshold", &config.trigger_threshold, "Amount trigger has to be pressed to trigger action", 0., 1.);
 	ddr.registerVariable<double>("stick_threshold", &config.stick_threshold, "Amount stick has to be moved to trigger diag mode action", 0., 1.);
 	ddr.registerVariable<double>("imu_zero_angle", &config.imu_zero_angle, "Value to pass to imu/set_zero when zeroing", -360., 360.);
+	
+	ddr.registerVariable<double>("rotation_epsilon", &config.rotation_epsilon, "rotation_epsilon", 0.0, 1.0);
+	ddr.registerVariable<double>("angle_to_add", &config.angle_to_add, "angle_to_add", 0.0, 10);
+
 	ddr.publishServicesTopics();
 
 	teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
@@ -1128,10 +1127,6 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
 	snapConeCubeSrv = n.serviceClient<teleop_joystick_control::SnapConeCube>("/snap_to_angle/snap_cone_cube", false, service_connection_header);
-
-	orient_strafing_enable_pub = n.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1);
-	orient_strafing_setpoint_pub = n.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1);
-	orient_strafing_state_pub = n.advertise<std_msgs::Float64>("orient_strafing/state", 1);
 
 	intake_cmd_pub = n.advertise<std_msgs::Float64>("/frcrobot_jetson/intake_leader_controller/command", 1);
 

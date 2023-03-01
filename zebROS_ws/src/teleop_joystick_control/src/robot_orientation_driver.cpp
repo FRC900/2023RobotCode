@@ -21,12 +21,15 @@ RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	// inversting that
 	, most_recent_teleop_timer_{nh_.createTimer(RESET_TO_TELEOP_CMDVEL_TIMEOUT, &RobotOrientationDriver::checkFromTeleopTimeout, this, false, true)}
 {
+	std_msgs::Bool enable_pub_msg;
+	enable_pub_msg.data = true;
+	pid_enable_pub_.publish(enable_pub_msg);
 }
 
 
 void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop)
 {
-	ROS_INFO_STREAM("Setting orientation with from teleop =" << from_teleop);
+	//ROS_INFO_STREAM("Setting orientation with from teleop =" << from_teleop);
 	if (robot_enabled_)
 	{
 		target_orientation_ = angle;
@@ -53,17 +56,13 @@ void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop
 	// only run pid if not teleop
 	// TODO - should we just run PID full time and ignore the output
 	// if we don't neet it?
-	if (from_teleop) {
-	}
-	else {
+	if (!from_teleop) {
 		// Reset the "non-teleop mode had timed-out" timer
 		most_recent_teleop_timer_.stop();
 		most_recent_teleop_timer_.start();
 	}
+
 	//ROS_INFO_STREAM("Target orientation = " << target_orientation_ << " state = " << robot_orientation_);
-	std_msgs::Bool enable_pub_msg;
-	enable_pub_msg.data = true;
-	pid_enable_pub_.publish(enable_pub_msg);
 	//ROS_INFO_STREAM(__FUNCTION__ << "pub enable = " << (int)enable_pub_msg.data );
 }
 
@@ -168,6 +167,5 @@ void RobotOrientationDriver::matchStateCallback(const frc_msgs::MatchSpecificDat
 // it to teleop after messages from the external sources stop
 void RobotOrientationDriver::checkFromTeleopTimeout(const ros::TimerEvent & /*event*/)
 {
-	ROS_INFO_STREAM("Timeout called!");
 	most_recent_is_teleop_ = true;
 }

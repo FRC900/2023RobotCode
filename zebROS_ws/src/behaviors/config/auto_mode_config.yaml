@@ -42,6 +42,7 @@ auto_mode_3: ["test_orientation"]
 #valid action types: "intake_actionlib_server", "pause", "elevator_actionlib_server"
 ros_rate: 10 # in ms, used for all ros rate calls
 
+
 cmd_vel_1:
     type: cmd_vel
     duration: 2.75
@@ -249,6 +250,15 @@ galactic_search_path:
   drive_path_test_1
 
 #examples:
+balance_facing_away:
+    type: "balancing_actionlib_server"
+    goal:
+        "false" # if we are facing away from the station
+
+balance_facing_towards:
+    type: "balancing_actionlib_server"
+    goal:
+        "true" # if we are facing away from the charging station
 
 start_intaking:
     type: "intaking_actionlib_server"
