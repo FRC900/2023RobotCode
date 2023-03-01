@@ -94,6 +94,9 @@ elevator_controller_2023 four_bar_controller_2023 intake_leader_controller
 	<include file="$(find behaviors)/launch/2023_fourbar_elevator_path.launch">
 	</include>
 
+	<include file="$(find behaviors)/launch/2023_balancing.launch">
+	</include>
+
 	<include file="$(find behaviors)/launch/2023_fourbar.launch">
 	</include>
 
