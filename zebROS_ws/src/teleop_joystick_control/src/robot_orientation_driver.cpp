@@ -11,7 +11,7 @@
 RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 	: nh_(nh)
 	, orientation_command_sub_{nh_.subscribe("orientation_command", 1, &RobotOrientationDriver::orientationCmdCallback, this)}
-	, pid_enable_pub_{nh_.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1)}
+	, pid_enable_pub_{nh_.advertise<std_msgs::Bool>("orient_strafing/pid_enable", 1, true)} // latching
 	, pid_state_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/state", 1)}
 	, pid_setpoint_pub_{nh_.advertise<std_msgs::Float64>("orient_strafing/setpoint", 1)}
 	, pid_control_effort_sub_{nh_.subscribe("orient_strafing/control_effort", 1, &RobotOrientationDriver::controlEffortCallback, this)}
