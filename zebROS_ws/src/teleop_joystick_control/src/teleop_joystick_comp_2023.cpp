@@ -745,7 +745,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_left_trigger_pressed)
 				{
-					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_left_trigger_pressed = false;
@@ -767,7 +767,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_right_trigger_pressed)
 				{
-					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					// intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_right_trigger_pressed = false;
