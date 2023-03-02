@@ -249,6 +249,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.redButton) {
 	}
 	if(button_box.redPress) {
+		ROS_WARN_STREAM("Preempting all actions!");
 		placing_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		intake_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
@@ -538,12 +539,13 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 
 			if (original_angular_z == 0.0 && !sendSetAngle) {
+				ROS_INFO_STREAM("Old angular z " << old_angular_z << " signbit " << signbit(old_angular_z));
 				double multiplier = 1;
 				if (signbit(old_angular_z)) {
 					multiplier = -1;
 				}
 				if (old_angular_z == 0.0) {
-					ROS_INFO_STREAM("Old angular z is zero, wierd");
+					ROS_WARN_STREAM("Old angular z is zero, wierd");
 				}
 				ROS_INFO_STREAM("Locking to current orientation!");
 				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);

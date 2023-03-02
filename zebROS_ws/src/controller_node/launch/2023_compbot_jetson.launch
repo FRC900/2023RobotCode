@@ -19,7 +19,7 @@
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_angle_swerve_tuning.yaml" command="load"/>
-
+		
 		<rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_jetson.yaml" command="load"/>
 
 		<!--
@@ -116,13 +116,7 @@ elevator_controller_2023 four_bar_controller_2023 intake_leader_controller
 
 	<include file="$(find controller_node)/launch/2023_terabee.launch" if="$(eval arg('hw_or_sim')=='hw')">
 	</include>
-	
-	<!-- Run ZED camera + tensorflow object detection -->
-	<!--
-	<include file="$(find tf_object_detection)/launch/detection.launch" if="$(eval arg('hw_or_sim')=='hw')">
-		<arg name="input_type" value="live_camera" />
-	</include>
-	-->
+		
 	<!-- Will advertise /zed_objdetect/left/image_rect_color_throttle -->
 	<!--<node name="throttle_zed" pkg="topic_tools" type="throttle"  args="messages /zed_objdetect/left/image_rect_color 4" output="screen"/>-->
 	<!-- Consider adding 2023 launch file for recording -->
