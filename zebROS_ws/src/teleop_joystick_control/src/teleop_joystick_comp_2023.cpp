@@ -181,6 +181,9 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 	return true;
 }
 
+
+
+
 bool sendRobotZero = false;
 bool sendSetAngle = false;
 double old_angular_z = 0.0;
@@ -525,6 +528,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		}
 		*/
 		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z);
+
 		ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.angular.z != 0.0) {
 			double original_angular_z = cmd_vel.angular.z;
