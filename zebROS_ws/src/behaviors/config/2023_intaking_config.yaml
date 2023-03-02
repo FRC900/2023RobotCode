@@ -4,3 +4,8 @@ server_timeout: 20.0
 current_threshold: 100.0 # some arbitrary unit
 joint: intake_leader # for current sensing
 time_before_reverse: 1.0
+intake_speed: 0.5
+intake_fast_speed: 0.6 # don't use
+intake_timeout: 20.0
+intake_small_speed: 0.05
+intake_big_speed: 0.1
