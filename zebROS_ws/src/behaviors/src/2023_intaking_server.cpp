@@ -178,16 +178,18 @@ public:
 
 		while (!path_ac_.getState().isDone()) {
 			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for pather...");
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for forward pather...");
 			if (as_.isPreemptRequested() || !ros::ok()) {
 				ROS_INFO_STREAM("2023_intaking_server : preempted.");
+
+				path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 
 				percent_out.data = 0.0;
 				make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
 
 				ROS_INFO_STREAM("2023_intaking_server : zeroing");
 				pathGoal.path = "zero";
-				pathGoal.reverse = true;
+				pathGoal.reverse = false;
 
 				feedback_.status = feedback_.PATHER;
 				as_.publishFeedback(feedback_);
@@ -219,11 +221,14 @@ public:
 			if (as_.isPreemptRequested() || !ros::ok()) {
 				ROS_INFO_STREAM("2023_intaking_server : preempted.");
 
+				path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+
 				percent_out.data = 0.0;
 				make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
 
-				ROS_INFO_STREAM("2023_intaking_server : reversing path");
-				pathGoal.reverse = true;
+				ROS_INFO_STREAM("2023_intaking_server : zeroing");
+				pathGoal.path = "zero";
+				pathGoal.reverse = false;
 
 				feedback_.status = feedback_.PATHER;
 				as_.publishFeedback(feedback_);
@@ -232,10 +237,9 @@ public:
 
 				while (!path_ac_.getState().isDone() && ros::ok()) {
 					ros::spinOnce();
-					ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : reversing");
+					ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : zeroing");
 					r.sleep();
 				}
-
 				as_.setPreempted(result_);
 				return;
 			}
@@ -276,11 +280,10 @@ public:
 
 		while (!path_ac_.getState().isDone()) {
 			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for pather...");
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for reverse pather...");
 			if (as_.isPreemptRequested() || !ros::ok()) {
-				ROS_INFO_STREAM("2023_intaking_server : preempted.");
+				ROS_INFO_STREAM("2023_intaking_server : preempted. why?????");
 				as_.setPreempted(result_);
-				path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
 				return;
 			}
 			r.sleep();
