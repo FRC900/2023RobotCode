@@ -306,6 +306,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 
 	if(button_box.heightSelectSwitchUpButton) {
+		node = behavior_actions::Placing2023Goal::HIGH;
 	}
 	if(button_box.heightSelectSwitchUpPress) {
 		if (robot_is_disabled)
@@ -342,6 +343,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 
 	if(button_box.heightSelectSwitchDownButton) {
+		node = behavior_actions::Placing2023Goal::HYBRID;
 	}
 	if(button_box.heightSelectSwitchDownPress) {
 		node = behavior_actions::Placing2023Goal::HYBRID;
@@ -412,6 +414,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.centralYellowButton) {
 	}
 	if(button_box.centralYellowPress) {
+		robot_orientation_driver->setTargetOrientation(0.0, true);
 	}
 	if(button_box.centralYellowRelease) {
 	}
@@ -419,6 +422,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.bottomLeftYellowButton) {
 	}
 	if(button_box.bottomLeftYellowPress) {
+		robot_orientation_driver->setTargetOrientation(M_PI, true);
 	}
 	if(button_box.bottomLeftYellowRelease) {
 	}
@@ -751,7 +755,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_left_trigger_pressed)
 				{
-					//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_left_trigger_pressed = false;
@@ -773,7 +777,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_right_trigger_pressed)
 				{
-					// intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_right_trigger_pressed = false;

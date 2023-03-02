@@ -26,6 +26,7 @@ protected:
 	double server_timeout_;
 	double cube_time_; // time to keep intaking after we see a cube
 	double cone_time_; // time to keep intaking after we see a cone
+	double path_zero_timeout_;
 
 	// shouldn't need to worry about the intake timeout since the intaker server handles that
 
@@ -112,6 +113,11 @@ public:
 			ROS_ERROR_STREAM("2023_intaking_server : could not find cube_time");
 			return;
 		}
+		if (!nh_.getParam("path_zero_timeout", path_zero_timeout_))
+		{
+			ROS_ERROR_STREAM("2023_intaking_server : could not find path_zero_timeout");
+			return;
+		}
 		if (!nh_.getParam("cone_time", cone_time_))
 		{
 			ROS_ERROR_STREAM("2023_intaking_server : could not find cone_time");
@@ -175,6 +181,8 @@ public:
 		path_ac_.sendGoal(pathGoal);
 
 		std_msgs::Float64 percent_out;
+		percent_out.data = speed_;
+		make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
 
 		while (!path_ac_.getState().isDone()) {
 			ros::spinOnce();
@@ -196,7 +204,8 @@ public:
 
 				path_ac_.sendGoal(pathGoal);
 
-				while (!path_ac_.getState().isDone() && ros::ok()) {
+				ros::Time start = ros::Time::now();
+				while (!path_ac_.getState().isDone() && ros::ok() && (ros::Time::now() - start) < ros::Duration(path_zero_timeout_)) {
 					ros::spinOnce();
 					ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : zeroing");
 					r.sleep();
@@ -206,9 +215,6 @@ public:
 			}
 			r.sleep();
 		}
-
-		percent_out.data = speed_;
-		make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
 
 		feedback_.status = feedback_.INTAKE;
 		as_.publishFeedback(feedback_);
@@ -235,7 +241,8 @@ public:
 
 				path_ac_.sendGoal(pathGoal);
 
-				while (!path_ac_.getState().isDone() && ros::ok()) {
+				ros::Time start = ros::Time::now();
+				while (!path_ac_.getState().isDone() && ros::ok() && (ros::Time::now() - start) < ros::Duration(path_zero_timeout_)) {
 					ros::spinOnce();
 					ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : zeroing");
 					r.sleep();
