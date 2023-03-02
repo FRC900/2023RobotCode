@@ -276,9 +276,10 @@ public:
 
 		ros::Duration(time_before_reverse_).sleep();
 		
-		// move back to zeroed
+		// move back to holding position
 
-		pathGoal.reverse = true;
+		pathGoal.path = "flip_fourbar_after_intaking";
+		pathGoal.reverse = false;
 
 		feedback_.status = feedback_.PATHER;
 		as_.publishFeedback(feedback_);
