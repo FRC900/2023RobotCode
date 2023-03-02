@@ -545,7 +545,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 		*/
 		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z);
 
-		ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
+		//ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
 		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.angular.z != 0.0) {
 			double original_angular_z = cmd_vel.angular.z;
 
@@ -608,7 +608,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				srv.request.piece = srv.request.VERTICAL_CONE; // can use any cone
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cone and enabling robot relative driving mode!");
 				teleop_cmd_vel->setRobotOrient(true, 0);
-				snapConeCubeSrv.call(srv);
+				if (snapConeCubeSrv.call(srv))
+				{
+					robot_orientation_driver->setTargetOrientation(srv.response.target_angle, true /*from teleop*/);
+				}
 			}
 			if(joystick_states_array[0].buttonAButton)
 			{
@@ -626,7 +629,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				srv.request.piece = srv.request.CUBE;
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cube and enabling robot relative driving mode!");
 				teleop_cmd_vel->setRobotOrient(true, 0);
-				snapConeCubeSrv.call(srv);
+				if (snapConeCubeSrv.call(srv))
+				{
+					robot_orientation_driver->setTargetOrientation(srv.response.target_angle, true /*from teleop*/);
+				}
 			}
 			if(joystick_states_array[0].buttonBButton)
 			{
