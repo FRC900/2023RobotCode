@@ -220,7 +220,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		// diagnostics_mode = true;
 		// robot_orientation_driver->stopRotation();
 		// ROS_WARN_STREAM("Enabling diagnostics mode!");
-		
+
 		//teleop_cmd_vel->setRobotOrient(true, 0.0);
 		//ROS_WARN_STREAM("Robot relative mode!");
 	}
@@ -442,8 +442,8 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.bottomRightWhiteButton) {
 	}
 	if(button_box.bottomRightWhitePress) {
-		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU");
-		imu_cmd.request.angle = 0.0;
+		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU to 180");
+		imu_cmd.request.angle = 180.0;
 		IMUZeroSrv.call(imu_cmd);
 	}
 	if(button_box.bottomRightWhiteRelease) {
