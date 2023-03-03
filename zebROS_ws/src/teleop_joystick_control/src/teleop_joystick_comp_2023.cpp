@@ -619,7 +619,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonARelease)
 			{
-
+				teleop_cmd_vel->setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonB
@@ -640,7 +640,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonBRelease)
 			{
-
+				teleop_cmd_vel->setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonX

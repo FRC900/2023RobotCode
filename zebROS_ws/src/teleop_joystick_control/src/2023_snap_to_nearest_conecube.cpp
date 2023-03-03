@@ -53,7 +53,7 @@ class SnapToConeCube2023
             // topics now just used for logging
             nearest_cone_pub_ = nh_.advertise<std_msgs::Float64>("nearest_cone_angle", 1);
             nearest_cube_pub_ = nh_.advertise<std_msgs::Float64>("nearest_cube_angle", 1);
-            object_detection_sub_ = nh_.subscribe("/tf_object_detection/object_detection_world_filtered", 1, &SnapToConeCube2023::objectDetectionCallback, this);
+            object_detection_sub_ = nh_.subscribe("/tf_object_detection/object_detection_world", 1, &SnapToConeCube2023::objectDetectionCallback, this);
             //cmd_vel_sub_ = nh_.subscribe("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, &SnapToConeCube2023::cmdVelSub, this);
             imu_sub_ = nh_.subscribe("/imu/zeroed_imu", 1, &SnapToConeCube2023::imuCallback, this);
             server_ = nh_.advertiseService("snap_cone_cube", &SnapToConeCube2023::snap, this);

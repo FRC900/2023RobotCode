@@ -122,6 +122,7 @@ public:
 		intake_pub_(nh_.advertise<std_msgs::Float64>("/frcrobot_jetson/intake_leader_controller/command", 1, true)),
 		path_ac_("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true)
 	{
+		elevator_idx = std::numeric_limits<size_t>::max();
 		intake_idx = std::numeric_limits<size_t>::max();
 		talon_states_sub_ = nh_.subscribe("/frcrobot_jetson/talon_states", 1, &IntakingServer2023::talonStateCallback, this);
 		game_piece_state_.game_piece = game_piece_state_.NONE; // default to no game piece
@@ -193,6 +194,7 @@ public:
 		ros::Rate r(10);
 
 		bool elevator_is_ok = elev_pos_ < 0.2;
+		ROS_INFO_STREAM("pos is  " << elev_pos_ << (elevator_is_ok ? " ok" : " no"));
 
 		if (goal->unflip_outtake || !elevator_is_ok) {
 			behavior_actions::FourbarElevatorPath2023Goal pathGoal;
@@ -242,6 +244,8 @@ public:
 		std_msgs::Float64 percent_out;
 		percent_out.data = speed_;
 		make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
+
+		ros::Duration(0.25).sleep();
 
 		while (!path_ac_.getState().isDone()) {
 			ros::spinOnce();
