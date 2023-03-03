@@ -220,8 +220,9 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		// diagnostics_mode = true;
 		// robot_orientation_driver->stopRotation();
 		// ROS_WARN_STREAM("Enabling diagnostics mode!");
-		teleop_cmd_vel->setRobotOrient(true, 0.0);
-		ROS_WARN_STREAM("Robot relative mode!");
+		
+		//teleop_cmd_vel->setRobotOrient(true, 0.0);
+		//ROS_WARN_STREAM("Robot relative mode!");
 	}
 
 	if(button_box.lockingSwitchButton)
@@ -1199,6 +1200,8 @@ int main(int argc, char **argv)
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 
 	ROS_WARN("joy_init");
+
+	teleop_cmd_vel->setRobotOrient(false, 0.0);
 
 	ros::spin();
 	return 0;
