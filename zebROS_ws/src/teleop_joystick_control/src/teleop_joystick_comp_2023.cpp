@@ -684,6 +684,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: bumperRight
 			if(joystick_states_array[0].bumperRightPress)
 			{
+				behavior_actions::Intake2023Goal goal;
+				goal.outtake = true;
+				goal.go_fast = false;
+				intake_ac->sendGoal(goal);
 			}
 			if(joystick_states_array[0].bumperRightButton)
 			{
@@ -928,10 +932,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1 Diagnostics: bumperRight
 			if(joystick_states_array[0].bumperRightPress)
 			{
-				behavior_actions::Intake2023Goal goal;
-				goal.outtake = true;
-				goal.go_fast = false;
-				intake_ac->sendGoal(goal);
 			}
 			if(joystick_states_array[0].bumperRightButton)
 			{
