@@ -148,6 +148,36 @@ public:
 			return;
 		}
 
+		uint8_t game_piece;
+
+		if (!goal->override_game_piece) {
+			game_piece = game_piece_state_.game_piece;
+			ROS_INFO_STREAM("2023_placing_server : detected game piece = " << std::to_string(game_piece_state_.game_piece));
+		}
+		else {
+			game_piece = goal->piece;
+			ROS_INFO_STREAM("2023_placing_server : game piece override. detected = " << std::to_string(game_piece_state_.game_piece) << ", requested = " << std::to_string(goal->piece) << ". using requested value");
+		}
+
+		behavior_actions::FourbarElevatorPath2023Goal pathGoal;
+		pathGoal.path = pathForGamePiece(game_piece, goal->node);
+		pathGoal.reverse = false;
+
+		if (goal->step == goal->MOVE) {
+			ROS_INFO_STREAM("2023_placing_server : moving to placing position");
+
+			path_ac_.sendGoal(pathGoal);
+
+			if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), path_ac_, as_) && path_ac_.getState() == path_ac_.getState().SUCCEEDED)) {
+				ROS_INFO_STREAM("2023_placing_server : pather failed, aborting");
+				result_.success = false;
+				as_.setAborted(result_);
+				path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+				return;
+			}
+			return;
+		}
+
 		if (!(goal->override_game_piece)) {
 			if (ros::Time::now() - latest_game_piece_time_ > ros::Duration(game_piece_timeout_)) {
 				ROS_ERROR_STREAM("2023_placing_server : game piece data too old, aborting");
@@ -189,33 +219,8 @@ public:
 			}
 		}
 
-		uint8_t game_piece;
-
-		if (!goal->override_game_piece) {
-			game_piece = game_piece_state_.game_piece;
-			ROS_INFO_STREAM("2023_placing_server : detected game piece = " << std::to_string(game_piece_state_.game_piece));
-		}
-		else {
-			game_piece = goal->piece;
-			ROS_INFO_STREAM("2023_placing_server : game piece override. detected = " << std::to_string(game_piece_state_.game_piece) << ", requested = " << std::to_string(goal->piece) << ". using requested value");
-		}
-		
-		behavior_actions::FourbarElevatorPath2023Goal pathGoal;
-		pathGoal.path = pathForGamePiece(game_piece, goal->node);
-		pathGoal.reverse = false;
-
-		path_ac_.sendGoal(pathGoal);
-
-		if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), path_ac_, as_) && path_ac_.getState() == path_ac_.getState().SUCCEEDED)) {
-			ROS_INFO_STREAM("2023_placing_server : pather timed out, aborting");
-			result_.success = false;
-			as_.setAborted(result_);
-			path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-			return;
-		}
-
 		behavior_actions::Intake2023Goal intake_goal_;
-		intake_goal_.go_fast = false; // TODO change this? idk if we still want to have multiple speeds
+		intake_goal_.go_fast = true;
 		intake_goal_.outtake = true; // don't change this
 		ac_intake_.sendGoal(intake_goal_);
 
@@ -236,7 +241,8 @@ public:
 
 		ROS_INFO_STREAM("2023_placing_server : reversing path!");
 
-		pathGoal.reverse = true;
+		pathGoal.path = pathForGamePiece(game_piece, goal->node) + "_reverse";
+		pathGoal.reverse = false;
 
 		path_ac_.sendGoal(pathGoal);
 

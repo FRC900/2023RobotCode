@@ -35,7 +35,7 @@ crc_error_count = 0
 restart_errors_count = 10
 
 def main():
-    global samples, min_range, max_range
+    global samples, min_range, max_range, crc_error_count, restart_errors_count
     pub = rospy.Publisher("state", IntakeState2023, queue_size=1)
     rospy.init_node("intake_reader_2023", anonymous=True)
 

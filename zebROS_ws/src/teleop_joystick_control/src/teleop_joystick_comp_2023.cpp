@@ -45,7 +45,7 @@ struct DynamicReconfigVars
 	double max_speed_slow{0.75};          // "Max linear speed in slow mode, in m/s"
 	double max_rot{6.0};                  // "Max angular speed"
 	double max_rot_slow{2.0};             // "Max angular speed in slow mode"
-	double button_move_speed{0.9};        // "Linear speed when move buttons are pressed, in m/s"
+	double button_move_speed{0.5};        // "Linear speed when move buttons are pressed, in m/s"
 	double joystick_pow{1.5};             // "Joystick Scaling Power, linear"
 	double rotation_pow{1.0};             // "Joystick Scaling Power, rotation"
 	double drive_rate_limit_time{200};    // "msec to go from full back to full forward"
@@ -188,13 +188,17 @@ bool sendRobotZero = false;
 bool sendSetAngle = false;
 double old_angular_z = 0.0;
 
+bool moved = false;
+
 void place() {
 	behavior_actions::Placing2023Goal goal;
 	goal.node = node;
 	goal.piece = game_piece;
 	goal.override_game_piece = true;
 	goal.align_intake = false;
+	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
 	placing_ac->sendGoal(goal);
+	moved = !moved;
 }
 
 void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
@@ -260,6 +264,10 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.topLeftConeButton) {
 	}
 	if(button_box.topLeftConePress) {
+		ROS_WARN_STREAM("teleop : unflipping outtake! really hope you're actually flipped!");
+		behavior_actions::Intaking2023Goal goal;
+		goal.unflip_outtake = true;
+		intaking_ac->sendGoal(goal);
 	}
 	if(button_box.topLeftConeRelease) {
 	}
@@ -283,6 +291,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectConeLeftPress) {
 		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
 		place();
+		// slow mode
 	}
 	if(button_box.gridSelectConeLeftRelease) {
 	}
@@ -292,6 +301,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectCubePress) {
 		game_piece = behavior_actions::Placing2023Goal::CUBE;
 		place();
+		// slow mode
 	}
 	if(button_box.gridSelectCubeRelease) {
 	}
@@ -301,6 +311,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectConeRightPress) {
 		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
 		place();
+		// slow mode
 	}
 	if(button_box.gridSelectConeRightRelease) {
 	}
@@ -911,6 +922,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1 Diagnostics: bumperRight
 			if(joystick_states_array[0].bumperRightPress)
 			{
+				behavior_actions::Intake2023Goal goal;
+				goal.outtake = true;
+				goal.go_fast = false;
+				intake_ac->sendGoal(goal);
 			}
 			if(joystick_states_array[0].bumperRightButton)
 			{
