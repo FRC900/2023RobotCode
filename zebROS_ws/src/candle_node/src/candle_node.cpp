@@ -8,6 +8,7 @@
 #include <sensor_msgs/Imu.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <angles/angles.h>
 
 constexpr uint8_t MAX_LED = 34;
 constexpr uint8_t MID_START = 0;
@@ -24,7 +25,7 @@ struct NodeCTX {
     bool updated;
     bool disabled;
     uint8_t auto_mode;
-    double imu_tolerance{M_PI/6.0};
+    double imu_tolerance{M_PI/18.0}; // 10 deg
     bool imu_zeroed;
 
 
@@ -68,6 +69,7 @@ struct NodeCTX {
 
     void auto_mode_callback(const behavior_actions::AutoModeConstPtr& msg) {
         if (this->auto_mode != msg->auto_mode) {
+            ROS_INFO_STREAM("new auto");
             this->auto_mode = msg->auto_mode;
             this->updated = true;
         }
@@ -85,10 +87,11 @@ struct NodeCTX {
     void imu_callback(const sensor_msgs::ImuConstPtr& msg) {
         double imu_angle = getYaw(msg->orientation);
         bool imu_zero_new = false;
-        if (fabs(imu_angle - M_PI) < imu_tolerance || fabs(imu_angle - 0) < imu_tolerance) {
+        if (angles::shortest_angular_distance(imu_angle, M_PI) < imu_tolerance || angles::shortest_angular_distance(imu_angle, 0) < imu_tolerance) {
             imu_zero_new = true;
         }
         if (imu_zeroed != imu_zero_new) {
+            ROS_INFO_STREAM("imu zero update");
             this->updated = true;
             this->imu_zeroed = imu_zero_new;
         }
@@ -110,13 +113,14 @@ int main(int argc, char **argv) {
     ros::Subscriber imu_subscriber = node.subscribe("/imu/zeroed_imu", 100, &NodeCTX::imu_callback, &ctx);
 
     // ROS service clients (setting the CANdle)
-    ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour");
-    ros::ServiceClient animation_client = node.serviceClient<candle_controller_msgs::Animation>("/frcrobot_jetson/candle_controller/animation");
-    ros::ServiceClient brightness_client = node.serviceClient<candle_controller_msgs::Brightness>("/frcrobot_jetson/candle_controller/brightness");
+    ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour", false);
+    ros::ServiceClient animation_client = node.serviceClient<candle_controller_msgs::Animation>("/frcrobot_jetson/candle_controller/animation", false);
+    ros::ServiceClient brightness_client = node.serviceClient<candle_controller_msgs::Brightness>("/frcrobot_jetson/candle_controller/brightness", false);
 
     // Wait for the CANdle services to start
     colour_client.waitForExistence();
     animation_client.waitForExistence();
+    brightness_client.waitForExistence();
 
     // Clear the CANdle LEDs
     candle_controller_msgs::Colour clear_req;
@@ -139,8 +143,25 @@ int main(int argc, char **argv) {
             candle_controller_msgs::Colour colour_req;
             colour_req.request.start = 0;
             colour_req.request.count = MAX_LED;
+
+            candle_controller_msgs::Colour imu_colour_req;
+            imu_colour_req.request.start = 0;
+            imu_colour_req.request.count = 4;
+            imu_colour_req.request.red = ctx.imu_zeroed ? 0 : 128;
+            imu_colour_req.request.green = ctx.imu_zeroed ? 128 : 0;
+            imu_colour_req.request.blue = 0;
+
             if (ctx.auto_mode <= 3) {
                 // up (placing autos)
+                ros::Duration(0.25).sleep();
+
+                if (colour_client.call(imu_colour_req)) {
+                    ROS_INFO_STREAM("Updated LEDs imu zero");
+                    ctx.updated = false;
+                } else {
+                    ROS_ERROR_STREAM("Failed to update LEDs");
+                }
+
                 candle_controller_msgs::Animation animation_req;
                 animation_req.request.animation_type = animation_req.request.ANIMATION_TYPE_RAINBOW;
                 animation_req.request.brightness = 1.0;
@@ -148,7 +169,7 @@ int main(int argc, char **argv) {
                 animation_req.request.start = 0;
                 animation_req.request.count = MAX_LED;
                 if (animation_client.call(animation_req)) {
-                    ROS_INFO_STREAM("Updated LEDs");
+                    ROS_INFO_STREAM("Updated LEDs rainbow");
                     ctx.updated = false;
                 } else {
                     ROS_ERROR_STREAM("Failed to update LEDs");
@@ -156,11 +177,20 @@ int main(int argc, char **argv) {
             }
             else if (ctx.auto_mode <= 6) {
                 // middle (engage/drive back)
-                colour_req.request.red = 255;
-                colour_req.request.green = 255;
-                colour_req.request.blue = 255;
+                colour_req.request.red = 128;
+                colour_req.request.green = 128;
+                colour_req.request.blue = 128;
                 if (colour_client.call(colour_req)) {
-                    ROS_INFO_STREAM("Updated LEDs");
+                    ROS_INFO_STREAM("Updated LEDs white");
+                    ctx.updated = false;
+                } else {
+                    ROS_ERROR_STREAM("Failed to update LEDs");
+                }
+
+                ros::Duration(0.25).sleep();
+
+                if (colour_client.call(imu_colour_req)) {
+                    ROS_INFO_STREAM("Updated LEDs imu zero");
                     ctx.updated = false;
                 } else {
                     ROS_ERROR_STREAM("Failed to update LEDs");
@@ -172,23 +202,20 @@ int main(int argc, char **argv) {
                 colour_req.request.green = 128;
                 colour_req.request.blue = 0;
                 if (colour_client.call(colour_req)) {
-                    ROS_INFO_STREAM("Updated LEDs");
+                    ROS_INFO_STREAM("Updated LEDs orange");
                     ctx.updated = false;
                 } else {
                     ROS_ERROR_STREAM("Failed to update LEDs");
                 }
-            }
 
-            colour_req.request.start = 0;
-            colour_req.request.count = 4;
-            colour_req.request.red = ctx.imu_zeroed ? 0 : 128;
-            colour_req.request.green = ctx.imu_zeroed ? 128 : 0;
-            colour_req.request.blue = 0;
-            if (colour_client.call(colour_req)) {
-                ROS_INFO_STREAM("Updated LEDs");
-                ctx.updated = false;
-            } else {
-                ROS_ERROR_STREAM("Failed to update LEDs");
+                ros::Duration(0.25).sleep();
+
+                if (colour_client.call(imu_colour_req)) {
+                    ROS_INFO_STREAM("Updated LEDs imu zero");
+                    ctx.updated = false;
+                } else {
+                    ROS_ERROR_STREAM("Failed to update LEDs");
+                }
             }
         }
         // Robot alliance colour changed
