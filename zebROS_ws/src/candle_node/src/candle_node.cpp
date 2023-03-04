@@ -5,7 +5,9 @@
 #include <frc_msgs/MatchSpecificData.h>
 #include <frc_msgs/ButtonBoxState2023.h>
 #include <behavior_actions/AutoMode.h>
-//#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/Imu.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 constexpr uint8_t MAX_LED = 34;
 constexpr uint8_t MID_START = 0;
@@ -22,7 +24,8 @@ struct NodeCTX {
     bool updated;
     bool disabled;
     uint8_t auto_mode;
-    double imu_angle;
+    double imu_tolerance{M_PI/6.0};
+    bool imu_zeroed;
 
 
     NodeCTX() :
@@ -70,6 +73,27 @@ struct NodeCTX {
         }
     }
 
+    double getYaw(const geometry_msgs::Quaternion &o) {
+        tf2::Quaternion q;
+        tf2::fromMsg(o, q);
+        tf2::Matrix3x3 m(q);
+        double r, p, y;
+        m.getRPY(r, p, y);
+        return y;
+    }
+
+    void imu_callback(const sensor_msgs::ImuConstPtr& msg) {
+        double imu_angle = getYaw(msg->orientation);
+        bool imu_zero_new = false;
+        if (fabs(imu_angle - M_PI) < imu_tolerance || fabs(imu_angle - 0) < imu_tolerance) {
+            imu_zero_new = true;
+        }
+        if (imu_zeroed != imu_zero_new) {
+            this->updated = true;
+            this->imu_zeroed = imu_zero_new;
+        }
+    }
+
 };
 
 int main(int argc, char **argv) {
@@ -83,6 +107,7 @@ int main(int argc, char **argv) {
     ros::Subscriber team_colour_subscriber = node.subscribe("/frcrobot_rio/match_data", 0, &NodeCTX::team_colour_callback, &ctx);
     ros::Subscriber button_box_subscriber = node.subscribe("/frcrobot_rio/button_box_states", 100, &NodeCTX::button_box_callback, &ctx);
     ros::Subscriber auto_mode_subscriber = node.subscribe("/auto/auto_mode", 100, &NodeCTX::auto_mode_callback, &ctx);
+    ros::Subscriber imu_subscriber = node.subscribe("/imu/zeroed_imu", 100, &NodeCTX::imu_callback, &ctx);
 
     // ROS service clients (setting the CANdle)
     ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour");
@@ -152,6 +177,18 @@ int main(int argc, char **argv) {
                 } else {
                     ROS_ERROR_STREAM("Failed to update LEDs");
                 }
+            }
+
+            colour_req.request.start = 0;
+            colour_req.request.count = 4;
+            colour_req.request.red = ctx.imu_zeroed ? 0 : 128;
+            colour_req.request.green = ctx.imu_zeroed ? 128 : 0;
+            colour_req.request.blue = 0;
+            if (colour_client.call(colour_req)) {
+                ROS_INFO_STREAM("Updated LEDs");
+                ctx.updated = false;
+            } else {
+                ROS_ERROR_STREAM("Failed to update LEDs");
             }
         }
         // Robot alliance colour changed
