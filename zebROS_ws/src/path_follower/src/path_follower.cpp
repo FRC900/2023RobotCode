@@ -149,7 +149,7 @@ geometry_msgs::Pose PathFollower::run(double &total_distance_travelled, int &cur
 	ROS_INFO_STREAM("now coordinates: " << now_index << " (" << now_x << ", " << now_y << ", " << now_orientation << ")");
 
 	// Convert back to quaternion
-	tf2::Quaternion q_final_tf = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_orientation));
+	tf2::Quaternion q_final_tf = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_orientation)); // this may be ypr instead of rpy
 	geometry_msgs::Quaternion q_final = tf2::toMsg(q_final_tf);
 
 	// Return Pose of target position

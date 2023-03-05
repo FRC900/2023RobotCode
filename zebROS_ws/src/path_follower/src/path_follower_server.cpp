@@ -75,8 +75,10 @@ class PathAction
 			, use_odom_orientation_(use_odom_orientation)
 			, use_pose_for_odom_(use_pose_for_odom)
 		{
+			ROS_INFO_STREAM("use odom orientation = " << use_odom_orientation_);
 			if (!use_odom_orientation_)
 			{
+				ROS_INFO_STREAM("Subscribing");
 				yaw_sub_ = nh_.subscribe("/imu/zeroed_imu", 1, &PathAction::yawCallback, this);
 			}
 
@@ -105,9 +107,9 @@ class PathAction
 			}
 		}
 
-		void yawCallback(const sensor_msgs::Imu &yaw_msg)
+		void yawCallback(const sensor_msgs::ImuConstPtr &yaw_msg)
 		{
-			orientation_ = yaw_msg.orientation;
+			orientation_ = yaw_msg->orientation;
 		}
 
 		bool addAxis(const AlignActionAxisConfig &axis_config)
@@ -244,6 +246,7 @@ class PathAction
 
 				ROS_INFO_STREAM("Before transform: next_waypoint = (" << next_waypoint.position.x << ", " << next_waypoint.position.y << ", " << path_follower_.getYaw(next_waypoint.orientation) << ")");
 				tf2::doTransform(next_waypoint, next_waypoint, odom_to_base_link_tf);
+				ROS_INFO_STREAM("transform yaw is " << odom_to_base_link_tf.transform.rotation);
 				ROS_INFO_STREAM("After transform: next_waypoint = (" << next_waypoint.position.x << ", " << next_waypoint.position.y << ", " << path_follower_.getYaw(next_waypoint.orientation) << ")");
 
 				enable_msg.data = true;
