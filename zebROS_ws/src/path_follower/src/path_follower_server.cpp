@@ -152,6 +152,9 @@ class PathAction
 			// Spin once to get the most up to date odom and yaw info
 			ros::spinOnce();
 
+			double imu_angle = path_follower_.getYaw(orientation_);
+			auto imu_quat = orientation_;
+
 			// Since paths are robot-centric, the initial odom value is 0,0,0 for the path.
 			// Set this up as a transfrom to apply to each point in the path. This has the
 			// effect of changing robot centric coordinates into odom-centric coordinates
@@ -167,7 +170,7 @@ class PathAction
 			}
 			else
 			{
-				odom_to_base_link_tf.transform.rotation = orientation_;
+				odom_to_base_link_tf.transform.rotation.w = 1.0;
 			}
 			//ros::message_operations::Printer< ::geometry_msgs::TransformStamped_<std::allocator<void>> >::stream(std::cout, "", odom_to_base_link_tf);
 
@@ -215,14 +218,16 @@ class PathAction
 				// with the orientiation from that separate topic here
 				if (!use_odom_orientation_)
 				{
-					odom_.pose.pose.orientation = orientation_;
+					tf2::Quaternion q;
+					q.setRPY(0, 0, path_follower_.getYaw(orientation_) - imu_angle);
+					odom_.pose.pose.orientation = tf2::toMsg(q);
 				}
 				// This gets the point closest to current time plus lookahead distance
 				// on the path. We use this to generate a target for the x,y,orientation
 				ROS_INFO_STREAM("----------------------------------------------");
 				ROS_INFO_STREAM("current_position = " << odom_.pose.pose.position.x
 					<< " " << odom_.pose.pose.position.y
-					<< " " << path_follower_.getYaw(odom_.pose.pose.orientation));	// PID controllers.
+					<< " " << path_follower_.getYaw(odom_.pose.pose.orientation) - imu_angle);	// PID controllers.
 
 				geometry_msgs::Pose next_waypoint = path_follower_.run(distance_travelled, current_index);
 
@@ -244,10 +249,10 @@ class PathAction
 				feedback.percent_next_waypoint = double((current_index - lowidx)) / waypoint_size;
 				as_.publishFeedback(feedback);
 
-				ROS_INFO_STREAM("Before transform: next_waypoint = (" << next_waypoint.position.x << ", " << next_waypoint.position.y << ", " << path_follower_.getYaw(next_waypoint.orientation) << ")");
+				ROS_INFO_STREAM("Before transform: next_waypoint = (" << next_waypoint.position.x << ", " << next_waypoint.position.y << ", " << path_follower_.getYaw(next_waypoint.orientation) - imu_angle << ")");
 				tf2::doTransform(next_waypoint, next_waypoint, odom_to_base_link_tf);
 				ROS_INFO_STREAM("transform yaw is " << odom_to_base_link_tf.transform.rotation);
-				ROS_INFO_STREAM("After transform: next_waypoint = (" << next_waypoint.position.x << ", " << next_waypoint.position.y << ", " << path_follower_.getYaw(next_waypoint.orientation) << ")");
+				ROS_INFO_STREAM("After transform: next_waypoint = (" << next_waypoint.position.x << ", " << next_waypoint.position.y << ", " << path_follower_.getYaw(next_waypoint.orientation) - imu_angle << ")");
 
 				enable_msg.data = true;
 				combine_cmd_vel_pub_.publish(enable_msg);
@@ -261,7 +266,7 @@ class PathAction
 				y_axis.setEnable(true);
 				y_axis.setCommand(next_waypoint.position.y);
 
-				command_msg.data = path_follower_.getYaw(next_waypoint.orientation);
+				command_msg.data = path_follower_.getYaw(next_waypoint.orientation) + imu_angle;
 				if (std::isfinite(command_msg.data))
 				{
 					orientation_command_pub_.publish(command_msg);
@@ -278,7 +283,7 @@ class PathAction
 					timed_out = true;
 				}
 
-				const double orientation_state = path_follower_.getYaw(odom_.pose.pose.orientation);
+				const double orientation_state = path_follower_.getYaw(odom_.pose.pose.orientation) - imu_angle;
 				//ROS_INFO_STREAM("orientation_state = " << orientation_state);
 
 				if ((fabs(final_pose_transformed.position.x - odom_.pose.pose.position.x) < final_pos_tol_) &&
