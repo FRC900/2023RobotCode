@@ -67,4 +67,6 @@
 - git:
     local-name: zed-ros-wrapper
     uri: https://github.com/FRC900/zed-ros-wrapper.git
-
+- git:
+    local-name: topico
+    uri: https://github.com/AIS-Bonn/TopiCo.git
