@@ -46,10 +46,10 @@ optimization_counter_max: 100
 regularization_lambda: 0.0025
 
 # how far robot can diverge from straight-line path between waypoints (meters)
-path_distance_limit: 1.0
+path_distance_limit: 0.01
 
 # Max robot translational velocity (meters/sec)
-max_vel: 1.25
+max_vel: 4.0
 
 # Maximum robot linear acceleration (meters/sec^2)
 max_linear_acc: 3.0
