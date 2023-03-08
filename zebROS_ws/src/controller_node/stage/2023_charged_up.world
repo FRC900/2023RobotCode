@@ -50,7 +50,7 @@ window
 floorplan
 (
   name "charged_up_field"
-  bitmap "../maps/charged_up_field.png"
+  bitmap "../maps/charged_up_field_no_lexan.png"
   size [16.525875 8.028877135 1.000] #[24.6888 33.5274 4] x, y, size of the map (meters)
   pose [ 8.2629375  4.0144385675  0.000 0.000 ] #[  4.1148 8.5341  0.0 0.0 ] x, y, z, rotation
 )
@@ -59,7 +59,7 @@ floorplan
 omnidir_robot
 (
   # Everything but slalom
-  pose [ 1.88 0.519 0.000 180.0 ]
+  pose [ 1.88 4.989 0.000 180.0 ]
   # Slalom pose [ 1.0414 .762 0.0 0.0 ]
   name "robot"
 )
