@@ -49,6 +49,10 @@ protected:
 	double small_speed_; // for holding cube/cone in
 
 	double minimum_current_time_;
+	double minimum_fourbar_extension_;
+
+	double fourbar_cur_position_;
+	size_t fourbar_idx;
 
 	actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action> path_ac_;
 
@@ -122,6 +126,25 @@ public:
 		else {
 			ROS_ERROR_STREAM("2023_intaking_server : Can not find talon with name = elevator_leader");
 		}
+
+		if (fourbar_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
+		{
+			for (size_t i = 0; i < talon_state.name.size(); i++)
+			{
+				if (talon_state.name[i] == "four_bar")
+				{
+					fourbar_idx = i;
+					break;
+				}
+			}
+		}
+		if (!(fourbar_idx == std::numeric_limits<size_t>::max()))
+		{
+			fourbar_cur_position_ = talon_state.position[fourbar_idx];
+		}
+		else {
+			ROS_ERROR_STREAM("2023_intaking_server : Can not find talon with name = four_bar");
+		}
 	}
 
 	IntakingServer2023(std::string name) :
@@ -136,6 +159,7 @@ public:
 	{
 		elevator_idx = std::numeric_limits<size_t>::max();
 		intake_idx = std::numeric_limits<size_t>::max();
+		fourbar_idx = std::numeric_limits<size_t>::max();
 		talon_states_sub_ = nh_.subscribe("/frcrobot_jetson/talon_states", 1, &IntakingServer2023::talonStateCallback, this);
 		game_piece_state_.game_piece = game_piece_state_.NONE; // default to no game piece
 
@@ -158,6 +182,12 @@ public:
 		if (!nh_.getParam("path_zero_timeout", path_zero_timeout_))
 		{
 			ROS_ERROR_STREAM("2023_intaking_server : could not find path_zero_timeout");
+			return;
+		}
+
+		if (!nh_.getParam("minimum_fourbar_extension", minimum_fourbar_extension_))
+		{
+			ROS_ERROR_STREAM("2023_intaking_server : could not find minimum_fourbar_extension");
 			return;
 		}
 
@@ -227,6 +257,7 @@ public:
 			ddr_.registerVariable<double>("cube_outtake_speed", &cube_outtake_speed_, "Cube outtake speed (percent output)", 0, 1);
 			ddr_.registerVariable<double>("intake_small_speed", &small_speed_, "Intake small speed for holding game piece in (percent output)", 0, 1);
 			ddr_.registerVariable<double>("minimum_current_time", &minimum_current_time_, "Time current spiking before retracting intake", 0, 1);
+			ddr_.registerVariable<double>("minimum_fourbar_extension", &minimum_fourbar_extension_, "Amount four bar must be extended before checking for current", 0, 1);
 		}
 
 		ddr_.publishServicesTopics();
@@ -306,7 +337,7 @@ public:
 		while (true) {
 			ros::spinOnce();
 			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for game piece... current = " << current_current_ << ", threshold = " << current_threshold_);
-			if (current_current_ > current_threshold_) {
+			if (current_current_ > current_threshold_ && fourbar_cur_position_ > minimum_fourbar_extension_) {
 				if (last_sample_above == ros::TIME_MAX) {
 					last_sample_above = ros::Time::now();
 				}
@@ -321,7 +352,7 @@ public:
 			}
 			if (as_.isPreemptRequested() || !ros::ok()) {
 				ROS_INFO_STREAM("2023_intaking_server : preempted.");
-				if (current_current_ > current_threshold_) {
+				if (current_current_ > current_threshold_ && fourbar_cur_position_ > minimum_fourbar_extension_) {
 					current_exceeded = true;
 					got_game_piece = true;
 					// in case we preempt before minimum_current_time_, use the non-debounced current
