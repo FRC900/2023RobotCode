@@ -248,7 +248,10 @@ public:
 			return;
 		}
 
-		ros::Rate r(10);
+		path_ac_.cancelAllGoals(); // cancel all goals before sending the new one
+		// (we don't want anything else controlling the elevator/fourbar when intaking)
+
+		ros::Rate r(50);
 
 		bool elevator_is_ok = elev_pos_ < 0.2;
 		ROS_INFO_STREAM("pos is  " << elev_pos_ << (elevator_is_ok ? " ok" : " no"));
@@ -298,17 +301,19 @@ public:
 		ros::Time last_sample_above = ros::TIME_MAX;
 
 		bool current_exceeded = false;
+		bool got_game_piece = false;
 
 		while (true) {
 			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for intaking... current = " << current_current_ << ", threshold = " << current_threshold_);
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for game piece... current = " << current_current_ << ", threshold = " << current_threshold_);
 			if (current_current_ > current_threshold_) {
 				if (last_sample_above == ros::TIME_MAX) {
 					last_sample_above = ros::Time::now();
 				}
-				if (ros::Time::now() - last_sample_above > ros::Duration(minimum_current_time_)) {
-					ROS_INFO_STREAM("2023_intaking_server : current limit hit for > " << minimum_current_time_ << " seconds! Retracting intake!");
+				if (ros::Time::now() - last_sample_above >= ros::Duration(minimum_current_time_)) {
+					ROS_INFO_STREAM("2023_intaking_server : current limit hit for >= " << minimum_current_time_ << " seconds! Retracting intake!");
 					current_exceeded = true;
+					got_game_piece = true; // to the best of our knowledge
 					break;
 				}
 			} else {
@@ -316,12 +321,22 @@ public:
 			}
 			if (as_.isPreemptRequested() || !ros::ok()) {
 				ROS_INFO_STREAM("2023_intaking_server : preempted.");
+				if (current_current_ > current_threshold_) {
+					current_exceeded = true;
+					got_game_piece = true;
+					// in case we preempt before minimum_current_time_, use the non-debounced current
+					ROS_INFO_STREAM("2023_intaking_server : still hit current limit, running rollers");
+				} else {
+					ROS_WARN_STREAM("2023_intaking_server : no game piece detected, not running at small speed");
+				}
 
 				as_.setPreempted(result_);
 				break;
 			}
 			r.sleep();
 		}
+
+		ros::Time done = ros::Time::now();
 
 		feedback_.status = feedback_.INTAKE;
 		as_.publishFeedback(feedback_);
@@ -343,20 +358,22 @@ public:
 			}
 		}
 
-		percent_out.data = small_speed_;
+		// if got_game_piece is false, then don't run the rollers
+		// so make sure to set the current limit correctly so we don't drop things
+		percent_out.data = got_game_piece ? small_speed_ : 0.0;
 		make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
 
 		ros::Duration(time_before_reverse_).sleep();
 		
-		// move back to holding position
+		// move back to holding position (basically zero so it's fine if we do this without a game piece)
 
 		pathGoal.reverse = true;
 
 		feedback_.status = feedback_.PATHER;
 		as_.publishFeedback(feedback_);
 
-		path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-		path_ac_.sendGoal(pathGoal);
+		path_ac_.cancelGoalsAtAndBeforeTime(done); // cancel old
+		path_ac_.sendGoal(pathGoal); // send new
 
 		ros::Time start = ros::Time::now();
 		while (!path_ac_.getState().isDone()) {
