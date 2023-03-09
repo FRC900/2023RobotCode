@@ -638,7 +638,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				center_srv.request.y = 0;
 				if (!setCenterSrv.call(center_srv)) {
 					ROS_ERROR_STREAM("Unable to set center of rotation to ZERO, BIG PROBLEMS=============");
-					ROS_ERROR_STREAM("Unable to set center of rotation to ZERO, BIG PROBLEMS=============");
 				} else {
 					ROS_INFO_STREAM("Set center of rotation to zero");
 				}
@@ -675,7 +674,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				center_srv.request.x = 0;
 				center_srv.request.y = 0;
 				if (!setCenterSrv.call(center_srv)) {
-					ROS_ERROR_STREAM("Unable to set center of rotation to ZERO, BIG PROBLEMS=============");
 					ROS_ERROR_STREAM("Unable to set center of rotation to ZERO, BIG PROBLEMS=============");
 				} else {
 					ROS_INFO_STREAM("Set center of rotation to zero");

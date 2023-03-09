@@ -323,11 +323,11 @@ public:
 
 		path_ac_.sendGoal(pathGoal);
 
+		ros::Duration(0.25).sleep();
+
 		std_msgs::Float64 percent_out;
 		percent_out.data = speed_;
 		make_sure_publish(intake_pub_, percent_out); // replace with service based JointPositionController once we write it
-
-		ros::Duration(0.25).sleep();
 
 		ros::Time last_sample_above = ros::TIME_MAX;
 
@@ -375,18 +375,12 @@ public:
 		if (game_piece_state_.game_piece == behavior_actions::GamePieceState2023::CUBE || current_exceeded) {
 			ROS_INFO_STREAM("2023_intaking_server : " << (current_exceeded ? "current exceeded" : "cube detected") << ", waiting " << cube_time_ << " seconds");
 			ros::Time start = ros::Time::now();
-			while (ros::Time::now() - start < ros::Duration(cube_time_)) {
-				ros::spinOnce();
-				r.sleep();
-			}
+			ros::Duration(cube_time_).sleep();
 		}
 		else {
 			ROS_INFO_STREAM("2023_intaking_server : cone detected, waiting " << cone_time_ << " seconds");
 			ros::Time start = ros::Time::now();
-			while (ros::Time::now() - start < ros::Duration(cone_time_)) {
-				ros::spinOnce();
-				r.sleep();
-			}
+			ros::Duration(cone_time_).sleep();
 		}
 
 		// if got_game_piece is false, then don't run the rollers
