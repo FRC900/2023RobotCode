@@ -75,6 +75,24 @@ class TeleopCmdVel
 			rotation_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
 		}
 		
+		bool inForwardBackDeadzone(const frc_msgs::JoystickState &event, const double &navX_angle, const ConfigT &config) {
+			// Raw joystick values for X & Y translation
+			const double leftStickX = event.rightStickX;
+			const double leftStickY = event.rightStickY;
+			//ROS_INFO_STREAM(__LINE__ << " x:"  << leftStickX << " y:" << leftStickY);
+
+			// Convert to polar coordinates
+			double direction = atan2(leftStickY, leftStickX);
+			direction = angles::normalize_angle_positive(direction);
+			using angles::from_degrees;
+			if ((   from_degrees(45) <= direction && direction <= from_degrees(135)) 
+			     || from_degrees(225) <= direction && direction <= from_degrees(315)) 
+			{
+				return true;
+			}
+			return false;
+		}
+
 		// want normal rotation in teleop
 		geometry_msgs::Twist generateCmdVel(const frc_msgs::JoystickState &event, const double &navX_angle, const ConfigT &config)
 		{
