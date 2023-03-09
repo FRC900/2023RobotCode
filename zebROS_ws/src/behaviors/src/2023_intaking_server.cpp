@@ -336,7 +336,7 @@ public:
 
 		while (true) {
 			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for game piece... current = " << current_current_ << ", threshold = " << current_threshold_);
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_intaking_server : waiting for game piece... current = " << current_current_ << ", threshold = " << current_threshold_ << ", path state = " << path_ac_.getState().getText());
 			if (current_current_ > current_threshold_ && fourbar_cur_position_ > minimum_fourbar_extension_) {
 				if (last_sample_above == ros::TIME_MAX) {
 					last_sample_above = ros::Time::now();
