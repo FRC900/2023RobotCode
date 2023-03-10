@@ -15,11 +15,11 @@
     <arg name="camera_name"          value="$(arg zed_name)" />
     <arg name="camera_model"         value="$(arg camera_model)" />
     <arg name="base_frame"           value="base_link" />
-    <arg name="cam_pos_x"            value="0.152" />
-    <arg name="cam_pos_y"            value="-0.224" />
-    <arg name="cam_pos_z"            value="0.802" />
+    <arg name="cam_pos_x"            value="0.2665" />
+    <arg name="cam_pos_y"            value="0.0" />
+    <arg name="cam_pos_z"            value="0.4917" />
     <arg name="cam_roll"             value="0.0" />
-	  <arg name="cam_pitch"            value="0.681" />
+	  <arg name="cam_pitch"            value="-0.052359" />
     <arg name="cam_yaw"              value="0.0" />
   </include>
 

@@ -267,7 +267,11 @@ public:
 
     behavior_actions::PathToAprilTagGoal aprilGoal;
     aprilGoal.id = closestId;
+<<<<<<< HEAD
     aprilGoal.tagRotation = M_PI;
+=======
+    aprilGoal.tagRotation = 0;
+>>>>>>> 57b18f1e (align to grid, also launch files for 2023 on 2022)
     aprilGoal.offset = pose;
     aprilGoal.frame_id = "front_bumper";
 
