@@ -230,7 +230,7 @@ public:
 
     behavior_actions::PathToAprilTagGoal aprilGoal;
     aprilGoal.id = closestId;
-    aprilGoal.tagRotation = 0;
+    aprilGoal.tagRotation = M_PI;
     aprilGoal.offset = pose;
     aprilGoal.frame_id = "front_bumper";
 
