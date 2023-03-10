@@ -65,7 +65,7 @@ public:
 	}
 
 	template<class C, class S>
-	bool waitForResultAndCheckForPreempt(const ros::Duration & timeout, actionlib::SimpleActionClient<C> & ac, actionlib::SimpleActionServer<S> & as, bool preempt_at_timeout = false)
+	bool waitForResultAndCheckForPreempt(const ros::Duration & timeout, actionlib::SimpleActionClient<C> & ac, actionlib::SimpleActionServer<S> & as, bool preempt_at_timeout = false, boost::function<bool()> should_exit = [](){return false;})
 	{
 		bool negative_timeout = false;
 		if (timeout < ros::Duration(0, 0)) {
@@ -92,6 +92,10 @@ public:
 
 			if (ac.getState().isDone()) {
 				break;
+			}
+
+			if (should_exit()) {
+				return true;
 			}
 			r.sleep();
 		}
@@ -211,9 +215,14 @@ public:
 
 			ROS_INFO_STREAM("2023_placing_server : holding position, y = " << hold_position_goal_.pose.position.y);
 
-			ac_hold_position_.sendGoal(hold_position_goal_);
+			bool aligned = false;
 
-			if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_hold_position_, as_)) {
+			ac_hold_position_.sendGoal(hold_position_goal_, actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>::SimpleDoneCallback(), actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>::SimpleActiveCallback(),
+			  						    [&aligned](const path_follower_msgs::holdPositionFeedbackConstPtr &feedback){
+											aligned = feedback->isAligned;
+										});
+
+			if (!waitForResultAndCheckForPreempt(ros::Duration(-1), ac_hold_position_, as_, false, [&aligned](){return aligned;})) {
 				ROS_INFO_STREAM("2023_placing_server : hold position server timed out, aborting");
 				result_.success = false;
 				as_.setAborted(result_);
