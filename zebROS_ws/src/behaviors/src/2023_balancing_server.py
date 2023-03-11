@@ -48,8 +48,30 @@ class AutoBalancing:
         self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.Balancing2023Action,
                                                 execute_cb=self.balancing_callback, auto_start=False)
         self._as.start()
+        '''
+                        <param name="stage_1_speed" value="1" /> <!-- how fast it drives at the start -->
+                <param name="stage_2_speed" value="0.6" /> <!-- how fast it drives after stage tranistion time -->
+                <param name="stage_transition_time" value="1.25" /> <!-- how long utill stage 2 starts -->
+                <param name="minimum_drive_time_before_angle_check" value="1.0" /> <!-- checks if angle is less than 11deg, will be more than this early when we drive up the ramp, this is how long we must drive forward before that -->
+                <param name="max_drive_time_before_pid" value="2.5" /> <!-- maximum it will drive with command velocity -->
+        '''
 
-        # res = handle_param_load("imu_sub_topic")
+        res = handle_param_load("imu_sub_topic")
+        self.stage_1_speed = res if res else 1
+        
+        res = handle_param_load("stage_2_speed")
+        self.stage_2_speed = res if res else 0.6
+
+        res = handle_param_load("stage_transition_time")
+        self.stage_transition_time = res if res else 1.25
+
+        res = handle_param_load("minimum_drive_time_before_angle_check")
+        self.min_drive_t_before_check = res if res else 1.0
+
+        res = handle_param_load("max_drive_time_before_pid")
+        self.max_drive_time = res if res else 2.5
+
+
         imu_sub_topic = "/imu/zeroed_imu"
         rospy.loginfo(f"Using imu topic {imu_sub_topic}")
         
@@ -139,15 +161,16 @@ class AutoBalancing:
             self.pub_orient_command.publish(orientation_msg)
 
             if self.state == States.NO_WEELS_ON:
-                rospy.loginfo_throttle(2, "Sending cmd of 1")
                 cmd_vel_msg = geometry_msgs.msg.Twist()
                 cmd_vel_msg.angular.x = 0 # todo, tune me
                 cmd_vel_msg.angular.y = 0
                 cmd_vel_msg.angular.z = self.current_orient_effort 
                 if rospy.Time.now() - start_time >= rospy.Duration(1.25):
-                    cmd_vel_msg.linear.x = 0.6 * multipler
+                    rospy.loginfo_throttle(1, f"Using second stage speed of {self.stage_2_speed}!")
+                    cmd_vel_msg.linear.x = self.stage_2_speed * multipler
                 else:
-                    cmd_vel_msg.linear.x = 1 * multipler
+                    cmd_vel_msg.linear.x = self.stage_1_speed * multipler
+                    rospy.loginfo_throttle(2, f"Sending cmd of {self.stage_1_speed}")
                 cmd_vel_msg.linear.y = 0
                 cmd_vel_msg.linear.z = 0
                 self.pub_cmd_vel.publish(cmd_vel_msg)
@@ -155,8 +178,8 @@ class AutoBalancing:
                 r.sleep()
 
 
-                if rospy.Time.now() - start_time >= rospy.Duration(2.5) or (abs(self.current_pitch) <= math.radians(10.82) and rospy.Time.now() - start_time >= rospy.Duration(1)):
-                    if (rospy.Time.now() - start_time >= rospy.Duration(2.5)):
+                if rospy.Time.now() - start_time >= rospy.Duration(self.max_drive_time) or (abs(self.current_pitch) <= math.radians(10.82) and rospy.Time.now() - start_time >= rospy.Duration(self.min_drive_t_before_check)):
+                    if (rospy.Time.now() - start_time >= rospy.Duration(self.max_drive_time)):
                         rospy.logwarn("2 seconds of driving")
                     else:
                         rospy.logwarn("Angle change2")
@@ -165,13 +188,11 @@ class AutoBalancing:
                     cmd_vel_msg.angular.x = 0 # todo, tune me
                     cmd_vel_msg.angular.y = 0
                     cmd_vel_msg.angular.z = self.current_orient_effort 
-                    cmd_vel_msg.linear.x = 0.05 * multipler
+                    cmd_vel_msg.linear.x = 0.01 * multipler
                     cmd_vel_msg.linear.y = 0
                     cmd_vel_msg.linear.z = 0
                     self.pub_cmd_vel.publish(cmd_vel_msg)
-                    self.state = States.ONE_WHEEL_ON_CENTER
-                    rospy.sleep(0.25)
-            
+                    self.state = States.ONE_WHEEL_ON_CENTER            
              
             if self.state == States.ONE_WHEEL_ON_CENTER:
                 rospy.logwarn("Sending pid")
