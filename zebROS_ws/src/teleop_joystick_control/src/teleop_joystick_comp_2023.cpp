@@ -34,6 +34,7 @@
 #include <behavior_actions/Placing2023Action.h>
 #include <behavior_actions/FourbarElevatorPath2023Action.h>
 #include <talon_swerve_drive_controller/SetXY.h>
+#include <behavior_actions/AlignToGrid2023Action.h>
 
 struct DynamicReconfigVars
 {
@@ -114,11 +115,14 @@ uint8_t autoMode() {
 	return auto_mode * 3 + auto_starting_pos;
 }
 
+uint8_t alliance_color{};
+
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 {
 	// TODO : if in diagnostic mode, zero all outputs on the
 	// transition from enabled to disabled
 	robot_is_disabled = msg.Disabled;
+	alliance_color = msg.allianceColor;
 }
 
 ros::ServiceClient snapConeCubeSrv;
@@ -187,6 +191,7 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 bool sendRobotZero = false;
 bool sendSetAngle = false;
 double old_angular_z = 0.0;
+bool use_pathing = false;
 
 bool moved = false;
 
@@ -211,26 +216,18 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 	if(button_box.lockingSwitchPress)
 	{
-		// // Clear out pressed state when switching modes
-		// // so that the press will be seen by the new mode
-		// joystick1_left_trigger_pressed = false;
-		// joystick1_right_trigger_pressed = false;
-		// zero_all_diag_commands();
-		//
-		// diagnostics_mode = true;
-		// robot_orientation_driver->stopRotation();
-		// ROS_WARN_STREAM("Enabling diagnostics mode!");
-
-		//teleop_cmd_vel->setRobotOrient(true, 0.0);
-		//ROS_WARN_STREAM("Robot relative mode!");
 	}
 
 	if(button_box.lockingSwitchButton)
 	{
+		use_pathing = true;
 	}
 	else
 	{
+		use_pathing = false;
 	}
+	ROS_INFO_STREAM_THROTTLE(2, "Use pathing = " << use_pathing);
+	ROS_INFO_STREAM_THROTTLE(2, "Alliance color = " << alliance_color);
 
 	if(button_box.lockingSwitchRelease)
 	{
@@ -290,8 +287,14 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectConeLeftButton) {
 	}
 	if(button_box.gridSelectConeLeftPress) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
-		place();
+		if (use_pathing) {
+
+		}
+		else {
+			game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+			place();
+		}
+
 		// slow mode
 	}
 	if(button_box.gridSelectConeLeftRelease) {
@@ -300,9 +303,13 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectCubeButton) {
 	}
 	if(button_box.gridSelectCubePress) {
-		game_piece = behavior_actions::Placing2023Goal::CUBE;
-		place();
-		// slow mode
+		if (use_pathing) {
+
+		}
+		else {
+			game_piece = behavior_actions::Placing2023Goal::CUBE;
+			place();
+		} 
 	}
 	if(button_box.gridSelectCubeRelease) {
 	}
@@ -310,8 +317,30 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectConeRightButton) {
 	}
 	if(button_box.gridSelectConeRightPress) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
-		place();
+		if (use_pathing) {
+			behavior_actions::AlignToGrid2023ActionGoal align_goal;
+			align_goal.goal.alliance = alliance_color;
+			int to_add = 0;
+			if (button_box.heightSelectSwitchLeftButton) {
+				to_add = 1;
+			}
+			else if (button_box.heightSelectSwitchRightButton) {
+				to_add = 3;
+			}
+			// middle
+			else if (left_right_switch_mid) {
+				to_add = 2;
+			}
+			else {
+				ROS_ERROR_STREAM_THROTTLE(1, "Could not determine which grid to align to!, Aborting");
+			}
+			align_goal.goal.grid_id = 6 + to_add; 
+			
+		}
+		else {
+			game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+			place();
+		}
 		// slow mode
 	}
 	if(button_box.gridSelectConeRightRelease) {
@@ -1173,6 +1202,7 @@ int main(int argc, char **argv)
 	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
 	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
 	pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
+	// align_to_goal_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignToGrid>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
 
 	const ros::Duration startup_wait_time_secs(15);
 	const ros::Time startup_start_time = ros::Time::now();
