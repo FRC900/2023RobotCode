@@ -167,6 +167,13 @@ public:
 				as_.setAborted(result_);
 				return;
 			}
+			double center_offset = game_piece_state_.offset_from_center;
+			if (isnan(center_offset)) {
+				ROS_ERROR_STREAM("2023_placing_server : game piece offset is NaN, aborting");
+				result_.success = false;
+				as_.setAborted(result_);
+				return;
+			}
 			path_follower_msgs::holdPositionGoal hold_position_goal_;
 			hold_position_goal_.pose.orientation.x = 0.0;
 			hold_position_goal_.pose.orientation.y = 0.0;
@@ -174,7 +181,7 @@ public:
 			hold_position_goal_.pose.orientation.w = 1.0;
 
 			hold_position_goal_.pose.position.x = 0.0;
-			hold_position_goal_.pose.position.y = -game_piece_state_.offset_from_center;
+			hold_position_goal_.pose.position.y = -center_offset;
 			hold_position_goal_.pose.position.z = 0.0;
 
 			hold_position_goal_.isAbsoluteCoord = false;
