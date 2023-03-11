@@ -1,0 +1,29 @@
+# goal
+uint8 HYBRID=0
+uint8 MID=1
+uint8 HIGH=2
+uint8 node
+
+uint8 CUBE=0
+uint8 VERTICAL_CONE=1
+uint8 BASE_TOWARDS_US_CONE=2 
+uint8 BASE_AWAY_US_CONE=3
+uint8 piece
+
+uint8 grid_id
+uint8 BLUE=0
+uint8 RED=1
+uint8 alliance
+
+bool auto_place # will place after and retract
+
+bool place_and_retract
+float64 percent_to_extend # if percent along path is greater than this, start moving the elevator and fourbar up
+# what to do
+string path # see config file for names
+---
+# result
+bool success
+bool timed_out
+---
+# feedback
