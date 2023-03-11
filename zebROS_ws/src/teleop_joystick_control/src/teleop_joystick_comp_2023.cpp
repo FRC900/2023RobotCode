@@ -194,7 +194,7 @@ bool sendRobotZero = false;
 bool sendSetAngle = false;
 double old_angular_z = 0.0;
 bool use_pathing = false;
-
+double grid_position = 0;
 bool moved = false;
 
 void place() {
@@ -222,10 +222,12 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 	if(button_box.lockingSwitchButton)
 	{
+		ROS_INFO_STREAM_THROTTLE(1, "Use pathing = true");
 		use_pathing = true;
 	}
 	else
 	{
+		ROS_INFO_STREAM_THROTTLE(1, "Use pathing = false");
 		use_pathing = false;
 	}
 	ROS_INFO_STREAM_THROTTLE(2, "Use pathing = " << use_pathing);
@@ -257,6 +259,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		placing_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		pathing_ac->cancelAllGoals();
+		align_and_place_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 	if(button_box.redRelease) {
 	}
@@ -293,27 +296,13 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		if (use_pathing) {
 			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
 			align_goal.alliance = alliance_color;
-			int to_add = 0;
 			bool success = true;
-			if (button_box.heightSelectSwitchLeftButton) {
-				to_add = 1;
-			}
-			else if (button_box.heightSelectSwitchRightButton) {
-				to_add = 3;
-			}
-			// middle
-			else if (left_right_switch_mid) {
-				to_add = 2;
-			}
-			else {
-				ROS_ERROR_STREAM_THROTTLE(1, "Could not determine which grid to align to!, Aborting");
-				success = false;
-			}
+		
 			if (success) {
 				moved = true;
 				align_goal.auto_place = false;
-				ROS_INFO_STREAM("Sending align to goal with id " << 6 + to_add);
-				align_goal.grid_id = 6 + to_add;
+				align_goal.grid_id = 1 + grid_position;
+				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;
 				align_goal.piece = game_piece;
 				align_goal.override_game_piece = false;
@@ -323,7 +312,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			}
 		}
 		else if (moved || !use_pathing) {
-			ROS_INFO_STREAM("Placing a cube!");
+			ROS_INFO_STREAM("Placing a cone!");
 			place();
 		}
 
@@ -339,27 +328,13 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		if (use_pathing) {
 			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
 			align_goal.alliance = alliance_color;
-			int to_add = 0;
 			bool success = true;
-			if (button_box.heightSelectSwitchLeftButton) {
-				to_add = 1;
-			}
-			else if (button_box.heightSelectSwitchRightButton) {
-				to_add = 3;
-			}
-			// middle
-			else if (left_right_switch_mid) {
-				to_add = 2;
-			}
-			else {
-				ROS_ERROR_STREAM_THROTTLE(1, "Could not determine which grid to align to!, Aborting");
-				success = false;
-			}
+
 			if (success) {
 				moved = true;
 				align_goal.auto_place = false;
-				ROS_INFO_STREAM("Sending align to goal with id " << 6 + to_add);
-				align_goal.grid_id = 6 + to_add;
+				align_goal.grid_id = 2 + grid_position;
+				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;
 				align_goal.piece = game_piece;
 				align_goal.override_game_piece = false;
@@ -383,27 +358,13 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		if (use_pathing) {
 			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
 			align_goal.alliance = alliance_color;
-			int to_add = 0;
 			bool success = true;
-			if (button_box.heightSelectSwitchLeftButton) {
-				to_add = 1;
-			}
-			else if (button_box.heightSelectSwitchRightButton) {
-				to_add = 3;
-			}
-			// middle
-			else if (left_right_switch_mid) {
-				to_add = 2;
-			}
-			else {
-				ROS_ERROR_STREAM_THROTTLE(1, "Could not determine which grid to align to!, Aborting");
-				success = false;
-			}
+
 			if (success) {
 				moved = true;
 				align_goal.auto_place = false;
-				ROS_INFO_STREAM("Sending align to goal with id " << 6 + to_add);
-				align_goal.grid_id = 6 + to_add;
+				align_goal.grid_id = 3 + grid_position;
+				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;
 				align_goal.piece = game_piece;
 				align_goal.override_game_piece = false;
@@ -488,6 +449,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			auto_mode_msg.auto_mode = autoMode();
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
+		grid_position = 0;
 	}
 	if(button_box.heightSelectSwitchLeftRelease) {
 	}
@@ -505,7 +467,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
-
+		grid_position = 3;
 		left_right_switch_mid = true;
 	} else {
 		left_right_switch_mid = false;
@@ -523,6 +485,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			auto_mode_msg.auto_mode = autoMode();
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
+		grid_position = 6;
 	}
 	if(button_box.heightSelectSwitchRightRelease) {
 	}

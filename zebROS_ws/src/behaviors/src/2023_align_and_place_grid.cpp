@@ -44,7 +44,7 @@ public:
   AlignAndPlaceGridAction(std::string name) :
     as_(nh_, name, boost::bind(&AlignAndPlaceGridAction::executeCB, this, _1), false),
     action_name_(name),
-    align_to_goal_ac("/frcrobot_jetson/align_to_grid", true),
+    align_to_goal_ac("/align_to_grid", true),
     placing_ac("/placing/placing_server_2023", true),
     // /teleop/swerve_drive_controller/cmd_vel
     cmd_vel_pub_(nh_.advertise<geometry_msgs::Twist>("/teleop/swerve_drive_controller/cmd_vel", 1))
@@ -91,23 +91,26 @@ public:
     
     grid_goal.alliance = goal->alliance;
     grid_goal.grid_id = goal->grid_id; 
-    align_to_goal_ac.sendGoal(grid_goal, /* Done cb */ NULL, /*Active*/ NULL, boost::bind(&AlignAndPlaceGridAction::feedbackCB, this, _1));
-    
     ros::Rate r(10);
-    while (!align_to_goal_ac.getState().isDone()) {
-        ros::spinOnce();
-        if (as_.isPreemptRequested() || !ros::ok())
-        {
-            handle_preempt();
-            return;
+    for (int i = 0; i <= 1; ++i) {
+        align_to_goal_ac.sendGoal(grid_goal, /* Done cb */ NULL, /*Active*/ NULL, boost::bind(&AlignAndPlaceGridAction::feedbackCB, this, _1));
+        
+        while (!align_to_goal_ac.getState().isDone()) {
+            ros::spinOnce();
+            if (as_.isPreemptRequested() || !ros::ok())
+            {
+                handle_preempt();
+                return;
+            }
+            if (percent_complete_ >= goal->percent_to_extend && !started_moving_elevator) {
+                ROS_INFO_STREAM("Sending elevator!");
+                started_moving_elevator = true;
+                place(node, game_piece);
+            }
+            r.sleep();
         }
-        if (percent_complete_ >= goal->percent_to_extend && !started_moving_elevator) {
-            ROS_INFO_STREAM("Sending elevator!");
-            started_moving_elevator = true;
-            place(node, game_piece);
-        }
-        r.sleep();
     }
+
     path_finished_time = ros::Time::now();
     while (ros::Time::now() - path_finished_time < ros::Duration(1)) {
         ROS_INFO_STREAM_THROTTLE(0.4, "Green buttoning from align and place!");
