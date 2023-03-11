@@ -69,7 +69,6 @@ public:
     goal.node = node;
     goal.piece = game_piece;
     goal.override_game_piece = true;
-    goal.align_intake = false;
     goal.step = moved_ ? goal.PLACE_RETRACT : goal.MOVE;
     placing_ac.sendGoal(goal);
     moved_ = !moved_;
@@ -102,7 +101,7 @@ public:
             handle_preempt();
             return;
         }
-        if (percent_complete_ >= desired_percent_complete_ && !started_moving_elevator) {
+        if (percent_complete_ >= goal->percent_to_extend && !started_moving_elevator) {
             ROS_INFO_STREAM("Sending elevator!");
             started_moving_elevator = true;
             place(node, game_piece);

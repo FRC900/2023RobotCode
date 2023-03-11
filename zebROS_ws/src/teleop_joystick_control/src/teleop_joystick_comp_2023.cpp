@@ -34,7 +34,7 @@
 #include <behavior_actions/Placing2023Action.h>
 #include <behavior_actions/FourbarElevatorPath2023Action.h>
 #include <talon_swerve_drive_controller/SetXY.h>
-#include <behavior_actions/AlignToGrid2023Action.h>
+#include <behavior_actions/AlignAndPlaceGrid2023Action.h>
 
 struct DynamicReconfigVars
 {
@@ -169,7 +169,7 @@ std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAc
 std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
 std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
 std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToGrid2023Action>> align_to_goal_ac;
+std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
 
 
 void preemptActionlibServers(void)
@@ -289,38 +289,9 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.gridSelectConeLeftButton) {
 	}
 	if(button_box.gridSelectConeLeftPress) {
+		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
 		if (use_pathing) {
-
-		}
-		else {
-			game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
-			place();
-		}
-
-		// slow mode
-	}
-	if(button_box.gridSelectConeLeftRelease) {
-	}
-
-	if(button_box.gridSelectCubeButton) {
-	}
-	if(button_box.gridSelectCubePress) {
-		if (use_pathing) {
-
-		}
-		else {
-			game_piece = behavior_actions::Placing2023Goal::CUBE;
-			place();
-		} 
-	}
-	if(button_box.gridSelectCubeRelease) {
-	}
-
-	if(button_box.gridSelectConeRightButton) {
-	}
-	if(button_box.gridSelectConeRightPress) {
-		if (use_pathing) {
-			behavior_actions::AlignToGrid2023Goal align_goal;
+			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
 			align_goal.alliance = alliance_color;
 			int to_add = 0;
 			bool success = true;
@@ -339,13 +310,110 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				success = false;
 			}
 			if (success) {
+				moved = true;
+				align_goal.auto_place = false;
 				ROS_INFO_STREAM("Sending align to goal with id " << 6 + to_add);
-				align_goal.grid_id = 6 + to_add; 
-				align_to_goal_ac->sendGoal(align_goal);
+				align_goal.grid_id = 6 + to_add;
+				align_goal.node = node;
+				align_goal.piece = game_piece;
+				align_goal.override_game_piece = false;
+				align_goal.auto_place = false;
+				align_goal.from_Trex = false; // maybe should be true since that is what we do in auto?
+				align_and_place_ac->sendGoal(align_goal);
 			}
 		}
-		else {
-			game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+		else if (moved || !use_pathing) {
+			ROS_INFO_STREAM("Placing a cube!");
+			place();
+		}
+
+		// slow mode
+	}
+	if(button_box.gridSelectConeLeftRelease) {
+	}
+
+	if(button_box.gridSelectCubeButton) {
+	}
+	if(button_box.gridSelectCubePress) {
+		game_piece = behavior_actions::Placing2023Goal::CUBE;
+		if (use_pathing) {
+			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
+			align_goal.alliance = alliance_color;
+			int to_add = 0;
+			bool success = true;
+			if (button_box.heightSelectSwitchLeftButton) {
+				to_add = 1;
+			}
+			else if (button_box.heightSelectSwitchRightButton) {
+				to_add = 3;
+			}
+			// middle
+			else if (left_right_switch_mid) {
+				to_add = 2;
+			}
+			else {
+				ROS_ERROR_STREAM_THROTTLE(1, "Could not determine which grid to align to!, Aborting");
+				success = false;
+			}
+			if (success) {
+				moved = true;
+				align_goal.auto_place = false;
+				ROS_INFO_STREAM("Sending align to goal with id " << 6 + to_add);
+				align_goal.grid_id = 6 + to_add;
+				align_goal.node = node;
+				align_goal.piece = game_piece;
+				align_goal.override_game_piece = false;
+				align_goal.auto_place = false;
+				align_goal.from_Trex = false; // maybe should be true since that is what we do in auto?
+				align_and_place_ac->sendGoal(align_goal);
+			}
+		}
+		else if (moved || !use_pathing) {
+			ROS_INFO_STREAM("Placing a cube!");
+			place();
+		}
+	}
+	if(button_box.gridSelectCubeRelease) {
+	}
+
+	if(button_box.gridSelectConeRightButton) {
+	}
+	if(button_box.gridSelectConeRightPress) {
+		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
+		if (use_pathing) {
+			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
+			align_goal.alliance = alliance_color;
+			int to_add = 0;
+			bool success = true;
+			if (button_box.heightSelectSwitchLeftButton) {
+				to_add = 1;
+			}
+			else if (button_box.heightSelectSwitchRightButton) {
+				to_add = 3;
+			}
+			// middle
+			else if (left_right_switch_mid) {
+				to_add = 2;
+			}
+			else {
+				ROS_ERROR_STREAM_THROTTLE(1, "Could not determine which grid to align to!, Aborting");
+				success = false;
+			}
+			if (success) {
+				moved = true;
+				align_goal.auto_place = false;
+				ROS_INFO_STREAM("Sending align to goal with id " << 6 + to_add);
+				align_goal.grid_id = 6 + to_add;
+				align_goal.node = node;
+				align_goal.piece = game_piece;
+				align_goal.override_game_piece = false;
+				align_goal.auto_place = false;
+				align_goal.from_Trex = false; // maybe should be true since that is what we do in auto?
+				align_and_place_ac->sendGoal(align_goal);
+			}
+		}
+		else if (moved || !use_pathing) {
+			ROS_INFO_STREAM("Placing a cone!");
 			place();
 		}
 		// slow mode
@@ -1209,7 +1277,7 @@ int main(int argc, char **argv)
 	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
 	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
 	pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
-	align_to_goal_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignToGrid2023Action>>("/frcrobot_jetson/align_to_grid", true);
+	align_and_place_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>>("/frcrobot_jetson/align_and_place_to_grid", true);
 
 	const ros::Duration startup_wait_time_secs(15);
 	const ros::Time startup_start_time = ros::Time::now();
