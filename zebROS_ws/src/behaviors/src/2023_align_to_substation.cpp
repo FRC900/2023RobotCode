@@ -151,7 +151,6 @@ class AlignToSubstationAction
                         as_.setPreempted();
                         return;
                     }
-                    ROS_INFO_STREAM(percent_complete_);
                     if ((percent_complete_ > double_substation_intake_percent_) && !intook)
                     {
                         intook = true;
