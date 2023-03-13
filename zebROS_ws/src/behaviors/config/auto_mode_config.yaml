@@ -30,6 +30,9 @@ auto_mode_7: ["place_cone_high"]
 auto_mode_8: ["drive_forward"]
 auto_mode_9: ["place_pick_place_engage"]
 
+auto_mode_10: ["pick_place_cone_from_grid_1"]
+auto_mode_11: ["pick_place_cube_from_grid_3"]
+
 # Examples
 #auto_mode_1: ["tuning"]
 #auto_mode_2: ["map_relative_barrel_racing_path"]
@@ -58,8 +61,29 @@ pick_place_cone_from_grid_1:
         - [-0.7, 0.23, -0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.58, 4.758, 3.14]
         - [-3.99, 0.22, -3.14] # origin: [1.88, 4.989, 3.14], map-relative: [5.87, 4.758, 0.0]
         - [-4.12, 0.37, -3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.608, 0.0]
-        - [-4.12, 0.37, -3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.608, 0.0]
         - [-5.32, 0.37, -3.14] # origin: [1.88, 4.989, 3.14], map-relative: [7.2, 4.608, 0.0]
+        - [-4.12, 0.22, -3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.758, 0.0]
+        - [-0.12, 0.38, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 4.608, 3.14]
+        # below should be 1.12 but it was consistently off
+        - [-0.12, 1.27, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
+      waypoint_actions: {intake_vertical_cone: 2}
+
+pick_place_cube_from_grid_3:
+    type: path
+    goal:
+      frame_id: "base_link"
+      points:
+        - [-0.17, -0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
+        - [-0.17, -0.89, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
+        - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
+        - [-4.17, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
+        - [-5.37, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
+        - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
+        - [-3.04, -0.89, -2.43] # origin: [1.83, 3.871, 3.14], map-relative: [4.87, 4.758, 0.707]
+        - [-0.17, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.608, 3.14]
+        # was -0.56 but consistently off
+        - [-0.17, -0.48, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
+      waypoint_actions: {intake_cube: 2}
 
 drive_back_over_charging:
     type: "path"
@@ -75,6 +99,7 @@ drive_back_cmd_vel_over_charging:
         x: -1.0
         y: 0.0 
         z: 0.0
+
 # TODO check the path that this prints out (either just looking at logs or rviz)
 # and make sure it is what we want. Also confirm rotation direction. Ideally want
 # no random offsets.
@@ -362,11 +387,18 @@ stop_intaking:
     goal:
         "stop"
 
-shoot:
-    type: "shooting_actionlib_server"
-    goal:
-        ""
-        
+intake_vertical_cone:
+    type: "intaking_actionlib_server"
+    piece: "vertical_cone"
+
+intake_cube:
+    type: "intaking_actionlib_server"
+    piece: "cube"
+
+intake_cone:
+    type: "intaking_actionlib_server"
+    piece: "vertical_cone"
+
 drive_back:
     type: "path"
     goal:
