@@ -986,7 +986,7 @@ class AutoNode {
 			ROS_ERROR("Wait (15 sec) timed out, for Spline Gen Service in auto_node");
 		}
 
-		while(true) { // will exit when shutdownNode is called
+		while(ros::ok()) { // will exit when shutdownNode is called
 			//WAIT FOR MATCH TO START --------------------------------------------------------------------------
 			ROS_INFO("Auto node - waiting for autonomous to start");
 
