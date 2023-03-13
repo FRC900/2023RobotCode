@@ -61,7 +61,7 @@ max_linear_dec: 3.0 # SPEEEEED
 max_cent_acc: 4.0
 
 # Robot drivebase radius (meters)
-drive_base_radius: 0.354 # center to corner swerve module
+drive_base_radius: 0.250825 # center to edge of swerve module, hypot=0.354
 
 # what frame to generate the path coords in
 path_frame_id: "base_link"
