@@ -32,6 +32,7 @@ auto_mode_9: ["place_pick_place_engage"]
 
 auto_mode_10: ["pick_place_cone_from_grid_1"]
 auto_mode_11: ["pick_place_cube_from_grid_3"]
+auto_mode_12: ["pick_place_cone_from_grid_1", "drive_into_grid", "pick_place_cube_from_grid_3", "drive_into_grid"] # just pathing for now
 
 # Examples
 #auto_mode_1: ["tuning"]
@@ -73,6 +74,7 @@ pick_place_cube_from_grid_3:
     goal:
       frame_id: "base_link"
       points:
+        - [-0.17, 0.0, -0.0]
         - [-0.17, -0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
         - [-0.17, -0.89, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
         - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
@@ -153,6 +155,14 @@ drive_out_community:
     cmd_vel:
         x: -1.0
         y: 0.0 
+        z: 0.0
+
+drive_into_grid:
+    type: cmd_vel
+    duration: 0.5
+    cmd_vel:
+        x: 0.5
+        y: 0.0
         z: 0.0
 
 place_cone_high:
