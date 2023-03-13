@@ -86,7 +86,6 @@ class AutoNode {
 		// START probably changing year to year, mostly year specific actions but also custom stuff based on what is needed
 		//actionlib clients
 		actionlib::SimpleActionClient<path_follower_msgs::PathAction> path_ac_; //TODO fix this path
-		actionlib::SimpleActionClient<behavior_actions::Shooting2022Action> shooting_ac_;
 		actionlib::SimpleActionClient<behavior_actions::Intaking2023Action> intaking_ac_;
 		actionlib::SimpleActionClient<behavior_actions::Balancing2023Action> balancing_ac;
 		actionlib::SimpleActionClient<behavior_actions::Placing2023Action> placing_ac_;
@@ -107,8 +106,6 @@ class AutoNode {
 		AutoNode(const ros::NodeHandle &nh) 
 		: nh_(nh)
 		, path_ac_("/path_follower/path_follower_server", true)
-		, shooting_ac_("/shooting2022/shooting2022_server", true)
-		, placing_ac_("/placing/placing_server_2023", true)
 		, intaking_ac_("/intaking/intaking_server_2023", true)
 		, balancing_ac("/balance_position/balancing_server", true)
 		, placing_ac_("/placing/placing_server_2023", true)
@@ -793,23 +790,6 @@ class AutoNode {
 		}
 		intaking_ac_.sendGoal(goal);
 		waitForActionlibServer(intaking_ac_, 10.0, "intaking_server");
-		return true;
-	}
-	
-	// will never be used again but would be cool to make it AlignedShooting
-	bool shootfn(XmlRpc::XmlRpcValue action_data, const std::string&  auto_step) {
-		if(!shooting_ac_.waitForServer(ros::Duration(5))){
-			
-			shutdownNode(ERROR, "Auto node - couldn't find shooting actionlib server");
-			return false;
-		} //for some reason this is necessary, even if the server has been up and running for a while
-		behavior_actions::Shooting2022Goal goal;
-		goal.num_cargo = 2;
-		goal.eject = false;
-		goal.distance = 1.48; // hub
-
-		shooting_ac_.sendGoal(goal);
-		waitForActionlibServer(shooting_ac_, 100, "shooting server");
 		return true;
 	}
 
