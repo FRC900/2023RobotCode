@@ -15,7 +15,6 @@
  * Frequency is 400Khz on I2C
  * There are Built-in pull-up resistors (on SCL/SDA) so avoid additional pull-up resistors on the same bus to prevent transmission problems)
  */
- 
 
 #include <Wire.h>
 // For TeraRanger Evo
@@ -145,7 +144,8 @@ void loop() {
 
   while (Serial.available()) {
     if (Serial.read() == 'r') { // *r*estart
-      watchdog_reboot(0, 0, 0);
+      // watchdog_reboot(0, 0, 0); // Pico
+      SCB_AIRCR = 0x05FA0004; // Teensy... this actually should work which is hilarious https://developer.arm.com/documentation/dui0552/a/Cihehdge
     }
   }
 
