@@ -1,0 +1,5 @@
+uint8 NO_PIECE=0
+uint8 CONE=1
+uint8 CUBE=2
+uint8 piece
+---

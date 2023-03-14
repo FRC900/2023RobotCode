@@ -35,6 +35,7 @@
 #include <behavior_actions/FourbarElevatorPath2023Action.h>
 #include <talon_swerve_drive_controller/SetXY.h>
 #include <behavior_actions/AlignAndPlaceGrid2023Action.h>
+#include <candle_controller_msgs/GamePieceColor.h>
 
 struct DynamicReconfigVars
 {
@@ -127,6 +128,7 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 
 ros::ServiceClient snapConeCubeSrv;
 ros::ServiceClient setCenterSrv;
+ros::ServiceClient setCandleSrv;
 
 void moveDirection(int x, int y, int z) {
 	geometry_msgs::Twist cmd_vel;
@@ -208,6 +210,14 @@ void place() {
 	teleop_cmd_vel->setSlowMode(moved);
 }
 
+void clearCandlePiece() {
+	candle_controller_msgs::GamePieceColor candle_msg;
+	candle_msg.request.piece = candle_msg.request.NO_PIECE;
+	if (!setCandleSrv.call(candle_msg)) {
+		ROS_ERROR_STREAM("Could not clear candles");
+	}
+}
+
 void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
 {
 	//ROS_INFO_STREAM("Button Box callback running!");
@@ -263,21 +273,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 	if(button_box.redRelease) {
 	}
-	/* 
-	if (msg.topMiddleConePress && !this->cone_button_pressed) {
-		this->cone_button_pressed = true;
-		this->updated = true;
-	} else if (msg.topMiddleConeRelease && this->cone_button_pressed) {
-		this->cone_button_pressed = false;
-		this->updated = true;
-	} else if (msg.topRightCubePress && !this->cube_button_pressed) {
-		this->cube_button_pressed = true;
-		this->updated = true;
-	} else if (msg.topRightCubeRelease && this->cube_button_pressed) {
-		this->cube_button_pressed = false;
-		this->updated = true;
-	}
-    */
+
 	if(button_box.topLeftConeButton) {
 	}
 	if(button_box.topLeftConePress) {
@@ -292,15 +288,28 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.topMiddleConeButton) {
 	}
 	if(button_box.topMiddleConePress) {
+		candle_controller_msgs::GamePieceColor candle_msg;
+		candle_msg.request.piece = candle_msg.request.CONE;
+		if (!setCandleSrv.call(candle_msg)) {
+			ROS_ERROR_STREAM("Could not set candles");
+		}
 	}
 	if(button_box.topMiddleConeRelease) {
+		clearCandlePiece();
 	}
 
 	if(button_box.topRightCubeButton) {
 	}
 	if(button_box.topRightCubePress) {
+		
+		candle_controller_msgs::GamePieceColor candle_msg;
+		candle_msg.request.piece = candle_msg.request.CUBE;
+		if (!setCandleSrv.call(candle_msg)) {
+			ROS_ERROR_STREAM("Could not set candles");
+		}
 	}
 	if(button_box.topRightCubeRelease) {
+		clearCandlePiece();
 	}
 
 	if(button_box.gridSelectConeLeftButton) {
@@ -1243,6 +1252,7 @@ int main(int argc, char **argv)
 	IMUZeroSrv = n.serviceClient<imu_zero::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
 	snapConeCubeSrv = n.serviceClient<teleop_joystick_control::SnapConeCube>("/snap_to_angle/snap_cone_cube", false, service_connection_header);
 	setCenterSrv = n.serviceClient<talon_swerve_drive_controller::SetXY>("/frcrobot_jetson/swerve_drive_controller/change_center_of_rotation", false, service_connection_header);	
+	setCandleSrv = n.serviceClient<candle_controller_msgs::GamePieceColor>("/frcrobot_jetson/candle_node/set_gamepiece_colour", false, service_connection_header);	
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
 

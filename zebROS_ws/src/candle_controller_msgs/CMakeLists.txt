@@ -60,6 +60,7 @@ add_service_files(
    Colour.srv
    Brightness.srv
    Animation.srv
+   GamePieceColor.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -106,7 +107,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES candle_controller_msgs
+#  LIBRARIES candle_node_msgs
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -124,7 +125,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/candle_controller_msgs.cpp
+#   src/${PROJECT_NAME}/candle_node_msgs.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -135,7 +136,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/candle_controller_msgs_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/candle_node_msgs_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -199,7 +200,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_candle_controller_msgs.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_candle_node_msgs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

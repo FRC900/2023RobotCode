@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 	talon_state_msgs
 	geometry_msgs
 	talon_swerve_drive_controller
+	candle_controller_msgs
 	)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)

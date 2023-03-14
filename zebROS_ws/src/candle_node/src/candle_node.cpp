@@ -1,6 +1,7 @@
 #include <candle_controller_msgs/Colour.h>
 #include <candle_controller_msgs/Animation.h>
 #include <candle_controller_msgs/Brightness.h>
+#include <candle_controller_msgs/GamePieceColor.h>
 #include <ros/ros.h>
 #include <frc_msgs/MatchSpecificData.h>
 #include <frc_msgs/ButtonBoxState2023.h>
@@ -10,7 +11,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <angles/angles.h>
 #include <talon_state_msgs/TalonState.h>
-#include <candle_node/GamePieceColor.h>
 
 constexpr uint8_t MAX_LED = 34;
 constexpr uint8_t MID_START = 0;
@@ -69,9 +69,23 @@ struct NodeCTX {
 		}
     }
 
-    bool cone_cube_callback(const candle_node::GamePieceColor& msg) {
-        ROS_INFO_STREAM("Cone cube cb!");
+    bool cone_cube_callback(candle_controller_msgs::GamePieceColor::Request &req,
+			                candle_controller_msgs::GamePieceColor::Response &res) {
 
+        if (req.piece == req.CONE && !this->cone_button_pressed) {
+            this->cone_button_pressed = true;
+            this->updated = true;
+        } 
+        else if (req.piece == req.CUBE  && !this->cube_button_pressed) {
+            this->cube_button_pressed = true;
+            this->updated = true;
+        } 
+        else if (req.piece == req.NO_PIECE && this->cube_button_pressed) {
+            this->cube_button_pressed = false;
+            this->cone_button_pressed = false;
+            this->updated = true;
+        }
+        return true;
     }
 
     void team_colour_callback(const frc_msgs::MatchSpecificData& msg) {
@@ -131,13 +145,12 @@ int main(int argc, char **argv) {
 
     // Team colour subscriber/callback
     ros::Subscriber team_colour_subscriber = node.subscribe("/frcrobot_rio/match_data", 0, &NodeCTX::team_colour_callback, &ctx);
-    ros::Subscriber button_box_subscriber = node.subscribe("/frcrobot_rio/button_box_states", 100, &NodeCTX::button_box_callback, &ctx);
     ros::Subscriber auto_mode_subscriber = node.subscribe("/auto/auto_mode", 100, &NodeCTX::auto_mode_callback, &ctx);
     ros::Subscriber imu_subscriber = node.subscribe("/imu/zeroed_imu", 100, &NodeCTX::imu_callback, &ctx);
     ros::Subscriber talon_state_subscriber = node.subscribe("/frcrobot_jetson/talon_states", 100, &NodeCTX::talon_callback, &ctx);
 
-    // service for updating cone v cube from teleop
-	ros::ServiceServer cone_cube = nh.advertiseService("cone_or_cube_color", cone_cube_callback);
+    // service for updating cone v cube from teleop                                                   // this U should not be here
+	ros::ServiceServer cone_cube_srv_ = node.advertiseService("/frcrobot_jetson/candle_node/set_gamepiece_colour", &NodeCTX::cone_cube_callback, &ctx);
 
     // ROS service clients (setting the CANdle)
     ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour", false);
