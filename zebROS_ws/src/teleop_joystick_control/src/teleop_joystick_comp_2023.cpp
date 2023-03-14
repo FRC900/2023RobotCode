@@ -263,7 +263,21 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 	if(button_box.redRelease) {
 	}
-
+	/* 
+	if (msg.topMiddleConePress && !this->cone_button_pressed) {
+		this->cone_button_pressed = true;
+		this->updated = true;
+	} else if (msg.topMiddleConeRelease && this->cone_button_pressed) {
+		this->cone_button_pressed = false;
+		this->updated = true;
+	} else if (msg.topRightCubePress && !this->cube_button_pressed) {
+		this->cube_button_pressed = true;
+		this->updated = true;
+	} else if (msg.topRightCubeRelease && this->cube_button_pressed) {
+		this->cube_button_pressed = false;
+		this->updated = true;
+	}
+    */
 	if(button_box.topLeftConeButton) {
 	}
 	if(button_box.topLeftConePress) {

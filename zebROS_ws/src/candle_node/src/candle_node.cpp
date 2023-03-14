@@ -10,6 +10,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <angles/angles.h>
 #include <talon_state_msgs/TalonState.h>
+#include <candle_node/GamePieceColor.h>
 
 constexpr uint8_t MAX_LED = 34;
 constexpr uint8_t MID_START = 0;
@@ -68,6 +69,11 @@ struct NodeCTX {
 		}
     }
 
+    bool cone_cube_callback(const candle_node::GamePieceColor& msg) {
+        ROS_INFO_STREAM("Cone cube cb!");
+
+    }
+
     void team_colour_callback(const frc_msgs::MatchSpecificData& msg) {
         disabled = msg.Disabled;
         if (msg.allianceColor != this->team_colour) {
@@ -79,22 +85,6 @@ struct NodeCTX {
             ROS_INFO_STREAM("Updating auto LEDs...");
             disabled = msg.Disabled;
             updated = true;
-        }
-    }
-
-    void button_box_callback(const frc_msgs::ButtonBoxState2023& msg) {
-        if (msg.topMiddleConePress && !this->cone_button_pressed) {
-            this->cone_button_pressed = true;
-            this->updated = true;
-        } else if (msg.topMiddleConeRelease && this->cone_button_pressed) {
-            this->cone_button_pressed = false;
-            this->updated = true;
-        } else if (msg.topRightCubePress && !this->cube_button_pressed) {
-            this->cube_button_pressed = true;
-            this->updated = true;
-        } else if (msg.topRightCubeRelease && this->cube_button_pressed) {
-            this->cube_button_pressed = false;
-            this->updated = true;
         }
     }
 
@@ -145,6 +135,9 @@ int main(int argc, char **argv) {
     ros::Subscriber auto_mode_subscriber = node.subscribe("/auto/auto_mode", 100, &NodeCTX::auto_mode_callback, &ctx);
     ros::Subscriber imu_subscriber = node.subscribe("/imu/zeroed_imu", 100, &NodeCTX::imu_callback, &ctx);
     ros::Subscriber talon_state_subscriber = node.subscribe("/frcrobot_jetson/talon_states", 100, &NodeCTX::talon_callback, &ctx);
+
+    // service for updating cone v cube from teleop
+	ros::ServiceServer cone_cube = nh.advertiseService("cone_or_cube_color", cone_cube_callback);
 
     // ROS service clients (setting the CANdle)
     ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour", false);
