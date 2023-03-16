@@ -53,7 +53,7 @@ public:
     align_to_goal_ac("/align_to_grid", true),
     placing_ac("/placing/placing_server_2023", true),
     // /teleop/swerve_drive_controller/cmd_vel
-    cmd_vel_pub_(nh_.advertise<geometry_msgs::Twist>("/teleop/swerve_drive_controller/cmd_vel", 1)),
+    cmd_vel_pub_(nh_.advertise<geometry_msgs::Twist>("/placing/cmd_vel", 1)),
     orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1)),
     control_effort_sub_(nh_.subscribe<std_msgs::Float64>("/teleop/orient_strafing/control_effort", 1, &AlignAndPlaceGridAction::controlEffortCB, this))
   {
