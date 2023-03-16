@@ -28,7 +28,7 @@ auto_mode_6: ["drive_out_community"]
 
 auto_mode_7: ["place_cone_high"]
 auto_mode_8: ["drive_forward"]
-auto_mode_9: []
+auto_mode_9: ["drive_back_cmd_vel_over_charging", "balance_facing_towards"]
 
 # Examples
 #auto_mode_1: ["tunin9g"]
@@ -49,6 +49,21 @@ auto_mode_9: []
 # must have a value for "type", other stuff varies
 #valid action types: "intake_actionlib_server", "pause", "elevator_actionlib_server"
 ros_rate: 10 # in ms, used for all ros rate calls
+
+drive_back_over_charging:
+    type: "path"
+    goal:
+        apply_offset: false
+        points:
+            - [-2.65, 0.0, 0.0]
+
+drive_back_cmd_vel_over_charging:
+    type: cmd_vel
+    duration: 2.65
+    cmd_vel:
+        x: -1.0
+        y: 0.0 
+        z: 0.0
 
 drive_out_community:
     type: cmd_vel

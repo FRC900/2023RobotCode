@@ -120,6 +120,7 @@ class AutoBalancing:
         self.balancer_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
     def balancing_callback(self, goal):
+        multipler = 1.0
         if not goal.towards_charging_station:
             multipler = -1.0
         else:

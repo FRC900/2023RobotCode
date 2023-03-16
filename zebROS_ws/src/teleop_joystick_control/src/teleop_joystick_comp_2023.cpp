@@ -205,7 +205,6 @@ void place() {
 	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
 	placing_ac->sendGoal(goal);
 	moved = !moved;
-	teleop_cmd_vel->setSlowMode(moved);
 }
 
 void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
@@ -721,13 +720,18 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: buttonX
 			if(joystick_states_array[0].buttonXPress)
 			{
-
+				behavior_actions::Intaking2023Goal intakingGoal;
+				intakingGoal.piece = intakingGoal.DOUBLE_SUBSTATION;
+				ROS_INFO_STREAM("teleop_joystick_comp_2023 : intaking from double substation!");
+				intaking_ac->sendGoal(intakingGoal);
 			}
 			if(joystick_states_array[0].buttonXButton)
 			{
 			}
 			if(joystick_states_array[0].buttonXRelease)
 			{
+				ROS_INFO_STREAM("teleop_joystick_comp_2023 : preempting intaking!");
+				intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 			//Joystick1: buttonY
@@ -746,14 +750,14 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: bumperLeft
 			if(joystick_states_array[0].bumperLeftPress)
 			{
-				teleop_cmd_vel->setSlowMode(true);
+				teleop_cmd_vel->setSlowMode(false);
 			}
 			if(joystick_states_array[0].bumperLeftButton)
 			{
 			}
 			if(joystick_states_array[0].bumperLeftRelease)
 			{
-				teleop_cmd_vel->setSlowMode(false);
+				teleop_cmd_vel->setSlowMode(true);
 			}
 
 			//Joystick1: bumperRight
@@ -1277,6 +1281,7 @@ int main(int argc, char **argv)
 	ROS_WARN("joy_init");
 
 	teleop_cmd_vel->setRobotOrient(false, 0.0);
+	teleop_cmd_vel->setSlowMode(false);
 
 	ros::spin();
 	return 0;
