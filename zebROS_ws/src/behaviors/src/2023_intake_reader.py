@@ -38,7 +38,7 @@ def safeAverage(l: list):
     return total / len(l)
 
 crc_error_count = 0
-restart_errors_count = 10
+restart_errors_count = 100
 
 def rebootPico(port: serial.Serial, req = None):
     rospy.logwarn("intake_reader_2023 : rebooting Pico!")
@@ -69,7 +69,7 @@ def main():
     reboot_count = 0
     max_reboots = 2
 
-    rebootPico(port, None)
+    # rebootPico(port, None)
 
     while not rospy.is_shutdown():
         if crc_error_count >= restart_errors_count and reboot_count < max_reboots:
