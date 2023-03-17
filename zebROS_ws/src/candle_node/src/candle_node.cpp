@@ -154,12 +154,12 @@ int main(int argc, char **argv) {
     node.param<double>("/intaking/current_threshold", ctx.intake_current_threshold_, 100.0);
 
     // Team colour subscriber/callback
-    ros::Subscriber team_colour_subscriber = node.subscribe("/frcrobot_rio/match_data", 0, &NodeCTX::team_colour_callback, &ctx);
-    ros::Subscriber button_box_subscriber = node.subscribe("/frcrobot_rio/button_box_states", 100, &NodeCTX::button_box_callback, &ctx);
-    ros::Subscriber auto_mode_subscriber = node.subscribe("/auto/auto_mode", 100, &NodeCTX::auto_mode_callback, &ctx);
-    ros::Subscriber imu_subscriber = node.subscribe("/imu/zeroed_imu", 100, &NodeCTX::imu_callback, &ctx);
-    ros::Subscriber talon_state_subscriber = node.subscribe("/frcrobot_jetson/talon_states", 100, &NodeCTX::talon_callback, &ctx);
-    ros::Subscriber path_follower_subscriber = node.subscribe("/path_follower/path_follower_pid/swerve_drive_controller/cmd_vel", 100, &NodeCTX::path_callback, &ctx);
+    ros::Subscriber team_colour_subscriber = node.subscribe("/frcrobot_rio/match_data", 1, &NodeCTX::team_colour_callback, &ctx);
+    ros::Subscriber button_box_subscriber = node.subscribe("/frcrobot_rio/button_box_states", 1, &NodeCTX::button_box_callback, &ctx);
+    ros::Subscriber auto_mode_subscriber = node.subscribe("/auto/auto_mode", 1, &NodeCTX::auto_mode_callback, &ctx);
+    ros::Subscriber imu_subscriber = node.subscribe("/imu/zeroed_imu", 1, &NodeCTX::imu_callback, &ctx);
+    ros::Subscriber talon_state_subscriber = node.subscribe("/frcrobot_jetson/talon_states", 1, &NodeCTX::talon_callback, &ctx);
+    ros::Subscriber path_follower_subscriber = node.subscribe("/path_follower/path_follower_pid/swerve_drive_controller/cmd_vel", 1, &NodeCTX::path_callback, &ctx);
 
     // ROS service clients (setting the CANdle)
     ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour", false);
