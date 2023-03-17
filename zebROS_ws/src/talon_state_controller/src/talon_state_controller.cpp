@@ -5,10 +5,9 @@
 #include <controller_interface/controller.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <realtime_tools/realtime_publisher.h>
-#include <talon_interface/talon_state_interface.h>
+#include <ctre_interfaces/talon_state_interface.h>
 #include <talon_state_msgs/TalonState.h>
 #include <periodic_interval_counter/periodic_interval_counter.h>
-#include <sensor_msgs/JointState.h>
 
 namespace talon_state_controller
 {
@@ -33,8 +32,6 @@ private:
 	std::unique_ptr<PeriodicIntervalCounter> interval_counter_;
 	double publish_rate_;
 	size_t num_hw_joints_; ///< Number of joints present in the TalonStateInterface
-	std::atomic<hardware_interface::NeutralMode> neutral_mode_;
-    std::unique_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState>> realtime_state_pub_; //added
 
 public:
 	bool init(hardware_interface::TalonStateInterface *hw,
@@ -58,7 +55,6 @@ public:
 			ROS_ERROR_STREAM("Invalid publish_rate in talon state controller (" << publish_rate_ << ")");
 			return false;
 		}
-		neutral_mode_ = hardware_interface::NeutralMode::NeutralMode_Coast;
 		interval_counter_ = std::make_unique<PeriodicIntervalCounter>(publish_rate_);
 
 		// realtime publisher
@@ -76,6 +72,8 @@ public:
 			m.speed.push_back(0.0);
 			m.output_voltage.push_back(0.0);
 			m.output_current.push_back(0.0);
+			m.stator_current.push_back(0.0);
+			m.supply_current.push_back(0.0);
 			m.bus_voltage.push_back(0.0);
 			m.motor_output_percent.push_back(0.0);
 			m.temperature.push_back(0.0);
@@ -117,20 +115,8 @@ public:
 
 			talon_state_.push_back(hw->getHandle(joint_names[i]));
 		}
-        realtime_state_pub_ = std::make_unique<realtime_tools::RealtimePublisher<sensor_msgs::JointState>>(root_nh, "talon_joint_states", 4); //added "state" to name
-		
-        auto &p = realtime_state_pub_->msg_;
-		// get joints and allocate message
-		for (size_t i = 0; i < num_hw_joints_; i++) 
-		{
-			p.name.push_back(joint_names[i]);
-			p.position.push_back(0.0);
-			p.velocity.push_back(0.0);
-			p.effort.push_back(0.0);
-			
-		}
 
-        return true;
+		return true;
 	}
 
 	void starting(const ros::Time &time)
@@ -159,6 +145,8 @@ public:
 					m.speed[i] = ts->getSpeed();
 					m.output_voltage[i] = ts->getOutputVoltage();
 					m.output_current[i] = ts->getOutputCurrent();
+					m.stator_current[i] = ts->getStatorCurrent();
+					m.supply_current[i] = ts->getSupplyCurrent();
 					m.bus_voltage[i] = ts->getBusVoltage();
 					m.motor_output_percent[i] = ts->getMotorOutputPercent();
 					m.temperature[i] = ts->getTemperature();
@@ -340,15 +328,6 @@ public:
 						m.sticky_faults[i] = str;
 					}
 				}
-				
-				//auto &m = realtime_state_pub_->msg_; //comment out?
-				m.header.stamp = time;
-				for (size_t i = 0; i < num_hw_joints_; i++)
-				{
-					auto &ts = talon_state_[i];
-					m.position[i] = ts->getPosition();
-					m.speed[i] = ts->getSpeed();
-				}
 				realtime_pub_->unlockAndPublish();
 			}
 			else
@@ -500,4 +479,4 @@ public:
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(talon_state_controller::TalonStateController, controller_interface::ControllerBase)
-PLUGINLIB_EXPORT_CLASS(state_listener_controller::TalonStateListenerController, controller_interface::ControllerBase) 
+PLUGINLIB_EXPORT_CLASS(state_listener_controller::TalonStateListenerController, controller_interface::ControllerBase)
