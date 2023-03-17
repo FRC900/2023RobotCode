@@ -338,7 +338,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 			if (success) {
 				moved = true;
-				pathed = true;
 				align_goal.percent_to_extend = 0.8;
 				align_goal.auto_place = true;
 				align_goal.grid_id = 2 + grid_position;
