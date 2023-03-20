@@ -1183,6 +1183,7 @@ bool evaluateTrajectory(T &cost,
 	return true;
 }
 
+
 // Convert from Trajectory type into the correct output
 // message type
 ros::Publisher local_plan_pub;
@@ -1254,13 +1255,39 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 	out_msg.path.poses.clear();
 	out_msg.path.header.stamp = ros::Time::now();
 	out_msg.path.header.frame_id = pathFrameID;
-	SegmentState<T> xState;
-	SegmentState<T> yState;
-	SegmentState<T> rotState;
 	double prevRemappedTime = 0;
 	double prevVTrans = 0;
-	double prevX = 0;
-	double prevY = 0;
+
+	SegmentState<T> xState;
+	auto xIt = sample(trajectory[0], 0, xState);
+	if (xIt == trajectory[0].cend())
+	{
+		ROS_ERROR_STREAM("base_trajectory trajectoryToSplineResponseMsg : could not sample initial X velocity");
+		return;
+	}
+	double prevX = xState.position;
+	double prevXVel = xState.velocity;
+
+	SegmentState<T> yState;
+	auto yIt = sample(trajectory[1], 0, yState);
+	if (yIt == trajectory[1].cend())
+	{
+		ROS_ERROR_STREAM("base_trajectory trajectoryToSplineResponseMsg : could not sample initial Y velocity");
+		return;
+	}
+    double prevY = yState.position;
+	double prevYVel = yState.velocity;
+
+	SegmentState<T> rotState;
+	auto rotIt = sample(trajectory[2], 0, rotState);
+	if (rotIt == trajectory[2].cend())
+	{
+		ROS_ERROR_STREAM("base_trajectory trajectoryToSplineResponseMsg : could not sample initial rotational velocity");
+		return;
+	}
+    double prevRot = rotState.position;
+	double prevRotVel = rotState.velocity;
+
 	for (size_t i = 0; i < equalArcLengthTimes.size(); i++)
 	{
 		geometry_msgs::PoseStamped pose;
@@ -1270,15 +1297,12 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 		// equalArcLenghtTimes is arbitrary spline time
 		// Prevent path from using 0 / 0 velocity for first and last point - reuse penulitmate point instead
 		// so it has a reasonable direction
-		const auto currentTime = equalArcLengthTimes[(i == 0) ? (i + 1) : ((i == equalArcLengthTimes.size() - 1) ? (i - 1) : (i))];
+		pose.header.seq = i;
+		const auto currentTime = equalArcLengthTimes[i];
 		//ROS_INFO_STREAM("base_trajectory trajectoryToSplineResponseMsg : equalArcLengthTimes[]=" << currentTime);
-
 
 		// Finds the index of the inital point that the current segment corresponds to
 		auto xIt = sample(trajectory[0], currentTime, xState);
-		int waypointIndex = xIt - trajectory[0].begin();
-		out_msg.waypointsIdx.push_back(waypointIndex);
-
 		if (xIt == trajectory[0].cend())
 		{
 			ROS_ERROR_STREAM("base_trajectory trajectoryToSplineResponseMsg : could not sample xState at time " << currentTime);
@@ -1291,6 +1315,9 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 			ROS_ERROR_STREAM("base_trajectory trajectoryToSplineResponseMsg : could not sample yState at time " << currentTime);
 			return;
 		}
+
+		int waypointIndex = xIt - trajectory[0].begin();
+		out_msg.waypointsIdx.push_back(waypointIndex);
 #if 0
 		ROS_INFO_STREAM("xState.velocity = " << xState.velocity << ", " << "yState.velocity = " << yState.velocity);
 #endif
@@ -1302,7 +1329,9 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 		prevRemappedTime = remappedTimes[i];
 		T dx = 0;
 		T dy = 0;
-		if ((xState.velocity != 0) || (yState.velocity != 0))
+		const auto avgXVel = (prevXVel + xState.velocity) / 2.0;
+		const auto avgYVel = (prevYVel + yState.velocity) / 2.0;
+		if ((avgXVel != 0) || (avgYVel != 0))
 		{
 			const auto velocityVectorAngle = atan2(yState.velocity, xState.velocity);
 			dx = ((vTrans[i] + prevVTrans) / 2.0) * cos(velocityVectorAngle) * dt;
@@ -1311,6 +1340,12 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 
 		prevX = pose.pose.position.x = prevX + dx;
 		prevY = pose.pose.position.y = prevY + dy;
+		prevXVel = xState.velocity;
+		prevYVel = yState.velocity;
+#if 0
+		pose.pose.position.x = xState.position;
+		pose.pose.position.y = yState.position;
+		#endif
 #if 0
 		ROS_INFO_STREAM("dt = " << dt
 				<< ", vTrans[" << i << "]= " << vTrans[i]
@@ -1321,17 +1356,25 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 
 		prevVTrans = vTrans[i];
 
-		auto rotIt = sample(trajectory[2], equalArcLengthTimes[i], rotState);
+		auto rotIt = sample(trajectory[2], currentTime, rotState);
 		if (rotIt == trajectory[2].cend())
 		{
 			ROS_ERROR_STREAM("base_trajectory trajectoryToSplineResponseMsg : could not sample rotState at time " << currentTime);
 			return;
 		}
+
+		const T dRot = ((rotState.velocity + prevRotVel) / 2.0) * dt;
+
+		ROS_INFO_STREAM("time = " << remappedTimes[i] << " prevRotVel = " << prevRotVel << " rotState = " << rotState.position << ", " << rotState.velocity << ", " << rotState.acceleration << " prevRot = " << prevRot << " dt = " << dt << " dRot = " << dRot);
+		prevRotVel = rotState.velocity;
+		
 		geometry_msgs::Quaternion orientation;
 		tf2::Quaternion tf_orientation;
-		tf_orientation.setRPY(0, 0, rotState.position);
+		tf_orientation.setRPY(0, 0, angles::normalize_angle(rotState.position));
 		pose.pose.orientation = tf2::toMsg(tf_orientation);
 		out_msg.path.poses.emplace_back(pose);
+
+		prevRot += dRot;
 	}
 	writeMatlabPath(out_msg.path.poses, 3, "Optimized Paths vs real time");
 	local_plan_pub.publish(out_msg.path);
