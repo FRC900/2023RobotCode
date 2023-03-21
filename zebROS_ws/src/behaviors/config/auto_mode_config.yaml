@@ -32,10 +32,12 @@ auto_mode_9: ["place_pick_place_engage"]
 
 auto_mode_10: ["pick_place_cone_from_grid_1"]
 auto_mode_11: ["pick_place_cube_from_grid_3"]
-auto_mode_12: ["pick_place_cone_from_grid_1", "pick_place_cube_from_grid_3"] # just pathing for now
+auto_mode_12: ["pick_place_cone_from_grid_1", "drive_into_grid", "pick_place_cube_from_grid_3"] # just pathing for now
 
 auto_mode_13: ["pick_place_cone_from_grid_1", "drive_into_grid", "pick_engage_from_grid_3", "balance_facing_away"] # just pathing for now
 auto_mode_14: ["pick_place_cone_from_grid_1", "drive_into_grid", "pick_back_from_grid_3"] # just pathing for now
+
+auto_mode_15: ["pick_engage_from_grid_3"]
 
 # Examples
 #auto_mode_1: ["tuning"]
@@ -70,8 +72,7 @@ pick_place_cone_from_grid_1:
         - [-4.12, 0.22, -3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.758, 0.0]
         - [-3.12, 0.22, -2.0]
         - [-0.12, 0.38, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 4.608, 3.14]
-        # below should be 1.12 but it was consistently off
-        - [-0.12, 1.27, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
+        - [-0.12, 1.2, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
         - [0.0, 1.27, 0.0]
       waypoint_actions: {intake_vertical_cone: 2}
 
@@ -82,18 +83,17 @@ pick_place_cube_from_grid_3:
       points:
         - [-0.17, 0.0, -0.0]
         - [-0.17, -0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
-        # was -0.89
-        - [-0.17, -0.7, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
+        - [-0.17, -0.89, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
         - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
         - [-4.17, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
         - [-5.37, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
         - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-3.04, -0.89, -2.14] # origin: [1.83, 3.871, 3.14], map-relative: [4.87, 4.758, 0.707]
-        - [-0.17, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.608, 3.14]
-        # was -0.56 but consistently off
-        - [-0.17, -0.48, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
-        - [-0.17, -0.48, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
-        - [0.0, -0.48, 0.0]
+        - [-3.04, -0.74, -2.14] # origin: [1.83, 3.871, 3.14], map-relative: [4.87, 4.758, 0.707]
+        - [-0.25, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.608, 3.14]
+        # was -0.56
+        # - [-0.17, -0.56, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
+        - [-0.12, -0.65, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
+        - [0.0, -0.56, 0.0]
       waypoint_actions: {intake_cube: 4}
 
 pick_engage_from_grid_3:
@@ -101,29 +101,15 @@ pick_engage_from_grid_3:
     goal:
       frame_id: "base_link"
       points:
-        - [-0.17, 0.0, -0.0]
-        - [-0.17, -0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
+        - [-0.17, 0.0, 0.0]
+        - [-0.17, -0.13, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
         # was -0.89
-        - [-0.17, -0.7, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
-        - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-4.17, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
-        - [-5.37, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-        - [-3.47, 0.52, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.3, 3.35, 0.0]
-      waypoint_actions: {intake_cube: 4}
-
-pick_engage_from_grid_3:
-    type: path
-    goal:
-      frame_id: "base_link"
-      points:
-        - [-0.17, 0.0, -0.0]
-        - [-0.17, -0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
-        # was -0.89
-        - [-0.17, -0.7, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
-        - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-4.17, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
-        - [-5.37, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-        - [-3.47, 0.52, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.3, 3.35, 0.0]
+        - [-0.17, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
+        - [-4.04, -0.74, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
+        - [-4.17, 0.3, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
+        - [-5.0, 0.51, 3.14]
+        - [-5.37, 0.51, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
+        - [-3.47, 0.51, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.3, 3.35, 0.0]
       waypoint_actions: {intake_cube: 4}
 
 # pick then go back to community
