@@ -11,9 +11,9 @@ dist_between_arc_lengths_epsilon: 0.01
 mid_time_inflation: 1.25
 
 # spacing of waypoints along final generated path (meters)
-path_dist_between_arc_lengths: 0.025
+path_dist_between_arc_lengths: 0.01
 # error tolerance for final path waypoint spacing (meters)
-path_dist_between_arc_lengths_epsilon: 0.01
+path_dist_between_arc_lengths_epsilon: 0.001
 
 # RPROP initial deltaCost value
 initial_delta_cost_epsilon: 0.05
