@@ -5,9 +5,10 @@
 #include "path_follower/path_follower.h"
 #include "ros/ros.h"
 
-bool PathFollower::loadPath(const nav_msgs::Path &path, double &final_distace)
+bool PathFollower::loadPath(const nav_msgs::Path &path, const nav_msgs::Path& velocities, double &final_distace)
 {
 	path_ = path;
+	this->velocities_ = velocities;
 	num_waypoints_ = path_.poses.size();
 	if (num_waypoints_ == 0)
 	{
@@ -84,7 +85,7 @@ geometry_msgs::Pose PathFollower::run(double &total_distance_travelled, int &cur
 	const ros::Time current_time = ros::Time::now() - start_time_offset_ + ros::Duration(path_.poses[0].header.stamp.toSec());
 
 	const size_t last_index = num_waypoints_ - 1;
-	double final_x, final_y, final_orientation;
+	double final_x, final_y, final_orientation, velocities_x, velocities_y, velocities_orientation;
 
 	// Find point in path closest to odometry reading
 	ROS_INFO_STREAM("num_waypoints = " << num_waypoints_);
@@ -114,13 +115,28 @@ geometry_msgs::Pose PathFollower::run(double &total_distance_travelled, int &cur
 			getYaw(path_.poses[index - 1].pose.orientation),
 			getYaw(path_.poses[index].pose.orientation),
 			current_time.toSec());
+	
+	velocities_x = interpolate(velocities_.poses[index - 1].header.stamp.toSec(),
+			velocities_.poses[index].header.stamp.toSec(),
+			velocities_.poses[index - 1].pose.position.x,
+			velocities_.poses[index].pose.position.x,
+			current_time.toSec());
+	velocities_y = interpolate(velocities_.poses[index - 1].header.stamp.toSec(),
+			velocities_.poses[index].header.stamp.toSec(),
+			velocities_.poses[index - 1].pose.position.y,
+			velocities_.poses[index].pose.position.y,
+			current_time.toSec());
+	velocities_orientation = interpolate(velocities_.poses[index - 1].header.stamp.toSec(),
+			velocities_.poses[index].header.stamp.toSec(),
+			getYaw(velocities_.poses[index - 1].pose.orientation),
+			getYaw(velocities_.poses[index].pose.orientation),
+			current_time.toSec());
 
 	ROS_INFO_STREAM("drive to coordinates: " << index << " (" << final_x << ", " << final_y << ", " << final_orientation << ")");
+	ROS_INFO_STREAM("drive at velocities: " << index << " (" << velocities_x << ", " << velocities_y << ", " << velocities_orientation << ")");
 
 	// This is strictly for the debugging ROS_INFO below
-	double now_x;
-	double now_y;
-	double now_orientation;
+	double now_x, now_y, now_orientation, now_velocities_x, now_velocities_y, now_velocities_orientation;
 	if (now_index > 0)
 	{
 		now_x = interpolate(path_.poses[now_index - 1].header.stamp.toSec(),
@@ -138,15 +154,36 @@ geometry_msgs::Pose PathFollower::run(double &total_distance_travelled, int &cur
 				getYaw(path_.poses[now_index - 1].pose.orientation),
 				getYaw(path_.poses[now_index].pose.orientation),
 				current_time.toSec());
+
+		now_velocities_x = interpolate(velocities_.poses[now_index - 1].header.stamp.toSec(),
+				velocities_.poses[now_index].header.stamp.toSec(),
+				velocities_.poses[now_index - 1].pose.position.x,
+				velocities_.poses[now_index].pose.position.x,
+				current_time.toSec());
+		now_velocities_y = interpolate(velocities_.poses[now_index - 1].header.stamp.toSec(),
+				velocities_.poses[now_index].header.stamp.toSec(),
+				velocities_.poses[now_index - 1].pose.position.y,
+				velocities_.poses[now_index].pose.position.y,
+				current_time.toSec());
+		now_velocities_orientation = interpolate(velocities_.poses[now_index - 1].header.stamp.toSec(),
+				velocities_.poses[now_index].header.stamp.toSec(),
+				getYaw(velocities_.poses[now_index - 1].pose.orientation),
+				getYaw(velocities_.poses[now_index].pose.orientation),
+				current_time.toSec());
 	}
 	else
 	{
-		now_x = path_.poses[0].pose.position.x;
-		now_y = path_.poses[0].pose.position.y;
-		now_orientation = getYaw(path_.poses[0].pose.orientation);
+		now_x = velocities_.poses[0].pose.position.x;
+		now_y = velocities_.poses[0].pose.position.y;
+		now_orientation = getYaw(velocities_.poses[0].pose.orientation);
+
+		now_velocities_x = velocities_.poses[0].pose.position.x;
+		now_velocities_y = velocities_.poses[0].pose.position.y;
+		now_velocities_orientation = getYaw(velocities_.poses[0].pose.orientation);
 	}
 
 	ROS_INFO_STREAM("now coordinates: " << now_index << " (" << now_x << ", " << now_y << ", " << now_orientation << ")");
+	ROS_INFO_STREAM("now velocities: " << now_index << " (" << now_velocities_x << ", " << now_velocities_y << ", " << now_velocities_orientation << ")");
 
 	// Convert back to quaternion
 	tf2::Quaternion q_final_tf = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_orientation));

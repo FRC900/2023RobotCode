@@ -81,6 +81,7 @@ class PathFollower
 {
 	private:
 		nav_msgs::Path path_;
+		nav_msgs::Path velocities_;
 
 		size_t num_waypoints_ = 0;
 		double path_length_ = 0.0;
@@ -95,7 +96,7 @@ class PathFollower
 		}
 
 		// load nav_msgs::Path
-		bool loadPath(const nav_msgs::Path &path, double &final_distace);
+		bool loadPath(const nav_msgs::Path &path, const nav_msgs::Path& velocities, double &final_distace);
 
 		// get yaw from geometry_msgs quaternion
 		double getYaw(const geometry_msgs::Quaternion &q) const;
