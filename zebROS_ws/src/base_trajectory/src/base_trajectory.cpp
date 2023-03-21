@@ -1263,6 +1263,7 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 	double prevY = 0;
 	for (size_t i = 0; i < equalArcLengthTimes.size(); i++)
 	{
+		geometry_msgs::PoseStamped vPose;
 		geometry_msgs::PoseStamped pose;
 		pose.header.frame_id = pathFrameID;
 		// Remapped times is wall-clock time
@@ -1332,6 +1333,16 @@ void trajectoryToSplineResponseMsg(base_trajectory_msgs::GenerateSpline::Respons
 		tf_orientation.setRPY(0, 0, rotState.position);
 		pose.pose.orientation = tf2::toMsg(tf_orientation);
 		out_msg.path.poses.emplace_back(pose);
+
+		vPose.pose.position.x = xState.velocity;
+		vPose.pose.position.y = yState.velocity;
+
+		geometry_msgs::Quaternion velocity_orientation;
+		tf2::Quaternion tf_velocity_orientation;
+		tf_velocity_orientation.setRPY(0, 0, rotState.velocity);
+		vPose.pose.orientation = tf2::toMsg(tf_velocity_orientation);
+
+		out_msg.velocity_path.poses.emplace_back(vPose);
 	}
 	writeMatlabPath(out_msg.path.poses, 3, "Optimized Paths vs real time");
 	local_plan_pub.publish(out_msg.path);
