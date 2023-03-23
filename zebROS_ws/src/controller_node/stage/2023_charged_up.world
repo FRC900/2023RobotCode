@@ -89,3 +89,20 @@ objdet_target ( pose [ 9.47 2.14 1.0 0.0 ] fiducial_return 10 color "purple" )
 objdet_target ( pose [ 9.47 3.35 1.0 0.0 ] fiducial_return 10 color "purple" )
 objdet_target ( pose [ 9.47 4.56 1.0 0.0 ] fiducial_return 10 color "purple" )
 # right
+
+
+
+#red tape corners
+
+objdet_target ( pose [ 6.72 6.80 .03 0.0 ] fiducial_return 11 color "red" )
+objdet_target ( pose [ 3.31 6.76 .03 0.0 ] fiducial_return 11 color "red" )
+objdet_target ( pose [ 11.67 4.06 .03 0.0 ] fiducial_return 11 color "red" )
+objdet_target ( pose [ 13.17 4.12 .03 0.0 ] fiducial_return 11 color "red" )
+
+
+#blue tape corners
+objdet_target ( pose [ 9.82 6.8 .03 0.0 ] fiducial_return 12 color "blue" )
+objdet_target ( pose [ 13.22 6.76 .03 0.0 ] fiducial_return 12 color "blue" )
+objdet_target ( pose [ 4.89 4.11 .03 0.0 ] fiducial_return 12 color "blue" )
+objdet_target ( pose [ 3.35 4.11 .03 0.0 ] fiducial_return 12 color "blue" )
+
