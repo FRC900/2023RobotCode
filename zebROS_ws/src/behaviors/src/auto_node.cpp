@@ -763,6 +763,7 @@ class AutoNode {
 	}
 
 	bool intakefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		ROS_ERROR_STREAM("==============INTAKE SERVER CALLED!!!==========");
 		//for some reason this is necessary, even if the server has been up and running for a while
 		if(!intaking_ac_.waitForServer(ros::Duration(5))){
 			shutdownNode(ERROR,"Auto node - couldn't find intaking actionlib server");
@@ -775,7 +776,11 @@ class AutoNode {
 			return false;
 		}
 		behavior_actions::Intaking2023Goal goal;
-		if (action_data["piece"] == "vertical_cone") {
+		if (action_data["piece"] == "retract") {
+			intaking_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+			return true;
+		}
+		else if (action_data["piece"] == "vertical_cone") {
 			goal.piece = goal.VERTICAL_CONE;
 		}
 		else if (action_data["piece"] == "cone") {
@@ -816,6 +821,9 @@ class AutoNode {
 				}
 			}
 		}
+		else {
+			ROS_WARN_STREAM("Could not find a waypoints action, this may be intentional!");
+		}
 
 		while(iteration_value > 0)
 		{
@@ -845,9 +853,6 @@ class AutoNode {
 				}
 				last_waypoint = waypoint;
 			});
-
-			// Sends the goal and sets feedbackCb to be run when feedback is updated
-			path_ac_.sendGoal(goal, NULL, NULL, boost::bind(&AutoNode::feedbackCb, this, _1));
 
 			// wait for actionlib server to finish
 			waitForActionlibServer(path_ac_, 100, "running path");

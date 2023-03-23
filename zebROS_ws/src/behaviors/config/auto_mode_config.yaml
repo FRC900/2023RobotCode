@@ -42,9 +42,9 @@ auto_mode_15: ["pick_engage_from_grid_3"]
 auto_mode_16: ["pick_place_cone_from_grid_1"]
 auto_mode_17: ["pick_from_grid_3"]
 auto_mode_18: ["pick_place_cone_from_grid_1", "drive_into_grid", "pick_from_grid_3"] # 2.5 piece auto!
-auto_mode_19: ["pick_place_cone_from_grid_1", "pick_from_grid_3"]
+auto_mode_19: ["place_cone_high", "pick_place_cone_from_grid_1", "place_cone_high", "pick_from_grid_3"]
 
-# Examples
+# Examples3
 #auto_mode_1: ["tuning"]
 #auto_mode_2: ["map_relative_barrel_racing_path"]
 #auto_mode_3: ["map_relative_bounce_path"]
@@ -65,6 +65,7 @@ auto_mode_19: ["pick_place_cone_from_grid_1", "pick_from_grid_3"]
 ros_rate: 10 # in ms, used for all ros rate calls
 
 pick_place_cone_from_grid_1_cable:
+    waypoint_actions: {intake_cone: 2, stop_intake: 5}
     type: path
     goal:
       frame_id: "base_link"
@@ -80,11 +81,11 @@ pick_place_cone_from_grid_1_cable:
         - [-3.12, 0.0, -2.0]
         - [-0.2, 0.1, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 4.608, 3.14]
         # should be 1.12 for y but off when testing
-        - [-0.12, 0.87, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
-        - [0.0, 0.87, 0.0]
-      waypoint_actions: {intake_vertical_cone: 2}
+        - [-0.12, 0.7, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
+        - [0.0, 0.7, 0.0]
 
 pick_place_cone_from_grid_1:
+    waypoint_actions: {intake_cone: 2, stop_intake: 5}
     type: path
     goal:
       frame_id: "base_link"
@@ -99,69 +100,11 @@ pick_place_cone_from_grid_1:
         - [-4.12, -0.0, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.758, 0.0]
         - [-3.12, -0.0, 2.0]
         - [-0.2, -0.1, -0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 4.608, 3.14]
-        - [-0.12, -0.87, -0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
-        - [0.0, -0.87, -0.0]
-      waypoint_actions: {intake_vertical_cone: 2}
-
-# IGNORE
-pick_place_cube_from_grid_3_cable:
-    type: path
-    goal:
-      frame_id: "base_link"
-      points:
-        - [-0.17, 0.0, -0.0]
-        - [-0.17, -0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
-        - [-0.17, -0.95, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
-        - [-4.04, -0.95, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-4.17, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
-        - [-5.37, 0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-        - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-3.04, -0.74, -2.14] # origin: [1.83, 3.871, 3.14], map-relative: [4.87, 4.758, 0.707]
-        - [-0.25, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.608, 3.14]
-        # was -0.56
-        # - [-0.17, -0.56, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
-        - [-0.12, -0.65, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
-        - [0.0, -0.56, 0.0]
-      waypoint_actions: {intake_cube: 4}
-
-pick_place_cube_from_grid_3:
-    type: path
-    goal:
-      frame_id: "base_link"
-      points:
-        - [-0.17, -0.0, -0.0]
-        - [-0.17, 0.13, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
-        - [-0.17, 0.95, -0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
-        - [-4.04, 0.95, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-4.17, -0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
-        - [-5.37, -0.51, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-        - [-4.04, 0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-3.04, 0.74, -2.14] # origin: [1.83, 3.871, 3.14], map-relative: [4.87, 4.758, 0.707]
-        - [-0.25, 0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.608, 3.14]
-        # was -0.56
-        # - [-0.17, -0.56, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
-        - [-0.12, 0.65, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.43, 3.14]
-        - [0.0, 0.56, 0.0]
-      waypoint_actions: {intake_cube: 4}
-
-pick_engage_from_grid_3:
-    type: path
-    goal:
-      frame_id: "base_link"
-      points:
-        - [-0.17, 0.0, 0.0]
-        - [-0.17, -0.13, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.0, 3.14]
-        # was -0.89
-        - [-0.17, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
-        - [-4.04, -0.74, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-        - [-4.17, 0.3, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
-        - [-5.0, 0.51, 3.14]
-        - [-5.37, 0.51, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-        - [-3.47, 0.51, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.3, 3.35, 0.0]
-      waypoint_actions: {intake_cube: 4}
-# END IGNORE
+        - [-0.12, -0.7, -0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.0, 3.871, 3.14]
+        - [0.0, -0.7, -0.0]
 
 pick_from_grid_3_cable:
+    waypoint_actions: {intake_cube: 4}
     type: path
     goal:
       frame_id: "base_link"
@@ -174,9 +117,9 @@ pick_from_grid_3_cable:
         - [-4.17, 0.3, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
         - [-5.0, 0.51, 3.14]
         - [-5.37, 0.51, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-      waypoint_actions: {intake_cube: 4}
 
 pick_from_grid_3:
+  waypoint_actions: {intake_cube: 4}
   type: path
   goal:
     frame_id: "base_link"
@@ -186,13 +129,12 @@ pick_from_grid_3:
       # was -0.89
       - [-0.17, 0.84, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.758, 3.14]
       - [-4.04, 0.84, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
-      - [-4.17, -0.3, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [6.0, 3.35, 0.0]
-      - [-5.0, -0.51, 3.14]
-      - [-5.37, -0.51, 3.14] # origin: [1.83, 3.871, 3.14], map-relative: [7.2, 3.35, 0.0]
-    waypoint_actions: {intake_cube: 4}
+      - [-5.64, -0.6, -2.09]
 
 # pick then go back to community
 pick_back_from_grid_3:
+    waypoint_actions: {intake_cube: 4}
+
     type: path
     goal:
       frame_id: "base_link"
@@ -207,7 +149,6 @@ pick_back_from_grid_3:
         - [-4.04, -0.89, -3.14] # origin: [1.83, 3.871, 3.14], map-relative: [5.87, 4.758, 0.0]
         - [-3.04, -0.89, -2.14] # origin: [1.83, 3.871, 3.14], map-relative: [4.87, 4.758, 0.707]
         - [-0.17, -0.74, 0.0] # origin: [1.83, 3.871, 3.14], map-relative: [2.0, 4.608, 3.14]
-      waypoint_actions: {intake_cube: 4}
 
 drive_back_over_charging:
     type: "path"
@@ -527,9 +468,13 @@ intake_cube:
     type: "intaking_actionlib_server"
     piece: "cube"
 
+stop_intake:
+    type: "intaking_actionlib_server"
+    piece: "retract"
+
 intake_cone:
     type: "intaking_actionlib_server"
-    piece: "vertical_cone"
+    piece: "cone"
 
 drive_back:
     type: "path"

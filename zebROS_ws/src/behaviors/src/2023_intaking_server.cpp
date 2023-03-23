@@ -421,6 +421,7 @@ public:
 			pathGoal.reverse = true;
 		} else {
 			pathGoal.path += "_reverse";
+			ros::Duration(0.25).sleep();
 		}
 
 		feedback_.status = feedback_.PATHER;
