@@ -190,12 +190,12 @@ public:
 	}
 
 	bool waitForFourbarAndElevator(ElevatorFourbarPoint pt) {
-		ros::Rate r = ros::Rate(10);
+		ros::Rate r = ros::Rate(100);
 
 		while (true)
 		{
 			ros::spinOnce();
-			ROS_INFO_STREAM_THROTTLE(1, "2023_fourbar_elevator_path_server: Waiting for fourbar and elevator, fourbar: " << fourbar_position_ << " vs " << pt.fourbar << ", elevator: " << elevator_position_ << " vs " << pt.elevator);
+			ROS_INFO_STREAM_THROTTLE(0.1, "2023_fourbar_elevator_path_server: Waiting for fourbar and elevator, fourbar: " << fourbar_position_ << " vs " << pt.fourbar << ", elevator: " << elevator_position_ << " vs " << pt.elevator);
 
 			// essentially just keep fourbar where it is now
 			if (as_.isPreemptRequested() || !ros::ok())
@@ -225,7 +225,7 @@ public:
 
 			if (fabs(fourbar_position_ - pt.fourbar) <= pt.fourbar_tolerance && fabs(elevator_position_ - pt.elevator) <= pt.elevator_tolerance) // make this tolerance configurable
 			{
-				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : fourbar and elevator reached position! ");
+				ROS_INFO_STREAM("2023_fourbar_elevator_path_server : fourbar and elevator reached position!");
 				break;
 			}
 			r.sleep();
