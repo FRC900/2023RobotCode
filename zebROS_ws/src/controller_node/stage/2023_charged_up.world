@@ -106,3 +106,13 @@ objdet_target ( pose [ 13.22 6.76 .03 0.0 ] fiducial_return 12 color "blue" )
 objdet_target ( pose [ 4.89 4.11 .03 0.0 ] fiducial_return 12 color "blue" )
 objdet_target ( pose [ 3.35 4.11 .03 0.0 ] fiducial_return 12 color "blue" )
 
+
+#red tape walls
+objdet_target ( pose [ 6.76 8.034 .03 0.0 ] fiducial_return 10 color "red" )
+objdet_target ( pose [ 11.63 .08 .02 0.0 ] fiducial_return 10 color "purple" )
+
+#blue tape walls
+objdet_target ( pose [ 9.87 8.10 .03 0.0 ] fiducial_return 10 color "purple" )
+objdet_target ( pose [ 4.896 .01 .03 0.0 ] fiducial_return 10 color "purple" )
+
+
