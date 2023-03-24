@@ -112,7 +112,7 @@ objdet_target ( pose [ 6.76 8.034 .03 0.0 ] fiducial_return 10 color "red" )
 objdet_target ( pose [ 11.63 .08 .02 0.0 ] fiducial_return 10 color "purple" )
 
 #blue tape walls
-objdet_target ( pose [ 9.87 8.10 .03 0.0 ] fiducial_return 10 color "purple" )
+objdet_target ( pose [ 9.87 8.034 .03 0.0 ] fiducial_return 10 color "purple" )
 objdet_target ( pose [ 4.896 .01 .03 0.0 ] fiducial_return 10 color "purple" )
 
 
@@ -193,16 +193,10 @@ objdet_target ( pose [ 0 5.03 0.0 0.0 ] fiducial_return 19 color "purple" )
 
 #ds lights r side
 
-objdet_target ( pose [ 16.57 .53 0.0 0.0 ] fiducial_return 20 color "purple" ) 
-
-objdet_target ( pose [ 16.57 .95 0.0 0.0 ] fiducial_return 20 color "purple" ) 
-
-objdet_target ( pose [ 16.57 2.35 0.0 0.0 ] fiducial_return 20 color "purple" ) 
-
-objdet_target ( pose [ 16.57 2.78 0.0 0.0 ] fiducial_return 20 color "purple" ) 
-
-objdet_target ( pose [ 16.57 3.18 0.0 0.0 ] fiducial_return 20 color "purple" ) 
-
-objdet_target ( pose [ 16.57 4.20 0.0 0.0 ] fiducial_return 20 color "purple" ) 
-
-objdet_target ( pose [ 16.57 4.59 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 .53 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 .95 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 2.35 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 2.78 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 3.18 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 4.20 0.0 0.0 ] fiducial_return 20 color "purple" ) 
+objdet_target ( pose [ 16.52 4.59 0.0 0.0 ] fiducial_return 20 color "purple" ) 
