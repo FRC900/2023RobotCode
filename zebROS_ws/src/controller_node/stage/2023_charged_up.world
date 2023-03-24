@@ -92,6 +92,13 @@ objdet_target ( pose [ 9.47 4.56 1.0 0.0 ] fiducial_return 10 color "purple" )
 
 
 
+
+#white tap lines
+
+objdet_target ( pose [ 8.345 8.02 0.03 0.0 ] fiducial_return 23 color "cyan" )
+objdet_target ( pose [ 8.345 .01 0.03 0.0 ] fiducial_return 23 color "cyan" )
+
+
 #red tape corners
 
 objdet_target ( pose [ 6.72 6.80 .03 0.0 ] fiducial_return 11 color "red" )
@@ -109,11 +116,11 @@ objdet_target ( pose [ 3.35 4.11 .03 0.0 ] fiducial_return 12 color "blue" )
 
 #red tape walls
 objdet_target ( pose [ 6.76 8.034 .03 0.0 ] fiducial_return 10 color "red" )
-objdet_target ( pose [ 11.63 .08 .02 0.0 ] fiducial_return 10 color "purple" )
+objdet_target ( pose [ 11.63 .01 .02 0.0 ] fiducial_return 10 color "red" )
 
 #blue tape walls
-objdet_target ( pose [ 9.87 8.034 .03 0.0 ] fiducial_return 10 color "purple" )
-objdet_target ( pose [ 4.896 .01 .03 0.0 ] fiducial_return 10 color "purple" )
+objdet_target ( pose [ 9.82 8.034 .03 0.0 ] fiducial_return 10 color "blue" )
+objdet_target ( pose [ 4.896 .01 .03 0.0 ] fiducial_return 10 color "blue" )
 
 
 #black bottom substation blue
