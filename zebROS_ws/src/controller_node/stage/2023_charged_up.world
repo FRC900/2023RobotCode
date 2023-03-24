@@ -116,3 +116,56 @@ objdet_target ( pose [ 9.87 8.10 .03 0.0 ] fiducial_return 10 color "purple" )
 objdet_target ( pose [ 4.896 .01 .03 0.0 ] fiducial_return 10 color "purple" )
 
 
+#black bottom substation blue
+#
+#
+
+
+
+
+objdet_target ( pose [ 1.369 0.096 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+objdet_target ( pose [ 1.420 0.772 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+objdet_target ( pose [ 1.375 1.451 0.0 0.0 ] fiducial_return 17 color "purple" )
+
+
+objdet_target ( pose [ 1.369 1.933 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+
+objdet_target ( pose [ 1.369 2.492 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+objdet_target ( pose [ 1.369 2.934 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+
+objdet_target ( pose [ 1.369 3.523 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+objdet_target ( pose [ 1.369 4.168 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+objdet_target ( pose [ 1.369 4.803 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+objdet_target ( pose [ 1.369 5.426 0.0 0.0 ] fiducial_return 17 color "purple" ) 
+
+
+
+#blackbottom subation red
+
+objdet_target ( pose [ 15.179 0.096 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 0.772 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 1.451 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 1.933 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 2.492 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 2.934 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 3.523 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 4.168 0.0 0.0 ] fiducial_return 18 color "purple" )
+
+objdet_target ( pose [ 15.179 4.803 0.0 0.0 ] fiducial_return 18 color "purple" ) 
+
+objdet_target ( pose [ 15.179 5.426 0.0 0.0 ] fiducial_return 18 color "purple" ) 
