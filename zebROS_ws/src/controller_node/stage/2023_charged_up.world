@@ -168,3 +168,12 @@ objdet_target ( pose [ 16.52 3.18 0.0 0.0 ] fiducial_return 19 color "orange" )
 objdet_target ( pose [ 16.52 4.20 0.0 0.0 ] fiducial_return 19 color "orange" )
 
 #ds light thingies red side end
+
+#dslights (just ds lights bc orange when off)
+objdet_target ( pose [ 0 .93 0.0 0.0 ] fiducial_return 22 color "purple" ) 
+objdet_target ( pose [ 0 2.78 0.0 0.0 ] fiducial_return 22 color "purple" ) 
+objdet_target ( pose [ 0 4.52 0.0 0.0 ] fiducial_return 22 color "purple" ) 
+
+objdet_target ( pose [ 16.52 .95 0.0 0.0 ] fiducial_return 22 color "purple" ) 
+objdet_target ( pose [ 16.52 2.78 0.0 0.0 ] fiducial_return 22 color "purple" ) 
+objdet_target ( pose [ 16.52 4.59 0.0 0.0 ] fiducial_return 22 color "purple" ) 

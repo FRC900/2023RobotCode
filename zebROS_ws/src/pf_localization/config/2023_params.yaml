@@ -129,5 +129,15 @@ beacons:
 
     #ds light thingies red side end
 
+  #orange ds lights when off
+  #red side
+  - [16.52, .95, "22"]
+  - [16.52, 2.78, "22"]
+  - [16.52, 4.59, "22"]
 
+  #blue side
+  - [0, .93, "22"]
+  - [0, 2.78, "22"]
+  - [0, 4.52, "22"]
 
+  #orange ds lights when off end
