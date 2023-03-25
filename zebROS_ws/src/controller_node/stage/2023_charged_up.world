@@ -117,28 +117,28 @@ objdet_target ( pose [ 4.896 .01 .03 0.0 ] fiducial_return 24 color "blue" )
 
 #black bottom substation blue
 
-objdet_target ( pose [ 1.369 0.096 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.420 0.772 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.375 1.451 0.0 0.0 ] fiducial_return 15 color "purple" )
-objdet_target ( pose [ 1.369 1.933 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.369 2.492 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.369 2.934 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.369 3.523 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.369 4.168 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.369 4.803 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 1.369 5.426 0.0 0.0 ] fiducial_return 15 color "purple" ) 
+objdet_target ( pose [ 1.369 0.076 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.420 0.797 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.375 1.356 0.0 0.0 ] fiducial_return 15 color "green" )
+objdet_target ( pose [ 1.369 1.915 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.369 2.474 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.369 3.032 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.369 3.591 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.369 4.150 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.369 4.709 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 1.369 5.452 0.0 0.0 ] fiducial_return 15 color "green" ) 
 
 #blackbottom subation red
-objdet_target ( pose [ 15.179 0.096 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 0.772 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 1.451 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 1.933 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 2.492 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 2.934 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 3.523 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 4.168 0.0 0.0 ] fiducial_return 15 color "purple" )
-objdet_target ( pose [ 15.179 4.803 0.0 0.0 ] fiducial_return 15 color "purple" ) 
-objdet_target ( pose [ 15.179 5.426 0.0 0.0 ] fiducial_return 15 color "purple" ) 
+objdet_target ( pose [ 15.179 0.076 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 0.797 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 1.356 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 1.915 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 2.474 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 3.032 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 3.591 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 4.150 0.0 0.0 ] fiducial_return 15 color "green" )
+objdet_target ( pose [ 15.179 4.709 0.0 0.0 ] fiducial_return 15 color "green" ) 
+objdet_target ( pose [ 15.179 5.452 0.0 0.0 ] fiducial_return 15 color "green" ) 
 
 #ds light thingies blue side
 
@@ -148,10 +148,10 @@ objdet_target ( pose [ 0 2.78 0.0 0.0 ] fiducial_return 14 color "purple" )
 objdet_target ( pose [ 0 4.52 0.0 0.0 ] fiducial_return 14 color "purple" ) 
 
 #ds_numbers b side
-objdet_target ( pose [ 0 1.34 0.0 0.0 ] fiducial_return 19 color "purple" )
-objdet_target ( pose [ 0 2.38 0.0 0.0 ] fiducial_return 19 color "purple" ) 
-objdet_target ( pose [ 0 3.19 0.0 0.0 ] fiducial_return 19 color "purple" ) 
-objdet_target ( pose [ 0 5.03 0.0 0.0 ] fiducial_return 19 color "purple" ) 
+objdet_target ( pose [ 0 1.34 0.0 0.0 ] fiducial_return 19 color "orange" )
+objdet_target ( pose [ 0 2.38 0.0 0.0 ] fiducial_return 19 color "orange" ) 
+objdet_target ( pose [ 0 3.19 0.0 0.0 ] fiducial_return 19 color "orange" ) 
+objdet_target ( pose [ 0 5.03 0.0 0.0 ] fiducial_return 19 color "orange" ) 
 
 #ds light thingies blue side end
 
@@ -162,9 +162,9 @@ objdet_target ( pose [ 16.52 2.78 0.0 0.0 ] fiducial_return 13 color "purple" )
 objdet_target ( pose [ 16.52 4.59 0.0 0.0 ] fiducial_return 13 color "purple" ) 
 
 #ds_numbers r side
-objdet_target ( pose [ 16.52 .53 0.0 0.0 ] fiducial_return 19 color "purple" ) 
-objdet_target ( pose [ 16.52 2.35 0.0 0.0 ] fiducial_return 19 color "purple" ) 
-objdet_target ( pose [ 16.52 3.18 0.0 0.0 ] fiducial_return 19 color "purple" ) 
-objdet_target ( pose [ 16.52 4.20 0.0 0.0 ] fiducial_return 19 color "purple" )
+objdet_target ( pose [ 16.52 .530 0.0 0.0 ] fiducial_return 19 color "orange" ) 
+objdet_target ( pose [ 16.52 2.35 0.0 0.0 ] fiducial_return 19 color "orange" ) 
+objdet_target ( pose [ 16.52 3.18 0.0 0.0 ] fiducial_return 19 color "orange" ) 
+objdet_target ( pose [ 16.52 4.20 0.0 0.0 ] fiducial_return 19 color "orange" )
 
 #ds light thingies red side end
