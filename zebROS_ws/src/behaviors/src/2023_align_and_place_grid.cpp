@@ -49,7 +49,7 @@ public:
   AlignAndPlaceGridAction(std::string name) :
     as_(nh_, name, boost::bind(&AlignAndPlaceGridAction::executeCB, this, _1), false),
     action_name_(name),
-    align_to_goal_ac("/align_to_grid", true),
+    align_to_goal_ac("/align_to_grid_closed_loop/align_to_grid_closed_loop", true),
     placing_ac("/placing/placing_server_2023", true),
     // /teleop/swerve_drive_controller/cmd_vel
     cmd_vel_pub_(nh_.advertise<geometry_msgs::Twist>("/placing/cmd_vel", 1)),

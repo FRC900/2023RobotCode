@@ -5,7 +5,7 @@
 	<node pkg="tf" type="static_transform_publisher" name="static_map_36h117" args="1.02743 2.748026 0.462788 0 0 0 map 36h117 1" />
 	<node pkg="tf" type="static_transform_publisher" name="static_map_36h116" args="1.02743 4.424426 0.462788 0 0 0 map 36h116 1" />
     -->
-	<node pkg="tf" type="static_transform_publisher" name="static_map_36h115" args="0.36195 6.749796 0.695452 0 0 0 36h115 map 1" />
+	<!-- <node pkg="tf" type="static_transform_publisher" name="static_map_36h115" args="0.36195 6.749796 0.695452 0 0 0 36h115 map 1" /> -->
 
     <!-- red tags-->
     <!-- 
