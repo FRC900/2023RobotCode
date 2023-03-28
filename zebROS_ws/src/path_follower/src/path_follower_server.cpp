@@ -112,7 +112,15 @@ class PathAction
 			ts.header.frame_id = odom_transform_frame_;
 			ts.child_frame_id = "odom";
 			
-			geometry_msgs::TransformStamped ts_base_inv = tf_buffer_.transform(ts, "base_link");
+			geometry_msgs::TransformStamped ts_base_inv;
+
+			geometry_msgs::TransformStamped zed_to_base = tf_buffer_.lookupTransform("base_link", odom_transform_frame_, ros::Time(0));
+			zed_to_base.transform.rotation.x = 0;
+			zed_to_base.transform.rotation.y = 0;
+			zed_to_base.transform.rotation.z = 0;
+			zed_to_base.transform.rotation.w = 1;
+			
+			tf2::doTransform(ts, ts_base_inv, zed_to_base);
 
 			tf2::Transform tf_base_inv;
 			tf2::fromMsg(ts_base_inv.transform, tf_base_inv);
@@ -124,7 +132,10 @@ class PathAction
 			out.pose.pose.position.x = final_tf_base.translation.x;
 			out.pose.pose.position.y = final_tf_base.translation.y;
 			out.pose.pose.position.z = final_tf_base.translation.z;
-			out.pose.pose.orientation = final_tf_base.rotation;
+
+			tf2::Quaternion yawQuat;
+			yawQuat.setRPY(0, 0, path_follower_.getYaw(final_tf_base.rotation));
+			out.pose.pose.orientation = tf2::toMsg(yawQuat);
 
 			if (!use_pose_for_odom_)
 				odom_ = out;
@@ -143,7 +154,15 @@ class PathAction
 			ts.header.frame_id = odom_transform_frame_;
 			ts.child_frame_id = "odom";
 			
-			geometry_msgs::TransformStamped ts_base_inv = tf_buffer_.transform(ts, "base_link");
+			geometry_msgs::TransformStamped ts_base_inv;
+
+			geometry_msgs::TransformStamped zed_to_base = tf_buffer_.lookupTransform("base_link", odom_transform_frame_, ros::Time(0));
+			zed_to_base.transform.rotation.x = 0;
+			zed_to_base.transform.rotation.y = 0;
+			zed_to_base.transform.rotation.z = 0;
+			zed_to_base.transform.rotation.w = 1;
+			
+			tf2::doTransform(ts, ts_base_inv, zed_to_base);
 
 			tf2::Transform tf_base_inv;
 			tf2::fromMsg(ts_base_inv.transform, tf_base_inv);
@@ -155,8 +174,12 @@ class PathAction
 			out.pose.position.x = final_tf_base.translation.x;
 			out.pose.position.y = final_tf_base.translation.y;
 			out.pose.position.z = final_tf_base.translation.z;
-			out.pose.orientation = final_tf_base.rotation;
+
+			tf2::Quaternion yawQuat;
+			yawQuat.setRPY(0, 0, path_follower_.getYaw(final_tf_base.rotation));
+			out.pose.orientation = tf2::toMsg(yawQuat);
 			pose_ = out;
+
 			if (use_pose_for_odom_)
 			{
 				odom_.header = out.header;
@@ -265,8 +288,14 @@ class PathAction
 			for (size_t i = 0; i < num_waypoints - 1; i++) {
 				ROS_INFO_STREAM("Untransformed waypoint: X = " << goal->path.poses[i].pose.position.x << " Y = " << goal->path.poses[i].pose.position.y << " rotation = " << path_follower_.getYaw(goal->path.poses[i].pose.orientation));
 				geometry_msgs::Pose temp_pose = goal->path.poses[i].pose;
-				tf2::doTransform(temp_pose, temp_pose, odom_to_base_link_tf);
-				ROS_INFO_STREAM("Transformed waypoint: X = " << temp_pose.position.x << " Y = " << temp_pose.position.y << " rotation = " << path_follower_.getYaw(temp_pose.orientation));
+				geometry_msgs::Pose new_pose;
+				tf2::doTransform(temp_pose, new_pose, odom_to_base_link_tf);
+				tf2::Quaternion q;
+				tf2::fromMsg(odom_to_base_link_tf.transform.rotation, q);
+				double r, p, y;
+				tf2::Matrix3x3(q).getRPY(r, p, y);
+				ROS_INFO_STREAM("Transforming by the transform x = " << odom_to_base_link_tf.transform.translation.x << ", y = "  << odom_to_base_link_tf.transform.translation.y << ", z = "  << odom_to_base_link_tf.transform.translation.z << ", r = " << r << ", p = " << p << ", y = " << y);
+				ROS_INFO_STREAM("Transformed waypoint: X = " << new_pose.position.x << " Y = " << new_pose.position.y << " rotation = " << path_follower_.getYaw(new_pose.orientation));
 			}
 			ROS_INFO_STREAM("========End path follower logs ==========");
 			ros::Rate r(ros_rate_);
