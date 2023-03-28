@@ -89,7 +89,7 @@ drive_1m_rotate_270:
       - [1.0, 0.0, 4.71]
 
 pick_place_cube_from_grid_1: # cable
-    waypoint_actions: {intake_cube: 2, stop_intake: 5}
+    #waypoint_actions: {intake_cube: 2, stop_intake: 5}
     type: path
     goal:
       frame_id: "base_link"
@@ -212,7 +212,7 @@ pick_from_grid_2_mirrored:
 
 # pick then go back to community
 pick_back_from_grid_3:
-    waypoint_actions: {intake_cube: 4}
+    #waypoint_actions: {intake_cube: 4}
 
     type: path
     goal:

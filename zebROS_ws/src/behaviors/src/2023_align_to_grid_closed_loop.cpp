@@ -442,7 +442,9 @@ public:
         t.linear.x = x_eff_;
         t.linear.y = y_eff_;
         cmd_vel_pub_.publish(t);
-
+        feedback_.x_error = x_error_;
+        feedback_.y_error = y_error_;
+        as_.publishFeedback(feedback_);
         r.sleep();
         ROS_INFO_STREAM("offset = " << offset.x << " " << offset.y << " " << offset.z);
         ROS_INFO_STREAM("error = " << x_error_ << ", " << y_error_ << " = " << hypot(x_error_, y_error_));

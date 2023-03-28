@@ -340,8 +340,9 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			if (success) {
 				moved = true;
 				pathed = true;
-				align_goal.percent_to_extend = 0.8;
-				align_goal.auto_place = false;
+				align_goal.tolerance = 0.01;
+				align_goal.tolerance_for_extend = 0.5;
+				align_goal.auto_place = true;
 				align_goal.grid_id = 1 + grid_position;
 				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;
@@ -373,7 +374,8 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 			if (success) {
 				moved = true;
-				align_goal.percent_to_extend = 0.8;
+				align_goal.tolerance = 0.01;
+				align_goal.tolerance_for_extend = 0.5;
 				align_goal.auto_place = true;
 				align_goal.grid_id = 2 + grid_position;
 				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
@@ -405,8 +407,9 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			if (success) {
 				moved = true;
 				pathed = true;
-				align_goal.percent_to_extend = 0.8;
-				align_goal.auto_place = false;
+				align_goal.tolerance = 0.01;
+				align_goal.tolerance_for_extend = 0.5;
+				align_goal.auto_place = true;
 				align_goal.grid_id = 3 + grid_position;
 				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;

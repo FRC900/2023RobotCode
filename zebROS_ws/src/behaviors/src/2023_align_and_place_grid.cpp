@@ -6,12 +6,11 @@
 // find closest apriltag to desired location, calculate offset, call path_to_apriltag
 #include "ros/ros.h"
 #include <actionlib/server/simple_action_server.h>
-#include "behavior_actions/AlignToGrid2023Action.h"
+#include "behavior_actions/AlignToGridPID2023Action.h"
 #include "behavior_actions/AlignAndPlaceGrid2023Action.h"
 #include "behavior_actions/PathToAprilTagAction.h"
 #include <actionlib/client/simple_action_client.h>
 #include <behavior_actions/Placing2023Action.h>
-#include <behavior_actions/AlignToGrid2023Action.h>
 #include <path_follower_msgs/PathAction.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float64.h>
@@ -27,7 +26,7 @@ protected:
   behavior_actions::AlignAndPlaceGrid2023Feedback feedback_;
   behavior_actions::AlignAndPlaceGrid2023Result result_;
   ros::Subscriber sub_;
-  actionlib::SimpleActionClient<behavior_actions::AlignToGrid2023Action> align_to_goal_ac;
+  actionlib::SimpleActionClient<behavior_actions::AlignToGridPID2023Action> align_to_goal_ac;
   actionlib::SimpleActionClient<behavior_actions::Placing2023Action> placing_ac;
   ros::Publisher cmd_vel_pub_;
   ros::Publisher orientation_command_pub_;
@@ -36,8 +35,8 @@ protected:
   double xOffset_;
   double holdPosTimeout_;
   double latest_yaw_;
-  double percent_complete_{};
-  double desired_percent_complete_;
+  double current_error_{};
+  double desired_current_error_;
   bool started_moving_elevator_;
   bool moved_ = false;
   uint8_t alliance_;
@@ -92,8 +91,8 @@ public:
     moved_ = !moved_;
   }
 
-  void feedbackCB(const  behavior_actions::AlignToGrid2023FeedbackConstPtr& feedback) {
-    percent_complete_ = feedback->percent_complete;
+  void feedbackCB(const  behavior_actions::AlignToGridPID2023FeedbackConstPtr& feedback) {
+    current_error_ =  hypot(feedback->x_error, feedback->y_error);
   }
 
   void controlEffortCB(const std_msgs::Float64ConstPtr& msg) {
@@ -115,30 +114,29 @@ public:
     uint8_t node = goal->node;
     ROS_INFO_STREAM("Align and place grid callback!");
     
-    behavior_actions::AlignToGrid2023Goal grid_goal;
+    behavior_actions::AlignToGridPID2023Goal grid_goal;
     
-    grid_goal.alliance = goal->alliance;
+    grid_goal.tolerance = goal->tolerance;
     grid_goal.grid_id = goal->grid_id; 
     ros::Rate r(10);
-    for (int i = 0; i <= 1; ++i) {
-        align_to_goal_ac.sendGoal(grid_goal, /* Done cb */ NULL, /*Active*/ NULL, boost::bind(&AlignAndPlaceGridAction::feedbackCB, this, _1));
-        
-        while (!align_to_goal_ac.getState().isDone()) {
-            ros::spinOnce();
-            if (as_.isPreemptRequested() || !ros::ok())
-            {
-                handle_preempt();
-                return;
-            }
-            if (percent_complete_ >= goal->percent_to_extend && !started_moving_elevator) {
-                ROS_INFO_STREAM("Sending elevator!");
-                started_moving_elevator = true;
-                place(node, game_piece);
-            }
-            r.sleep();
+    align_to_goal_ac.sendGoal(grid_goal, /* Done cb */ NULL, /*Active*/ NULL, boost::bind(&AlignAndPlaceGridAction::feedbackCB, this, _1));
+    
+    while (!align_to_goal_ac.getState().isDone()) {
+        ros::spinOnce();
+        if (as_.isPreemptRequested() || !ros::ok())
+        {
+            handle_preempt();
+            return;
         }
+        if (current_error_ >= goal->tolerance_for_extend && !started_moving_elevator) {
+            ROS_INFO_STREAM("Sending elevator!");
+            started_moving_elevator = true;
+            place(node, game_piece);
+        }
+        r.sleep();
     }
-
+    
+    /* 
     path_finished_time = ros::Time::now();
     std_msgs::Float64 msg;
     msg.data = M_PI;
@@ -173,7 +171,7 @@ public:
         cmd_vel_pub_.publish(cmd_vel);
         r.sleep();
     }
-
+    */
     if (started_moving_elevator && placing_ac.getState().isDone() && goal->auto_place) {
         ROS_INFO_STREAM("Full auto placing");
         place(node, game_piece);
