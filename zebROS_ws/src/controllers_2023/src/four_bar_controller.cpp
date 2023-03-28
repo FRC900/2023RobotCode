@@ -279,7 +279,7 @@ void FourBarController_2023::update(const ros::Time &time, const ros::Duration &
     }
     else
     {
-        // last_zeroed_ = false; // only zero once
+        last_zeroed_ = false;
     }
     
     if (zeroed_) // run normally, seeking to various positions
