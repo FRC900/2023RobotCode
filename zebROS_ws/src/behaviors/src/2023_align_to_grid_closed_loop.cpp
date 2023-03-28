@@ -335,20 +335,20 @@ public:
     // right now it finds the one closest to the robot
     // I'm not sure what is most accurate
     geometry_msgs::Point offset;
-    offset.x = 0.9; // base_link not front_bumper
+    offset.x = 0.7; // base_link not front_bumper
 
     geometry_msgs::Point tagLocation = offset; // just to start
 
     x_axis.setEnable(true);
     y_axis.setEnable(true);
     auto closestTag = findClosestApriltag(latest_);
-    if (closestTag == std::nullopt) {
-        ROS_ERROR_STREAM("2023_align_to_grid_closed_loop : Must be able to see an apriltag! :(");
-        as_.setPreempted();
-        x_axis.setEnable(false);
-        y_axis.setEnable(false);
-        return;
-    }
+    // if (closestTag == std::nullopt) {
+    //     ROS_ERROR_STREAM("2023_align_to_grid_closed_loop : Must be able to see an apriltag! :(");
+    //     as_.setPreempted();
+    //     x_axis.setEnable(false);
+    //     y_axis.setEnable(false);
+    //     return;
+    // }
     int missed_frames = 0;
     while (hypot(x_error_, y_error_) > goal->tolerance) {
         ros::spinOnce(); // grab latest callback data
@@ -365,8 +365,8 @@ public:
         if (closestTag == std::nullopt) {
             ROS_ERROR_STREAM("2023_align_to_grid_closed_loop : Could not find apriltag for this frame! :(");
             missed_frames++;
-            if (missed_frames >= 5) {
-              ROS_ERROR_STREAM("Missed more than 5 frames of tag! Aborting");
+            if (missed_frames >= 10) {
+              ROS_ERROR_STREAM("Missed more than 10 frames of tag! Aborting");
               as_.setPreempted();
               x_axis.setEnable(false);
               y_axis.setEnable(false);

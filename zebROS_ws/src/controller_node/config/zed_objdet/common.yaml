@@ -45,7 +45,7 @@ depth:
 
 pos_tracking:
     pos_tracking_enabled:       true                            # True to enable positional tracking from start
-    publish_tf:                 true                            # publish `odom -> base_link` TF
+    publish_tf:                 false                           # publish `odom -> base_link` TF
     publish_map_tf:             false                           # publish `map -> odom` TF
     map_frame:                  'zed_objdet_map'
     odometry_frame:             'zed_objdet_odom'
@@ -57,7 +57,7 @@ pos_tracking:
     init_odom_with_first_valid_pose: true                       # Enable to initialize the odometry with the first valid pose
     path_pub_rate:              2.0                             # Camera trajectory publishing frequency
     path_max_count:             -1                              # use '-1' for unlimited path size
-    two_d_mode:                 true                            # Force navigation on a plane. If true the Z value will be fixed to "fixed_z_value", roll and pitch to zero
+    two_d_mode:                 false                            # Force navigation on a plane. If true the Z value will be fixed to "fixed_z_value", roll and pitch to zero
     fixed_z_value:              0.00                            # Value to be used for Z coordinate if `two_d_mode` is true
 
 mapping:

@@ -93,6 +93,7 @@ public:
 
   void feedbackCB(const  behavior_actions::AlignToGridPID2023FeedbackConstPtr& feedback) {
     current_error_ =  hypot(feedback->x_error, feedback->y_error);
+    ROS_INFO_STREAM("**************************** current error = " << current_error_);
   }
 
   void controlEffortCB(const std_msgs::Float64ConstPtr& msg) {
@@ -128,8 +129,8 @@ public:
             handle_preempt();
             return;
         }
-        if (current_error_ >= goal->tolerance_for_extend && !started_moving_elevator) {
-            ROS_INFO_STREAM("Sending elevator!");
+        if (current_error_ <= goal->tolerance_for_extend && !started_moving_elevator) {
+            ROS_WARN_STREAM("******************************* Sending elevator!");
             started_moving_elevator = true;
             place(node, game_piece);
         }
@@ -172,9 +173,17 @@ public:
         r.sleep();
     }
     */
-    if (started_moving_elevator && placing_ac.getState().isDone() && goal->auto_place) {
-        ROS_INFO_STREAM("Full auto placing");
-        place(node, game_piece);
+    if (started_moving_elevator && goal->auto_place) {
+      while (!placing_ac.getState().isDone()) {
+        if (!ros::ok() || as_.isPreemptRequested()) {
+          as_.setPreempted();
+          placing_ac.cancelGoalsAtAndBeforeTime(ros::Time::now());
+          ROS_ERROR_STREAM("2023_align_and_place_grid : preempted");
+          return;
+        }
+      }
+      ROS_INFO_STREAM("Full auto placing");
+      place(node, game_piece);
     }
     else {
         ROS_INFO_STREAM("Finished aligned to goal");
