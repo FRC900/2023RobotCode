@@ -754,7 +754,7 @@ class AutoNode {
 		goal.auto_place = true;
 		goal.step = 0;
 		goal.tolerance = 0.03;
-		goal.tolerance_for_extend = 0.3;
+		goal.tolerance_for_extend = 1.0;
 
 		uint8_t requested_game_piece = 255;
 
