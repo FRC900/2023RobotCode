@@ -137,7 +137,6 @@ public:
         r.sleep();
     }
     
-    /* 
     path_finished_time = ros::Time::now();
     std_msgs::Float64 msg;
     msg.data = M_PI;
@@ -157,22 +156,6 @@ public:
         r.sleep();
     }
 
-    ros::Time started_orient_time = ros::Time::now();
-    while (orient_effort_ > 0.1 && (ros::Time::now() - started_orient_time) < ros::Duration(rotate_time_)) {
-        ros::spinOnce();
-        ROS_INFO_STREAM_THROTTLE(0.4, "Aligning to wall, we aren't rotated correctly");
-        orientation_command_pub_.publish(msg);
-        geometry_msgs::Twist cmd_vel;
-        cmd_vel.linear.x = 0.0; // green button states
-        cmd_vel.linear.y = 0.0;
-        cmd_vel.linear.z = 0.0;
-        cmd_vel.angular.x = 0.0;
-        cmd_vel.angular.y = 0.0;
-        cmd_vel.angular.z = orient_effort_;
-        cmd_vel_pub_.publish(cmd_vel);
-        r.sleep();
-    }
-    */
     if (started_moving_elevator && goal->auto_place) {
       while (!placing_ac.getState().isDone()) {
         if (!ros::ok() || as_.isPreemptRequested()) {
