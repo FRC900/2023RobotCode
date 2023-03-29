@@ -270,6 +270,7 @@ void FourBarController_2023::update(const ros::Time &time, const ros::Duration &
         ROS_INFO_THROTTLE(2, "FourBarController_2023 : hit limit switch");
         if (!last_zeroed_)
         {
+            ROS_INFO_STREAM("four bar controller 2023 : zeroed");
             zeroed_ = true;
             last_zeroed_ = true;
             four_bar_joint_.setSelectedSensorPosition(0); // relative to min position
