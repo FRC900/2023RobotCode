@@ -80,7 +80,7 @@ public:
 	}
 
 	template<class C, class S>
-	bool waitForResultAndCheckForPreempt(const ros::Duration & timeout, actionlib::SimpleActionClient<C> & ac, actionlib::SimpleActionServer<S> & as, bool preempt_at_timeout = false, boost::function<bool()> should_exit = [](){return false;})
+	bool waitForResultAndCheckForPreempt(const ros::Duration & timeout, actionlib::SimpleActionClient<C> & ac, actionlib::SimpleActionServer<S> & as, bool preempt_at_timeout = false, boost::function<bool()> should_exit = [](){return false;}, double rate = 10)
 	{
 		bool negative_timeout = false;
 		if (timeout < ros::Duration(0, 0)) {
@@ -90,7 +90,7 @@ public:
 
 		ros::Time timeout_time = ros::Time::now() + timeout;
 
-		ros::Rate r(10);
+		ros::Rate r(rate);
 
 		while (ros::ok() && !as.isPreemptRequested()) {
 			ros::spinOnce();
@@ -319,7 +319,7 @@ public:
 			
 			path_ac_.sendGoal(pathGoal);
 
-			if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), path_ac_, as_) && path_ac_.getState() == path_ac_.getState().SUCCEEDED)) {
+			if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), path_ac_, as_, false, [](){return false;}, 100) && path_ac_.getState() == path_ac_.getState().SUCCEEDED)) {
 				ROS_INFO_STREAM("2023_placing_server : pather timed out, aborting");
 				result_.success = false;
 				as_.setAborted(result_);

@@ -48,7 +48,7 @@ auto_mode_21: ["place_cone_high", "pick_place_cube_from_grid_1_mirrored", "place
 auto_mode_22: ["place_cone_high", "pick_place_cone_from_grid_1_mirrored", "place_cone_high"] # cone, cone
 auto_mode_23: ["place_cone_high", "pick_place_cone_from_grid_1_mirrored", "place_cone_high", "pick_from_grid_3_mirrored"] # cone, cone, pick
 
-auto_mode_24: ["pause_5_sec", "pick_place_cube_from_grid_1_mirrored_no_rotation", "pause_0_25", "align_and_place_cube_grid_2", "pause_5_sec"]
+auto_mode_24: ["place_cone_high", "pick_place_cube_from_grid_1_mirrored_no_rotation", "pause_0_25", "align_and_place_cube_grid_2", "place_cube_high"]
 
 # Examples3
 #auto_mode_1: ["tuning"]

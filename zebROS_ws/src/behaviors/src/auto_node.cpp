@@ -71,7 +71,7 @@ class AutoNode {
 
 		std::function<void()> preemptAll_;
 		// I don't really see us ever actually needing to config this, but it is pretty easy to do
-		ros::Rate r_ = ros::Rate(10);
+		ros::Rate r_ = ros::Rate(100);
 		// Used to pass in dynamic paths from other nodes
 		// Map of the auto action to the function to be called
 		// Edit here if for changing auto year to year
