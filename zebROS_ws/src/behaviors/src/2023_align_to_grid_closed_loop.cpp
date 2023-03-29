@@ -335,7 +335,7 @@ public:
     // right now it finds the one closest to the robot
     // I'm not sure what is most accurate
     geometry_msgs::Point offset;
-    offset.x = 0.7; // base_link not front_bumper
+    offset.x = 0.8; // base_link not front_bumper
 
     geometry_msgs::Point tagLocation = offset; // just to start
 
