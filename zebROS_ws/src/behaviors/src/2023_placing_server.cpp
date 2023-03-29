@@ -30,7 +30,8 @@ protected:
 
 	double server_timeout_;
 	double game_piece_timeout_;
-	double outtake_time_;
+	double outtake_cube_time_;
+	double outtake_cone_time_;
 	double time_before_reverse_;
 
 	double elevator_threshold_;
@@ -61,9 +62,13 @@ public:
 			ROS_WARN_STREAM("2023_placing_server : could not find game_piece_timeout, defaulting to 1 second");
 			game_piece_timeout_ = 1;
 		}
-		if (!nh_.getParam("outtake_time", outtake_time_)) {
-			ROS_WARN_STREAM("2023_placing_server : could not find outtake_time, defaulting to 1 second");
-			outtake_time_ = 1;
+		if (!nh_.getParam("outtake_cube_time", outtake_cube_time_)) {
+			ROS_WARN_STREAM("2023_placing_server : could not find outtake_cube_time, defaulting to 0.5 seconds");
+			outtake_cube_time_ = 0.5;
+		}
+		if (!nh_.getParam("outtake_cone_time", outtake_cone_time_)) {
+			ROS_WARN_STREAM("2023_placing_server : could not find outtake_cone_time, defaulting to 1 second");
+			outtake_cone_time_ = 1;
 		}
 		if (!nh_.getParam("elevator_threshold", elevator_threshold_)) {
 			// if elevator position < than this, move up. otherwise, place and retract. this only happens if align_intake is not set.
@@ -297,7 +302,7 @@ public:
 			intaking_goal_.outtake = game_piece == goal->CUBE ? intaking_goal_.OUTTAKE_CUBE : intaking_goal_.OUTTAKE_CONE; // don't change this
 			ac_intaking_.sendGoal(intaking_goal_);
 
-			if (!(waitForResultAndCheckForPreempt(ros::Duration(outtake_time_), ac_intaking_, as_, true) && ac_intaking_.getState() == ac_intaking_.getState().SUCCEEDED)) {
+			if (!(waitForResultAndCheckForPreempt(ros::Duration(goal->CUBE ? outtake_cube_time_ : outtake_cone_time_), ac_intaking_, as_, true, [](){return false;}, 100) && ac_intaking_.getState() == ac_intaking_.getState().SUCCEEDED)) {
 				if (ac_intaking_.getState() == actionlib::SimpleClientGoalState::ACTIVE || ac_intaking_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
 					ROS_INFO_STREAM("2023_placing_server : stopping outtaking");
 					ac_intaking_.cancelGoalsAtAndBeforeTime(ros::Time::now());
@@ -319,13 +324,13 @@ public:
 			
 			path_ac_.sendGoal(pathGoal);
 
-			if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), path_ac_, as_, false, [](){return false;}, 100) && path_ac_.getState() == path_ac_.getState().SUCCEEDED)) {
-				ROS_INFO_STREAM("2023_placing_server : pather timed out, aborting");
-				result_.success = false;
-				as_.setAborted(result_);
-				path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-				return;
-			}
+			// if (!(waitForResultAndCheckForPreempt(ros::Duration(-1), path_ac_, as_, false, [](){return false;}, 100) && path_ac_.getState() == path_ac_.getState().SUCCEEDED)) {
+			// 	ROS_INFO_STREAM("2023_placing_server : pather timed out, aborting");
+			// 	result_.success = false;
+			// 	as_.setAborted(result_);
+			// 	path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+			// 	return;
+			// }
 
 			result_.success = true;
 			as_.setSucceeded(result_);

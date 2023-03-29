@@ -195,6 +195,10 @@ protected:
   std::map<int, GridLocation> gridLocations_; // should probably be uint8_t
   std::map<int, geometry_msgs::TransformStamped> tag_to_map_tfs_;
 
+  ros::Publisher orientation_command_pub_;
+  ros::Subscriber control_effort_sub_;
+  double orient_effort_;
+
 public:
 
   AlignToGridAction(std::string name) :
@@ -202,7 +206,9 @@ public:
     action_name_(name),
     sub_(nh_.subscribe<field_obj::Detection>("/tf_object_detection/tag_detection_world", 1, &AlignToGridAction::callback, this)),
     ac_hold_position_("/hold_position/hold_position_server", true),
-    tf_listener_(tf_buffer_)
+    tf_listener_(tf_buffer_),
+    orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1)),
+    control_effort_sub_(nh_.subscribe<std_msgs::Float64>("/teleop/orient_strafing/control_effort", 1, &AlignToGridAction::controlEffortCB, this))
   {
     game_piece_sub_ = nh_.subscribe("/game_piece/game_piece_state", 1, &AlignToGridAction::gamePieceCallback, this);
 
@@ -257,6 +263,10 @@ public:
 
   ~AlignToGridAction(void)
   {
+  }
+
+  void controlEffortCB(const std_msgs::Float64ConstPtr& msg) {
+    orient_effort_ = msg->data;
   }
 
   void gamePieceCallback(const behavior_actions::GamePieceState2023ConstPtr &msg) {
@@ -350,7 +360,11 @@ public:
     //     return;
     // }
     int missed_frames = 0;
-    while (hypot(x_error_, y_error_) > goal->tolerance) {
+    std_msgs::Float64 msg;
+    msg.data = M_PI;
+    orientation_command_pub_.publish(msg);
+    uint8_t valid_frames = 0;
+    while (hypot(x_error_, y_error_) > goal->tolerance || valid_frames < 15) {
         ros::spinOnce(); // grab latest callback data
         if (as_.isPreemptRequested() || !ros::ok())
         {
@@ -365,16 +379,19 @@ public:
         if (closestTag == std::nullopt) {
             ROS_ERROR_STREAM("2023_align_to_grid_closed_loop : Could not find apriltag for this frame! :(");
             missed_frames++;
-            if (missed_frames >= 10) {
-              ROS_ERROR_STREAM("Missed more than 10 frames of tag! Aborting");
-              as_.setPreempted();
+            if (missed_frames >= 20) {
+              ROS_ERROR_STREAM("Missed more than 20 frames of tag! Aborting");
               x_axis.setEnable(false);
               y_axis.setEnable(false);
+              as_.setPreempted();
               return;
             }
+            r.sleep();
             continue;
         }
         else {
+          x_axis.setEnable(true);
+          y_axis.setEnable(true);
           missed_frames = 0;
         }
 
@@ -443,9 +460,13 @@ public:
         geometry_msgs::Twist t;
         t.linear.x = x_eff_;
         t.linear.y = y_eff_;
+        t.angular.z = orient_effort_;
         cmd_vel_pub_.publish(t);
         feedback_.x_error = x_error_;
         feedback_.y_error = y_error_;
+        if (hypot(x_error_, y_error_) <= goal->tolerance) {
+          valid_frames++;
+        }
         as_.publishFeedback(feedback_);
         r.sleep();
         ROS_INFO_STREAM("offset = " << offset.x << " " << offset.y << " " << offset.z);

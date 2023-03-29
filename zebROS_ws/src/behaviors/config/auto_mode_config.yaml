@@ -43,7 +43,7 @@ auto_mode_16: ["pick_place_cone_from_grid_1"]
 auto_mode_17: ["pick_from_grid_3"]
 auto_mode_18: ["pick_place_cone_from_grid_1", "drive_into_grid", "pick_from_grid_3"] # 2.5 piece auto!
 
-auto_mode_20: ["place_cone_high", "pick_place_cube_from_grid_1_mirrored", "pause_0_25", "align_and_place_cube_grid_2"] # cone, cube
+auto_mode_20: ["place_cone_high", "pick_place_cube_from_grid_1_mirrored", "align_and_place_cube_grid_2"] # cone, cube
 auto_mode_21: ["place_cone_high", "pick_place_cube_from_grid_1_mirrored", "place_cube_high", "pick_from_grid_2_mirrored"] # cone, cube, pick
 auto_mode_22: ["place_cone_high", "pick_place_cone_from_grid_1_mirrored", "place_cone_high"] # cone, cone
 auto_mode_23: ["place_cone_high", "pick_place_cone_from_grid_1_mirrored", "place_cone_high", "pick_from_grid_3_mirrored"] # cone, cone, pick
@@ -114,7 +114,7 @@ pick_place_cube_from_grid_1_mirrored:
       frame_id: "base_link"
       points:
         - [-0.7, 0.23, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.58, 4.758, 3.14]
-        - [-3.99, 0.23, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [5.87, 4.758, 0.0]
+        # - [-3.99, 0.23, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [5.87, 4.758, 0.0]
         - [-4.12, 0.37, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.608, 0.0]
         - [-4.62, 0.37, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.5, 4.608, 0.0]
         - [-5.12, 0.37, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [7.0, 4.608, 0.0]
@@ -169,7 +169,7 @@ pick_place_cone_from_grid_1_mirrored:
       frame_id: "base_link"
       points:
         - [-0.7, 0.23, 0.0] # origin: [1.88, 4.989, 3.14], map-relative: [2.58, 4.758, 3.14]
-        - [-3.99, 0.23, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [5.87, 4.758, 0.0]
+        # - [-3.99, 0.23, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [5.87, 4.758, 0.0]
         - [-4.12, 0.37, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.0, 4.608, 0.0]
         - [-4.62, 0.37, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [6.5, 4.608, 0.0]
         - [-5.12, 0.37, 3.14] # origin: [1.88, 4.989, 3.14], map-relative: [7.0, 4.608, 0.0]

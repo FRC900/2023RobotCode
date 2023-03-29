@@ -340,7 +340,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			if (success) {
 				moved = true;
 				pathed = true;
-				align_goal.tolerance = 0.01;
+				align_goal.tolerance = 0.03;
 				align_goal.tolerance_for_extend = 0.5;
 				align_goal.auto_place = true;
 				align_goal.grid_id = 1 + grid_position;
@@ -374,7 +374,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 			if (success) {
 				moved = true;
-				align_goal.tolerance = 0.01;
+				align_goal.tolerance = 0.03;
 				align_goal.tolerance_for_extend = 0.5;
 				align_goal.auto_place = true;
 				align_goal.grid_id = 2 + grid_position;
@@ -407,7 +407,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			if (success) {
 				moved = true;
 				pathed = true;
-				align_goal.tolerance = 0.01;
+				align_goal.tolerance = 0.03;
 				align_goal.tolerance_for_extend = 0.5;
 				align_goal.auto_place = true;
 				align_goal.grid_id = 3 + grid_position;
