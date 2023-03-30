@@ -364,7 +364,7 @@ public:
     msg.data = M_PI;
     orientation_command_pub_.publish(msg);
     uint8_t valid_frames = 0;
-    while (hypot(x_error_, y_error_) > goal->tolerance || valid_frames < 15) {
+    while (hypot(x_error_, y_error_) > goal->tolerance || valid_frames < 4) {
         ros::spinOnce(); // grab latest callback data
         if (as_.isPreemptRequested() || !ros::ok())
         {

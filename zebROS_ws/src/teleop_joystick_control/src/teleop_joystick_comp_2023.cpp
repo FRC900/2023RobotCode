@@ -342,7 +342,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				pathed = true;
 				align_goal.tolerance = 0.03;
 				align_goal.tolerance_for_extend = 0.25;
-				align_goal.auto_place = true;
+				align_goal.auto_place = false;
 				align_goal.grid_id = 1 + grid_position;
 				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;
@@ -409,7 +409,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				pathed = true;
 				align_goal.tolerance = 0.03;
 				align_goal.tolerance_for_extend = 0.25;
-				align_goal.auto_place = true;
+				align_goal.auto_place = false;
 				align_goal.grid_id = 3 + grid_position;
 				ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
 				align_goal.node = node;
