@@ -371,6 +371,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		ROS_INFO_STREAM("AutoPlaceState == ALIGNING");
 	}
 	if(button_box.gridSelectConeLeftPress || button_box.gridSelectConeRightPress) {
+		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
 		last_no_driver_input = false;
 		if (use_pathing) {
 			if (auto_place_state == AutoPlaceState::PLACING) {
