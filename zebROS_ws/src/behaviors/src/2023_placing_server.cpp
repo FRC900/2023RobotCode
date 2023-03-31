@@ -12,6 +12,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/Twist.h>
+#include <angles/angles.h>
 
 double getYaw(const geometry_msgs::Quaternion &o) {
     tf2::Quaternion q;
@@ -324,7 +325,7 @@ public:
 			result_.success = true;
 			as_.setSucceeded(result_);
 		} else {
-			if (fabs(latest_yaw_ - M_PI) > imu_tolerance_) {
+			if (angles::shortest_angular_distance(latest_yaw_, M_PI) > imu_tolerance_) {
 				ROS_ERROR_STREAM("2023_placing_server : IMU too far away (" << latest_yaw_ << "rad) from pi radians! Exiting!");
 				result_.success = false;
 				as_.setAborted(result_);
@@ -357,11 +358,11 @@ public:
 			}
 
 			ros::Duration(time_before_reverse_).sleep();
-
 			ros::Rate r(50);
+			ros::Time move_back_time = ros::Time::now();
 
 			if (!goal->no_drive_back) {
-				while (ros::Time::now() - path_finished_time < ros::Duration(drive_back_time_)) {
+				while ((ros::Time::now() - move_back_time) < ros::Duration(drive_back_time_)) {
 					ros::spinOnce();
 					ROS_INFO_STREAM_THROTTLE(0.1, "2023_placing_server : driving backwards");
 					geometry_msgs::Twist cmd_vel;
@@ -374,10 +375,18 @@ public:
 					cmd_vel_pub_.publish(cmd_vel);
 					r.sleep();
 				}
+				geometry_msgs::Twist cmd_vel;
+				cmd_vel.linear.x = 0.0; 
+				cmd_vel.linear.y = 0.0;
+				cmd_vel.linear.z = 0.0;
+				cmd_vel.angular.x = 0.0;
+				cmd_vel.angular.y = 0.0;
+				cmd_vel.angular.z = 0.0;
+				cmd_vel_pub_.publish(cmd_vel);
 			}
 
 			ROS_INFO_STREAM("2023_placing_server : reversing path!");
-
+			
 			pathGoal.path = pathForGamePiece(game_piece, goal->node) + "_reverse";
 			pathGoal.reverse = false;
 			
