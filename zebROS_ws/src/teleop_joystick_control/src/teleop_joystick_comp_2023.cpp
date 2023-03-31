@@ -237,6 +237,7 @@ bool use_pathing = false;
 double grid_position = 0;
 bool moved = false;
 bool pathed = false;
+bool no_autoplace = false;
 
 void place() {
 	behavior_actions::Placing2023Goal goal;
@@ -330,7 +331,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.topRightCubeRelease) {
 	}
 
-	if(button_box.gridSelectConeLeftButton && no_driver_input && !pathed) {
+	if(button_box.gridSelectConeLeftButton && no_driver_input && !pathed && !no_autoplace) {
 		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
 		if (use_pathing && !pathed) {
 			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
@@ -354,17 +355,20 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			ROS_INFO_STREAM("Placing a cone!");
 			place();
 			pathed = false;
+			no_autoplace = true;
 		}
 	}
 	if(button_box.gridSelectConeLeftRelease) {
+		no_autoplace = false;
 	}
 
-	if(button_box.gridSelectCubeButton && no_driver_input && !pathed) {
+	if(button_box.gridSelectCubeButton && no_driver_input && !pathed && !no_autoplace) {
 		game_piece = behavior_actions::Placing2023Goal::CUBE;
-		if (use_pathing && !pathed) {
+		if (use_pathing && !pathed && !moved) {
 			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
 			align_goal.alliance = alliance_color;
 			moved = true;
+			pathed = true;
 			align_goal.tolerance = 0.05;
 			align_goal.tolerance_for_extend = 0.25;
 			align_goal.auto_place = true;
@@ -378,16 +382,17 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		}
 	}
 	if(button_box.gridSelectCubePress) {
-		if (pathed || moved || !use_pathing) {
+		if (!use_pathing) {
 			ROS_INFO_STREAM("Placing a cube!");
 			place();
-			pathed = false;
 		}
 	}
 	if(button_box.gridSelectCubeRelease) {
+		pathed = false;
+		moved = false;
 	}
 
-	if(button_box.gridSelectConeRightButton && no_driver_input && !pathed) {
+	if(button_box.gridSelectConeRightButton && no_driver_input && !pathed && !no_autoplace) {
 		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
 		if (use_pathing && !pathed) {
 			behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
@@ -412,10 +417,12 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			ROS_INFO_STREAM("Placing a cone!");
 			place();
 			pathed = false;
+			no_autoplace = true;
 		}
 		// slow mode
 	}
 	if(button_box.gridSelectConeRightRelease) {
+		no_autoplace = false;
 	}
 
 	if(button_box.heightSelectSwitchUpButton) {

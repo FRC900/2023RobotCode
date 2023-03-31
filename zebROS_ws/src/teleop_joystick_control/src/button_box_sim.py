@@ -39,6 +39,8 @@ while True:
     print(up_down_mid, left_right_mid)
     msg = bindKey(key, 'g', "gridSelectCube", msg)
     msg = bindKey(key, 'h', "gridSelectConeRight", msg)
+
+    msg.lockingSwitchButton = True
     
     if key == ord('q'):
         up_down_mid = "Up"
