@@ -151,6 +151,7 @@ bool set_leds_green_callback(std_srvs::Empty::Request &req, std_srvs::Empty::Res
     ctx.updated = true;
     ctx.OVERRIDE_GREEN = true;
     ctx.last_green_time = ros::Time::now();
+    return true;
 }
 
 int main(int argc, char **argv) {

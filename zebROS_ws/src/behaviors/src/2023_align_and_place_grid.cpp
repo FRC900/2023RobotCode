@@ -102,6 +102,7 @@ public:
 
   void executeCB(const behavior_actions::AlignAndPlaceGrid2023GoalConstPtr &goal)
   {
+    current_error_ = 900;
     if (!align_to_goal_ac.isServerConnected()) {
       ROS_ERROR_STREAM("2023_align_and_place_grid : align to grid server not running!!! this is unlikely to work");
     }
