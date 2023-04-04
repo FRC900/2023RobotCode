@@ -2,6 +2,7 @@
 #include <std_srvs/Trigger.h>
 #include "talon_state_msgs/TalonState.h"
 #include <fstream>
+#include <angles/angles.h>
 
 /*
 Procedure
@@ -36,7 +37,7 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 		{
 			offsets_file << "    " << it->second << ":" << std::endl;
 			// Subtracing from pi because that is what worked before
-			double offset = M_PI - fmod(talon_state_msg.position[i] - M_PI / 2.0, 2.0 * M_PI);
+			double offset = angles::normalize_angle(M_PI - fmod(talon_state_msg.position[i] - M_PI / 2.0, 2.0 * M_PI));
 			ROS_INFO_STREAM("OFFSET: " << offset);
 			offsets_file << "        offset: " << offset << std::endl;
 		}
