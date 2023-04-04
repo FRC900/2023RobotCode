@@ -1079,7 +1079,7 @@ class AutoNode {
 
 		while (ros::ok() && !auto_stopped_ && ((ros::Time::now() - start_time) < duration))
 		{
-			cmd_vel.angular.z = current_orient_effort_;
+			cmd_vel.angular.z = current_orient_effort_ if ;
 			cmd_vel_pub_.publish(cmd_vel);
 			rate.sleep();
 		}
