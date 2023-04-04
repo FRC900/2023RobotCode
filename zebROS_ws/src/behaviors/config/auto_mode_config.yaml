@@ -22,9 +22,9 @@ auto_mode_1: ["place_cone_high", "pause_tiny", "pick_place_cube_from_grid_1_mirr
 auto_mode_2: ["place_cone_high", "drive_across_charge_station", "balance_facing_towards"]
 auto_mode_3: ["place_cone_high", "drive_out_community"]
 
-auto_mode_4: ["drive_out_community"]
+auto_mode_4: ["drive_out_community", "snap_0_before_intake"]
 auto_mode_5: ["balance_facing_away"]
-auto_mode_6: ["drive_out_community"]
+auto_mode_6: ["drive_out_community", "snap_180_before_intake"]
 
 auto_mode_7: ["place_cone_high"]
 auto_mode_8: ["drive_forward"]
@@ -70,6 +70,15 @@ auto_mode_26: ["drive_across_charge_station"]
 # must have a value for "type", other stuff varies
 #valid action types: "intake_actionlib_server", "pause", "elevator_actionlib_server"
 ros_rate: 10 # in ms, used for all ros rate calls
+angle_tolerance: 0.00872665 # 0.5 degrees
+
+snap_180_before_intake:
+    type: snap_to_orientation
+    angle: 3.14159268 # radians, and i love sig figs
+
+snap_0_before_intake:
+    type: snap_to_orientation
+    angle: 0.0
 
 drive_across_charge_station:
     type: cmd_vel
