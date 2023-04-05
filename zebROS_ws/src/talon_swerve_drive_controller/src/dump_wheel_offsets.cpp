@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include "talon_state_msgs/TalonState.h"
+#include "talon_state_msgs/TalonConfig.h"
 #include <fstream>
 #include <angles/angles.h>
 
@@ -13,6 +14,7 @@ Procedure
 */
 
 talon_state_msgs::TalonState talon_state_msg;
+talon_state_msgs::TalonConfig talon_config_msg;
 
 bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Response& /*res*/)
 {
@@ -36,8 +38,12 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 		if (it != offset_joint_names.end())
 		{
 			offsets_file << "    " << it->second << ":" << std::endl;
-			// Subtracing from pi because that is what worked before
 			double offset = angles::normalize_angle(M_PI - fmod(talon_state_msg.position[i] - M_PI / 2.0, 2.0 * M_PI));
+			if (!talon_config_msg.invert[i]) {
+				offset = fmod(talon_state_msg.position[i] - M_PI / 2., 2. * M_PI); 
+			}
+
+			// Subtracing from pi because that is what worked before
 			ROS_INFO_STREAM("OFFSET: " << offset);
 			offsets_file << "        offset: " << offset << std::endl;
 		}
@@ -49,6 +55,11 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 void talon_states_cb(const talon_state_msgs::TalonState& msg)
 {
 	talon_state_msg = msg;
+}
+
+void talon_config_cb(const talon_state_msgs::TalonConfig& msg)
+{
+	talon_config_msg = msg;
 }
 
 int main(int argc, char ** argv)
