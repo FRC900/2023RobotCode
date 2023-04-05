@@ -24,11 +24,18 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 	std::ofstream offsets_file(offsets_file_name.str());
 
 	// TODO : make these config items, maybe?
-	std::map<std::string, std::string> offset_joint_names;
+	const std::map<std::string, std::string> offset_joint_names{
+		{"fl_angle", "steering_joint_fl"},
+		{"fr_angle", "steering_joint_fr"},
+		{"bl_angle", "steering_joint_bl"},
+		{"br_angle", "steering_joint_br"}
+	};
+	#if 0
 	offset_joint_names["fl_angle"] = "steering_joint_fl";
 	offset_joint_names["fr_angle"] = "steering_joint_fr";
 	offset_joint_names["bl_angle"] = "steering_joint_bl";
 	offset_joint_names["br_angle"] = "steering_joint_br";
+	#endif
 
 	offsets_file << "swerve_drive_controller:" << std::endl;
 	for (size_t i = 0; i < talon_state_msg.name.size(); i++)
@@ -37,14 +44,16 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 		ROS_INFO_STREAM("index for talon: " << i);
 		if (it != offset_joint_names.end())
 		{
-			offsets_file << "    " << it->second << ":" << std::endl;
-			double offset = angles::normalize_angle(M_PI - fmod(talon_state_msg.position[i] - M_PI / 2.0, 2.0 * M_PI));
+			double offset;
 			if (!talon_config_msg.invert[i]) {
-				offset = fmod(talon_state_msg.position[i] - M_PI / 2., 2. * M_PI); 
+				offset = angles::normalize_angle(talon_state_msg.position[i] - M_PI / 2.);
+			} else {
+				offset = angles::normalize_angle(M_PI - (talon_state_msg.position[i] - M_PI / 2.0));
 			}
 
 			// Subtracing from pi because that is what worked before
 			ROS_INFO_STREAM("OFFSET: " << offset);
+			offsets_file << "    " << it->second << ":" << std::endl;
 			offsets_file << "        offset: " << offset << std::endl;
 		}
 	}
@@ -68,6 +77,7 @@ int main(int argc, char ** argv)
 	ros::NodeHandle nh;
 
 	ros::Subscriber talon_states_sub = nh.subscribe("/frcrobot_jetson/talon_states", 1, talon_states_cb);
+	ros::Subscriber talon_configs_sub = nh.subscribe("/frcrobot_jetson/talon_configs", 1, talon_config_cb);
 	ros::ServiceServer offsets_srv = nh.advertiseService("dump_offsets", get_offsets_srv);
 
 	ros::spin();
