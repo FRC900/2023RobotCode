@@ -30,12 +30,6 @@ bool get_offsets_srv(std_srvs::Trigger::Request& /*req*/, std_srvs::Trigger::Res
 		{"bl_angle", "steering_joint_bl"},
 		{"br_angle", "steering_joint_br"}
 	};
-	#if 0
-	offset_joint_names["fl_angle"] = "steering_joint_fl";
-	offset_joint_names["fr_angle"] = "steering_joint_fr";
-	offset_joint_names["bl_angle"] = "steering_joint_bl";
-	offset_joint_names["br_angle"] = "steering_joint_br";
-	#endif
 
 	offsets_file << "swerve_drive_controller:" << std::endl;
 	for (size_t i = 0; i < talon_state_msg.name.size(); i++)
