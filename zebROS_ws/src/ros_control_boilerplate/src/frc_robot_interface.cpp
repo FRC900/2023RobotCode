@@ -187,7 +187,6 @@ bool FRCRobotInterface::initDevices(ros::NodeHandle root_nh)
 	}
 	ROS_INFO_STREAM("Pausing for CTRE init");
 	ros::Duration(.25).sleep();
-	ctre_mc_init_time_ = ros::Time::now();
 	ROS_INFO_STREAM("Resuming after CTRE init");
 
 	for (size_t i = 0; i < num_can_ctre_mcs_; i++)
