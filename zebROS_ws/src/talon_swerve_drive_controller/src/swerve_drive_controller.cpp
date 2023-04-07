@@ -327,6 +327,7 @@ bool init(hardware_interface::TalonCommandInterface *hw,
 	}
 	brake_serv_ = controller_nh.advertiseService("brake", &TalonSwerveDriveController::brakeService, this);
 	reset_odom_serv_ = controller_nh.advertiseService("reset_odom", &TalonSwerveDriveController::resetOdomService, this);
+	park_serv_ = controller_nh.advertiseService("toggle_park", &TalonSwerveDriveController::parkService, this);
 	dont_set_angle_mode_serv_ = controller_nh.advertiseService("dont_set_angle", &TalonSwerveDriveController::dontSetAngleModeService, this);
 	percent_out_drive_mode_serv_ = controller_nh.advertiseService("percent_out_drive_mode", &TalonSwerveDriveController::percentOutDriveModeService, this);
 	change_center_of_rotation_serv_ = controller_nh.advertiseService("change_center_of_rotation", &TalonSwerveDriveController::changeCenterOfRotationService, this);
@@ -495,7 +496,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 	// Special case for when the drive base is stopped
 	if (fabs(curr_cmd.lin[0]) <= 1e-6 && fabs(curr_cmd.lin[1]) <= 1e-6 && fabs(curr_cmd.ang) <= 1e-6)
 	{
-		if ((time.toSec() - time_before_brake_) > parking_config_time_delay_)
+		if ((time.toSec() - time_before_brake_) > parking_config_time_delay_ && park_when_stopped_)
 		{
 			// If the time since we last moved is long enough, go into parking config
 			brake(steer_angles, time);
@@ -925,6 +926,23 @@ bool brakeService(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &
 	}
 }
 
+bool parkService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+	if (isRunning())
+	{
+		ROS_WARN_STREAM("swerve_drive_controller : park when stopped = " << req.data);
+		park_when_stopped_.store(req.data, std::memory_order_relaxed);
+		res.success = true;
+		res.message = "zebracones!"; // 2023-specific message
+		return true;
+	}
+	else
+	{
+		ROS_ERROR_NAMED(name_, "brakeService can't accept new commands. Controller is not running.");
+		return false;
+	}
+}
+
 bool dontSetAngleModeService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
 	if (isRunning())
@@ -1052,6 +1070,7 @@ realtime_tools::RealtimeBuffer<Commands> command_;
 
 std::atomic<bool> dont_set_angle_mode_; // used to lock wheels into place
 std::atomic<bool> percent_out_drive_mode_; // run drive wheels in open-loop mode
+std::atomic<bool> park_when_stopped_;
 double brake_last_{ros::Time::now().toSec()};
 double time_before_brake_{0};
 double parking_config_time_delay_{0.1};
@@ -1069,6 +1088,7 @@ realtime_tools::RealtimeBuffer<Eigen::Vector2d> center_of_rotation_;
 ros::ServiceServer brake_serv_;
 ros::ServiceServer dont_set_angle_mode_serv_;
 ros::ServiceServer percent_out_drive_mode_serv_;
+ros::ServiceServer park_serv_;
 
 ros::ServiceServer reset_odom_serv_;
 std::atomic<bool> reset_odom_{false};
