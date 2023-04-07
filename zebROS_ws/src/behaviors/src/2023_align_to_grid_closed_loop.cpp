@@ -239,6 +239,7 @@ public:
     XmlRpc::XmlRpcValue tagList;
     nh_.getParam("tags", tagList); 
     for (XmlRpc::XmlRpcValue::iterator tag=tagList.begin(); tag!=tagList.end(); ++tag) {
+      // Transform from tag coordinates to map coordinates, if the robot is facing the tag
 			geometry_msgs::TransformStamped map_to_tag;
 			map_to_tag.transform.translation.x = tag->second[0];
 			map_to_tag.transform.translation.y = tag->second[1];
@@ -246,7 +247,7 @@ public:
 			tf2::Quaternion q;
 			q.setRPY(0, 0, 0);
 			geometry_msgs::Quaternion q2m = tf2::toMsg(q);
-			map_to_tag.transform.rotation = q2m;     
+			map_to_tag.transform.rotation = q2m;
       tag_to_map_tfs_[std::stoi(tag->first.substr(3))] = map_to_tag;
       auto t = map_to_tag.transform.translation;
       ROS_INFO_STREAM("tag " << t.x << " " << t.y << " " << t.z << " #" << tag->first.substr(3));
@@ -374,6 +375,7 @@ public:
     uint8_t valid_frames = 0;
     while (hypot(x_error_, y_error_) > goal->tolerance || valid_frames < valid_frames_config_) {
         ros::spinOnce(); // grab latest callback data
+        orientation_command_pub_.publish(msg);
         if (as_.isPreemptRequested() || !ros::ok())
         {
             ROS_ERROR_STREAM("2023_align_to_grid_closed_loop : Preempted");
@@ -419,6 +421,13 @@ public:
             // no need for x to be field relative so get the x value before the transform to map
             tf_buffer_.transform(point, point_out, "base_link", ros::Duration(0.1));
             tagLocation.x = point_out.point.x;
+            tf2::Transform t;
+            geometry_msgs::TransformStamped map_to_tag;
+            tf2::Quaternion q;
+            q.setRPY(0, 0, M_PI + latest_yaw_);
+            map_to_tag.transform.rotation = tf2::toMsg(q);
+            tf2::doTransform(point_out, point_out, map_to_tag);
+
             tf2::doTransform(point_out, point_out, tag_to_map_tfs_[closestId]);
             tagLocation.y = point_out.point.y;
             foundTag = true;
@@ -480,6 +489,11 @@ public:
         ROS_INFO_STREAM("offset = " << offset.x << " " << offset.y << " " << offset.z);
         ROS_INFO_STREAM("error = " << x_error_ << ", " << y_error_ << " = " << hypot(x_error_, y_error_));
     }
+    geometry_msgs::Twist t;
+    t.linear.x = 0;
+    t.linear.y = 0;
+    t.angular.z = 0;
+    cmd_vel_pub_.publish(t);
     std_srvs::Empty empty;
     if (!set_leds_green_client_.call(empty)) {
       ROS_ERROR_STREAM("Unable to set leds to green in align to grid closed loop!");

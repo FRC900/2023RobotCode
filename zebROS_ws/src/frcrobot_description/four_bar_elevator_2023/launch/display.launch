@@ -14,5 +14,6 @@
     <remap from="joint_states" to="talon_joint_states" />
   </node>
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  <node name="talon_state_republisher" pkg="fake_sensors" type="talon_state_republisher"/>
 
 </launch>
