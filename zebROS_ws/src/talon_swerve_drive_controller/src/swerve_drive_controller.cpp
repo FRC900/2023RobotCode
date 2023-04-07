@@ -930,7 +930,7 @@ bool parkService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &r
 {
 	if (isRunning())
 	{
-		ROS_WARN_STREAM("swerve_drive_controller : park when stopped = " << req.data);
+		ROS_WARN_STREAM("swerve_drive_controller : park when stopped = " << std::to_string(req.data));
 		park_when_stopped_.store(req.data, std::memory_order_relaxed);
 		res.success = true;
 		res.message = "zebracones!"; // 2023-specific message
