@@ -496,7 +496,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 	// Special case for when the drive base is stopped
 	if (fabs(curr_cmd.lin[0]) <= 1e-6 && fabs(curr_cmd.lin[1]) <= 1e-6 && fabs(curr_cmd.ang) <= 1e-6)
 	{
-		if ((time.toSec() - time_before_brake_) > parking_config_time_delay_ && park_when_stopped_)
+		if ((time.toSec() - time_before_brake_) > parking_config_time_delay_)
 		{
 			// If the time since we last moved is long enough, go into parking config
 			brake(steer_angles, time);
@@ -787,7 +787,7 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 		speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
 		speed_joints_[i].setDemand1Value(0);
 		speed_joints_[i].setNeutralMode(hardware_interface::NeutralMode::NeutralMode_Brake);
-		if (!dont_set_angle_mode)
+		if (!dont_set_angle_mode && park_when_stopped_)
 			steering_joints_[i].setCommand(park_angles[i]);
 	}
 	// Reset the timer which delays drive wheel velocity a bit after
