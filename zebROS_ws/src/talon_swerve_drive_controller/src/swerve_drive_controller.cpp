@@ -429,7 +429,7 @@ void starting(const ros::Time &time)
 	{
 		steer_angles[k] = steering_joints_[k].getPosition();
 	}
-	brake(steer_angles, time);
+	brake(steer_angles, time, true);
 	// Assume we braked infinitely long ago - this will keep the
 	// drive base in parking config until a non-zero command comes in
 	time_before_brake_ = 0;
@@ -451,7 +451,7 @@ void stopping(const ros::Time & time)
 	{
 		steer_angles[k] = steering_joints_[k].getPosition();
 	}
-	brake(steer_angles, time);
+	brake(steer_angles, time, true);
 }
 
 void update(const ros::Time &time, const ros::Duration &period)
@@ -775,7 +775,7 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 	}
 }
 
-void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &time)
+void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &time, bool force_parking_mode = false)
 {
 	//Use parking config
 	const bool dont_set_angle_mode = dont_set_angle_mode_.load(std::memory_order_relaxed);
@@ -787,7 +787,7 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 		speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
 		speed_joints_[i].setDemand1Value(0);
 		speed_joints_[i].setNeutralMode(hardware_interface::NeutralMode::NeutralMode_Brake);
-		if (!dont_set_angle_mode && park_when_stopped_)
+		if (!dont_set_angle_mode && (park_when_stopped_ || force_parking_mode))
 			steering_joints_[i].setCommand(park_angles[i]);
 	}
 	// Reset the timer which delays drive wheel velocity a bit after

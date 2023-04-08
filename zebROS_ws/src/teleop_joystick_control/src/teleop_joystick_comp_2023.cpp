@@ -145,7 +145,7 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 	// transition from enabled to disabled
 	robot_is_disabled = msg.Disabled;
 	alliance_color = msg.allianceColor;
-	if (!called_park_endgame && msg.matchTimeRemaining < config.match_time_to_park && msg.Autonomous == false && msg.Enabled == true & msg.matchTimeRemaining != 0) {
+	if (!called_park_endgame && msg.matchTimeRemaining < config.match_time_to_park && msg.Autonomous == false && msg.Enabled == true && msg.matchTimeRemaining > 0) {
 		// check for enabled and time != 0 so we don't trigger when the node starts (time defaults to 0, auto defaults to false)
 		std_srvs::SetBool setBool;
 		setBool.request.data = true;
