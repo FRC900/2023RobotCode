@@ -57,7 +57,7 @@ struct DynamicReconfigVars
 	double imu_zero_angle{0.0};           // "Value to pass to imu/set_zero when zeroing"
 	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
 	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
-	double angle_to_add{angles::from_degrees(2)};
+	double angle_to_add{0.135};
 	double cone_length{0.3302/2};
 	double cube_length{0.2032/2};
 	double angle_threshold{angles::from_degrees(1)};
