@@ -23,7 +23,7 @@ auto_mode_2: ["place_cone_high", "balance_facing_away", "snap_0_before_intake"] 
 auto_mode_3: ["place_cone_high", "drive_out_community"]
 
 auto_mode_4: ["drive_out_community", "snap_0_before_intake"] # we now face the pieces at the end of this auto,
-auto_mode_5: ["balance_facing_away"]
+auto_mode_5: ["drive_back_cmd_vel_over_charging"]
 auto_mode_6: ["drive_out_community", "snap_0_before_intake"]
 
 auto_mode_7: ["place_cone_high"]
@@ -277,7 +277,7 @@ drive_back_over_charging:
 
 drive_back_cmd_vel_over_charging:
     type: cmd_vel
-    duration: 2.65
+    duration: 13
     cmd_vel:
         x: -1.0
         y: 0.0 

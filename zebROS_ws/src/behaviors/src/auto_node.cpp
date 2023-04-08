@@ -1076,12 +1076,17 @@ class AutoNode {
 		const ros::Duration duration(duration_secs);
 		const ros::Time start_time = ros::Time::now();
 		ros::Rate rate(25);
-
+		double starting_rotation = current_yaw_;
+		std_msgs::Float64 orient_msg;
+		orient_msg.data = starting_rotation;
 		while (ros::ok() && !auto_stopped_ && ((ros::Time::now() - start_time) < duration))
 		{
+			orient_command_pub_.publish(orient_msg); // need to do this to keep control of rotation
 			cmd_vel.angular.z = current_orient_effort_;
 			cmd_vel_pub_.publish(cmd_vel);
+			ros::spinOnce();
 			rate.sleep();
+
 		}
 		cmd_vel.linear.x = 0;
 		cmd_vel.linear.y = 0;
