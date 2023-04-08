@@ -3,7 +3,7 @@ four_bar_controller_2023:
 
     feed_forward_map: [[0, 0.048876], [0.05, 0.048876], [0.1, 0.050831], [0.2, 0.05767], [0.4, 0.06647116325], [0.6, 0.06549364614], 
                        [0.8, 0.074], [1, 0.06744868035], [1.2, 0.0596285435], [1.4, 0.03812316716], [1.499, 0.02737047898], [1.575, 0.01955034213], 
-                       [1.6, -0.01857282502], [1.65, -0.02639296188], [1.7, -0.02052785924], [1.719, 0], [1.8, 0]]
+                       [1.6, -0.01857282502], [1.65, -0.02639296188], [1.7, -0.02052785924], [1.719, 0], [1.8, 0]] 
 
     four_bar_joint: [ 'four_bar' ]
     dynamic_reconfigure: True
@@ -11,6 +11,7 @@ four_bar_controller_2023:
     max_angle: 1.8 # measured
 
     # don't even care about lenghts because we are using angles
+
 
     # 0.11-0.12 worked well for holding max extension
     arb_feed_forward_angle: 0.10
