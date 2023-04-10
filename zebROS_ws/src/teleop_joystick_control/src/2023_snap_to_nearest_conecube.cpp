@@ -12,6 +12,13 @@
 #include <angles/angles.h>
 #include <teleop_joystick_control/SnapConeCube.h>
 #include <geometry_msgs/Point.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include "ddynamic_reconfigure/ddynamic_reconfigure.h"
+
+// continuous alignment idea:
+// - transform game piece to <odom from x milliseconds ago>
+// - get angle to that position in the current odom frame
 
 struct StampedAngle {
     double angle;
@@ -112,6 +119,44 @@ class SnapToConeCube2023
         }
 #endif
 
+        double calculateAngle(const geometry_msgs::PoseStamped &pastCameraPose, const ros::Duration &offset) {
+            geometry_msgs::PoseStamped currentGamePiecePose = timeTravelOdom(pastCameraPose, offset);
+
+            double imu_angle = -1;
+            ros::spinOnce();
+            if (imu_cb_.size() != 0) {
+                std::unique_lock<std::mutex> lock_that_is_unique(buffer_mutex_);
+                for (boost::circular_buffer<std::pair<ros::Time, double>>::reverse_iterator it = imu_cb_.rbegin(); it != imu_cb_.rend(); it++) {
+                    auto angle = *it;
+                    if (angle.first <= currentGamePiecePose.header.stamp) {
+                        imu_angle = angle.second;
+                        break;
+                    }
+                }
+            }
+
+            return angles::shortest_angular_distance(imu_angle, atan2(currentGamePiecePose.pose.position.y, currentGamePiecePose.pose.position.x));
+        }
+
+        geometry_msgs::PoseStamped timeTravelOdom(const geometry_msgs::PoseStamped &pastCameraPose_, const ros::Duration &offset) {
+            // past pose -> past odom
+            // past odom -> current odom
+            // current odom -> current base link
+
+            geometry_msgs::PoseStamped pastCameraPose = pastCameraPose_;
+
+            pastCameraPose.header.stamp += offset;
+
+            // Transform:
+            // - from camera frame @ frame time + latency offset
+            // - to base link @ current time
+            // - relative to the "fixed" frame odom
+            geometry_msgs::PoseStamped currentBaseLinkPose;
+            tf2::doTransform(pastCameraPose, currentBaseLinkPose, tf_buffer_.lookupTransform("base_link", ros::Time::now(), pastCameraPose.header.frame_id, pastCameraPose.header.stamp, "odom"));
+            
+            return currentBaseLinkPose;
+        }
+
         void objectDetectionCallback(const field_obj::Detection &msg)
         {
             double imu_angle = -1;
@@ -120,7 +165,7 @@ class SnapToConeCube2023
                 std::unique_lock<std::mutex> lock_that_is_unique(buffer_mutex_);
                 for (boost::circular_buffer<std::pair<ros::Time, double>>::reverse_iterator it = imu_cb_.rbegin(); it != imu_cb_.rend(); it++) {
                     auto angle = *it;
-                    if (angle.first <= msg.header.stamp - ros::Duration(zed_time_offset_)) {
+                    if (angle.first <= msg.header.stamp/* - ros::Duration(zed_time_offset_)*/) {
                         imu_angle = angle.second;
                         break;
                     }
@@ -172,13 +217,14 @@ class SnapToConeCube2023
                     nearest_cone_point_.x = p1s.pose.position.x;
                     nearest_cone_point_.y = p1s.pose.position.y;
                     nearest_cone_point_.z = p1s.pose.position.z;
+
+                    nearest_cone_angle_ = {calculateAngle(p1s, ros::Duration(-zed_time_offset_)), msg.header.stamp};
                 }
                 catch (...)
                 {
                     ROS_WARN_STREAM_THROTTLE(0.1, "snap_to_nearest_conecube_2023 : transform to base_link failed, using untransformed angle");
                     msg1.data = angles::from_degrees(closest_cone.angle);
                 }
-                nearest_cone_angle_ = {msg1.data, msg.header.stamp};
                 nearest_cone_pub_.publish(msg1);
             }
 
@@ -198,6 +244,8 @@ class SnapToConeCube2023
                     nearest_cube_point_.x = p2s.pose.position.x;
                     nearest_cube_point_.y = p2s.pose.position.y;
                     nearest_cube_point_.z = p2s.pose.position.z;
+
+                    nearest_cube_angle_ = {calculateAngle(p2s, ros::Duration(-zed_time_offset_)), ros::Time::now()};
                 }
                 catch (...)
                 {
