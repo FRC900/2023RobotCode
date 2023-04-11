@@ -50,6 +50,8 @@
 #include <tf/transform_datatypes.h>
 #include <tf2_ros/transform_broadcaster.h>
 
+
+#include <periodic_interval_counter/periodic_interval_counter.h>
 #include <talon_controllers/talon_controller_interface.h>
 #include <talon_controllers/talonfxpro_controller_interface.h>
 
@@ -289,14 +291,11 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	change_center_of_rotation_serv_ = controller_nh.advertiseService("change_center_of_rotation", &TalonSwerveDriveController::changeCenterOfRotationService, this);
 	set_neutral_mode_serv_ = controller_nh.advertiseService("set_neutral_mode", &TalonSwerveDriveController::setNeturalModeService, this);
 
-	double odom_pub_freq;
-	controller_nh.param("odometry_publishing_frequency", odom_pub_freq, DEF_ODOM_PUB_FREQ);
+	controller_nh.param("odometry_publishing_frequency", odom_pub_freq_, DEF_ODOM_PUB_FREQ);
 
-	comp_odom_ = odom_pub_freq > 0;
-	//ROS_WARN("COMPUTING ODOM");
+	comp_odom_ = odom_pub_freq_ > 0;
 	if (comp_odom_)
 	{
-		odom_pub_period_ = ros::Duration(1 / odom_pub_freq);
 		controller_nh.param("publish_odometry_to_base_transform", pub_odom_to_base_,
 							pub_odom_to_base_);
 
@@ -393,8 +392,8 @@ void starting(const ros::Time &time)
 	// Register starting time used to keep fixed rate
 	if (comp_odom_)
 	{
-		last_odom_pub_time_ = time;
-		last_odom_tf_pub_time_ = time;
+		odom_pub_interval_counter_ = std::make_unique<PeriodicIntervalCounter>(odom_pub_freq_);
+		odom_tf_pub_interval_counter_ = std::make_unique<PeriodicIntervalCounter>(odom_pub_freq_);
 	}
 	//odometry_.init(time);
 }
@@ -419,7 +418,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 		steer_angles[k] = steering_joints_[k].getPosition();
 	}
 
-	if (comp_odom_) compOdometry(time, 1.0 / period.toSec(), steer_angles);
+	if (comp_odom_) compOdometry(time, period, steer_angles);
 
 	Commands curr_cmd = *(command_.readFromRT());
 	const double dt = (time - curr_cmd.stamp).toSec();
@@ -526,22 +525,12 @@ void update(const ros::Time &time, const ros::Duration &period)
 			if (!percent_out_drive_mode)
 			{
 				speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_Velocity);
+				speed_joints_[i].setCommand(speeds_angles_[i][0]);
 
 				// Add static feed forward in direction of current velocity
-				if(fabs(speeds_angles_[i][0]) > 1e-5)
-				{
-					speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_ArbitraryFeedForward);
-					speed_joints_[i].setDemand1Value(copysign(f_s_, speeds_angles_[i][0]));
-					last_wheel_sign_[i] = copysign(1., speeds_angles_[i][0]);
-				}
-				else
-				{
-					ROS_WARN_STREAM("============Swerve drive controller, probably never here but if you see this.....");
-					speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
-					speed_joints_[i].setDemand1Value(0);
-				}
-
-				speed_joints_[i].setCommand(speeds_angles_[i][0]);
+				speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_ArbitraryFeedForward);
+				speed_joints_[i].setDemand1Value(copysign(f_s_, speeds_angles_[i][0]));
+				last_wheel_sign_[i] = copysign(1., speeds_angles_[i][0]);
 			}
 			else
 			{
@@ -562,8 +551,8 @@ void update(const ros::Time &time, const ros::Duration &period)
 		// position?
 		for (size_t i = 0; i < WHEELCOUNT; ++i)
 		{
-			speed_joints_[i].setCommand(0);
 			speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_PercentOutput);
+			speed_joints_[i].setCommand(0);
 			speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
 			speed_joints_[i].setDemand1Value(0);
 		}
@@ -600,7 +589,7 @@ double angle_midpoint(double start_angle, double end_angle) const
 	return angles::normalize_angle(start_angle + deltaAngle / 2.0);
 }
 
-void compOdometry(const ros::Time &time, const double inv_delta_t, const std::array<double, WHEELCOUNT> &steer_angles)
+void compOdometry(const ros::Time &time, const ros::Duration &period, const std::array<double, WHEELCOUNT> &steer_angles)
 {
 	if (reset_odom_.exchange(false))
 	{
@@ -690,44 +679,52 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 	bool orientation_comped = false;
 
 	// tf
-	if (pub_odom_to_base_ && time - last_odom_tf_pub_time_ >= odom_pub_period_ &&
-			odom_tf_pub_.trylock())
+	if (pub_odom_to_base_ && odom_tf_pub_interval_counter_->update(period))
 	{
-		orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
-		orientation_comped = true;
+		if (odom_tf_pub_.trylock())
+		{
+			orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
+			orientation_comped = true;
 
-		geometry_msgs::TransformStamped &odom_tf_trans =
-			odom_tf_pub_.msg_.transforms[0];
-		odom_tf_trans.header.stamp = time;
-		odom_tf_trans.transform.translation.x = odom_y; // TODO terrible hacky
-		odom_tf_trans.transform.translation.y = -odom_y; // TODO terrible hacky
-		odom_tf_trans.transform.rotation = orientation;
-		// ROS_INFO_STREAM(odom_x);
-		odom_tf_pub_.unlockAndPublish();
-		last_odom_tf_pub_time_ += odom_pub_period_;
+			geometry_msgs::TransformStamped &odom_tf_trans = odom_tf_pub_.msg_.transforms[0];
+			odom_tf_trans.header.stamp = time;
+			odom_tf_trans.transform.translation.x = odom_y; // TODO terrible hacky
+			odom_tf_trans.transform.translation.y = -odom_x; // TODO terrible hacky
+			odom_tf_trans.transform.rotation = orientation;
+			odom_tf_pub_.unlockAndPublish();
+		}
+		else
+		{
+			odom_tf_pub_interval_counter_->reset();
+		}
 	}
 
 	// odom
-	if (time - last_odom_pub_time_ >= odom_pub_period_ && odom_pub_.trylock())
+	if (odom_pub_interval_counter_->update(period))
 	{
-		if (!orientation_comped)
-			orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
+		if (odom_pub_.trylock())
+		{
+			if (!orientation_comped)
+			{
+				orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
+			}
 
-		odom_pub_.msg_.header.stamp = time;
-		odom_pub_.msg_.pose.pose.position.x = odom_y; //TODO terrible hacky
-		odom_pub_.msg_.pose.pose.position.y = - odom_x; //TODO terrible hacky
-		odom_pub_.msg_.pose.pose.orientation = orientation;
+			odom_pub_.msg_.header.stamp = time;
+			odom_pub_.msg_.pose.pose.position.x = odom_y; //TODO terrible hacky
+			odom_pub_.msg_.pose.pose.position.y = -odom_x; //TODO terrible hacky
+			odom_pub_.msg_.pose.pose.orientation = orientation;
 
-		odom_pub_.msg_.twist.twist.linear.x =
-			odom_rigid_transf_.translation().x() * inv_delta_t;
-		odom_pub_.msg_.twist.twist.linear.y =
-			odom_rigid_transf_.translation().y() * inv_delta_t;
-		odom_pub_.msg_.twist.twist.angular.z =
-			atan2(odom_rigid_transf_(1, 0), odom_rigid_transf_(0, 0)) * inv_delta_t;
+			const double inv_delta_t = 1.0 / period.toSec();
+			odom_pub_.msg_.twist.twist.linear.x = odom_rigid_transf_.translation().x() * inv_delta_t;
+			odom_pub_.msg_.twist.twist.linear.y = odom_rigid_transf_.translation().y() * inv_delta_t;
+			odom_pub_.msg_.twist.twist.angular.z = atan2(odom_rigid_transf_(1, 0), odom_rigid_transf_(0, 0)) * inv_delta_t;
 
-		odom_pub_.unlockAndPublish();
-
-		last_odom_pub_time_ += odom_pub_period_;
+			odom_pub_.unlockAndPublish();
+		}
+		else
+		{
+			odom_pub_interval_counter_->reset();
+		}
 	}
 }
 
@@ -1090,16 +1087,16 @@ static constexpr double DEF_SD{0.01};
 std::array<Eigen::Vector2d, WHEELCOUNT> wheel_coords_;
 
 bool pub_odom_to_base_{false};       // Publish the odometry to base frame transform
-ros::Duration odom_pub_period_;      // Odometry publishing period
+double odom_pub_freq_;               // Odometry publishing rate
 Eigen::Affine2d init_odom_to_base_;  // Initial odometry to base frame transform
 Eigen::Affine2d odom_to_base_;       // Odometry to base frame transform
 Eigen::Affine2d odom_rigid_transf_;
 
 realtime_tools::RealtimePublisher<nav_msgs::Odometry> odom_pub_;
-tf2_ros::TransformBroadcaster odom_tf_;
 realtime_tools::RealtimePublisher<tf::tfMessage> odom_tf_pub_;
-ros::Time last_odom_pub_time_;
-ros::Time last_odom_tf_pub_time_;
+std::unique_ptr<PeriodicIntervalCounter> odom_tf_pub_interval_counter_;
+std::unique_ptr<PeriodicIntervalCounter> odom_pub_interval_counter_;
+
 
 // Attempt to limit speed of wheels which are pointing further from
 // their target angle. Should help to reduce the robot being pulled

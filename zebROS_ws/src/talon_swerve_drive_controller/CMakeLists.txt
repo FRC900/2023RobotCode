@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     ctre_interfaces
     geometry_msgs
     nav_msgs
+    periodic_interval_counter
     std_msgs
 	  std_srvs
     realtime_tools
