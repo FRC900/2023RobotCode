@@ -732,11 +732,12 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			double original_angular_z = cmd_vel.angular.z;
 
 			if (original_angular_z == 0.0 && old_angular_z != 0.0) {
+				ROS_WARN_STREAM_THROTTLE(1, "Send set angle = false");
 				sendSetAngle = false;
 			}
 
 			if (!operator_control) {
-				ROS_INFO - ---- -- - 
+				ROS_WARN_STREAM_THROTTLE(1, "Operator control callback, sendSetAngle = true and old_angular_z = 0");
 				sendSetAngle = true;
 				old_angular_z = 0;
 			}
