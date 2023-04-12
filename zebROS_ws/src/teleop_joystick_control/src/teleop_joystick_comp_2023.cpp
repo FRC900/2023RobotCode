@@ -804,6 +804,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				{
 					if (srv.response.nearest_cone_angle > -900) {
 						ROS_INFO_STREAM_THROTTLE(0.1, "teleop_joystick_comp_2023: cone angle = " << srv.response.nearest_cone_angle);
+						teleop_cmd_vel->setRobotOrient(true, 0);
 						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cone_angle, true /*from teleop*/);
 					}
 				}
@@ -829,6 +830,15 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonBButton)
 			{	
+				teleop_joystick_control::SnapConeCube srv;
+				if (snapConeCubeSrv.call(srv))
+				{
+					if (srv.response.nearest_cube_angle > -900) {
+						ROS_INFO_STREAM_THROTTLE(0.1, "teleop_joystick_comp_2023: cube angle = " << srv.response.nearest_cube_angle);
+						teleop_cmd_vel->setRobotOrient(true, 0);
+						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cube_angle, true /*from teleop*/);
+					}
+				}
 			}
 			if(joystick_states_array[0].buttonBRelease)
 			{

@@ -152,7 +152,7 @@ class SnapToConeCube2023
             // - to base link @ current time
             // - relative to the "fixed" frame odom
             geometry_msgs::PoseStamped currentBaseLinkPose;
-            tf2::doTransform(pastCameraPose, currentBaseLinkPose, tf_buffer_.lookupTransform("base_link", ros::Time::now(), pastCameraPose.header.frame_id, pastCameraPose.header.stamp, "odom"));
+        tf2::doTransform(pastCameraPose, currentBaseLinkPose, tf_buffer_.lookupTransform("base_link", ros::Time::now(), pastCameraPose.header.frame_id, pastCameraPose.header.stamp, "odom", ros::Duration(0.05)));
             
             return currentBaseLinkPose;
         }
@@ -220,9 +220,9 @@ class SnapToConeCube2023
 
                     nearest_cone_angle_ = {calculateAngle(p1s, ros::Duration(-zed_time_offset_)), msg.header.stamp};
                 }
-                catch (...)
+                catch (const std::exception &ex)
                 {
-                    ROS_WARN_STREAM_THROTTLE(0.1, "snap_to_nearest_conecube_2023 : transform to base_link failed, using untransformed angle");
+                    ROS_WARN_STREAM_THROTTLE(0.1, "snap_to_nearest_conecube_2023 : transform to base_link failed, using untransformed angle. error: " << ex.what());
                     msg1.data = angles::from_degrees(closest_cone.angle);
                 }
                 nearest_cone_pub_.publish(msg1);

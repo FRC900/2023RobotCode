@@ -19,7 +19,7 @@ def uint16_to_dist(u16: int):
 
 def parse_serial_msg(data: bytes):
     # functional programming is awesome
-    if b"CRC error" in data:
+    if b"error" in data:
         return None
     else:
         try:
