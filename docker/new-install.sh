@@ -8,26 +8,28 @@ sudo apt upgrade
 sudo apt install -y terminator
 
 # Docker setup
-sudo apt remove docker docker-engine docker.io containerd runc
-sudo apt install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io
+#sudo apt remove docker docker-engine docker.io containerd runc
+#sudo apt install -y \
+    #apt-transport-https \
+    #ca-certificates \
+    #curl \
+    #gnupg-agent \
+    #software-properties-common
+#curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+#sudo add-apt-repository \
+   #"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   #$(lsb_release -cs) \
+   #stable"
+#sudo apt update
+#sudo apt install -y docker-ce docker-ce-cli containerd.io
+
+curl https://get.docker.com | sh
+sudo systemctl --now enable docker
+
 # Allow non-root users to run docker commands
 sudo gpasswd -a $USER docker
 
 # log out, log back in (probably also need a restart anyway after apt upgrade)
-
-docker pull frc900/zebros-noetic-dev:latest
 
 # Install git-lfs
 cd &&\
@@ -47,17 +49,7 @@ cd 2023RobotCode
 git submodule update --init --recursive
 docker run --net=host -v  /tmp/.X11-unix:/tmp/.X11-unix \
  -v $HOME/2023RobotCode:/home/ubuntu/2023RobotCode \
- -e DISPLAY=$DISPLAY --privileged --user ubuntu frc900/zebros-noetic-dev:latest "wstool update -t /home/ubuntu/2023RobotCode/zebROS_ws/src -j2"
-
-cd
-wget https://downloads.slack-edge.com/linux_releases/slack-desktop-4.0.2-amd64.deb
-sudo apt install -y ./slack-desktop-4.0.2-amd64.deb
-rm slack-desktop-4.0.2-amd64.deb
+ -e DISPLAY=$DISPLAY --privileged --user ubuntu frc900/zebros-2023-dev:latest "wstool update -t /home/ubuntu/2023RobotCode/zebROS_ws/src -j2"
 
 sudo apt remove thunderbird
 sudo apt autoremove
-
-cd
-wget https://atom.io/download/deb -O atom.deb
-sudo apt install -y ./atom.deb
-rm atom.deb
