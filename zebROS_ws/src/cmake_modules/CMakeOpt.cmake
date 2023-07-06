@@ -13,11 +13,12 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 execute_process(COMMAND pgrep -f rosetta OUTPUT_VARIABLE OUT RESULT_VARIABLE INTEL)
-if(INTEL)
-  message("Intel")
-else()
-  message("M1, skipping -flto")
-endif()
+# Printouts removed to avoid spam
+# if(INTEL)
+#   message("Intel")
+# else()
+#   message("M1, skipping -flto")
+# endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-declarations>")
