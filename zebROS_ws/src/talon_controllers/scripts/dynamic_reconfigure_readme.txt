@@ -1,13 +1,4 @@
-Previous:
-Run talon servers 1 and 2 as well as the client.
-Then run rqt_reconfigure rqt_reconfigure.
-You should see a steering and speed topic within rqt reconfigure.
-You can adjust the values within rqt reconfigure and the values will be reflected accordingly.
 
-
-
-
-Edited:
 Run simlaunch in rosstd.
 This runs a simulation of the robot and in turn simulates all of the topics etc to be visible in rqt reconfigure
 Run rosrun rqt_reconfigure rqt_reconfigure in zebros/src
