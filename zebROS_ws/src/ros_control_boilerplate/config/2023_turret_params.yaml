@@ -1,0 +1,82 @@
+generic_hw_control_loop:
+  loop_hz: 100
+  cycle_time_error_threshold: 0.01
+  canifier_read_hz: 100
+  cancoder_read_hz: 100
+  #some processes have lower frequencies than the main control loop
+  ctre_mc_read_hz: 100
+  pcm_read_hz: 20
+  pdh_read_hz: 20
+  pdp_read_hz: 20
+  ph_read_hz: 20
+  robot_iteration_hz: 20
+  spark_max_read_hz: 100
+  joystick_read_hz: 50
+  match_data_read_hz: 2
+  robot_controller_read_hz: 20
+  as726x_read_hz: 7
+
+
+# Settings for ros_control hardware interface
+# Map a name for each valid joint to a CAN id
+# For future expansion, change hw_id to specify one
+# of several types of HW interface : CAN_id, PWM_id, DIO_id, AIO_id, etc.
+hardware_interface:
+
+   joints:
+       # add mechanisms here
+       - {name: turret_joint, type: can_talon_fx, can_bus: CANivore, can_id: 21, local: true}
+       - {name: robot_code_ready_rio, local: true, type: ready}
+       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, can_id: 22, local: true}
+
+
+turret_controller_2023:
+    type: turret_controller/TurretController
+    cancoder_offset_from_0: 0
+    fourbar_joint: 'four_bar'
+
+    dynamic_reconfigure: true
+    lower_angle_bound: -2.0
+    upper_angle_bound: 2.0
+
+    turret_leader:
+        type: talon_controllers/TalonControllerInterface 
+        joint: turret_joint
+        close_loop_values:
+            - {p: 1.0, i: 0.00000, d: 0.00, f: 0.00, i_zone: 0, closed_loop_peak_output: 1.0}
+        velocity_measurement_period: Period_10Ms
+        velocity_measurement_window: 4
+
+        sensor_phase: False 
+        invert_output: True
+
+        # linear position along 
+        conversion_factor: 0.02 # 1/50, hypothetically right?
+
+        # TODO : figure out what value this should be
+        # Only need one direction, to
+        # prevent the elevator from running off the top
+
+        # SET THESE AND REVERSE SOFTLIMIT
+        # softlimit_forward_threshold: 1.412 
+        # softlimit_forward_enable: True
+
+        voltage_compensation_enable: True
+        voltage_compensation_saturation: 12
+
+        neutral_deadband: 0.001
+
+        dynamic_reconfigure: True
+        motion_s_curve_strength: 8
+
+talon_state_controller:
+   type:         talon_state_controller/TalonStateController
+   publish_rate: 100
+
+joint_state_controller_rio:
+   type:         joint_state_controller/JointStateController
+   publish_rate: 100
+
+match_state_controller:
+   type:         match_state_controller/MatchStateController
+   publish_rate: 20

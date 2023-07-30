@@ -124,6 +124,9 @@ match_state_listener_controller:
 orchestra_controller:
     type:      orchestra_controller/OrchestraController
 
+orchestra_controller:
+    type:      orchestra_controller/OrchestraController
+
 orchestra_state_controller:
     type:   orchestra_state_controller/OrchestraStateController
     publish_rate: 10
