@@ -43,7 +43,7 @@ hardware_interface:
        
        #- {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        #- {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
-
+       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, local: true}
        - {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        - {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
        - {name: four_bar, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
@@ -130,6 +130,9 @@ pcm_state_controller:
 match_state_listener_controller:
     type:      state_listener_controller/MatchStateListenerController
     topic:     /frcrobot_rio/match_data
+
+orchestra_controller:
+    type:      orchestra_controller/OrchestraController
 
 orchestra_controller:
     type:      orchestra_controller/OrchestraController
