@@ -1,14 +1,39 @@
 # Run this to configure a brand new ubuntu install for using our code
-# This could be after creating a new VM image from scratch or in a new
-# native install
+# This could be after creating a new WSL2 setup under windows, a VM image
+# from scratch or in a new native install
 # Should only have to run this once
+
+
+# https://learn.microsoft.com/en-us/windows/wsl/install
+# Windows WSL2 install should be just this from a command prompt
+#
+#  wsl --install
 
 sudo apt update
 
 # Docker setup
 sudo apt install -y curl
 curl https://get.docker.com | sh
+
+# Make sure docker auto-starts on boot
+# For native linux / VM images :
 sudo systemctl --now enable docker
+
+# For Win 11 WSL2:
+#
+# add to /etc/wsl.conf
+
+# [boot]
+# systemd=true
+
+# For Win 10 WSL2:
+
+# add to ~/.profile:
+# if service docker status 2>&1 | grep -q "is not running"; then
+#     wsl.exe -d "${WSL_DISTRO_NAME}" -u root -e /usr/sbin/service docker start >/dev/null 2>&1
+# fi
+
+# Back to steps for all installs
 
 # Allow non-root users to run docker commands
 sudo gpasswd -a $USER docker
@@ -22,17 +47,20 @@ sudo apt install -y terminator
 # Install git-lfs
 sudo apt install -y wget
 cd &&\
-    wget https://github.com/git-lfs/git-lfs/releases/download/v3.2.0/git-lfs-linux-amd64-v3.2.0.tar.gz &&\
+    wget https://github.com/git-lfs/git-lfs/releases/download/v3.3.0/git-lfs-linux-amd64-v3.3.0.tar.gz &&\
 	mkdir git-lfs-install &&\
 	cd git-lfs-install &&\
-	tar -xzf ../git-lfs-linux-amd64-v3.2.0.tar.gz &&\
-	cd git-lfs-3.2.0 &&\
+	tar -xzf ../git-lfs-linux-amd64-v3.3.0.tar.gz &&\
+	cd git-lfs-3.3.0 &&\
 	sudo ./install.sh &&\
 	cd &&\
-	rm -rf git-lfs-linux-amd64-v3.2.0.tar.gz git-lfs-install &&\
+	rm -rf git-lfs-linux-amd64-v3.3.0.tar.gz git-lfs-install &&\
 	git lfs install
 
 # Set up student's git ssh keys here
+# Generate a key here, skip using a passphrase and adding to ssh-agent : https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+# Then add it to student's github account : https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
+
 
 # Install repo - perhaps ssh version inside container, worry about SSH keys?
 cd 
