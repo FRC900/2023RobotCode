@@ -1,11 +1,5 @@
 #! /usr/bin/env python3
-"""
-Adaped from	https://github.com/AastaNV/TRT_object_detection.git
-A faster way to optimize models to run on the Jetson
-This script has 2 parts. First is to convert the model to UFF format and then
-optimize that using tensorRT.  This produces a .bin file.
-The .bin file is then loaded and used to run inference on a video.
-"""
+
 # Ordering imports by length is cool
 import os
 import sys
@@ -26,11 +20,20 @@ import math
 import sys
 import numpy
 from sys import path
-path.append('/home/ubuntu/YOLOv8-TensorRT')
-path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
+import argparse
+import cv2
+import torch
 
+from sys import path
+path.append('/home/ubuntu/YOLOv8-TensorRT')
+from models import TRTModule  # isort:skip
+path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
+import timing
+
+from config_frc2023 import OBJECT_CLASSES, COLORS
 from models.torch_utils import det_postprocess
 from models.utils import blob, letterbox, path_to_list
+
 
 bridge = CvBridge()
 pub, pub_debug, vis = None, None, None
@@ -39,7 +42,6 @@ global rospack, THIS_DIR, PATH_TO_LABELS
 rospack = rospkg.RosPack()
 THIS_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
 
-device = torch.device("cuda:0")
 
 global init
 init = False
@@ -51,6 +53,8 @@ extern "C" __global__
 // should be fine given we want squares from long rectangles
 // 1024x1024 resize still works with this which should be our max sqaure size
 
+// input is bgr
+// output is filled with color for letterbox, does bilinear interpolation with a shift to keep aspect ratio, scales 0-1, transposes to all reds, blues and greens
 void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight, int iWidth, int iHeight, int rowsToShiftDown) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -102,11 +106,10 @@ void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight,
 
         // add to Y here to move the image down and add the letterbox part
         // 2 - i for bgr to rgb transform
-        const int rbg_offset = oWidth * iWidth); 
-		output[   (((y + rowsToShiftDown) * oWidth + x) * 3 + (2 - i))] = (samples[0] * x1y1f + samples[1] * x2y1f + samples[2] * x1y2f + samples[3] * x2y2f) / 255;
-        //printf("Idx %i\n", (x * y + y) * 3 + i);
+        const int rgb_offset = (oWidth * oHeight); // should be safe from int division as  
+        // initally used  + (2 - i) for bgr -> rbg, but for transposing now using rgb_offset * (2 - i)
+		output[rgb_offset * (2 - i) + (((y + rowsToShiftDown) * oWidth + x) * 3)] = (samples[0] * x1y1f + samples[1] * x2y1f + samples[2] * x1y2f + samples[3] * x2y2f) / 255;
     }
-
 }
 """,
     "yolo_preprocess",
@@ -117,31 +120,29 @@ gpu_output_buffer = None
 engine_H, engine_W = 640, 640
 
 
-def show_img(img, title):
-    cv2.imshow(title, img)
-
+def blob(im, return_seg: bool = False):
+    seg = None
+    if return_seg:
+        seg = im.astype(np.float32) / 255
+    im = im.transpose([2, 0, 1])
+    im = im[np.newaxis, ...]
+    im = np.ascontiguousarray(im).astype(np.float32) / 255
+    if return_seg:
+        return im, seg
+    else:
+        return im
 
 def iDivUp(a, b):
     if (a % b != 0):
         return a // (b + 1) # int division to replicate c++
     else:
         return a // b # should be an int
-    
-def is_rgb_value_in_image(image, rgb_value):
-    # Convert the target RGB value to a NumPy array for comparison
-    target_rgb = np.array(rgb_value)
-
-    # Check if any of the pixels in the image match the target RGB value
-    matching_pixels = np.any(np.all(image == target_rgb, axis=-1))
-
-    return matching_pixels
 
 
 def run_inference_for_single_image(msg):
     global init
     rospy.logwarn("Callback recived!")
     
-    init = True
     ori = bridge.imgmsg_to_cv2(msg, "bgr8")
     print(ori)
     print(type(ori[0][0][0]))
@@ -151,21 +152,22 @@ def run_inference_for_single_image(msg):
 
     # print(ori)
     #time.sleep(2)
-    ret_im, _, _1 = letterbox(ori)
-    ret_im = cv2.cvtColor(ret_im, cv2.COLOR_BGR2RGB) # standard color conversion
-    ret_im = blob(ret_im, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
+    #ret_im, _, _1 = letterbox(ori)
+    #ret_im = cv2.cvtColor(ret_im, cv2.COLOR_BGR2RGB) # standard color conversion
+    
+    #ret_im = blob(ret_im, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
 
-    print(ret_im)
-    print(ret_im.shape)
-    time.sleep(1)
+    #print(ret_im)
+    #print(ret_im.shape)
     #cv2.imshow("LAME cpu letterbox", ret_im)
     
     #key = cv2.waitKey(0) & 0x000000ff 
 
-    inital_gpu_image = cupy.asarray(ori, dtype=cupy.float32) 
+    inital_gpu_image = cupy.asarray(ori, dtype=cupy.float32)
 
-    gpu_output_buffer = cupy.full((engine_H, engine_W, 3), 114, dtype=cupy.float32)
-
+    if not init:
+        gpu_output_buffer = cupy.full((engine_H, engine_W, 3), 114, dtype=cupy.float32)
+        init = True
 
     block_size_1d = 256
     block_sqrt = int(math.sqrt(block_size_1d))
@@ -176,60 +178,43 @@ def run_inference_for_single_image(msg):
 
     print(f"Height {height} Width {width}")
 
-    #time.sleep(2)
     r = min(engine_W / shape[1], engine_H / shape[0])
     # Compute padding [width, height]
     new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
     # will shift image down this much, and use to determine where to draw letterbox color
     pixels_to_shift_down = engine_H - new_unpad[1]
-    assert int(pixels_to_shift_down / 2) == pixels_to_shift_down // 2, "Can't shift down a non int pixels"
     pixels_to_shift_down //= 2 # int division in place!
 
-    print(new_unpad)
-
-    time.sleep(2)
     stream1 = cupy.cuda.stream.Stream()
     with stream1:
         yolo_preprocess(                    # X                      # Y
             (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
             (inital_gpu_image, gpu_output_buffer, new_unpad[0], new_unpad[1], width, height, pixels_to_shift_down))
     
-    stream1.synchronize()
+    stream1.synchronize() # for printing, seems to be exactly the same with and without
 
     print(f"block size {block_size}")
-    print(f"X threads {iDivUp(engine_W, block_sqrt)}, Y {iDivUp(engine_H, block_sqrt)}")    #yolo_preprocess(                    # X                      # Y
-    #    (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
-    #    (inital_gpu_image, gpu_output_buffer, engine_W, engine_H)
-    #)
-
-    #yolo_preprocess(
-    #    (block_size,), ((output_size + block_size - 1) // block_size,), (inital_gpu_image, inital_gpu_image)
-    #)
-    array_min = cupy.min(gpu_output_buffer)
-    array_max = cupy.max(gpu_output_buffer)
-    array_mean = cupy.mean(gpu_output_buffer)
-    print("Minimum value:", array_min)
-    print("Maximum value:", array_max)
-    print("Mean value:", array_mean)
-
-    #print(ori)      
-
+    print(f"X threads {iDivUp(engine_W, block_sqrt)}, Y {iDivUp(engine_H, block_sqrt)}")
 
     numpy_array = cupy.asnumpy(gpu_output_buffer)
     # convert to ints           
     numpy_array = numpy_array.astype(np.uint8)
 
     opencv_mat = numpy_array # cv2.cvtColor(numpy_array, cv2.COLOR_RGB2BGR)  # Assuming RGB data
-    print(opencv_mat)
     # wtf is this
     cv2.imshow("super cool gpu letterbox", opencv_mat)
     key = cv2.waitKey(0) & 0x000000ff 
 
-
     ori = bridge.imgmsg_to_cv2(msg, "bgr8")
-    # Trying with gpu
-    
-
+    print(f"Shape of cpu {ret_im.shape} Gpu {opencv_mat.shape}")
+    simmilarity_array = np.equal(ret_im, opencv_mat) 
+    values, counts = np.unique(simmilarity_array, return_counts=True)
+    print(simmilarity_array)
+    print(values)
+    print(counts)
+    print(f"There are {values}")
+    print("Images are equal?")
+    time.sleep(1)
     height, width, channels = ori.shape
     boxes = []
     confs = []
@@ -290,7 +275,13 @@ def run_inference_for_single_image(msg):
 def main():
 
     os.chdir(THIS_DIR)
+    device = torch.device("cuda:0")
 
+    Engine = TRTModule("FRC2023m.engine", device)
+    H, W = Engine.inp_info[0].shape[-2:]
+
+    # set desired output names order
+    Engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
     global pub, category_index, pub_debug, min_confidence, vis
     sub_topic = "/obj_detection/c920/rect_image"
     pub_topic = "obj_detection_msg"
