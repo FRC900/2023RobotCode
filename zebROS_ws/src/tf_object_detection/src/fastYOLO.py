@@ -38,13 +38,19 @@ from models.utils import blob, letterbox, path_to_list
 bridge = CvBridge()
 pub, pub_debug, vis = None, None, None
 min_confidence = 0.1
-global rospack, THIS_DIR, PATH_TO_LABELS
+global rospack, THIS_DIR, PATH_TO_LABELS, init, engine_H, engine_W, gpu_output_buffer, Engine, dwdh, device
+device = torch.device("cuda:0") # will we ever have 2 gpus 
+
 rospack = rospkg.RosPack()
 THIS_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
-
-
-global init
 init = False
+gpu_output_buffer = None
+Engine = None
+# H, W = Engine.inp_info[0].shape[-2:]
+engine_H, engine_W = None, None # obvious if not set correctly
+# this is almost certainly not right but at least for the one image that i tried this is the result 
+dwdh = torch.asarray((0, 0) * 2, dtype=torch.float32, device=device)
+ratio = None
 
 yolo_preprocess = cupy.RawKernel(
     r"""
@@ -56,16 +62,17 @@ extern "C" __global__
 // input is bgr
 // output is filled with color for letterbox, does bilinear interpolation with a shift to keep aspect ratio, scales 0-1, transposes to all reds, blues and greens
 void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight, int iWidth, int iHeight, int rowsToShiftDown) {
+    const int oWindow = oHeight - (2 * rowsToShiftDown);
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-	if( x >= oWidth || y >= oHeight ) {
+	if( x >= oWidth || y >= (oWindow) || (y) < rowsToShiftDown) {
         //printf("failed x %i y %i", x, y);
         return;
     }
 
-    const double new_x = float(x) / float(oWidth) * float(iWidth);
-    const double new_y = float(y) / float(oHeight) * float(iHeight);
+    const float new_x = float(x) / float(oWidth) * float(iWidth);
+    const float new_y = float(y) / float(oWindow) * float(iHeight);
 
     int i;
 
@@ -108,29 +115,16 @@ void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight,
         // 2 - i for bgr to rgb transform
         const int rgb_offset = (oWidth * oHeight); // should be safe from int division as  
         // initally used  + (2 - i) for bgr -> rbg, but for transposing now using rgb_offset * (2 - i)
-		output[rgb_offset * (2 - i) + (((y + rowsToShiftDown) * oWidth + x) * 3)] = (samples[0] * x1y1f + samples[1] * x2y1f + samples[2] * x1y2f + samples[3] * x2y2f) / 255;
+        int idx = rgb_offset * (2 - i) + (((y + rowsToShiftDown) * oWidth + x));
+
+        output[idx] = (samples[0] * x1y1f + samples[1] * x2y1f + samples[2] * x1y2f + samples[3] * x2y2f) / 255;
     }
 }
 """,
     "yolo_preprocess",
 )
 
-gpu_output_buffer = None
-# H, W = Engine.inp_info[0].shape[-2:]
-engine_H, engine_W = 640, 640
 
-
-def blob(im, return_seg: bool = False):
-    seg = None
-    if return_seg:
-        seg = im.astype(np.float32) / 255
-    im = im.transpose([2, 0, 1])
-    im = im[np.newaxis, ...]
-    im = np.ascontiguousarray(im).astype(np.float32) / 255
-    if return_seg:
-        return im, seg
-    else:
-        return im
 
 def iDivUp(a, b):
     if (a % b != 0):
@@ -138,35 +132,29 @@ def iDivUp(a, b):
     else:
         return a // b # should be an int
 
+def cpu_preprocess(img):
+    bgr, ratio, dwdh = letterbox(img, (640, 640)) # resize while maintaining aspect ratio
+    print(f"Inital dwdh {dwdh}")
+
+    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
+    tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
+    #print(tensor)
+    dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
+    tensor = torch.asarray(tensor, device=device)
+    return tensor
 
 def run_inference_for_single_image(msg):
-    global init
+    global init, Engine, engine_W, engine_H, ratio, dwdh, gpu_output_buffer
     rospy.logwarn("Callback recived!")
     
     ori = bridge.imgmsg_to_cv2(msg, "bgr8")
-    print(ori)
-    print(type(ori[0][0][0]))
-    #new_dtype = np.float32
-    #ori = ori.astype(new_dtype)
-    #ori = numpy.zeros_like(ori)
+    draw = ori.copy()
 
-    # print(ori)
-    #time.sleep(2)
-    #ret_im, _, _1 = letterbox(ori)
-    #ret_im = cv2.cvtColor(ret_im, cv2.COLOR_BGR2RGB) # standard color conversion
-    
-    #ret_im = blob(ret_im, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
-
-    #print(ret_im)
-    #print(ret_im.shape)
-    #cv2.imshow("LAME cpu letterbox", ret_im)
-    
-    #key = cv2.waitKey(0) & 0x000000ff 
-
+    # used pinned memory maybe? I think this copies each loop which has been fine but loses some perf
     inital_gpu_image = cupy.asarray(ori, dtype=cupy.float32)
 
     if not init:
-        gpu_output_buffer = cupy.full((engine_H, engine_W, 3), 114, dtype=cupy.float32)
+        gpu_output_buffer = cupy.full((3, engine_H, engine_W), 114 / 255, dtype=cupy.float32)
         init = True
 
     block_size_1d = 256
@@ -185,36 +173,55 @@ def run_inference_for_single_image(msg):
     pixels_to_shift_down = engine_H - new_unpad[1]
     pixels_to_shift_down //= 2 # int division in place!
 
-    stream1 = cupy.cuda.stream.Stream()
-    with stream1:
-        yolo_preprocess(                    # X                      # Y
-            (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
-            (inital_gpu_image, gpu_output_buffer, new_unpad[0], new_unpad[1], width, height, pixels_to_shift_down))
+    #stream1 = cupy.cuda.stream.Stream()
+    #with stream1:
+    #yolo_preprocess(                    # X                      # Y
+    #    (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
+    #    (inital_gpu_image, gpu_output_buffer, new_unpad[0], new_unpad[1], width, height, pixels_to_shift_down))
+    #
+    yolo_preprocess(                    # X                      # Y
+        (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
+        (inital_gpu_image, gpu_output_buffer, engine_W, engine_H, width, height, pixels_to_shift_down))
     
-    stream1.synchronize() # for printing, seems to be exactly the same with and without
+    #stream1.synchronize() # for printing, seems to be exactly the same with and without
 
     print(f"block size {block_size}")
     print(f"X threads {iDivUp(engine_W, block_sqrt)}, Y {iDivUp(engine_H, block_sqrt)}")
+    print(cpu_preprocess(draw))
+    print(cpu_preprocess(draw).shape)
+    torch_input_tensor = torch.from_dlpack(gpu_output_buffer)
+    print('----GPU----')
+    print(torch_input_tensor)
+    print(torch_input_tensor.shape)
 
-    numpy_array = cupy.asnumpy(gpu_output_buffer)
-    # convert to ints           
-    numpy_array = numpy_array.astype(np.uint8)
+    data = Engine(torch_input_tensor)
+    print(data)
+    bboxes, scores, labels = det_postprocess(data)
+    if bboxes.numel() != 0:
+        bboxes -= dwdh
+        bboxes /= r
 
-    opencv_mat = numpy_array # cv2.cvtColor(numpy_array, cv2.COLOR_RGB2BGR)  # Assuming RGB data
-    # wtf is this
-    cv2.imshow("super cool gpu letterbox", opencv_mat)
-    key = cv2.waitKey(0) & 0x000000ff 
+        for (bbox, score, label) in zip(bboxes, scores, labels):
+            bbox = bbox.round().int().tolist()
+            cls_id = int(label)
+            cls = OBJECT_CLASSES.get_name(cls_id)
+            cls = cls.replace("april_", "")
+            print(cls)
+            print(bbox)
+            color = (0, 0, 255)
+            cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
+            cv2.putText(draw,
+                        f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.75, [225, 255, 255],
+                        thickness=2)
 
-    ori = bridge.imgmsg_to_cv2(msg, "bgr8")
-    print(f"Shape of cpu {ret_im.shape} Gpu {opencv_mat.shape}")
-    simmilarity_array = np.equal(ret_im, opencv_mat) 
-    values, counts = np.unique(simmilarity_array, return_counts=True)
-    print(simmilarity_array)
-    print(values)
-    print(counts)
-    print(f"There are {values}")
-    print("Images are equal?")
-    time.sleep(1)
+    cv2.imshow('result', draw)
+    key = cv2.waitKey(1) & 0x000000ff
+    if key == 27:
+        return
+
+
     height, width, channels = ori.shape
     boxes = []
     confs = []
@@ -273,16 +280,17 @@ def run_inference_for_single_image(msg):
 
 
 def main():
+    global Engine, engine_H, engine_W
+    global pub, category_index, pub_debug, min_confidence, vis
 
     os.chdir(THIS_DIR)
     device = torch.device("cuda:0")
 
     Engine = TRTModule("FRC2023m.engine", device)
-    H, W = Engine.inp_info[0].shape[-2:]
+    engine_H, engine_W = Engine.inp_info[0].shape[-2:]
 
     # set desired output names order
     Engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
-    global pub, category_index, pub_debug, min_confidence, vis
     sub_topic = "/obj_detection/c920/rect_image"
     pub_topic = "obj_detection_msg"
     rospy.init_node('tf_object_detection', anonymous=True)

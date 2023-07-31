@@ -20,7 +20,7 @@ test_image_path = "/home/ubuntu/tensorflow_workspace/2023Game/data/videos/162_36
 
 gpu_output_buffer = None
 
-USE_CPU_PREPROCESS = False
+USE_CPU_PREPROCESS = True
 
 def main(args: argparse.Namespace) -> None:
     device = torch.device(args.device)
@@ -37,15 +37,17 @@ def main(args: argparse.Namespace) -> None:
     while True:
 
         draw = bgr.copy()
-        if USE_CPU_PREPROCESS:
-            bgr, ratio, dwdh = letterbox(bgr, (W, H)) # resize while maintaining aspect ratio
-            rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
-            tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
-            print(tensor)
-            dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
-            tensor = torch.asarray(tensor, device=device)
+        #if USE_CPU_PREPROCESS:
+        bgr, ratio, dwdh = letterbox(bgr, (W, H)) # resize while maintaining aspect ratio
+        print(f"Inital dwdh {dwdh}")
 
-        else: 
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
+        tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
+        #print(tensor)
+        dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
+        tensor = torch.asarray(tensor, device=device)
+        print(tensor.shape)
+        print(f"Dwdh {dwdh}")
         data = Engine(tensor)
 
         bboxes, scores, labels = det_postprocess(data)
