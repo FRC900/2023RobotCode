@@ -22,122 +22,18 @@ import numpy
 from sys import path
 import argparse
 import cv2
-import torch
-
-from sys import path
-path.append('/home/ubuntu/YOLOv8-TensorRT')
-from models import TRTModule  # isort:skip
-path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
-import timing
-
-from config_frc2023 import OBJECT_CLASSES, COLORS
-from models.torch_utils import det_postprocess
-from models.utils import blob, letterbox, path_to_list
-
+from baseYOLO import YOLO900
 
 bridge = CvBridge()
 pub, pub_debug, vis = None, None, None
 min_confidence = 0.1
-global rospack, THIS_DIR, PATH_TO_LABELS, init, engine_H, engine_W, gpu_output_buffer, Engine, dwdh, device
-device = torch.device("cuda:0") # will we ever have 2 gpus 
+global rospack, THIS_DIR, PATH_TO_LABELS, DETECTRON
 
 rospack = rospkg.RosPack()
 THIS_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
 init = False
-gpu_output_buffer = None
-Engine = None
-# H, W = Engine.inp_info[0].shape[-2:]
-engine_H, engine_W = None, None # obvious if not set correctly
-# this is almost certainly not right but at least for the one image that i tried this is the result 
-dwdh = None
-ratio = None
-
-yolo_preprocess = cupy.RawKernel(
-    r"""
-extern "C" __global__
-// assumes that the letterbox will be drawn above and below the image rather than on the sides 
-// should be fine given we want squares from long rectangles
-// 1024x1024 resize still works with this which should be our max sqaure size
-
-// input is bgr
-// output is filled with color for letterbox, does bilinear interpolation with a shift to keep aspect ratio, scales 0-1, transposes to all reds, blues and greens
-void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight, int iWidth, int iHeight, int rowsToShiftDown) {
-    const int oWindow = oHeight - (2 * rowsToShiftDown);
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
-    const int y = blockIdx.y * blockDim.y + threadIdx.y;
-
-	if( x >= oWidth || y >= (oWindow) || (y) < rowsToShiftDown) {
-        //printf("failed x %i y %i", x, y);
-        return;
-    }
-
-    const float new_x = float(x) / float(oWidth) * float(iWidth);
-    const float new_y = float(y) / float(oWindow) * float(iHeight);
-
-    int i;
-
-    // loop for R G and B since no float3 :( 
-    for (i=0;i<3;i++) {
-		const float bx = new_x - 0.5f;
-		const float by = new_y - 0.5f;
-
-		const float cx = bx < 0.0f ? 0.0f : bx;
-		const float cy = by < 0.0f ? 0.0f : by;
-
-		const int x1 = int(cx);
-		const int y1 = int(cy);
-			
-		const int x2 = x1 >= iWidth - 1 ? x1 : x1 + 1;	// bounds check
-		const int y2 = y1 >= iHeight - 1 ? y1 : y1 + 1;
-		
-		const float samples[4] = {
-			input[(y1 * iWidth + x1) * 3 + i],
-			input[(y1 * iWidth + x2) * 3 + i],
-			input[(y2 * iWidth + x1) * 3 + i],
-			input[(y2 * iWidth + x2) * 3 + i]};
-
-		// compute bilinear weights
-		const float x1d = cx - float(x1);
-		const float y1d = cy - float(y1);
-
-		const float x1f = 1.0f - x1d;
-		const float y1f = 1.0f - y1d;
-
-		const float x2f = 1.0f - x1f;
-		const float y2f = 1.0f - y1f;
-
-		const float x1y1f = x1f * y1f;
-		const float x1y2f = x1f * y2f;
-		const float x2y1f = x2f * y1f;
-		const float x2y2f = x2f * y2f;
-
-        // add to Y here to move the image down and add the letterbox part
-        // 2 - i for bgr to rgb transform
-        const int rgb_offset = (oWidth * oHeight); // should be safe from int division as  
-        // initally used  + (2 - i) for bgr -> rbg, but for transposing now using rgb_offset * (2 - i)
-        int idx = rgb_offset * (2 - i) + (((y + rowsToShiftDown) * oWidth + x));
-
-        output[idx] = (samples[0] * x1y1f + samples[1] * x2y1f + samples[2] * x1y2f + samples[3] * x2y2f) / 255;
-    }
-}
-""",
-    "yolo_preprocess",
-)
-
-
-
-
-
-def cpu_preprocess(img):
-    bgr, ratio, dwdh = letterbox(img, (640, 640)) # resize while maintaining aspect ratio
-    print(f"Inital dwdh {dwdh}")
-
-    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
-    tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
-    #print(tensor)
-    dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
-    tensor = torch.asarray(tensor, device=device)
-    return tensor
+# // all caps to show its important
+DETECTRON: YOLO900 = None
 
 def run_inference_for_single_image(msg):
     global init, Engine, engine_W, engine_H, ratio, dwdh, gpu_output_buffer
@@ -147,75 +43,13 @@ def run_inference_for_single_image(msg):
         debug = True
     
     ori = bridge.imgmsg_to_cv2(msg, "bgr8")
-    if debug:
-        draw = ori.copy()
-
-    # used pinned memory maybe? I think this copies each loop which has been fine but loses some perf
-    inital_gpu_image = cupy.asarray(ori, dtype=cupy.float32)
-
-    if not init:
-        gpu_output_buffer = cupy.full((3, engine_H, engine_W), 114 / 255, dtype=cupy.float32)
-        init = True
-
-    block_size_1d = 256
-    block_sqrt = int(math.sqrt(block_size_1d))
-    block_size = (block_sqrt, block_sqrt)
-
-    height, width = ori.shape[:2]
-    shape = ori.shape[:2]
-
-    print(f"Height {height} Width {width}")
-
-    r = min(engine_W / shape[1], engine_H / shape[0])
-    # Compute padding [width, height]
-    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
-    # will shift image down this much, and use to determine where to draw letterbox color
-    pixels_to_shift_down = engine_H - new_unpad[1]
-    pixels_to_shift_down //= 2 # int division in place!
-
-    yolo_preprocess(                    # X                      # Y
-        (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
-        (inital_gpu_image, gpu_output_buffer, engine_W, engine_H, width, height, pixels_to_shift_down))
     
-    print(f"block size {block_size}")
-    print(f"X threads {iDivUp(engine_W, block_sqrt)}, Y {iDivUp(engine_H, block_sqrt)}")
-    if debug:
-        print(cpu_preprocess(draw))
-        print(cpu_preprocess(draw).shape)
-    torch_input_tensor = torch.from_dlpack(gpu_output_buffer)
-    print('----GPU----')
-    print(torch_input_tensor)
-    print(torch_input_tensor.shape)
+    # type hinting is really nice here
+    # also looks so much nicer having the logic somewhere else from the ros code
+    detections = DETECTRON.gpu_preprocess(ori, debug=True).infer()
+    debug_image = DETECTRON.draw_bboxes()    
 
-    data = Engine(torch_input_tensor)
-    print(data)
-    bboxes, scores, labels = det_postprocess(data)
-    
-    # Compute padding [width, height]
-    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
-
-    if debug and bboxes.numel() != 0:
-        bboxes -= dwdh
-        print(r)
-        bboxes /= r
-        bboxes -= torch.tensor([0, pixels_to_shift_down * 2, 0, pixels_to_shift_down * 2], device=device) # x y x y
-
-        for (bbox, score, label) in zip(bboxes, scores, labels):
-            bbox = bbox.round().int().tolist()
-            cls_id = int(label)
-            cls = OBJECT_CLASSES.get_name(cls_id)
-            cls = cls.replace("april_", "")
-            print(cls)
-            print(bbox)
-            color = (0, 0, 255)
-            cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
-            cv2.putText(draw,
-                        f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.75, [225, 255, 255],
-                        thickness=2)
-        rospy.logwarn_throttle(3, f"Publishing tf debug image!")
-        pub_debug.publish(bridge.cv2_to_imgmsg(draw, encoding="bgr8"))
+    pub_debug.publish(bridge.cv2_to_imgmsg(debug_image, encoding="bgr8"))
 
 
     height, width, channels = ori.shape
@@ -276,17 +110,11 @@ def run_inference_for_single_image(msg):
 
 
 def main():
-    global Engine, engine_H, engine_W
-    global pub, category_index, pub_debug, min_confidence, vis, dwdh
+    global pub, category_index, pub_debug, min_confidence, vis, DETECTRON
 
     os.chdir(THIS_DIR)
-    device = torch.device("cuda:0")
-    dwdh = torch.tensor([0, 0, 0, 0], device=device)
-    Engine = TRTModule("FRC2023m.engine", device)
-    engine_H, engine_W = Engine.inp_info[0].shape[-2:]
+    DETECTRON = YOLO900()
 
-    # set desired output names order
-    Engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
     sub_topic = "/obj_detection/c920/rect_image"
     pub_topic = "obj_detection_msg"
     rospy.init_node('tf_object_detection', anonymous=True)

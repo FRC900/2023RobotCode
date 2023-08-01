@@ -88,6 +88,8 @@ void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight,
 )
 
 
+
+
 Detections = namedtuple("Detections", ["bboxes", "scores", "labels"])
 
 def iDivUp(a, b):
@@ -96,19 +98,21 @@ def iDivUp(a, b):
     else:
         return a // b # should be an int
 
+
 class YOLO900:
 
-    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0") -> None:
+
+    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0", use_timings=False) -> None:
         self.device = torch.device(device_str)
 
         # @TODO check if this will ever not be 0's
         self.dwdh = torch.tensor([0, 0, 0, 0], device=self.device)
         self.ratio = None
-        Engine = TRTModule(engine_path, self.device)
-        self.engine_H, self.engine_W = Engine.inp_info[0].shape[-2:]
+        self.Engine = TRTModule(engine_path, self.device)
+        self.engine_H, self.engine_W = self.Engine.inp_info[0].shape[-2:]
 
         # set desired output names order
-        Engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
+        self.Engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
         self.debug_image = None
         self.input_tensor = None
         self.bboxes = None
@@ -117,19 +121,30 @@ class YOLO900:
         self.gpu_output_buffer = None
         self.last_preprocess_was_gpu = False
         self.pixels_to_shift_down = 0
+        self.use_timings = use_timings
+        self.gpu_has_been_run = False # gpu has compile time + overhead for first run so don't count it in average
+        if use_timings:
+            self.t: timing = timing.Timings()
+
 
     
     # assumes img is bgr
     def cpu_preprocess(self, img, debug=False):
+        if self.use_timings:
+            self.t.start("cpu_preproc")
+
         if debug:
             self.debug_image = img.copy()
         bgr, self.ratio, self.dwdh = letterbox(img, (self.engine_H, self.engine_W)) # resize while maintaining aspect ratio
 
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
         tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
-
-        self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
         self.input_tensor = torch.asarray(tensor, device=self.device)
+        
+        if self.use_timings:
+            self.t.end("cpu_preproc")
+        
+        self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
         self.last_preprocess_was_gpu = False
 
         # probably too fancy but x.cpu_preprocess(img).infer() is really cool
@@ -138,14 +153,16 @@ class YOLO900:
 
     # assumes img is bgr
     def gpu_preprocess(self, img, debug=False):
-        height, width = img.shape[:2]
-
         if debug:
             self.debug_image = img.copy()
 
+        if self.use_timings and self.gpu_has_been_run:
+            self.t.start("gpu_preproc")
+
+        height, width = img.shape[:2]
         inital_gpu_image = cupy.asarray(img, dtype=cupy.float32)
 
-        if not self.gpu_output_buffer:
+        if self.gpu_output_buffer is None:
             self.gpu_output_buffer = cupy.full((3, self.engine_H, self.engine_W), 114 / 255, dtype=cupy.float32)
             
         block_size_1d = 256
@@ -157,29 +174,44 @@ class YOLO900:
         # Compute padding [width, height]
         new_unpad = int(round(width * self.ratio)), int(round(height * self.ratio))
         # will shift image down this much, and use to determine where to draw letterbox color
-        pixels_to_shift_down = self.engine_H - new_unpad[1]
-        pixels_to_shift_down //= 2 
+        self.pixels_to_shift_down = self.engine_H - new_unpad[1]
+        self.pixels_to_shift_down //= 2 
 
         yolo_preprocess(                    # X                      # Y
             (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
-            (inital_gpu_image, self.gpu_output_buffer, self.engine_W, self.engine_H, width, height, pixels_to_shift_down))
+            (inital_gpu_image, self.gpu_output_buffer, self.engine_W, self.engine_H, width, height, self.pixels_to_shift_down))
+        
+        self.input_tensor = torch.from_dlpack(self.gpu_output_buffer)
+        
+        if self.use_timings and self.gpu_has_been_run:
+            self.t.end("gpu_preproc")
+        
+        self.gpu_has_been_run = True
         self.last_preprocess_was_gpu = True
         return self
     
-    def infer(self, img) -> Detections:
+
+    def infer(self) -> Detections:
+        if self.use_timings:
+            self.t.start("infer")
+        
         data = self.Engine(self.input_tensor)
+        
+        if self.use_timings:
+            self.t.end("infer")
         self.bboxes, self.scores, self.labels = det_postprocess(data)
         return Detections(self.bboxes, self.scores, self.labels)
 
-    def draw_bboxes(self):
-        if not self.image:
+
+    def draw_bboxes(self) -> cv2.Mat:
+        if self.debug_image is None:
             print("Debug image is none, try calling the preprocessor with 'debug=True'")
             raise ValueError
         
         # just to make sure 
-        d_bboxes = self.bboxes.copy()
-        d_scores = self.scores.copy()
-        d_labels = self.labels.copy()
+        d_bboxes = self.bboxes
+        d_scores = self.scores
+        d_labels = self.labels
 
         if d_bboxes.numel() != 0:
             d_bboxes -= self.dwdh

@@ -1,79 +1,45 @@
 import argparse
 import cv2
 import torch
-
+from baseYOLO import YOLO900
 from sys import path
-path.append('/home/ubuntu/YOLOv8-TensorRT')
-from models import TRTModule  # isort:skip
 path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
 import timing
 
-from config_frc2023 import OBJECT_CLASSES, COLORS
-from models.torch_utils import det_postprocess
-from models.utils import blob, letterbox, path_to_list
-
-import cupy
-import numpy as np
-import rospy 
-
-test_video_path = "/home/ubuntu/tensorflow_workspace/2023Game/data/videos/162_36_Angle.png"
-
-gpu_output_buffer = None
-
-USE_CPU_PREPROCESS = True
-
 def main(args: argparse.Namespace) -> None:
-    device = torch.device(args.device)
-    Engine = TRTModule(args.engine, device)
-    H, W = Engine.inp_info[0].shape[-2:]
-    #H, W = (640, 640)
+    DETECTRON = YOLO900(engine_path=args.engine, device_str=args.device, use_timings=True)
 
-    # set desired output names order
-    Engine.set_desired(['num_dets', 'bboxes', 'scores', 'labels'])
-
-    #cap = cv2.VideoCapture(args.input_video)
+    cap = cv2.VideoCapture(args.input_video)
     t = timing.Timings()
-    bgr = cv2.imread(test_image_path)
+    DETECTRON.t = t
+
     while True:
-
-        draw = bgr.copy()
-        #if USE_CPU_PREPROCESS:
-        bgr, ratio, dwdh = letterbox(bgr, (W, H)) # resize while maintaining aspect ratio
-        print(f"Inital dwdh {dwdh}")
-
-        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
-        tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
-        #print(tensor)
-        dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
-        tensor = torch.asarray(tensor, device=device)
-        print(f"Dwdh {dwdh}")
-        print(f"Ratio {ratio}")
-        data = Engine(tensor)
-
-        bboxes, scores, labels = det_postprocess(data)
-        if bboxes.numel() != 0:
-            bboxes -= dwdh
-            bboxes /= ratio
-
-            for (bbox, score, label) in zip(bboxes, scores, labels):
-                bbox = bbox.round().int().tolist()
-                cls_id = int(label)
-                cls = OBJECT_CLASSES.get_name(cls_id)
-                cls = cls.replace("april_", "")
-                print(cls)
-                color = (0, 0, 255)
-                cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
-                cv2.putText(draw,
-                            f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.75, [225, 255, 255],
-                            thickness=2)
-
-        cv2.imshow('result', draw)
-        key = cv2.waitKey(1) & 0x000000ff
-        if key == 27:
+        t.start('frame')
+        t.start('vid')
+        ret, bgr = cap.read()
+        t.end('vid')
+        if not ret:
             break
+        
+        # woo types so cool
+        #detections = DETECTRON.cpu_preprocess(bgr, debug=True).infer() 
+        # avg time = 0.0023052188822931976
 
+        # why is it slower :( 
+        # avg time = 0.0026699438579473565
+        detections = DETECTRON.gpu_preprocess(bgr, debug=True).infer()
+
+        t.start("viz")
+        if args.show:
+            cv2.imshow('result', DETECTRON.draw_bboxes())
+            t.end('viz')
+            key = cv2.waitKey(1) & 0x000000ff
+            if key == 27:
+                break
+        else:
+            t.end('viz')
+
+        t.end('frame')
 
 
 def parse_args() -> argparse.Namespace:
