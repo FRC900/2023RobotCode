@@ -49,7 +49,7 @@ Engine = None
 # H, W = Engine.inp_info[0].shape[-2:]
 engine_H, engine_W = None, None # obvious if not set correctly
 # this is almost certainly not right but at least for the one image that i tried this is the result 
-dwdh = torch.asarray((0, 0) * 2, dtype=torch.float32, device=device)
+dwdh = None
 ratio = None
 
 yolo_preprocess = cupy.RawKernel(
@@ -146,9 +146,13 @@ def cpu_preprocess(img):
 def run_inference_for_single_image(msg):
     global init, Engine, engine_W, engine_H, ratio, dwdh, gpu_output_buffer
     rospy.logwarn("Callback recived!")
+    debug = False
+    if pub_debug.get_num_connections() > 0:
+        debug = True
     
     ori = bridge.imgmsg_to_cv2(msg, "bgr8")
-    draw = ori.copy()
+    if debug:
+        draw = ori.copy()
 
     # used pinned memory maybe? I think this copies each loop which has been fine but loses some perf
     inital_gpu_image = cupy.asarray(ori, dtype=cupy.float32)
@@ -173,22 +177,15 @@ def run_inference_for_single_image(msg):
     pixels_to_shift_down = engine_H - new_unpad[1]
     pixels_to_shift_down //= 2 # int division in place!
 
-    #stream1 = cupy.cuda.stream.Stream()
-    #with stream1:
-    #yolo_preprocess(                    # X                      # Y
-    #    (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
-    #    (inital_gpu_image, gpu_output_buffer, new_unpad[0], new_unpad[1], width, height, pixels_to_shift_down))
-    #
     yolo_preprocess(                    # X                      # Y
         (iDivUp(engine_W, block_sqrt), iDivUp(engine_H, block_sqrt)), (block_size), 
         (inital_gpu_image, gpu_output_buffer, engine_W, engine_H, width, height, pixels_to_shift_down))
     
-    #stream1.synchronize() # for printing, seems to be exactly the same with and without
-
     print(f"block size {block_size}")
     print(f"X threads {iDivUp(engine_W, block_sqrt)}, Y {iDivUp(engine_H, block_sqrt)}")
-    print(cpu_preprocess(draw))
-    print(cpu_preprocess(draw).shape)
+    if debug:
+        print(cpu_preprocess(draw))
+        print(cpu_preprocess(draw).shape)
     torch_input_tensor = torch.from_dlpack(gpu_output_buffer)
     print('----GPU----')
     print(torch_input_tensor)
@@ -197,9 +194,15 @@ def run_inference_for_single_image(msg):
     data = Engine(torch_input_tensor)
     print(data)
     bboxes, scores, labels = det_postprocess(data)
-    if bboxes.numel() != 0:
+    
+    # Compute padding [width, height]
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+
+    if debug and bboxes.numel() != 0:
         bboxes -= dwdh
+        print(r)
         bboxes /= r
+        bboxes -= torch.tensor([0, pixels_to_shift_down * 2, 0, pixels_to_shift_down * 2], device=device) # x y x y
 
         for (bbox, score, label) in zip(bboxes, scores, labels):
             bbox = bbox.round().int().tolist()
@@ -215,11 +218,8 @@ def run_inference_for_single_image(msg):
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.75, [225, 255, 255],
                         thickness=2)
-
-    cv2.imshow('result', draw)
-    key = cv2.waitKey(1) & 0x000000ff
-    if key == 27:
-        return
+        rospy.logwarn_throttle(3, f"Publishing tf debug image!")
+        pub_debug.publish(bridge.cv2_to_imgmsg(draw, encoding="bgr8"))
 
 
     height, width, channels = ori.shape
@@ -281,11 +281,11 @@ def run_inference_for_single_image(msg):
 
 def main():
     global Engine, engine_H, engine_W
-    global pub, category_index, pub_debug, min_confidence, vis
+    global pub, category_index, pub_debug, min_confidence, vis, dwdh
 
     os.chdir(THIS_DIR)
     device = torch.device("cuda:0")
-
+    dwdh = torch.tensor([0, 0, 0, 0], device=device)
     Engine = TRTModule("FRC2023m.engine", device)
     engine_H, engine_W = Engine.inp_info[0].shape[-2:]
 

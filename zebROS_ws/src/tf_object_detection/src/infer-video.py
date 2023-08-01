@@ -16,7 +16,7 @@ import cupy
 import numpy as np
 import rospy 
 
-test_image_path = "/home/ubuntu/tensorflow_workspace/2023Game/data/videos/162_36_Angle.png"
+test_video_path = "/home/ubuntu/tensorflow_workspace/2023Game/data/videos/162_36_Angle.png"
 
 gpu_output_buffer = None
 
@@ -46,8 +46,8 @@ def main(args: argparse.Namespace) -> None:
         #print(tensor)
         dwdh = torch.asarray(dwdh * 2, dtype=torch.float32, device=device)
         tensor = torch.asarray(tensor, device=device)
-        print(tensor.shape)
         print(f"Dwdh {dwdh}")
+        print(f"Ratio {ratio}")
         data = Engine(tensor)
 
         bboxes, scores, labels = det_postprocess(data)
@@ -61,7 +61,6 @@ def main(args: argparse.Namespace) -> None:
                 cls = OBJECT_CLASSES.get_name(cls_id)
                 cls = cls.replace("april_", "")
                 print(cls)
-                print(bbox)
                 color = (0, 0, 255)
                 cv2.rectangle(draw, bbox[:2], bbox[2:], color, 2)
                 cv2.putText(draw,
