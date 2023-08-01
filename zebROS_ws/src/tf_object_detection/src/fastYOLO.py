@@ -126,11 +126,7 @@ void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight,
 
 
 
-def iDivUp(a, b):
-    if (a % b != 0):
-        return a // (b + 1) # int division to replicate c++
-    else:
-        return a // b # should be an int
+
 
 def cpu_preprocess(img):
     bgr, ratio, dwdh = letterbox(img, (640, 640)) # resize while maintaining aspect ratio
