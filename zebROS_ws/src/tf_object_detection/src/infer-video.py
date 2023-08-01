@@ -20,19 +20,19 @@ def main(args: argparse.Namespace) -> None:
         t.end('vid')
         if not ret:
             break
-        
-        print()
+        #print(type(bgr[0][0][0]))
+        #print()
         # woo types so cool
-        #detections = DETECTRON.cpu_preprocess(bgr, debug=True).infer() 
+        detections = DETECTRON.cpu_preprocess(bgr, debug=False).infer() 
         # avg time = 0.0023052188822931976
 
         # why is it slower :( 
         # avg time = 0.0026699438579473565
-        detections = DETECTRON.gpu_preprocess(bgr, debug=True).infer()
+        #detections = DETECTRON.gpu_preprocess(bgr, debug=False).infer()
 
         t.start("viz")
         if args.show:
-            cv2.imshow('result', DETECTRON.draw_bboxes())
+            #cv2.imshow('result', DETECTRON.draw_bboxes())
             t.end('viz')
             key = cv2.waitKey(1) & 0x000000ff
             if key == 27:

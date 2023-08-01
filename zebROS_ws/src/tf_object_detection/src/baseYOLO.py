@@ -14,6 +14,7 @@ from models.torch_utils import det_postprocess
 from models.utils import blob, letterbox, path_to_list
 from collections import namedtuple
 import math
+import pytorch_pfn_extras as ppe
 
 yolo_preprocess = cupy.RawKernel(
     r"""
@@ -24,22 +25,24 @@ extern "C" __global__
 
 // input is bgr
 // output is filled with color for letterbox, does bilinear interpolation with a shift to keep aspect ratio, scales 0-1, transposes to all reds, blues and greens
-void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight, int iWidth, int iHeight, int rowsToShiftDown) {
+void yolo_preprocess(const unsigned char* input, float* output, int oWidth, int oHeight, int iWidth, int iHeight, int rowsToShiftDown) {
     const int oWindow = oHeight - (2 * rowsToShiftDown);
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
 
+    
 	if( x >= oWidth || y >= (oWindow) || (y) < rowsToShiftDown) {
         //printf("failed x %i y %i", x, y);
         return;
     }
-
+    
+    
     const float new_x = float(x) / float(oWidth) * float(iWidth);
     const float new_y = float(y) / float(oWindow) * float(iHeight);
 
     int i;
 
-    // loop for R G and B since no float3 :( 
+    // loop for R G and B since no float3 :( import pytorch_pfn_extras as ppe
     for (i=0;i<3;i++) {
 		const float bx = new_x - 0.5f;
 		const float by = new_y - 0.5f;
@@ -53,11 +56,14 @@ void yolo_preprocess(const float* input, float* output, int oWidth, int oHeight,
 		const int x2 = x1 >= iWidth - 1 ? x1 : x1 + 1;	// bounds check
 		const int y2 = y1 >= iHeight - 1 ? y1 : y1 + 1;
 		
+        //const int x2 = min(x1 + 1, iWidth - 1);    // bounds check
+        //const int y2 = min(y1 + 1, iHeight - 1);
+
 		const float samples[4] = {
-			input[(y1 * iWidth + x1) * 3 + i],
-			input[(y1 * iWidth + x2) * 3 + i],
-			input[(y2 * iWidth + x1) * 3 + i],
-			input[(y2 * iWidth + x2) * 3 + i]};
+			(float)input[(y1 * iWidth + x1) * 3 + i],
+			(float)input[(y1 * iWidth + x2) * 3 + i],
+			(float)input[(y2 * iWidth + x1) * 3 + i],
+			(float)input[(y2 * iWidth + x2) * 3 + i]};
 
 		// compute bilinear weights
 		const float x1d = cx - float(x1);
@@ -145,7 +151,7 @@ class YOLO900:
             self.t.end("cpu_preproc")
         
         self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
-        print(f"DWDH {self.dwdh}")
+        #print(f"DWDH {self.dwdh}")
         self.last_preprocess_was_gpu = False
 
         # probably too fancy but x.cpu_preprocess(img).infer() is really cool
@@ -161,36 +167,36 @@ class YOLO900:
             self.t.start("gpu_preproc")
 
         height, width = img.shape[:2]
-        inital_gpu_image = cupy.asarray(img, dtype=cupy.float32)
+        inital_gpu_image = cupy.asarray(img, dtype=cupy.uint8)
+        with ppe.cuda.stream(self.Engine.stream):
+            if self.gpu_output_buffer is None:
+                self.gpu_output_buffer = cupy.full((3, self.engine_H, self.engine_W), 114 / 255, dtype=cupy.float32)
+                
+            block_size_1d = 256
+            block_sqrt = int(math.sqrt(block_size_1d))
+            block_size = (block_sqrt, block_sqrt)
 
-        if self.gpu_output_buffer is None:
-            self.gpu_output_buffer = cupy.full((3, self.engine_H, self.engine_W), 114 / 255, dtype=cupy.float32)
-            
-        block_size_1d = 256
-        block_sqrt = int(math.sqrt(block_size_1d))
-        block_size = (block_sqrt, block_sqrt)
 
+            self.ratio = min(self.engine_W / width, self.engine_H / height)
+            # Compute padding [width, height]
+            new_unpad = int(round(width * self.ratio)), int(round(height * self.ratio))
 
-        self.ratio = min(self.engine_W / width, self.engine_H / height)
-        # Compute padding [width, height]
-        new_unpad = int(round(width * self.ratio)), int(round(height * self.ratio))
+            if debug:
+                dw, dh = self.engine_W - new_unpad[0], self.engine_H - new_unpad[1]  # wh padding
 
-        if debug:
-            dw, dh = self.engine_W - new_unpad[0], self.engine_H - new_unpad[1]  # wh padding
+                dw /= 2  # divide padding into 2 sides
+                dh /= 2
+                self.dwdh = torch.asarray((dw, dh) * 2, dtype=torch.float32, device=self.device)
+            # will shift image down this much, and use to determine where to draw letterbox color
+            self.pixels_to_shift_down = self.engine_H - new_unpad[1]
+            self.pixels_to_shift_down //= 2
+            #print(f"Pixels to shift {self.pixels_to_shift_down}, img size {self.debug_image.shape}, ratio")
 
-            dw /= 2  # divide padding into 2 sides
-            dh /= 2
-            self.dwdh = torch.asarray((dw, dh) * 2, dtype=torch.float32, device=self.device)
-        # will shift image down this much, and use to determine where to draw letterbox color
-        self.pixels_to_shift_down = self.engine_H - new_unpad[1]
-        self.pixels_to_shift_down //= 2
-        print(f"Pixels to shift {self.pixels_to_shift_down}, img size {self.debug_image.shape}, ratio")
+            yolo_preprocess(                    # X                      # Y
+                (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
+                (inital_gpu_image, self.gpu_output_buffer, self.engine_W, self.engine_H, width, height, self.pixels_to_shift_down))
 
-        yolo_preprocess(                    # X                      # Y
-            (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
-            (inital_gpu_image, self.gpu_output_buffer, self.engine_W, self.engine_H, width, height, self.pixels_to_shift_down))
-        
-        self.input_tensor = torch.from_dlpack(self.gpu_output_buffer)
+            self.input_tensor = torch.from_dlpack(self.gpu_output_buffer)
         
         if self.use_timings and self.gpu_has_been_run:
             self.t.end("gpu_preproc")
