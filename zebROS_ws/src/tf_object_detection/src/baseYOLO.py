@@ -145,6 +145,7 @@ class YOLO900:
             self.t.end("cpu_preproc")
         
         self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
+        print(f"DWDH {self.dwdh}")
         self.last_preprocess_was_gpu = False
 
         # probably too fancy but x.cpu_preprocess(img).infer() is really cool
@@ -173,9 +174,17 @@ class YOLO900:
         self.ratio = min(self.engine_W / width, self.engine_H / height)
         # Compute padding [width, height]
         new_unpad = int(round(width * self.ratio)), int(round(height * self.ratio))
+
+        if debug:
+            dw, dh = self.engine_W - new_unpad[0], self.engine_H - new_unpad[1]  # wh padding
+
+            dw /= 2  # divide padding into 2 sides
+            dh /= 2
+            self.dwdh = torch.asarray((dw, dh) * 2, dtype=torch.float32, device=self.device)
         # will shift image down this much, and use to determine where to draw letterbox color
         self.pixels_to_shift_down = self.engine_H - new_unpad[1]
-        self.pixels_to_shift_down //= 2 
+        self.pixels_to_shift_down //= 2
+        print(f"Pixels to shift {self.pixels_to_shift_down}, img size {self.debug_image.shape}, ratio")
 
         yolo_preprocess(                    # X                      # Y
             (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
@@ -215,9 +224,8 @@ class YOLO900:
 
         if d_bboxes.numel() != 0:
             d_bboxes -= self.dwdh
+            #print(self.dwdh)
             d_bboxes /= self.ratio
-            if self.last_preprocess_was_gpu:
-                d_bboxes -= torch.tensor([0, self.pixels_to_shift_down * 2, 0, self.pixels_to_shift_down * 2], device=self.device) # x y x y
 
             for (bbox, score, label) in zip(d_bboxes, d_scores, d_labels):
                 bbox = bbox.round().int().tolist()

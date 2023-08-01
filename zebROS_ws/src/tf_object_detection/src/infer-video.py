@@ -21,6 +21,7 @@ def main(args: argparse.Namespace) -> None:
         if not ret:
             break
         
+        print()
         # woo types so cool
         #detections = DETECTRON.cpu_preprocess(bgr, debug=True).infer() 
         # avg time = 0.0023052188822931976
