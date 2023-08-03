@@ -1,8 +1,7 @@
 import torch
 import cupy
-import numpy as np
 import cv2
-
+from file_changed import file_changed
 from sys import path
 path.append('/home/ubuntu/YOLOv8-TensorRT')
 from models import TRTModule  # isort:skip
@@ -11,14 +10,17 @@ import timing
 
 from config_frc2023 import OBJECT_CLASSES, COLORS
 from models.torch_utils import det_postprocess
-from models.utils import blob, letterbox, path_to_list
+from models.utils import blob, letterbox
 from collections import namedtuple
 import math
 import pytorch_pfn_extras as ppe
 
+
+# @TODO make work on sideways images
 yolo_preprocess = cupy.RawKernel(
     r"""
 extern "C" __global__
+
 // assumes that the letterbox will be drawn above and below the image rather than on the sides 
 // should be fine given we want squares from long rectangles
 // 1024x1024 resize still works with this which should be our max sqaure size
@@ -94,8 +96,6 @@ void yolo_preprocess(const unsigned char* input, float* output, int oWidth, int 
 )
 
 
-
-
 Detections = namedtuple("Detections", ["bboxes", "scores", "labels"])
 
 def iDivUp(a, b):
@@ -108,12 +108,13 @@ def iDivUp(a, b):
 class YOLO900:
 
 
-    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0", use_timings=False) -> None:
+    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0", use_timings=False, onyx_path="FRC2023m.onnx") -> None:
         self.device = torch.device(device_str)
 
         # @TODO check if this will ever not be 0's
         self.dwdh = torch.tensor([0, 0, 0, 0], device=self.device)
         self.ratio = None
+        self.check_and_regen_engine(onyx_path)
         self.Engine = TRTModule(engine_path, self.device)
         self.engine_H, self.engine_W = self.Engine.inp_info[0].shape[-2:]
 
@@ -130,10 +131,14 @@ class YOLO900:
         self.use_timings = use_timings
         self.gpu_has_been_run = False # gpu has compile time + overhead for first run so don't count it in average
         if use_timings:
-            self.t: timing = timing.Timings()
-
-
+            self.t = timing.Timings()
     
+    def check_and_regen_engine(onnx_path):
+        if not file_changed(onnx_path):
+            return
+
+        
+
     # assumes img is bgr
     def cpu_preprocess(self, img, debug=False):
         if self.use_timings:
@@ -167,30 +172,27 @@ class YOLO900:
             self.t.start("gpu_preproc")
 
         height, width = img.shape[:2]
-        inital_gpu_image = cupy.asarray(img, dtype=cupy.uint8)
         with ppe.cuda.stream(self.Engine.stream):
             if self.gpu_output_buffer is None:
                 self.gpu_output_buffer = cupy.full((3, self.engine_H, self.engine_W), 114 / 255, dtype=cupy.float32)
-                
+
+            inital_gpu_image = cupy.asarray(img)
             block_size_1d = 256
             block_sqrt = int(math.sqrt(block_size_1d))
             block_size = (block_sqrt, block_sqrt)
-
-
             self.ratio = min(self.engine_W / width, self.engine_H / height)
             # Compute padding [width, height]
             new_unpad = int(round(width * self.ratio)), int(round(height * self.ratio))
 
             if debug:
                 dw, dh = self.engine_W - new_unpad[0], self.engine_H - new_unpad[1]  # wh padding
-
                 dw /= 2  # divide padding into 2 sides
                 dh /= 2
                 self.dwdh = torch.asarray((dw, dh) * 2, dtype=torch.float32, device=self.device)
+                
             # will shift image down this much, and use to determine where to draw letterbox color
             self.pixels_to_shift_down = self.engine_H - new_unpad[1]
             self.pixels_to_shift_down //= 2
-            #print(f"Pixels to shift {self.pixels_to_shift_down}, img size {self.debug_image.shape}, ratio")
 
             yolo_preprocess(                    # X                      # Y
                 (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
@@ -215,8 +217,13 @@ class YOLO900:
         if self.use_timings:
             self.t.end("infer")
         self.bboxes, self.scores, self.labels = det_postprocess(data)
+        self.bboxes -= self.dwdh
+        self.bboxes /= self.ratio
+
         return Detections(self.bboxes, self.scores, self.labels)
 
+    def name_from_cls_id(self, cls_id) -> str:
+        return OBJECT_CLASSES.get_name(cls_id)
 
     def draw_bboxes(self) -> cv2.Mat:
         if self.debug_image is None:
@@ -229,10 +236,6 @@ class YOLO900:
         d_labels = self.labels
 
         if d_bboxes.numel() != 0:
-            d_bboxes -= self.dwdh
-            #print(self.dwdh)
-            d_bboxes /= self.ratio
-
             for (bbox, score, label) in zip(d_bboxes, d_scores, d_labels):
                 bbox = bbox.round().int().tolist()
                 cls_id = int(label)

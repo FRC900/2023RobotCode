@@ -2,41 +2,29 @@
 
 # Ordering imports by length is cool
 import os
-import sys
-import cv2
-import time
-import uuid
-import cupy
 import rospy
-import torch
 import rospkg
 import numpy as np
+from sys import path
+from baseYOLO import YOLO900
 from sensor_msgs.msg import Image
 from file_changed import file_changed
-from visualization import BBoxVisualization
 from cv_bridge import CvBridge, CvBridgeError
 from field_obj.msg import TFDetection, TFObject
-import math
-import sys
-import numpy
-from sys import path
-import argparse
-import cv2
-from baseYOLO import YOLO900
 
 bridge = CvBridge()
-pub, pub_debug, vis = None, None, None
+pub, pub_debug = None, None
 min_confidence = 0.1
-global rospack, THIS_DIR, PATH_TO_LABELS, DETECTRON
+global OBJ_DET_SRC_DIR, DETECTRON
 
 rospack = rospkg.RosPack()
-THIS_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
-init = False
+OBJ_DET_SRC_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
+
 # // all caps to show its important
 DETECTRON: YOLO900 = None
 
 def run_inference_for_single_image(msg):
-    global init, Engine, engine_W, engine_H, ratio, dwdh, gpu_output_buffer
+    global min_confidence
     rospy.logwarn("Callback recived!")
     debug = False
     if pub_debug.get_num_connections() > 0:
@@ -46,73 +34,40 @@ def run_inference_for_single_image(msg):
     
     # type hinting is really nice here
     # also looks so much nicer having the logic somewhere else from the ros code
-    detections = DETECTRON.gpu_preprocess(ori, debug=True).infer()
-    debug_image = DETECTRON.draw_bboxes()    
+    detections = DETECTRON.gpu_preprocess(ori, debug=debug).infer()
 
-    pub_debug.publish(bridge.cv2_to_imgmsg(debug_image, encoding="bgr8"))
+    if debug:
+        rospy.logwarn_throttle(3, "Publishing debug image for object detect")
+        debug_image = DETECTRON.draw_bboxes()    
+        pub_debug.publish(bridge.cv2_to_imgmsg(debug_image, encoding="bgr8"))
 
-
-    height, width, channels = ori.shape
-    boxes = []
-    confs = []
-    clss = []
     detection = TFDetection()
     detection.header = msg.header
-    # Will end transformed to optical frame in screen to world
-    # detection.header.frame_id = detection.header.frame_id.replace("_optical_frame", "_frame")
-    
-    # Converts numpy array to list becuase extracting indviual items from a list is faster than numpy array
-    # Might be a more optimized way but this takes negligible time
-    ''' 
-    output = output.tolist()
-    debug = False
-    if pub_debug.get_num_connections() > 0:
-        debug = True
-    for i in range(int(len(output) / model.layout)):
-        prefix = i * model.layout
 
-        conf = float(output[prefix + 2])
-        if conf < min_confidence:
+    d_bboxes, d_scores, d_labels = detections.bboxes, detections.scores, detections.labels  
+    for (bbox, score, label) in zip(d_bboxes, d_scores, d_labels):
+        if not (score > min_confidence):
             continue
 
-        index = int(output[prefix + 1])
-        label = str(category_dict[int(output[prefix + 1])])
-        #conf = float(output[prefix + 2])
-        xmin = float(output[prefix + 3] * width)
-        ymin = float(output[prefix + 4] * height)
-        xmax = float(output[prefix + 5] * width)
-        ymax = float(output[prefix + 6] * height)
-
-        # ROSifying the code
+        bbox = bbox.round().int().tolist() # [x1, y1, x2, y2] where x1 y1 is top left corner and x2 y2 bottom right
+        cls_id = int(label)
         obj = TFObject()
-        obj.confidence = conf
-        obj.tl.x = xmax
-        obj.tl.y = ymax
-        obj.br.x = xmin
-        obj.br.y = ymin
-        obj.id = index
-        obj.label = label
+        obj.confidence = score
+        obj.tl.x = bbox[0]
+        obj.tl.y = bbox[1]
+        obj.br.x = bbox[2]
+        obj.br.y = bbox[3]
+        obj.id = cls_id # number
+        obj.label = DETECTRON.name_from_cls_id(cls_id) # string
         detection.objects.append(obj)
-        if debug == True:
-            boxes.append([output[prefix + 4], output[prefix + 3], output[prefix + 6], output[prefix + 5]])
-            clss.append(int(output[prefix + 1]))
-            confs.append(output[prefix + 2])
-    pub.publish(detection)
-    #Visualize
-    if debug == True:
-        viz.draw_bboxes(ori, boxes, confs, clss, min_confidence)
-        pub_debug.publish(bridge.cv2_to_imgmsg(ori, encoding="bgr8"))
 
-        #cv2.imwrite("result.jpg", ori)
-        #cv2.imshow("result", ori)
-        #key = cv2.waitKey(.5) & 0x000000FF
-    '''
+    pub.publish(detection)
 
 
 def main():
-    global pub, category_index, pub_debug, min_confidence, vis, DETECTRON
+    global pub, pub_debug, min_confidence, DETECTRON
 
-    os.chdir(THIS_DIR)
+    os.chdir(OBJ_DET_SRC_DIR)
     DETECTRON = YOLO900()
 
     sub_topic = "/obj_detection/c920/rect_image"
@@ -140,7 +95,6 @@ def main():
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting down")
-
 
 if __name__ == '__main__':
     main()
