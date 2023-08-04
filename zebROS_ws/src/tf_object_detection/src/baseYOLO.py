@@ -4,7 +4,6 @@ import math
 import torch
 from sys import path
 path.append('/home/ubuntu/YOLOv8-TensorRT')
-path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
 from models import TRTModule  # isort:skip
 from models.torch_utils import det_postprocess
 from models.utils import blob, letterbox
@@ -45,7 +44,7 @@ void yolo_preprocess(const unsigned char* input, float* output, int oWidth, int 
 
     int i;
 
-    // loop for R G and B since no float3 :( import pytorch_pfn_extras as ppe
+    // loop for R G and B since no float3 :(
     for (i=0;i<3;i++) {
 		const float bx = new_x - 0.5f;
 		const float by = new_y - 0.5f;
@@ -225,7 +224,7 @@ class YOLO900:
         self.last_preprocess_was_gpu = True
         return self
     
-
+        
     def infer(self) -> Detections:
         if self.use_timings:
             self.t.start("infer")
@@ -259,7 +258,8 @@ class YOLO900:
                 cls_id = int(label)
                 cls = OBJECT_CLASSES.get_name(cls_id)
                 cls = cls.replace("april_", "")
-                color = (0, 0, 255)
+                color = COLORS[cls_id]
+                print(f"Color {color} cls_id {cls_id} cls {cls}")
                 cv2.rectangle(self.debug_image, bbox[:2], bbox[2:], color, 2)
                 cv2.putText(self.debug_image,
                             f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),

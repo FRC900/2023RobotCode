@@ -1,10 +1,11 @@
 import argparse
 import cv2
-import torch
 from baseYOLO import YOLO900
 from sys import path
 path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
 import timing
+
+USE_CPU_PREPROCESS = False
 
 def main(args: argparse.Namespace) -> None:
     DETECTRON = YOLO900(engine_path=args.engine, device_str=args.device, use_timings=True)
@@ -20,13 +21,11 @@ def main(args: argparse.Namespace) -> None:
         t.end('vid')
         if not ret:
             break
-        #print(type(bgr[0][0][0]))
-        #print()
-        # woo types so cool
-        #detections = DETECTRON.cpu_preprocess(bgr, debug=False).infer() 
-        # avg time = 0.0023052188822931976
 
-        detections = DETECTRON.gpu_preprocess(bgr, debug=True).infer() 
+        if not USE_CPU_PREPROCESS:
+            detections = DETECTRON.gpu_preprocess(bgr, debug=True).infer() 
+        else:
+            detections = DETECTRON.cpu_preprocess(bgr, debug=False).infer() 
 
         t.start("viz")
         if args.show:
