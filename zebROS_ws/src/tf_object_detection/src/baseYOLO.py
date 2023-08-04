@@ -1,19 +1,20 @@
-import torch
-import cupy
 import cv2
-from file_changed import file_changed
+import cupy
+import math
+import torch
 from sys import path
 path.append('/home/ubuntu/YOLOv8-TensorRT')
-from models import TRTModule  # isort:skip
 path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
-import timing
-
-from config_frc2023 import OBJECT_CLASSES, COLORS
+from models import TRTModule  # isort:skip
 from models.torch_utils import det_postprocess
 from models.utils import blob, letterbox
-from collections import namedtuple
-import math
+import timing
+from pathlib import Path
 import pytorch_pfn_extras as ppe
+from collections import namedtuple
+from file_changed import file_changed
+from onnx_to_tensorrt import onnx_to_tensorrt
+from config_frc2023 import OBJECT_CLASSES, COLORS
 
 
 # @TODO make work on sideways images
@@ -133,10 +134,28 @@ class YOLO900:
         if use_timings:
             self.t = timing.Timings()
     
-    def check_and_regen_engine(onnx_path):
+    def check_and_regen_engine(self, onnx_path):
         if not file_changed(onnx_path):
             return
 
+        print("--------Regenerating engine file--------")
+        # Create a tensorrt .engine file. This is a model optimized for the specific
+        # hardware we're currently running on. That will be useful for testing
+        # the model locally.
+        # Additionally, it will create a calibration file useful for optimizing
+        # int8 models on other platforms.  
+        tensorrt_path = Path(onnx_path).with_suffix(".engine")
+        tensorrt_path = tensorrt_path.with_name(tensorrt_path.name)        
+        print(f"Tensorrt path {tensorrt_path}")
+        calibration_path = tensorrt_path.with_name("calib_FRC2023m.bin")
+
+        onnx_to_tensorrt(onnx_path,
+                        tensorrt_path,
+                        int8=True,
+                        fp16=True,
+                        dataset_path='/home/ubuntu', # just give it a real path that  
+                        calibration_file=calibration_path)
+        
         
 
     # assumes img is bgr
@@ -156,7 +175,6 @@ class YOLO900:
             self.t.end("cpu_preproc")
         
         self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
-        #print(f"DWDH {self.dwdh}")
         self.last_preprocess_was_gpu = False
 
         # probably too fancy but x.cpu_preprocess(img).infer() is really cool
