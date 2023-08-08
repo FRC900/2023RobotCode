@@ -65,11 +65,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo-model',
                         type=str,
-                        default='yolov8m.pt',
+                        default='/home/ubuntu/2023RobotCode/zebROS_ws/src/tf_object_detection/src/yolov8m.pt',
                         help='Engine file')
     parser.add_argument('--config',
                         type=str,
-                        default='FRC2023.yaml',
+                        default='/home/ubuntu/2023RobotCode/zebROS_ws/src/tf_object_detection/src/FRC2023.yaml',
                         help='Config file')
     parser.add_argument('--output_stem',
                         type=str,
@@ -77,7 +77,7 @@ def parse_args() -> argparse.Namespace:
                         help='File name stem for pt, onnx, engine and calibration file')
     parser.add_argument('--epochs',
                         type=int,
-                        default=200,
+                        default=150,
                         help='Number of epochs to train')
     parser.add_argument('--batch-size',
                         type=int,

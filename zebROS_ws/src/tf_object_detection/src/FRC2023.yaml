@@ -4,7 +4,7 @@
 
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: /home/ubuntu/tensorflow_workspace/2023Game/models/yolov8/datasets/FRC2023
+path: /home/ubuntu/tensorflow_workspace/2023Game/datasets/FRC2023
 train: # train images (relative to 'path')
   - images/train
 val: # val images (relative to 'path')
