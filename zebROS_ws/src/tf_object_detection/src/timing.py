@@ -1,5 +1,6 @@
 """
 Module to do basic timing of various events in code
+Use cuda_event_timing.py if possible instead of this code if GPU work is being profiled
 
 create a Timings object, then call start and end at various points in the code
 to record timing for the contained code blocks

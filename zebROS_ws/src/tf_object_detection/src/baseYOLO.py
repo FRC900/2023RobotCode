@@ -259,7 +259,7 @@ class YOLO900:
                 cls = OBJECT_CLASSES.get_name(cls_id)
                 cls = cls.replace("april_", "")
                 color = COLORS[cls_id]
-                print(f"Color {color} cls_id {cls_id} cls {cls}")
+                #print(f"Color {color} cls_id {cls_id} cls {cls}")
                 cv2.rectangle(self.debug_image, bbox[:2], bbox[2:], color, 2)
                 cv2.putText(self.debug_image,
                             f'{cls}:{score:.3f}', (bbox[0], bbox[1] - 2),

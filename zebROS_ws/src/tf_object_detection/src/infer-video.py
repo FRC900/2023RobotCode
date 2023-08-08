@@ -23,9 +23,9 @@ def main(args: argparse.Namespace) -> None:
             break
 
         if not USE_CPU_PREPROCESS:
-            detections = DETECTRON.gpu_preprocess(bgr, debug=True).infer() 
+            detections = DETECTRON.gpu_preprocess(bgr, debug=args.show).infer() 
         else:
-            detections = DETECTRON.cpu_preprocess(bgr, debug=False).infer() 
+            detections = DETECTRON.cpu_preprocess(bgr, debug=args.show).infer() 
 
         t.start("viz")
         if args.show:
