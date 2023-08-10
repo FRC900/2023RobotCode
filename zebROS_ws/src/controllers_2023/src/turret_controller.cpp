@@ -8,7 +8,7 @@
 
 #include <controller_interface/multi_interface_controller.h>
 #include <talon_controllers/talon_controller_interface.h>
-#include <ctre_interfaces/cancoder_state_interface.h>
+#include <ctre_interfaces/cancoder_command_interface.h>
 #include "controllers_2023_msgs/TurretSrv.h"
 #include <std_msgs/Float64.h>
 
@@ -16,7 +16,7 @@ namespace turret_controller
 {
 
 //this is the controller class, used to make a controller
-class TurretController : public controller_interface::MultiInterfaceController<hardware_interface::cancoder::CANCoderStateInterface, hardware_interface::TalonCommandInterface>
+class TurretController : public controller_interface::MultiInterfaceController<hardware_interface::cancoder::CANCoderCommandInterface, hardware_interface::TalonCommandInterface>
 {
     public:
         TurretController()
@@ -27,11 +27,13 @@ class TurretController : public controller_interface::MultiInterfaceController<h
             
             //get interface
             hardware_interface::TalonCommandInterface *const talon_command_iface = hw->get<hardware_interface::TalonCommandInterface>();
-            hardware_interface::cancoder::CANCoderStateInterface *const cancoder_joint_iface = hw->get<hardware_interface::cancoder::CANCoderStateInterface>();
+            hardware_interface::cancoder::CANCoderCommandInterface *const cancoder_joint_iface = hw->get<hardware_interface::cancoder::CANCoderCommandInterface>();
 
             //Initialize piston joints
             // has type of CANCoderStateInterface, check if this is correct
             cancoder_joint_ = cancoder_joint_iface->getHandle("cancoder_for_turret_zero"); //joint name comes from ros_control_boilerplate/config/[insert_year]_compbot_base_jetson.yaml
+
+            cancoder_joint_->setInitializationStrategy(hardware_interface::cancoder::SensorInitializationStrategy::BootToZero);
             inital_cancoder_angle_ = cancoder_joint_->getPosition(); // take the initial angle of the cancoder
 
             // initialize motor joint using those config values
@@ -81,6 +83,11 @@ class TurretController : public controller_interface::MultiInterfaceController<h
         void update(const ros::Time & time, const ros::Duration& period) {
             //
             ROS_INFO_STREAM_THROTTLE(0.001, "Moving turret to " << position_command_);
+            if (turret_joint_.getMode() == hardware_interface::TalonMode_Disabled)
+            {
+                position_command_ = turret_joint_.getPosition();
+            }
+
             turret_joint_.setCommand(position_command_);
             if(turret_relative_angle_pub_->trylock())
             {
@@ -119,7 +126,7 @@ class TurretController : public controller_interface::MultiInterfaceController<h
 
     private:
         talon_controllers::TalonMotionMagicCloseLoopControllerInterface turret_joint_;
-        hardware_interface::cancoder::CANCoderStateHandle cancoder_joint_;
+        hardware_interface::cancoder::CANCoderCommandHandle cancoder_joint_;
 
         ros::ServiceServer turret_service_;
         std::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::Float64>> turret_relative_angle_pub_; // so other code can see the angle of the turret without also doing the conversion 
