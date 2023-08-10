@@ -18,6 +18,7 @@ bool CANCoderController::init(hardware_interface::cancoder::CANCoderCommandInter
 	auto cancoder_handle = hw->getHandle(joint_name);
 	interface_ = std::make_unique<cancoder_controller_interface::CANCoderControllerInterface>(controller_nh, joint_name, cancoder_handle);
 
+	/* 
 	std::string initialization_strategy;
 	hardware_interface::cancoder::SensorInitializationStrategy strategy = hardware_interface::cancoder::SensorInitializationStrategy::BootToAbsolutePosition;
 
@@ -38,6 +39,8 @@ bool CANCoderController::init(hardware_interface::cancoder::CANCoderCommandInter
 	}
 
 	interface_->setInitializationStrategy(strategy);
+	*/
+
 	return true;
 }
 
