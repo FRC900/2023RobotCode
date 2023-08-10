@@ -25,9 +25,12 @@ hardware_interface:
 
    joints:
        # add mechanisms here
-       - {name: turret_joint, type: can_talon_fx, can_bus: CANivore, can_id: 21, local: true}
-       - {name: robot_code_ready_rio, local: true, type: ready}
-       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, can_id: 22, local: true}
+       - {name: turret_joint, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
+       - {name: robot_code_ready_rio, local: false 
+       , type: ready}
+       - {name: robot_code_ready_jetson, local: true, type: ready}
+
+       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, can_id: 0, local: true}
 
 
 turret_controller_2023:
@@ -51,7 +54,7 @@ turret_controller_2023:
         invert_output: True
 
         # linear position along 
-        conversion_factor: 0.02 # 1/50, hypothetically right?
+        conversion_factor: 0.000061187
 
         # TODO : figure out what value this should be
         # Only need one direction, to
@@ -80,3 +83,12 @@ joint_state_controller_rio:
 match_state_controller:
    type:         match_state_controller/MatchStateController
    publish_rate: 20
+
+cancoder_controller:
+    type:      cancoder_controller/CANCoderController
+    joint_name: cancoder_for_turret_zero
+    initialization_strategy: boot_to_absolute_position
+
+cancoder_state_controller:
+    type:     cancoder_state_controller/CANCoderStateController
+    publish_rate: 100

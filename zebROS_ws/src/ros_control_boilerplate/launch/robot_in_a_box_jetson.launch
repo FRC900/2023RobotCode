@@ -21,6 +21,6 @@
 
 		<!-- Load controller manager -->
 		<node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
-			output="screen" args="spawn turret_controller_2023 talon_state_controller talon_config_controller joint_state_controller joint_state_listener_controller match_state_listener_controller robot_code_ready_controller" />
+			output="screen" args="spawn cancoder_controller cancoder_state_controller turret_controller_2023 talon_state_controller talon_config_controller joint_state_controller joint_state_listener_controller match_state_listener_controller robot_code_ready_controller" />
 	</group>
 </launch>

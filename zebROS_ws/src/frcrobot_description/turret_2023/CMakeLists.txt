@@ -10,7 +10,6 @@ project(turret_2023)
 find_package(catkin REQUIRED COMPONENTS
   joint_state_publisher
   robot_state_publisher
-  rviz
 )
 
 ## System dependencies are found with CMake's conventions
