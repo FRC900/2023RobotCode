@@ -9,6 +9,10 @@
 #include "hal/DriverStation.h"
 
 #include "ctre/phoenix6/StatusSignal.hpp"
+namespace ctre::phoenix6::hardware
+{
+    class ParentDevice;
+}
 
 class CTREV6Device
 {
@@ -24,6 +28,8 @@ public:
     CTREV6Device &operator=(CTREV6Device &&) noexcept = delete;
 
     const std::string& getName(void) const;
+    ctre::phoenix6::hardware::ParentDevice *getParentDevice(void) const;
+
 protected:
     bool safeCall(ctre::phoenix::StatusCode status_code, const std::string &method_name);
     template <class T>
@@ -47,10 +53,13 @@ protected:
 
     int getId(void) const;
 
+    void setParentDevice(ctre::phoenix6::hardware::ParentDevice *parent_device);
+
 private:
     const std::string device_type_;
     const std::string name_;
     const int id_;
+    ctre::phoenix6::hardware::ParentDevice *parent_device_{nullptr};
     static inline std::atomic<size_t> can_error_count_{0};
     static inline std::atomic<bool> can_error_sent_{false};
 };

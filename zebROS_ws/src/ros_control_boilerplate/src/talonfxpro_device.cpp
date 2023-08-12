@@ -28,6 +28,7 @@ TalonFXProDevice::TalonFXProDevice(const std::string &name_space,
 
         // Clear this out so we only get resets that occur after the controllers have been initialized
         static_cast<void>(talonfxpro_->HasResetOccurred());
+        setParentDevice(talonfxpro_.get());
 }
 
 TalonFXProDevice::~TalonFXProDevice()
@@ -1708,14 +1709,4 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
             safeCall(talonfxpro_->SetControl(ctre::phoenix6::controls::NeutralOut()), "setControl(NeutralOut for Disabled)");
         }
     }
-}
-
-ctre::phoenix6::hardware::core::CoreTalonFX *TalonFXProDevice::getDevicePointer() const
-{
-    return talonfxpro_.get();
-}
-
-ctre::phoenix6::hardware::ParentDevice *TalonFXProDevice::getParentDevicePointer() const
-{
-    return talonfxpro_.get();
 }

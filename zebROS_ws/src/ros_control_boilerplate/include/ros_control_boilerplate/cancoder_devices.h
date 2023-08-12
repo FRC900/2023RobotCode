@@ -12,9 +12,9 @@ namespace hardware_interface::cancoder
     class RemoteCANCoderStateInterface;
 }
 
-namespace ctre::phoenix6::hardware::core
+namespace ctre::phoenix6::hardware
 {
-    class CoreCANcoder;
+    class ParentDevice;
 }
 
 class CANCoderDevices : public Devices
@@ -32,7 +32,7 @@ public:
     void read(const ros::Time& time, const ros::Duration& period, Tracer &tracer) override;
     void write(const ros::Time& time, const ros::Duration& period, Tracer &tracer) override;
 
-    void getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> &device_map) const;
+    void appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const;
 
 private:
     double read_hz_{100};

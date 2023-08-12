@@ -2,7 +2,6 @@
 #include "ros/node_handle.h"
 #include "hal/DriverStation.h"
 
-#include "ctre/phoenix/StatusCodes.h"
 #include "ros_control_boilerplate/ctre_v5_device.h"
 
 static std::optional<std::string> phoenixErrorCodeToString(const ctre::phoenix::ErrorCode error_code);

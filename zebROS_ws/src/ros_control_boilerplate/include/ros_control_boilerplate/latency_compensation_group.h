@@ -12,11 +12,9 @@ namespace ctre::phoenix6
 {
     class BaseStatusSignal;
     template <typename T> class StatusSignal;
-    namespace hardware::core
+    namespace hardware
     {
-        class CoreCANcoder;
-        class CorePigeon2;
-        class CoreTalonFX;
+        class ParentDevice;
     }
 }
 namespace hardware_interface::latency_compensation
@@ -33,9 +31,7 @@ public:
     LatencyCompensationGroup(const XmlRpc::XmlRpcValue &entry_array,
                              const std::string &name,
                              const double update_frequency,
-                             const std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> &cancoders,
-                             const std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> &pigeon2s,
-                             const std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> &talon_fxs);
+                             const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &devices);
     LatencyCompensationGroup(const LatencyCompensationGroup &) = delete;
     LatencyCompensationGroup(LatencyCompensationGroup &&other) noexcept = delete;
     virtual ~LatencyCompensationGroup();

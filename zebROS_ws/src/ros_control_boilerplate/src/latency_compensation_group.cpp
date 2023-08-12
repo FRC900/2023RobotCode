@@ -70,9 +70,7 @@ private:
 LatencyCompensationGroup::LatencyCompensationGroup(const XmlRpc::XmlRpcValue &entry_array,
                                                    const std::string &name,
                                                    const double update_frequency,
-                                                   const std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> &cancoders,
-                                                   const std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> &pigeon2s,
-                                                   const std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> &talon_fxs)
+                                                   const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &devices)
     : name_{name}
     , state_{std::make_unique<hardware_interface::latency_compensation::CTRELatencyCompensationState>(name)}
     , read_thread_state_{std::make_unique<hardware_interface::latency_compensation::CTRELatencyCompensationState>(name)}
@@ -86,55 +84,79 @@ LatencyCompensationGroup::LatencyCompensationGroup(const XmlRpc::XmlRpcValue &en
         readStringRequired(entry, "name", entry_name);
         readStringRequired(entry, "type", entry_type, entry_name);
 
+        auto check_for_correct_pointer_entry = [&]<typename T>()
+        {
+            const auto map_entries = devices.equal_range(entry_name);
+            for (auto map_entry = map_entries.first; map_entry != map_entries.second; ++map_entry)
+            {
+                const auto pointer = dynamic_cast<T *>(map_entry->second);
+                if (pointer)
+                {
+                    return pointer;
+                }
+            }
+            return static_cast<T *>(nullptr);
+        };
+
         if (entry_type == "talonfx")
         {
-            const auto map_entry = talon_fxs.find(entry_name);
-            if (map_entry == talon_fxs.end())
+            const auto talon_fx_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CoreTalonFX>();
+            if (talon_fx_ptr)
+            {
+                create_group_entry(entry_name, &(talon_fx_ptr->GetPosition()), &(talon_fx_ptr->GetVelocity()));
+            }
+            else
             {
                 throw std::runtime_error("Latency compensation group " + name + " : could not find TalonFXPro joint " + entry_name);
             }
-            const auto &talon_fx_ptr = map_entry->second;
-            create_group_entry(entry_name, &talon_fx_ptr->GetPosition(), &talon_fx_ptr->GetVelocity());
         }
         else if (entry_type == "cancoder")
         {
-            const auto map_entry = cancoders.find(entry_name);
-            if (map_entry == cancoders.end())
+            const auto cancoder_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CoreCANcoder>();
+            if (cancoder_ptr)
+            {
+                create_group_entry(entry_name, &cancoder_ptr->GetPosition(), &cancoder_ptr->GetVelocity());
+            }
+            else
             {
                 throw std::runtime_error("Latency compensation group " + name + " : could not find CANcoder joint " + entry_name);
             }
-            const auto &cancoder_ptr = map_entry->second;
-            create_group_entry(entry_name, &cancoder_ptr->GetPosition(), &cancoder_ptr->GetVelocity());
         }
         else if (entry_type == "pigeon2_roll")
         {
-            const auto map_entry = pigeon2s.find(entry_name);
-            if (map_entry == pigeon2s.end())
+            const auto pigeon2_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CorePigeon2>();
+            if (pigeon2_ptr)
+            {
+                create_group_entry(entry_name, &pigeon2_ptr->GetRoll(), &pigeon2_ptr->GetAngularVelocityX());
+            }
+            else
             {
                 throw std::runtime_error("Latency compensation group " + name + " : could not find Pigeon2 joint " + entry_name);
             }
-            const auto &pigeon2_ptr = map_entry->second;
-            create_group_entry(entry_name, &pigeon2_ptr->GetRoll(), &pigeon2_ptr->GetAngularVelocityX());
         }
         else if (entry_type == "pigeon2_pitch")
         {
-            const auto map_entry = pigeon2s.find(entry_name);
-            if (map_entry == pigeon2s.end())
+            const auto pigeon2_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CorePigeon2>();
+            if (pigeon2_ptr)
+            {
+                create_group_entry(entry_name, &pigeon2_ptr->GetPitch(), &pigeon2_ptr->GetAngularVelocityY());
+            }
+            else
             {
                 throw std::runtime_error("Latency compensation group " + name + " : could not find Pigeon2 joint " + entry_name);
             }
-            const auto &pigeon2_ptr = map_entry->second;
-            create_group_entry(entry_name, &pigeon2_ptr->GetPitch(), &pigeon2_ptr->GetAngularVelocityY());
         }
         else if (entry_type == "pigeon2_yaw")
         {
-            const auto map_entry = pigeon2s.find(entry_name);
-            if (map_entry == pigeon2s.end())
+            const auto pigeon2_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CorePigeon2>();
+            if (pigeon2_ptr)
+            {
+                create_group_entry(entry_name, &pigeon2_ptr->GetYaw(), &pigeon2_ptr->GetAngularVelocityZ());
+            }
+            else
             {
                 throw std::runtime_error("Latency compensation group " + name + " : could not find Pigeon2 joint " + entry_name);
             }
-            const auto &pigeon2_ptr = map_entry->second;
-            create_group_entry(entry_name, &pigeon2_ptr->GetYaw(), &pigeon2_ptr->GetAngularVelocityZ());
         }
     }
     for (auto &signal : signals_)

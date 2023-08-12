@@ -43,3 +43,12 @@ int CTREV6Device::getId(void) const
 {
     return id_;
 }
+
+void CTREV6Device::setParentDevice(ctre::phoenix6::hardware::ParentDevice *parent_device)
+{
+    parent_device_ = parent_device;
+}
+ctre::phoenix6::hardware::ParentDevice *CTREV6Device::getParentDevice(void) const
+{
+    return parent_device_;
+}

@@ -43,8 +43,6 @@ public:
     void read(const ros::Time &time, const ros::Duration &period);
     void write(const ros::Time &time, const ros::Duration &period);
 
-    ctre::phoenix6::hardware::core::CoreCANcoder *getDevicePointer() const;
-
 private:
     const bool local_hardware_;
     const bool local_update_;

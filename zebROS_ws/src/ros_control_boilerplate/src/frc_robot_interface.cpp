@@ -44,9 +44,6 @@
 //#include <cstring>                                    // for size_t, strerror
 #endif
 
-#include <hal/DriverStation.h>
-
-#include <ctre/phoenix/platform/can/PlatformCAN.h>           // for SetCANInterface
 #include <ctre/phoenix/unmanaged/Unmanaged.h>
 
 #include "ros_control_boilerplate/ros_math_shared.hpp"
@@ -147,7 +144,8 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_
 	}
 	ROS_INFO_STREAM("Phoenix Version String : " << ctre::phoenix::unmanaged::Unmanaged::GetPhoenixVersion());
 
-    devices_.emplace_back(std::make_shared<AnalogInputDevices>(root_nh));
+	// Create all the devices specified in the yaml joint list, one type at a time
+	devices_.emplace_back(std::make_shared<AnalogInputDevices>(root_nh));
     devices_.emplace_back(std::make_shared<CANCoderDevices>(root_nh));
     devices_.emplace_back(std::make_shared<CANdleDevices>(root_nh));
     devices_.emplace_back(std::make_shared<CTREV5MotorControllers>(root_nh));
@@ -169,25 +167,22 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_
     devices_.emplace_back(std::make_shared<SolenoidDevices>(root_nh));
 	devices_.emplace_back(std::make_shared<TalonFXProDevices>(root_nh));
 
-    const auto cancoder_devices = getDevicesOfType<CANCoderDevices>(devices_);
-    const auto pigeon2_devices = getDevicesOfType<Pigeon2Devices>(devices_);
-    const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices>(devices_);
-	std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> cancoders;
-	std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> pigeon2s;
-	std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> talonfxpros;
-	if (cancoder_devices)
+	// Grab a collection of all the ctre V6 device types, pass them
+	// into the Latency Compensation Groups constructor
+	std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> ctrev6_devices;
+
+	auto append_device_map = [&]<typename T>(void)
 	{
-		cancoder_devices->getDeviceMap(cancoders);
-	}
-	if (pigeon2_devices)
-	{
-		pigeon2_devices->getDeviceMap(pigeon2s);
-	}
-	if (talonfxpro_devices)
-	{
-		talonfxpro_devices->getDeviceMap(talonfxpros);
-	}
-	devices_.emplace_back(std::make_shared<LatencyCompensationGroups>(root_nh, cancoders, pigeon2s, talonfxpros));
+		const auto device_ptr = getDevicesOfType<T>(devices_);
+		if (device_ptr)
+		{
+			device_ptr->appendDeviceMap(ctrev6_devices);
+		}
+	};
+	append_device_map.operator()<CANCoderDevices>(); // C++ 20 templated lamba call syntax is dumb if there's no function parameter to deduce the types from
+	append_device_map.operator()<Pigeon2Devices>();
+	append_device_map.operator()<TalonFXProDevices>();
+	devices_.emplace_back(std::make_shared<LatencyCompensationGroups>(root_nh, ctrev6_devices));
 
 	ROS_INFO_STREAM_NAMED("frc_robot_interface", "FRCRobotInterface Ready on " << root_nh.getNamespace());
 
@@ -204,7 +199,7 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 		// spawned - waiting here prevents the robot from
 		// reporting robot code ready to the field until
 		// all other controllers are started
-		if (ready_device->areReady())
+		if (ready_device && ready_device->areReady())
 		{
 			ROS_INFO_STREAM("Robot is ready");
 			robot_code_ready_ = true;

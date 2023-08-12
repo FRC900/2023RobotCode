@@ -44,7 +44,7 @@ public:
 
     void read(const ros::Time &/*time*/, const ros::Duration &/*period*/);
     void write(const ros::Time &/*time*/, const ros::Duration &/*period*/,
-               const std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs);
+               const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs);
 
 private:
     std::unique_ptr<ctre::phoenix6::Orchestra> orchestra_;

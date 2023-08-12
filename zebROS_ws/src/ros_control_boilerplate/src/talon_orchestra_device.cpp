@@ -60,7 +60,7 @@ void TalonOrchestraDevice<SIMFLAG>::read(const ros::Time &/*time*/, const ros::D
 
 template <bool SIMFLAG>
 void TalonOrchestraDevice<SIMFLAG>::write(const ros::Time &/*time*/, const ros::Duration &/*period*/,
-                                          const std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs)
+                                          const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs)
 {
     std::string music_file_path;
     std::vector<std::string> instruments;

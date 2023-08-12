@@ -1,4 +1,3 @@
-#include <hardware_interface/robot_hw.h> // for hardware_interface::InterfaceManager
 #include "periodic_interval_counter/periodic_interval_counter.h"
 #include "ros_control_boilerplate/ros_iterative_robot_devices.h"
 #include "ros_control_boilerplate/ros_iterative_robot.h"

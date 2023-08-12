@@ -1,6 +1,7 @@
 #ifndef ROS_ITERATIVE_ROBOT_DEVICES_H_INC__
 #define ROS_ITERATIVE_ROBOT_DEVICES_H_INC__
 
+#include <hardware_interface/robot_hw.h> // for hardware_interface::InterfaceManager
 #include "ros_control_boilerplate/devices.h"
 
 namespace ros_control_boilerplate

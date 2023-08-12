@@ -91,12 +91,14 @@ void CANCoderDevices::write(const ros::Time& time, const ros::Duration& period, 
     }
 }
 
-void CANCoderDevices::getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> &device_map) const
+void CANCoderDevices::appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const
 {
-    device_map.clear();
     for (auto &d : devices_)
     {
-        device_map.emplace(d->getName(), d->getDevicePointer());
+        const auto ptr = d->getParentDevice();
+        if (ptr)
+        {
+            device_map.emplace(d->getName(), ptr);
+        }
     }
-
 }

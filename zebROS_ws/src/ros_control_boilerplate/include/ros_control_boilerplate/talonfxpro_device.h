@@ -52,9 +52,6 @@ public:
     bool setSimLimitSwitches(const bool forward_limit, const bool reverse_limit);
     bool setSimCurrent(const double stator_current, const double supply_current);
 
-    ctre::phoenix6::hardware::core::CoreTalonFX *getDevicePointer(void) const;
-    ctre::phoenix6::hardware::ParentDevice *getParentDevicePointer(void) const;
-
 private:
     const std::string can_bus_;
 

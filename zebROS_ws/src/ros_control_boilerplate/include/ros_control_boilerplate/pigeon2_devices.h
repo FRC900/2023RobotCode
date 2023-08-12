@@ -16,9 +16,9 @@ namespace hardware_interface
     }
 }
 
-namespace ctre::phoenix6::hardware::core
+namespace ctre::phoenix6::hardware
 {
-    class CorePigeon2;
+    class ParentDevice;
 }
 
 class Pigeon2Devices : public Devices
@@ -38,7 +38,7 @@ public:
     void simInit(ros::NodeHandle nh) override;
     void simRead(const ros::Time& time, const ros::Duration& period, Tracer &tracer) override;
 
-    void getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> &device_map) const;
+    void appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const;
 
 private:
     double read_hz_{100};

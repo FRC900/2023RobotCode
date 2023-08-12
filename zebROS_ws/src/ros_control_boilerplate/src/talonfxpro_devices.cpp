@@ -127,20 +127,14 @@ bool TalonFXProDevices::setcurrent(ros_control_boilerplate::set_current::Request
 	return true;
 }
 
-void TalonFXProDevices::getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> &device_map) const
+void TalonFXProDevices::appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const
 {
-    device_map.clear();
     for (auto &d : devices_)
     {
-        device_map.emplace(d->getName(), d->getDevicePointer());
-    }
-}
-
-void TalonFXProDevices::getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const
-{
-    device_map.clear();
-    for (auto &d : devices_)
-    {
-        device_map.emplace(d->getName(), d->getParentDevicePointer());
+        const auto ptr = d->getParentDevice();
+        if (ptr)
+        {
+            device_map.emplace(d->getName(), ptr);
+        }
     }
 }

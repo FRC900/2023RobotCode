@@ -6,9 +6,7 @@
 #include "ctre_interfaces/latency_compensation_state_interface.h"
 
 LatencyCompensationGroups::LatencyCompensationGroups(ros::NodeHandle &root_nh,
-                                                     const std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> &cancoders,
-                                                     const std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> &pigeon2s,
-                                                     const std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> &talon_fxs)
+                                                     const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &devices)
     : state_interface_{std::make_unique<hardware_interface::latency_compensation::CTRELatencyCompensationStateInterface>()}
 {
     // TODO : this shouldn't be hard-coded?
@@ -33,7 +31,7 @@ LatencyCompensationGroups::LatencyCompensationGroups(ros::NodeHandle &root_nh,
             XmlRpc::XmlRpcValue entries_array;
             readArrayRequired(joint_params, "entries", entries_array, joint_name);
 
-            devices_.emplace_back(std::make_unique<LatencyCompensationGroup>(entries_array, joint_name, update_frequency, cancoders, pigeon2s, talon_fxs));
+            devices_.emplace_back(std::make_unique<LatencyCompensationGroup>(entries_array, joint_name, update_frequency, devices));
         }
     }
 }

@@ -57,8 +57,6 @@ public:
     void simInit(ros::NodeHandle nh, size_t joint_index);
     void simRead(const ros::Time &/*time*/, const ros::Duration &/*period*/);
 
-    ctre::phoenix6::hardware::core::CorePigeon2 *getDevicePointer(void) const;
-
 private:
     const std::string frame_id_;
     const bool local_hardware_;

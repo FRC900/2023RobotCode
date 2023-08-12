@@ -66,7 +66,7 @@ void TalonOrchestraDevices<SIMFLAG>::write(const ros::Time& time, const ros::Dur
 }
 
 template <bool SIMFLAG>
-void TalonOrchestraDevices<SIMFLAG>::setTalonFXData(const std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs)
+void TalonOrchestraDevices<SIMFLAG>::setTalonFXData(const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs)
 {
     talonfxs_ = talonfxs;
 }

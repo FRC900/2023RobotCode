@@ -9,20 +9,16 @@ namespace hardware_interface::latency_compensation
     class CTRELatencyCompensationStateInterface;
 }
 
-namespace ctre::phoenix6::hardware::core
+namespace ctre::phoenix6::hardware
 {
-    class CoreCANcoder;
-    class CorePigeon2;
-    class CoreTalonFX;
+    class ParentDevice;
 }
 
 class LatencyCompensationGroups : public Devices
 {
 public:
     LatencyCompensationGroups(ros::NodeHandle &root_nh,
-                              const std::map<std::string, ctre::phoenix6::hardware::core::CoreCANcoder *> &cancoders,
-                              const std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> &pigeon2s,
-                              const std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> &talon_fxs);
+                              const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &devices);
     LatencyCompensationGroups(const LatencyCompensationGroups &) = delete;
     LatencyCompensationGroups(LatencyCompensationGroups &&) noexcept = delete;
     virtual ~LatencyCompensationGroups();

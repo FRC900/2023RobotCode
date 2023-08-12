@@ -42,6 +42,7 @@ Pigeon2Device::Pigeon2Device(const std::string &name_space,
     {
     ROS_INFO_STREAM(__PRETTY_FUNCTION__ << " : " << __LINE__ << " id = " << can_id << " can_bus = " << can_bus);
         pigeon2_ = std::make_unique<ctre::phoenix6::hardware::core::CorePigeon2>(can_id, can_bus);
+        setParentDevice(pigeon2_.get());
     ROS_INFO_STREAM(__PRETTY_FUNCTION__ << " : " << __LINE__);
         read_thread_state_ = std::make_unique<hardware_interface::pigeon2::Pigeon2HWState>(can_id);
         read_state_mutex_ = std::make_unique<std::mutex>();
@@ -348,11 +349,6 @@ void Pigeon2Device::write(const ros::Time & /*time*/, const ros::Duration & /*pe
             return;
         }
     }
-}
-
-ctre::phoenix6::hardware::core::CorePigeon2 *Pigeon2Device::getDevicePointer() const
-{
-    return pigeon2_.get();
 }
 
 #define SAFE_READ(var, function) \

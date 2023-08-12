@@ -41,6 +41,7 @@ CANCoderDevice::CANCoderDevice(const std::string &name_space,
     if (local_hardware_)
     {
         cancoder_ = std::make_unique<ctre::phoenix6::hardware::core::CoreCANcoder>(getId(), can_bus);
+        setParentDevice(cancoder_.get());
         read_thread_state_ = std::make_unique<hardware_interface::cancoder::CANCoderHWState>(can_id);
         read_state_mutex_ = std::make_unique<std::mutex>();
         read_thread_ = std::make_unique<std::thread>(&CANCoderDevice::read_thread, this,
@@ -183,11 +184,6 @@ void CANCoderDevice::write(const ros::Time &/*time*/, const ros::Duration &/*per
             return;
         }
     }
-}
-
-ctre::phoenix6::hardware::core::CoreCANcoder *CANCoderDevice::getDevicePointer() const
-{
-    return cancoder_.get();
 }
 
 #define SAFE_READ(var, function) \

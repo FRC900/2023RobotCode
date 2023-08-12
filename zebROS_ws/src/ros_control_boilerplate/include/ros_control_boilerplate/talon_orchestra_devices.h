@@ -32,7 +32,7 @@ public:
     void read(const ros::Time& time, const ros::Duration& period, Tracer &tracer) override;
     void write(const ros::Time& time, const ros::Duration& period, Tracer &tracer) override;
 
-    void setTalonFXData(const std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs);
+    void setTalonFXData(const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs);
 
 private:
     double read_hz_{100};
@@ -41,7 +41,7 @@ private:
     std::unique_ptr<hardware_interface::OrchestraCommandInterface> command_interface_;
     hardware_interface::InterfaceManager interface_manager_;
 
-    std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs_;
+    std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs_;
 };
 
 using HWTalonOrchestraDevices = TalonOrchestraDevices<false>;

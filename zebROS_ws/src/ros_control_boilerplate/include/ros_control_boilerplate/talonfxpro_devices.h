@@ -16,10 +16,6 @@ namespace hardware_interface::talonfxpro
 namespace ctre::phoenix6::hardware
 {
     class ParentDevice;
-    namespace core
-    {
-    class CoreTalonFX;
-    }
 }
 
 class TalonFXProDevices : public Devices
@@ -42,8 +38,8 @@ public:
     // simRead hooks up to CTRE simulation code and updates motor state each control cycle
     void simRead(const ros::Time &time, const ros::Duration &period, Tracer &tracer) override;
 
-    void getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::core::CoreTalonFX *> &device_map) const;
-    void getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const;
+    void appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const;
+
 private:
     std::vector<std::unique_ptr<TalonFXProDevice>> devices_;
     std::unique_ptr<hardware_interface::talonfxpro::TalonFXProStateInterface> state_interface_;

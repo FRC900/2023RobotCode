@@ -124,11 +124,14 @@ void Pigeon2Devices::simRead(const ros::Time& time, const ros::Duration& period,
     }
 }
 
-void Pigeon2Devices::getDeviceMap(std::map<std::string, ctre::phoenix6::hardware::core::CorePigeon2 *> &device_map) const
+void Pigeon2Devices::appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const
 {
-    device_map.clear();
     for (auto &d : devices_)
     {
-        device_map.emplace(d->getName(), d->getDevicePointer());
+        const auto ptr = d->getParentDevice();
+        if (ptr)
+        {
+            device_map.emplace(d->getName(), ptr);
+        }
     }
 }

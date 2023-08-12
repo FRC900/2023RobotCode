@@ -76,7 +76,6 @@
 
 #include "ros_control_boilerplate/as726x_devices.h"
 #include "ros_control_boilerplate/canifier_devices.h"
-#include "ros_control_boilerplate/ctre_v5_motor_controllers.h"
 #include "ros_control_boilerplate/joystick_devices.h"
 #include "ros_control_boilerplate/match_data_devices.h"
 #include "ros_control_boilerplate/sparkmax_devices.h"
@@ -165,6 +164,8 @@ bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_
 		HAL_SetCANBusString(can_interface_);
 	}
 
+	// Create devices which have different code for HW vs. Sim
+	// (sim interface has a similar block, but using Sim vs HW devices)
 	devices_.emplace_back(std::make_shared<HWAS726xDevices>(root_nh));
 	devices_.emplace_back(std::make_shared<HWCANifierDevices>(root_nh));
 	devices_.emplace_back(std::make_shared<HWJoystickDevices>(root_nh));
@@ -172,12 +173,13 @@ bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_
 	devices_.emplace_back(std::make_shared<HWSparkMaxDevices>(root_nh));
 	devices_.emplace_back(std::make_shared<HWTalonOrchestraDevices>(root_nh));
 
+	// Orchestra needs a set of previously created TalonFXs to use as instruments
 	const auto orchestra_devices = getDevicesOfType<HWTalonOrchestraDevices>(devices_);
     const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices>(devices_);
 	if (talonfxpro_devices && orchestra_devices)
 	{
-		std::map<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs;
-		talonfxpro_devices->getDeviceMap(talonfxs);
+		std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs;
+		talonfxpro_devices->appendDeviceMap(talonfxs);
 		orchestra_devices->setTalonFXData(talonfxs);
 	}
 
