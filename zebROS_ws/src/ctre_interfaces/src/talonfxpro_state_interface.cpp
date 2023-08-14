@@ -604,6 +604,23 @@ bool TalonFXProHWState::getBeepOnBoot(void) const
 {
 	return beep_on_boot_;
 }
+void TalonFXProHWState::setBeepOnConfig(const bool beep_on_config)
+{
+	beep_on_config_ = beep_on_config;
+}
+bool TalonFXProHWState::getBeepOnConfig(void) const
+{
+	return beep_on_config_;
+}
+void TalonFXProHWState::setAllowMusicDurDisable(const bool allow_music_dur_disable)
+{
+	allow_music_dur_disable_ = allow_music_dur_disable;
+}
+bool TalonFXProHWState::getAllowMusicDurDisable(void) const
+{
+	return allow_music_dur_disable_;
+}
+
 
 void TalonFXProHWState::setForwardSoftLimitEnable(const bool enable)
 {

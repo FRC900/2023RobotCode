@@ -4,7 +4,7 @@
 	<!-- GDB functionality -->
 	<arg name="debug" default="false" />
 	<arg unless="$(arg debug)" name="launch_prefix" value="" />
-	<arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+	<arg     if="$(arg debug)" name="launch_prefix" value="valgrind " />
 
 
 	<arg name="hw_or_sim" default="hw" />
@@ -18,10 +18,11 @@
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_offsets.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_params.yaml" command="load"/>
-		<!--
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_params.yaml" command="load"/>
-		-->
+		<!--
+		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_phoenix6_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_phoenix6_params.yaml" command="load"/>
+		-->
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_angle_swerve_tuning.yaml" command="load"/>
 		
 		<rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_jetson.yaml" command="load"/>
@@ -43,22 +44,22 @@
 		 	 intake_talonfxpro_controller
 			 four_bar_controller_2023
 			 elevator_controller_2023
-			 candle_controller
 			 swerve_drive_controller
 			 joint_state_controller_jetson
 			 joint_state_listener_controller
 			 talon_state_controller_jetson
 			 talon_config_controller
 			 match_state_listener_controller
-			 orchestra_controller
-			 orchestra_state_controller
-			 pigeon2_imu_state_controller
 			 talonfxpro_state_controller
 			 talonfxpro_config_controller
+			 candle_controller
+			 pigeon2_imu_state_controller
+			 orchestra_controller
+			 orchestra_state_controller
 			 robot_code_ready_controller" />
 		<!--
-				intake_talonfxpro_controller
-				swerve_drive_talonfxpro_controller
+
+				intake_controller
 		-->
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />

@@ -1035,23 +1035,51 @@ void TalonFXProHWCommand::setBeepOnBoot(const bool beep_on_boot)
 	if (beep_on_boot != beep_on_boot_)
 	{
 		beep_on_boot_ = beep_on_boot;
-		beep_on_boot_changed_ = true;
+		audio_changed_ = true;
 	}
 }
 bool TalonFXProHWCommand::getBeepOnBoot(void) const
 {
 	return beep_on_boot_;
 }
-bool TalonFXProHWCommand::beepOnBootChanged(bool &beep_on_boot)
+void TalonFXProHWCommand::setBeepOnConfig(const bool beep_on_config)
+{
+	if (beep_on_config != beep_on_config_)
+	{
+		beep_on_config_ = beep_on_config;
+		audio_changed_ = true;
+	}
+}
+bool TalonFXProHWCommand::getBeepOnConfig(void) const
+{
+	return beep_on_config_;
+}
+void TalonFXProHWCommand::setAllowMusicDurDisable(const bool allow_music_dur_disable)
+{
+	if (allow_music_dur_disable != allow_music_dur_disable_)
+	{
+		allow_music_dur_disable_ = allow_music_dur_disable;
+		audio_changed_ = true;
+	}
+}
+bool TalonFXProHWCommand::getAllowMusicDurDisable(void) const
+{
+	return allow_music_dur_disable_;
+}
+bool TalonFXProHWCommand::audioChanged(bool &beep_on_boot,
+									   bool &beep_on_config,
+									   bool &allow_music_dur_disable)
 {
 	beep_on_boot = beep_on_boot_;
-	const auto rc = beep_on_boot_changed_;
-	beep_on_boot_changed_ = false;
+	beep_on_config = beep_on_config_;
+	allow_music_dur_disable_ = allow_music_dur_disable;
+	const auto rc = audio_changed_;
+	audio_changed_ = false;
 	return rc;
 }
-void TalonFXProHWCommand::resetBeepOnBoot(void)
+void TalonFXProHWCommand::resetAudio(void)
 {
-	beep_on_boot_changed_ = true;
+	audio_changed_ = true;
 }
 
 void TalonFXProHWCommand::setForwardSoftLimitEnable(const bool enable)
@@ -1395,7 +1423,7 @@ void TalonFXProHWCommand::setControlDifferentialSlot(const int control_different
 {
 	if ((control_differential_slot < 0) || (control_differential_slot > 2))
 	{
-		ROS_ERROR_STREAM("Invalid control slot (" << control_differential_slot << ") passed to " << __PRETTY_FUNCTION__);
+		ROS_ERROR_STREAM("Invalid differential control slot (" << control_differential_slot << ") passed to " << __PRETTY_FUNCTION__);
 		return;
 	}
 	if (control_differential_slot != control_differential_slot_)

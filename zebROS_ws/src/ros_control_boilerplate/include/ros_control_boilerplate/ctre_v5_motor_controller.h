@@ -49,7 +49,7 @@ public:
                             hardware_interface::TalonCommandInterface &command_interface,
                             hardware_interface::RemoteTalonStateInterface &remote_state_interface);
     void read(const ros::Time &time, const ros::Duration &period);
-    void write(const ros::Time &time, const ros::Duration &period, const bool robot_enabled);
+    void write(const ros::Time &time, const ros::Duration &period, const bool robot_enabled, const bool prev_robot_enabled);
 
     void updateSimValues(const ros::Time &/*time*/, const ros::Duration &period);
 
@@ -79,10 +79,7 @@ private:
     void setSimCollectionTalonSRX(double position, double velocity, double delta_position) const;
     void setSimCollectionTalonFX(double position, double velocity, double delta_position) const;
 
-    // Used to disable motors on transition from enabled->disabled
-    // Start with this == true so the first iteration through
-    // write() forces that enabled->disabled transition disabling all motors on startup
-    bool prev_robot_enabled_{true};
+
 
     static constexpr int pidIdx{0};    // 0 for primary closed-loop, 1 for cascaded closed-loop
     static constexpr int timeoutMs{0}; // If nonzero, function will wait for config success and report an error if it times out. If zero, no blocking or checking is performed

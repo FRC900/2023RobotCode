@@ -55,7 +55,7 @@ private:
     ros::ServiceServer sim_limit_switch_srv_;
     ros::ServiceServer sim_current_srv_;
 
-    bool prev_robot_enabled_{false};
+    bool prev_robot_enabled_{true};
 };
 
 #endif

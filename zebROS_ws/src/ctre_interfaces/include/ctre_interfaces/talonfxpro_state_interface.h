@@ -189,6 +189,10 @@ public:
 
 	void setBeepOnBoot(const bool beep_on_boot);
 	bool getBeepOnBoot(void) const;
+	void setBeepOnConfig(const bool beep_on_config);
+	bool getBeepOnConfig(void) const;
+	void setAllowMusicDurDisable(const bool allow_music_dur_disable);
+	bool getAllowMusicDurDisable(void) const;
 
 	void setForwardSoftLimitEnable(const bool enable);
 	bool getForwardSoftLimitEnable(void) const;
@@ -540,6 +544,8 @@ private:
 	int reverse_limit_remote_sensor_id_{0};
 
 	bool beep_on_boot_{true};
+	bool beep_on_config_{true};
+	bool allow_music_dur_disable_{false};
 
 	bool   softlimit_forward_enable_{false};
 	bool   softlimit_reverse_enable_{false};

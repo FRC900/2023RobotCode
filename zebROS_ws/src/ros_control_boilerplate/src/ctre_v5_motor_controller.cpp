@@ -190,7 +190,7 @@ void CTREV5MotorController::read(const ros::Time &/*time*/, const ros::Duration 
     }
 }
 
-void CTREV5MotorController::write(const ros::Time &/*time*/, const ros::Duration &/*period*/, const bool robot_enabled)
+void CTREV5MotorController::write(const ros::Time &/*time*/, const ros::Duration &/*period*/, const bool robot_enabled, const bool prev_robot_enabled)
 {
     if (!local_)
     {
@@ -1209,7 +1209,7 @@ void CTREV5MotorController::write(const ros::Time &/*time*/, const ros::Duration
         state_->setSetpoint(command_->get());
         state_->setDemand1Type(command_->getDemand1Type());
         state_->setDemand1Value(command_->getDemand1Value());
-        if (prev_robot_enabled_)
+        if (prev_robot_enabled)
         {
             // On the switch from robot enabled to robot disabled, set Talons to ControlMode::Disabled
             // call resetMode() to queue up a change back to the correct mode / setpoint
@@ -1221,7 +1221,6 @@ void CTREV5MotorController::write(const ros::Time &/*time*/, const ros::Duration
             ROS_INFO_STREAM("Robot disabled - called Set(Disabled) on " << getName());
         }
     }
-    prev_robot_enabled_ = robot_enabled;
 
     if (command_->clearStickyFaultsChanged())
     {

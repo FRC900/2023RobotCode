@@ -175,6 +175,8 @@ TalonFXProCIParams& TalonFXProCIParams::operator=(const TalonFXProCIParams &othe
         reverse_limit_remote_sensor_id_.store(other.reverse_limit_remote_sensor_id_.load());
 
         beep_on_boot_.store(other.beep_on_boot_.load());
+        beep_on_config_.store(other.beep_on_config_.load());
+        allow_music_dur_disable_.store(other.allow_music_dur_disable_.load());
 
         softlimit_forward_enable_.store(other.softlimit_forward_enable_.load());
         softlimit_reverse_enable_.store(other.softlimit_reverse_enable_.load());
@@ -192,6 +194,7 @@ TalonFXProCIParams& TalonFXProCIParams::operator=(const TalonFXProCIParams &othe
         control_feedforward_.store(other.control_feedforward_.load());
         control_slot_.store(other.control_slot_.load());
         control_oppose_master_direction_.store(other.control_oppose_master_direction_.load());
+        control_differential_slot_.store(other.control_differential_slot_.load());
 
         continuous_wrap_.store(other.continuous_wrap_.load());
         enable_read_thread_.store(other.enable_read_thread_.load());
@@ -547,9 +550,11 @@ bool TalonFXProCIParams::readLimitSwitches(ros::NodeHandle &n)
     return true;
 }
 
-bool TalonFXProCIParams::readBeepOnBoot(ros::NodeHandle &n)
+bool TalonFXProCIParams::readAudio(ros::NodeHandle &n)
 {
     readIntoScalar(n, "beep_on_boot", beep_on_boot_);
+    readIntoScalar(n, "beep_on_config", beep_on_config_);
+    readIntoScalar(n, "allow_music_dur_disable", allow_music_dur_disable_);
     return true;
 }
 
@@ -594,6 +599,7 @@ bool TalonFXProCIParams::readControl(ros::NodeHandle &n)
     readIntoScalar(n, "control_feedforward", control_feedforward_);
     readIntoScalar(n, "control_slot", control_slot_);
     readIntoScalar(n, "control_oppose_master_direction", control_oppose_master_direction_);
+    readIntoScalar(n, "control_differential_slot", control_differential_slot_);
     return true;
 }
 bool TalonFXProCIParams::readContinuousWrap(ros::NodeHandle &n)
@@ -737,7 +743,7 @@ bool TalonFXProControllerInterface::init(hardware_interface::talonfxpro::TalonFX
     {
         params_ = params;
     }
-    ROS_WARN_STREAM(__PRETTY_FUNCTION__ << "init past readParams");
+    ROS_WARN_STREAM(__PRETTY_FUNCTION__ << "init past readParams for " << params_.joint_name_);
     talon = tci->getHandle(params_.getJointName());
     writeParamsToHW(params, talon);
 
@@ -1111,6 +1117,14 @@ bool TalonFXProControllerInterface::init(hardware_interface::talonfxpro::TalonFX
                                                     [this]() { return params_.beep_on_boot_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setBeepOnBoot, this, _1, false),
                                                     "Beep on Boot");
+        ddr_updater_->ddr_.registerVariable<bool>  ("beep_on_config",
+                                                    [this]() { return params_.beep_on_config_.load();},
+                                                    boost::bind(&TalonFXProControllerInterface::setBeepOnConfig, this, _1, false),
+                                                    "Beep on config");
+        ddr_updater_->ddr_.registerVariable<bool>  ("allow_music_dur_disable",
+                                                    [this]() { return params_.allow_music_dur_disable_.load();},
+                                                    boost::bind(&TalonFXProControllerInterface::setAllowMusicDurDisable, this, _1, false),
+                                                    "Allow talons to play music while robot is disabled");
         ddr_updater_->ddr_.registerVariable<bool>  ("forward_softlimit_enable",
                                                     [this]() { return params_.softlimit_forward_enable_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setForwardSoftLimitEnable, this, _1, false),
@@ -1171,6 +1185,15 @@ bool TalonFXProControllerInterface::init(hardware_interface::talonfxpro::TalonFX
                                                     boost::bind(&TalonFXProControllerInterface::setControlSlot, this, _1, false),
                                                     "Control Slot",
                                                     0, 2);
+        ddr_updater_->ddr_.registerVariable<bool>  ("control_oppose_master_direction",
+                                                    [this]() { return params_.control_oppose_master_direction_.load();},
+                                                    boost::bind(&TalonFXProControllerInterface::setControlOpposeMasterDirection, this, _1, false),
+                                                    "Control oppose master direction");
+        ddr_updater_->ddr_.registerVariable<int>   ("control_differential_slot",
+                                                    [this]() { return params_.control_differential_slot_.load();},
+                                                    boost::bind(&TalonFXProControllerInterface::setControlDifferentialSlot, this, _1, false),
+                                                    "Control Differential Slot",
+                                                    0, 2);
         ddr_updater_->ddr_.registerVariable<bool>  ("enable_read_thread",
                                                     [this]() { return params_.enable_read_thread_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setEnableReadThread, this, _1, false),
@@ -1179,9 +1202,10 @@ bool TalonFXProControllerInterface::init(hardware_interface::talonfxpro::TalonFX
                                                     [this]() { return params_.set_position_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setRotorPosition, this, _1, false),
                                                     "Immediately set motor position",
-                                                    -2.0 * M_PI, 2.0 * M_PI);
+                                                    -std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
         ddr_updater_->ddr_.PublishServicesTopics();
     }
+    ROS_WARN_STREAM(__PRETTY_FUNCTION__ << "init past ddynamic_reconfigure init for " << params_.joint_name_);
     return true;
 }
 
@@ -1203,6 +1227,11 @@ void TalonFXProControllerInterface::setControlVelocity(const double control_velo
 void TalonFXProControllerInterface::setControlAcceleration(const double control_acceleration)
 {
     talon_->setControlAcceleration(control_acceleration);
+}
+
+void TalonFXProControllerInterface::setControlDifferentialPosition(const double control_differential_position, const bool update_ddr)
+{
+    talon_->setControlDifferentialPosition(control_differential_position);
 }
 
 // Functions which handle dynamic reconfigurable config vars
@@ -1720,6 +1749,26 @@ void TalonFXProControllerInterface::setBeepOnBoot(const bool beep_on_boot, const
     }
 }
 
+void TalonFXProControllerInterface::setBeepOnConfig(const bool beep_on_config, const bool update_ddr)
+{
+    params_.beep_on_config_ = beep_on_config;
+    talon_->setBeepOnConfig(beep_on_config);
+    if (update_ddr)
+    {
+        ddr_updater_->triggerDDRUpdate();
+    }
+}
+
+void TalonFXProControllerInterface::setAllowMusicDurDisable(const bool allow_music_dur_disable, const bool update_ddr)
+{
+    params_.allow_music_dur_disable_ = allow_music_dur_disable;
+    talon_->setAllowMusicDurDisable(allow_music_dur_disable);
+    if (update_ddr)
+    {
+        ddr_updater_->triggerDDRUpdate();
+    }
+}
+
 void TalonFXProControllerInterface::setForwardSoftLimitEnable(const bool forward_softlimit_enable, const bool update_ddr)
 {
     params_.softlimit_forward_enable_ = forward_softlimit_enable;
@@ -1854,6 +1903,26 @@ void TalonFXProControllerInterface::setControlSlot(const int control_slot, const
 {
     params_.control_slot_ = control_slot;
     talon_->setControlSlot(control_slot);
+    if (update_ddr)
+    {
+        ddr_updater_->triggerDDRUpdate();
+    }
+}
+
+void TalonFXProControllerInterface::setControlOpposeMasterDirection(const bool control_oppose_master_direction, const bool update_ddr)
+{
+    params_.control_oppose_master_direction_ = control_oppose_master_direction;
+    talon_->setControlOpposeMasterDirection(control_oppose_master_direction);
+    if (update_ddr)
+    {
+        ddr_updater_->triggerDDRUpdate();
+    }
+}
+
+void TalonFXProControllerInterface::setControlDifferentialSlot(const int control_differential_slot, const bool update_ddr)
+{
+    params_.control_differential_slot_ = control_differential_slot;
+    talon_->setControlDifferentialSlot(control_differential_slot);
     if (update_ddr)
     {
         ddr_updater_->triggerDDRUpdate();
@@ -2000,6 +2069,7 @@ void TalonFXProControllerInterface::setControlMode(const hardware_interface::tal
     }
     void TalonFXProControllerInterface::setPIDFSlot(const int slot)
     {
+        ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << " : " << __LINE__ << params_.joint_name_ << " slot = " << slot);
         setControlSlot(slot);
     }
     void TalonFXProControllerInterface::setSelectedSensorPosition(const double sensor_position)
@@ -2099,7 +2169,7 @@ bool TalonFXProControllerInterface::readParams(ros::NodeHandle &n, TalonFXProCIP
            params.readOpenLoopRamps(n) &&
            params.readClosedLoopRamps(n) &&
            params.readLimitSwitches(n) &&
-           params.readBeepOnBoot(n) &&
+           params.readAudio(n) &&
            params.readSoftLimits(n) &&
            params.readMotionMagic(n) &&
            params.readContinuousWrap(n) &&
@@ -2168,6 +2238,8 @@ void TalonFXProControllerInterface::writeParamsToHW(TalonFXProCIParams &params,
     talon->setReverseLimitSource(params.reverse_limit_source_);
     talon->setReverseLimitRemoteSensorID(params.reverse_limit_remote_sensor_id_);
     talon->setBeepOnBoot(params.beep_on_boot_);
+    talon->setBeepOnConfig(params.beep_on_config_);
+    talon->setAllowMusicDurDisable(params.allow_music_dur_disable_);
     talon->setForwardSoftLimitEnable(params.softlimit_forward_enable_);
     talon->setReverseSoftLimitEnable(params.softlimit_reverse_enable_);
     talon->setForwardSoftLimitThreshold(params.softlimit_forward_threshold_);
@@ -2182,7 +2254,9 @@ void TalonFXProControllerInterface::writeParamsToHW(TalonFXProCIParams &params,
     talon->setControlDeadband(params.control_deadband_);
     talon->setControlFeedforward(params.control_feedforward_);
     talon->setControlSlot(params.control_slot_);
+    talon->setControlOpposeMasterDirection(params.control_oppose_master_direction_);
     talon->setEnableReadThread(params.enable_read_thread_);
+    talon->setControlDifferentialSlot(params.control_differential_slot_);
     // Don't call setSetRotorPosition at startup since this isn't a value read from config
 }
 

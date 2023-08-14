@@ -86,8 +86,9 @@ void CTREV5MotorControllers::write(const ros::Time& time, const ros::Duration& p
     CTREV5MotorController::resetCanConfigCount();
     for (auto &d : devices_)
     {
-        d->write(time, period, isEnabled());
+        d->write(time, period, isEnabled(), prev_robot_enabled_);
     }
+    prev_robot_enabled_ = isEnabled();
 }
 
 void CTREV5MotorControllers::simInit(ros::NodeHandle nh)

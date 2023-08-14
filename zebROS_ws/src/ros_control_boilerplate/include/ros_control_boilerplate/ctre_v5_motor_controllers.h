@@ -51,6 +51,11 @@ private:
 
     ros::ServiceServer sim_limit_switch_srv_;
     ros::ServiceServer sim_current_srv_;
+
+    // Used to disable motors on transition from enabled->disabled
+    // Start with this == true so the first iteration through
+    // write() forces that enabled->disabled transition disabling all motors on startup
+    bool prev_robot_enabled_{true};
 };
 
 #endif

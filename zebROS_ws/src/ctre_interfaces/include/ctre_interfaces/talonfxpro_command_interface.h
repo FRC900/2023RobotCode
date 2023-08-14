@@ -262,8 +262,12 @@ public:
 
 	void setBeepOnBoot(const bool beep_on_boot);
 	bool getBeepOnBoot(void) const;
-	bool beepOnBootChanged(bool &beep_on_boot);
-	void resetBeepOnBoot(void);
+	void setBeepOnConfig(const bool beep_on_config);
+	bool getBeepOnConfig(void) const;
+	void setAllowMusicDurDisable(const bool allow_music_dur_disable);
+	bool getAllowMusicDurDisable(void) const;
+	bool audioChanged(bool &beep_on_boot, bool &beep_on_config, bool &allow_music_dur_disable);
+	void resetAudio(void);
 
 	void setForwardSoftLimitEnable(const bool enable);
 	bool getForwardSoftLimitEnable(void) const;
@@ -443,7 +447,9 @@ private :
 	bool limit_changed_{true};
 
 	bool beep_on_boot_{true};
-	bool beep_on_boot_changed_{true};
+	bool beep_on_config_{true};
+	bool allow_music_dur_disable_{false};
+	bool audio_changed_{true};
 
 	bool   softlimit_forward_enable_{false};
 	bool   softlimit_reverse_enable_{false};
@@ -476,10 +482,9 @@ private :
 	double control_feedforward_{0.0};
 	int control_slot_{0};
 	bool control_oppose_master_direction_{false};
-	bool control_changed_{false};
-
 	double control_differential_position_{0.0};
 	int control_differential_slot_{0};
+	bool control_changed_{false};
 
 	bool enable_read_thread_{true};
 

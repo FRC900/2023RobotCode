@@ -836,7 +836,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         command_->resetOpenLoopRamps();
         command_->resetClosedLoopRamps();
         command_->resetLimit();
-        command_->resetBeepOnBoot();
+        command_->resetAudio();
         command_->resetSoftLimit();
         command_->resetMotionMagic();
         command_->resetContinuousWrap();
@@ -1183,17 +1183,19 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         }
     }
 
-    if (command_->beepOnBootChanged(config.Audio.BeepOnBoot))
+    if (command_->audioChanged(config.Audio.BeepOnBoot, config.Audio.BeepOnConfig, config.Audio.AllowMusicDurDisable))
     {
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.Audio), "GetConfigurator().Apply(config.Audio)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " Audio " << config.Audio);
             state_->setBeepOnBoot(config.Audio.BeepOnBoot);
+            state_->setBeepOnConfig(config.Audio.BeepOnConfig);
+            state_->setAllowMusicDurDisable(config.Audio.AllowMusicDurDisable);
         }
         else
         {
             ROS_INFO_STREAM("Failed to update TalonFXPro id " << getId() << " = " << getName() << " Audio " << config.Audio);
-            command_->resetBeepOnBoot();
+            command_->resetAudio();
             return;
         }
     }
@@ -1319,27 +1321,28 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         state_->setControlDeadband(control_deadband);
         state_->setControlFeedforward(control_feedforward);
         state_->setControlSlot(control_slot);
+        state_->setControlOpposeMasterDirection(control_oppose_master_direction);
         state_->setControlDifferentialPosition(control_differential_position);
         state_->setControlDifferentialSlot(control_differential_slot);
-        state_->setControlOpposeMasterDirection(control_oppose_master_direction);
     };
 
+    const bool control_changed = command_->controlChanged(control_mode,
+                                                          control_output,
+                                                          control_position,
+                                                          control_velocity,
+                                                          control_acceleration,
+                                                          control_enable_foc,
+                                                          control_override_brake_dur_neutral,
+                                                          control_max_abs_duty_cycle,
+                                                          control_deadband,
+                                                          control_feedforward,
+                                                          control_slot,
+                                                          control_differential_position,
+                                                          control_differential_slot,
+                                                          control_oppose_master_direction);
     if (curr_robot_enabled)
     {
-        if (command_->controlChanged(control_mode,
-                                     control_output,
-                                     control_position,
-                                     control_velocity,
-                                     control_acceleration,
-                                     control_enable_foc,
-                                     control_override_brake_dur_neutral,
-                                     control_max_abs_duty_cycle,
-                                     control_deadband,
-                                     control_feedforward,
-                                     control_slot,
-                                     control_differential_position,
-                                     control_differential_slot,
-                                     control_oppose_master_direction))
+        if (control_changed)
         {
             bool success = true; // only update state_ on a successful SetControl call
             switch (control_mode)
