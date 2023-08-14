@@ -32,6 +32,13 @@
 #  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #  POSSIBILITY OF SUCH DAMAGE.
 #********************************************************************/
+
+
+#rearrange the reconfigure srever and client in a manner such that case switches may be implmeented based on args passed
+
+
+
+
 from __future__ import print_function
 from dynamic_reconfigure.client import Client as DynamicReconfigureClient
 import roslib; roslib.load_manifest('dynamic_reconfigure')
@@ -41,12 +48,31 @@ import dynamic_reconfigure.client
 from talon_controllers.cfg import TalonConfigConfig
 import time
 
-global speed_joints
-speed_joints = []
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', timeout=4))
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', timeout=3))
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', timeout=1))
-speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', timeout=2))
+
+
+
+
+
+class Joints:
+    steering_joints = []
+    speed_joints = []
+    steering_option = False
+    speed_option = False
+    
+
+joints = Joints()
+
+if joints.steering_option == True:
+    Joints.steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', timeout=5))
+    Joints.steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fl', timeout=9))
+    Joints.steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_br', timeout=7))
+    Joints.steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_bl', timeout=6))
+
+if joints.speed_option == True:
+    Joints.speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr', timeout=4))
+    Joints.speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_fl', timeout=3))
+    Joints.speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_br', timeout=1))
+    Joints.speed_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/speed_joint_bl', timeout=2))
 
 def print_config(config):
     for k, v in config.items():
@@ -61,7 +87,7 @@ def new_config_callback(client, config):
     #global old_callback
     #print("New callback is calling old callback...")
     #old_callback(config)
-    global dummy_speed_joint
+    global steering_joints
     global speed_joints
     print("New callback is done...")
     print("done")
@@ -72,16 +98,27 @@ def new_config_callback(client, config):
     
 def reconfigure(config, level):
     global speed_joints
-    new_config_callback(speed_joints[0], config)
-    new_config_callback(speed_joints[1], config)
-    new_config_callback(speed_joints[2], config)
-    new_config_callback(speed_joints[3], config)
+    global steering_joints
+    global speed
+    global steering
+    if joints.speed_option == True:
+        new_config_callback(Joints.speed_joints[0], config)
+        new_config_callback(Joints.speed_joints[1], config)
+        new_config_callback(Joints.speed_joints[2], config)
+        new_config_callback(Joints.speed_joints[3], config)
+
+    if joints.steering_option == True:
+        new_config_callback(Joints.steering_joints[0], config)
+        new_config_callback(Joints.steering_joints[1], config)
+        new_config_callback(Joints.steering_joints[2], config)
+        new_config_callback(Joints.steering_joints[3], config)
+
     return config  # Returns the updated configuration.
 #all of tehese need to be intialized with callback so that the reconfigure server can
 #actaulyll find the updates on these joints
 
 def main():
-    rospy.init_node("talon_reconfigure_server_speed")
+    rospy.init_node("talon_reconfigure_server")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
     #creates server for the reconfigure server.

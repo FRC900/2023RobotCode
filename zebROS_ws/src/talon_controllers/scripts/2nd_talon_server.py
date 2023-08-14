@@ -60,8 +60,7 @@ def new_config_callback(client, config):
     #global old_callback
     #print("New callback is calling old callback...")
     #old_callback(config)
-    global dummy_speed_joint
-    global speed_joints
+   
     print("New callback is done...")
     print("done")
     print_config(client.update_configuration(config))
@@ -80,7 +79,7 @@ def reconfigure(config, level):
 
 
 def main():
-    rospy.init_node("talon_reconfigure_server_steering")
+    rospy.init_node("talon_reconfigure_servers")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
   
