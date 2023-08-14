@@ -655,7 +655,7 @@ bool TalonFXProControllerInterface::initWithNode(hardware_interface::talonfxpro:
         {
             return false;
         }
-        follower_talons_[i-1]->setControlMode(hardware_interface::talonfxpro::TalonMode::StrictFollower);
+        follower_talons_[i-1]->setControlMode(hardware_interface::talonfxpro::TalonMode::Follower);
         follower_talons_[i-1]->setControlOutput(follow_can_id);
         ROS_INFO_STREAM("Set up talon FX pro " << follower_talons_[i-1].getName() << " to follow CAN ID " << follow_can_id << " (" << talon_.getName() << ")");
     }
@@ -1952,7 +1952,6 @@ void TalonFXProControllerInterface::setRotorPosition(const double set_position, 
 // TODO - make this dynamically reconfigurable?
 void TalonFXProControllerInterface::setControlMode(const hardware_interface::talonfxpro::TalonMode control_mode)
 {
-    ROS_INFO_STREAM(__PRETTY_FUNCTION__ << " control_mode = " << static_cast<int>(control_mode));
     talon_->setControlMode(control_mode);
 }
 
@@ -2069,7 +2068,6 @@ void TalonFXProControllerInterface::setControlMode(const hardware_interface::tal
     }
     void TalonFXProControllerInterface::setPIDFSlot(const int slot)
     {
-        ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << " : " << __LINE__ << params_.joint_name_ << " slot = " << slot);
         setControlSlot(slot);
     }
     void TalonFXProControllerInterface::setSelectedSensorPosition(const double sensor_position)
@@ -2278,7 +2276,6 @@ bool TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>::setIni
     // class is derived from the FixedMode class
     // it can't be reset
     talon_->setControlMode(TALON_MODE);
-    ROS_INFO_STREAM("Set up talon pro " << talon_.getName() << " in " << TALON_MODE_NAME << " mode");
     return true;
 }
 

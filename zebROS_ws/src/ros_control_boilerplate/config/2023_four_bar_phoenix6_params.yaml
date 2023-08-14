@@ -35,7 +35,7 @@ four_bar_controller_2023:
         type: talon_controllers/TalonFXProControllerInterface 
         joint: four_bar
         close_loop_values:
-            - {kP: 2.88, kI: 0.000, kD: 0.0, kV: 0.156, kS: 0.0}
+            - {kP: 28.8, kI: 0.000, kD: 0.0, kV: 0.156, kS: 0.0}
         invert: clockwise_positive
         
         neutral_mode: Brake

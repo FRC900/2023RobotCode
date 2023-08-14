@@ -1,5 +1,5 @@
 elevator_controller_2023:
-    type: elevator_controller_2023/ElevatorController_2023
+    type: elevator_controller_2023/ElevatorController_2023_Phoenix6
 
     elevator_joint: [ 'elevator_leader', 'elevator_follower']
     fourbar_joint: 'four_bar'
@@ -37,7 +37,7 @@ elevator_controller_2023:
         type: talon_controllers/TalonFXProControllerInterface 
         joint: elevator_leader
         close_loop_values:
-            - {kP: 0.288, kI: 0.000, kD: 0.00, kV: 0.12, kS: 0}
+            - {kP: 2.88, kI: 0.000, kD: 0.00, kV: 0.12, kS: 0}
         invert_output: clockwise_positive
 
         # linear position along 
