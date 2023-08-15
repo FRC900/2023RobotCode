@@ -1,14 +1,14 @@
+#!/usr/bin/env python3
+
 import argparse
 import cv2
 from baseYOLO import YOLO900
-from sys import path
-path.append('/home/ubuntu/tensorflow_workspace/2023Game/models')
 import timing
 
 USE_CPU_PREPROCESS = False
 
 def main(args: argparse.Namespace) -> None:
-    DETECTRON = YOLO900(engine_path=args.engine, device_str=args.device, use_timings=True)
+    DETECTRON = YOLO900(engine_path=args.engine, device_str=args.device, use_timings=True, regen_trt=False)
 
     cap = cv2.VideoCapture(args.input_video)
     t = timing.Timings()

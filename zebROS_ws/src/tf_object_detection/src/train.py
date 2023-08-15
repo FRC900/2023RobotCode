@@ -5,12 +5,17 @@ from ultralytics import YOLO
 from os import rename
 
 def train_yolo(args: argparse.Namespace) -> None:
-    model = YOLO(args.yolo_model)
+    if args.postprocess_model is None:
+        model = YOLO(args.yolo_model)
 
-    pt_file_path = model.train(data=args.config,
-                               epochs=args.epochs,
-                               imgsz=args.input_size,
-                               batch=args.batch_size)
+        model.train(data=args.config,
+                    epochs=args.epochs,
+                    imgsz=args.input_size,
+                    batch=args.batch_size)
+        pt_file_path = model.trainer.best
+    else:
+        pt_file_path = args.postprocess_model
+    print(f'Best pt weights = {pt_file_path}')
 
     # Now convert from pytorch .pt format to a .onnx file
     # This is an intermediate step - the onnx file format is generic,
@@ -83,6 +88,10 @@ def parse_args() -> argparse.Namespace:
                         type=int,
                         default=8,
                         help='Number of images to batch')
+    parser.add_argument('--postprocess-model',
+                        type=str,
+                        default=None,
+                        help='Skip training, just run posprocessing on requested .pt file')
     parser.add_argument('--input-size',
                         type=int,
                         default=640,

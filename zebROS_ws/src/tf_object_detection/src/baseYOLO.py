@@ -11,7 +11,6 @@ import timing
 from pathlib import Path
 import pytorch_pfn_extras as ppe
 from collections import namedtuple
-from file_changed import file_changed
 from onnx_to_tensorrt import onnx_to_tensorrt
 from config_frc2023 import OBJECT_CLASSES, COLORS
 
@@ -108,13 +107,14 @@ def iDivUp(a, b):
 class YOLO900:
 
 
-    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0", use_timings=False, onyx_path="FRC2023m.onnx") -> None:
+    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0", use_timings=False, onyx_path="FRC2023m.onnx", regen_trt=True) -> None:
         self.device = torch.device(device_str)
 
         # @TODO check if this will ever not be 0's
         self.dwdh = torch.tensor([0, 0, 0, 0], device=self.device)
         self.ratio = None
-        self.check_and_regen_engine(onyx_path)
+        if regen_trt:
+            self.check_and_regen_engine(onyx_path)
         self.Engine = TRTModule(engine_path, self.device)
         self.engine_H, self.engine_W = self.Engine.inp_info[0].shape[-2:]
 
@@ -134,6 +134,7 @@ class YOLO900:
             self.t = timing.Timings()
     
     def check_and_regen_engine(self, onnx_path):
+        from file_changed import file_changed
         if not file_changed(onnx_path):
             return
 
