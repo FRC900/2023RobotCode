@@ -15,6 +15,7 @@ from pathlib import Path
 import os
 import glob
 from pascal import PascalVOC, PascalObject, BndBox, size_block
+from xmlformatter import Formatter
 
 def box_to_rect(box):
   x_min = int(box[0].item())
@@ -57,6 +58,7 @@ def bb_intersection_over_union(boxA, boxB):
         return iou
 
 def main(args: argparse.Namespace) -> None:
+    formatter = Formatter(indent="1", indent_char="\t", eof_newline=True)
     model = YOLO(args.model)
 
     TEST_IMAGE_PATHS = sorted(glob.glob(args.input_files))
@@ -122,24 +124,26 @@ def main(args: argparse.Namespace) -> None:
               all_apriltags.extend(previous_labels[p])
 
             if not check_iou(rect, all_apriltags, 0.1):
-                print(f"label {label} failed AprilTag IoU check")
+                print(f"label {label} failed combined AprilTag IoU check")
                 continue
 
           print(f"Adding new {label} at {rect}")
           voc.objects.append(PascalObject(label, "Unspecified", truncated=False, difficult=False, bndbox=BndBox(rect[0], rect[1], rect[2], rect[3])))
           added_labels = True
 
-      annotated_frame = results[0].plot()
-      cv2.imshow("YOLOv8 Inference", annotated_frame)
-
-      # Break the loop if 'q' is pressed
-      if cv2.waitKey(0) & 0xFF == ord("q"):
-          break
 
       if added_labels:
         voc.save(xml_path)
-      #cv2.waitKey(0) & 0xFF
-      cv2.destroyWindow(image_path)
+        formatter.format_file(xml_path)
+
+      if args.show:
+        annotated_frame = results[0].plot()
+        cv2.imshow("YOLOv8 Inference", annotated_frame)
+
+        # Break the loop if 'q' is pressed
+        if cv2.waitKey(0) & 0xFF == ord("q"):
+            break
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
