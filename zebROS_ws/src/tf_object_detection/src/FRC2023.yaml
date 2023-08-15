@@ -91,6 +91,8 @@ download: |
           "/home/ubuntu/tensorflow_workspace/2019Game/data/videos",
           "/home/ubuntu/tensorflow_workspace/2020Game/data/videos",
           "/home/ubuntu/tensorflow_workspace/2022Game/data/videos",
+          "/home/ubuntu/tensorflow_workspace/2023Game/data/apriltag_videos",
+          "/home/ubuntu/tensorflow_workspace/2023Game/data/combined_88_test",
           "/home/ubuntu/tensorflow_workspace/2023Game/data/videos",
   ]
 
