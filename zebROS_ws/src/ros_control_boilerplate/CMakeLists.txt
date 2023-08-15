@@ -228,6 +228,7 @@ if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi")
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/Errors.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/Joystick.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/MotorSafety.cpp
+		${ALLWPILIB}/wpilibc/src/main/native/cpp/Notifier.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/PneumaticsBase.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/PneumaticsControlModule.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/PneumaticHub.cpp
@@ -246,6 +247,8 @@ if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi")
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/Synchronization.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/timestamp.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/thirdparty/fmtlib/src/format.cpp
+        ${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/ConvertUTF.cpp
+        ${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/ConvertUTFWrapper.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/Hashing.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/raw_ostream.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/ErrorHandling.cpp
@@ -315,6 +318,7 @@ if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi")
 	  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 	)
+	link_directories(../../devel/.private/ros_control_boilerplate/lib)
 endif()
 
 # Don't build sim code for the Rio or Jetson -
@@ -390,14 +394,15 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/DigitalOutput.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/DriverStation.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/GenericHID.cpp
+        ${ALLWPILIB}/wpilibc/src/main/native/cpp/I2C.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/IterativeRobotBase.cpp
-		${ALLWPILIB}/wpiutil/src/main/native/cpp/Logger.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/RobotState.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/simulation/CallbackStore.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/simulation/RoboRioSim.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/Timer.cpp
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/Watchdog.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/DataLog.cpp
+		${ALLWPILIB}/wpiutil/src/main/native/cpp/Logger.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/StringExtras.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/timestamp.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/unix/Demangle.cpp
@@ -423,8 +428,6 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 	target_link_libraries(frcrobot_sim_main
 		frc_robot_interface
 		frc_sim_wpilib
-		frc_robot_interface
-		frc_sim_wpilib
 		${CTRE_LIB_DIR}/libCTRE_PhoenixSim.so
 		${CTRE_LIB_DIR}/libCTRE_PhoenixCCISim.so
 		${CTRE_LIB_DIR}/libCTRE_PhoenixTools_Sim.so
@@ -437,6 +440,7 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		${CTRE_LIB_DIR}/libCTRE_SimVictorSPX.so
 		${REV_USER_LIBS}
 		${FRC_COMMON_WPILIB}
+		frc_sim_wpilib
 		${catkin_LIBRARIES}
 	)
 
@@ -470,6 +474,7 @@ target_link_libraries(frcrobot_hw_main
 	${CTRE_LIB_DIR}/libCTRE_Phoenix6_WPI.so
 	${PLATFORM_SPECIFIC_LIBS}
 	${FRC_COMMON_WPILIB}
+	frc_robot_interface
 	${catkin_LIBRARIES}
 )
 

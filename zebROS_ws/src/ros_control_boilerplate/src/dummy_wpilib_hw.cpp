@@ -434,6 +434,68 @@ void HALSIM_SetJoystickButtons(int32_t joystickNum, const HAL_JoystickButtons* p
 	ROS_INFO_STREAM("Called HALSIM_SetJoystickButtons on unsupported platform?");
 }
 
+#include "hal/simulation/MockHooks.h"
+int32_t HALSIM_RegisterSimPeriodicBeforeCallback(HALSIM_SimPeriodicCallback callback, void *param)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+	return 0;
+}
+
+void HALSIM_CancelSimPeriodicBeforeCallback(int32_t uid)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+}
+
+void HALSIM_CancelSimValueChangedCallback(int32_t uid)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+}
+
+const char *HALSIM_GetSimDeviceName(HAL_SimDeviceHandle handle)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+	return "";
+}
+HAL_SimDeviceHandle HALSIM_GetSimValueDeviceHandle(HAL_SimValueHandle handle)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+	return 0;
+}
+
+#include "hal/simulation/SimDeviceData.h"
+int32_t HALSIM_RegisterSimValueChangedCallback(HAL_SimValueHandle handle,
+											   void *param,
+											   HALSIM_SimValueCallback callback,
+											   HAL_Bool initialNotify)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+	return 0;
+}
+
+HAL_Bool HAL_SetCurrentThreadPriority(HAL_Bool realTime, int32_t priority,
+									  int32_t *status)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+	return true;
+}
+
+HAL_Bool HAL_SetNotifierThreadPriority(HAL_Bool realTime, int32_t priority,
+									   int32_t *status)
+{
+	return true;
+}
+
+void HAL_SetNotifierName(HAL_NotifierHandle notifierHandle, const char *name,
+						 int32_t *status)
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+}
+void HAL_CancelNotifierAlarm(HAL_NotifierHandle notifierHandle,
+							 int32_t *status)
+
+{
+	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
+}
 HAL_AllianceStationID HAL_GetAllianceStation(int32_t* status)
 {
 	ROS_INFO_STREAM("Called HAL_GetAllianceStation() on unsupported platform");
@@ -451,8 +513,6 @@ int32_t HAL_GetMatchInfo(HAL_MatchInfo*)
 	ROS_INFO_STREAM("Called HAL_GetMatchInfo() on unsupported platform");
 	return -1;
 }
-
-
 
 void HAL_ObserveUserProgramAutonomous(void)
 {
