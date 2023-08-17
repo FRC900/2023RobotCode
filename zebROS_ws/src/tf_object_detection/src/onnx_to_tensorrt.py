@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # Adapted from https://raw.githubusercontent.com/NVIDIA-AI-IOT/jetson_dla_tutorial/master/build.py
 # SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT

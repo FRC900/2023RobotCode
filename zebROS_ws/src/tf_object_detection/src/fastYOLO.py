@@ -2,6 +2,7 @@
 
 # Ordering imports by length is cool
 import os
+import cv2
 import rospy
 import rospkg
 from sys import path
@@ -17,6 +18,10 @@ global OBJ_DET_SRC_DIR, DETECTRON
 
 rospack = rospkg.RosPack()
 OBJ_DET_SRC_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
+
+SECONDS_PER_WRITE = 1.1
+FILE_PREFIX = '/home/ubuntu/tags/tag8_'
+last_write_time = 0
 
 # // all caps to show its important
 DETECTRON: YOLO900 = None
@@ -42,6 +47,7 @@ def run_inference_for_single_image(msg):
     detection = TFDetection()
     detection.header = msg.header
 
+    apriltag_seen = False
     d_bboxes, d_scores, d_labels = detections.bboxes, detections.scores, detections.labels  
     for (bbox, score, label) in zip(d_bboxes, d_scores, d_labels):
         if not (score > min_confidence):
@@ -61,6 +67,17 @@ def run_inference_for_single_image(msg):
 
     pub.publish(detection)
 
+    '''
+    if not apriltag_seen:
+        global last_write_time
+        global SECONDS_PER_WRITE
+        global FILE_PREFIX
+        if (rospy.get_time() - last_write_time) > SECONDS_PER_WRITE:
+            time = msg.header.stamp
+            cv2.imwrite(FILE_PREFIX+str(int(time.to_sec()))+'.png', ori)
+            rospy.loginfo('Saving image')
+            last_write_time = rospy.get_time()
+    '''
 
 def main():
     global pub, pub_debug, min_confidence, DETECTRON

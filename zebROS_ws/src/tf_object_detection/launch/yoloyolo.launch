@@ -10,8 +10,10 @@
     <node pkg="tf_object_detection" name="tf_object_detection" type="fastYOLO.py" output="screen">
     </node>
 
+  <!--
     <node pkg="tf_object_detection" name="simple_static_img_pub" type="simple_static_img_pub.py" output="screen" >
     </node>
+  -->
 
 
 

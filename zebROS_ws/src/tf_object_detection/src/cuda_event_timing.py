@@ -34,11 +34,18 @@ class CudaEventTiming(object):
             self.__total_time += elapsed_time
                 
     def start(self):
+        if self.__start_event_seen:
+            print(f"Error : duplicate start event {self.__name} seen")
+
         cupy.cuda.runtime.eventRecord(self.__start_event, self.__stream)
+        cupy.cuda.nvtx.RangePush(self.__name)
         self.__start_event_seen = True
 
     def end(self):
+        if self.__end_event_seen:
+            print(f"Error : duplicate end event {self.__name} seen")
         cupy.cuda.runtime.eventRecord(self.__end_event, self.__stream)
+        cupy.cuda.nvtx.RangePop(self.__name)
         self.__end_event_seen = True
 
     def __str__(self):
