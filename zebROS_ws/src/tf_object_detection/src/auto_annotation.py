@@ -134,7 +134,8 @@ def main(args: argparse.Namespace) -> None:
 
       if added_labels:
         voc.save(xml_path)
-        formatter.format_file(xml_path)
+        formatted_xml_str = formatter.format_file(xml_path) 
+        formatter.enc_output(xml_path, formatted_xml_str)
 
       if args.show:
         annotated_frame = results[0].plot()

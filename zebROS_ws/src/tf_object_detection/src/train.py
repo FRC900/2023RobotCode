@@ -11,7 +11,9 @@ def train_yolo(args: argparse.Namespace) -> None:
         model.train(data=args.config,
                     epochs=args.epochs,
                     imgsz=args.input_size,
-                    batch=args.batch_size)
+                    batch=args.batch_size,
+                    fliplr=0.0,
+                    degrees=20.0)
         pt_file_path = model.trainer.best
     else:
         pt_file_path = args.postprocess_model
@@ -22,7 +24,6 @@ def train_yolo(args: argparse.Namespace) -> None:
     # and in this case provides a way to translate from .pt to
     # an optimized TensorRT engine file
 
-    # For testing :  pt_file_path = 'runs/detect/train2/weights/best.pt'
     from pathlib import Path
     # Need to import this after caling YOLO or training fails?
     from onnx_to_tensorrt import onnx_to_tensorrt
