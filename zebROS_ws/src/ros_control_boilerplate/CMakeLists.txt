@@ -428,6 +428,7 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 	target_link_libraries(frcrobot_sim_main
 		frc_robot_interface
 		frc_sim_wpilib
+		${FRC_COMMON_WPILIB}
 		${CTRE_LIB_DIR}/libCTRE_PhoenixSim.so
 		${CTRE_LIB_DIR}/libCTRE_PhoenixCCISim.so
 		${CTRE_LIB_DIR}/libCTRE_PhoenixTools_Sim.so
@@ -439,8 +440,6 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		${CTRE_LIB_DIR}/libCTRE_SimTalonSRX.so
 		${CTRE_LIB_DIR}/libCTRE_SimVictorSPX.so
 		${REV_USER_LIBS}
-		${FRC_COMMON_WPILIB}
-		frc_sim_wpilib
 		${catkin_LIBRARIES}
 	)
 
@@ -474,7 +473,6 @@ target_link_libraries(frcrobot_hw_main
 	${CTRE_LIB_DIR}/libCTRE_Phoenix6_WPI.so
 	${PLATFORM_SPECIFIC_LIBS}
 	${FRC_COMMON_WPILIB}
-	frc_robot_interface
 	${catkin_LIBRARIES}
 )
 
