@@ -12,8 +12,10 @@ def train_yolo(args: argparse.Namespace) -> None:
                     epochs=args.epochs,
                     imgsz=args.input_size,
                     batch=args.batch_size,
-                    fliplr=0.0,
-                    degrees=20.0)
+                    augment=True, #Pretty sure this is a no-op
+                    fliplr=False,
+                    flipud=False,
+                    degrees=60.0)
         pt_file_path = model.trainer.best
     else:
         pt_file_path = args.postprocess_model
