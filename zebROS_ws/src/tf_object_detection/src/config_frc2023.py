@@ -1,10 +1,4 @@
-import random
-
-import numpy as np
 from object_classes import ObjectClasses
-from sys import path
-
-random.seed(0)
 
 # detection model classes
 OBJECT_CLASSES = ObjectClasses('/home/ubuntu/2023RobotCode/zebROS_ws/src/tf_object_detection/src/FRC2023.yaml')

@@ -15,7 +15,7 @@ def train_yolo(args: argparse.Namespace) -> None:
                     augment=True, #Pretty sure this is a no-op
                     fliplr=False,
                     flipud=False,
-                    degrees=60.0)
+                    degrees=20.0)
         pt_file_path = model.trainer.best
     else:
         pt_file_path = args.postprocess_model

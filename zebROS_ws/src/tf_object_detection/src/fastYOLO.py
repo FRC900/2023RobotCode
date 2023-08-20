@@ -4,12 +4,10 @@
 import os
 import rospy
 import rospkg
-import numpy as np
 from sys import path
 from baseYOLO import YOLO900
 from sensor_msgs.msg import Image
-from file_changed import file_changed
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 from field_obj.msg import TFDetection, TFObject
 
 bridge = CvBridge()

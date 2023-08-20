@@ -113,7 +113,7 @@ class YOLOEntropyCalibrator(trt.IInt8EntropyCalibrator2):
         if len(self.pngs) < 500:
             print('WARNING: found less than 500 images in %s!' % img_dir)
         else:
-            self.pngs = self.pngs[:750]
+            self.pngs = self.pngs[:2500]
         self.current_index = 0
 
         # Allocate enough memory for a whole batch.

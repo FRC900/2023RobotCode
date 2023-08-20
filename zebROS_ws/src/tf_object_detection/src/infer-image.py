@@ -9,18 +9,15 @@ def main(args: argparse.Namespace) -> None:
     regen_trt = not args.skip_engine_regen
     DETECTRON = YOLO900(engine_path=args.engine, device_str=args.device, use_timings=True, regen_trt=regen_trt)
 
-    cap = cv2.VideoCapture(args.input_video)
     t = timing.Timings()
     DETECTRON.t = t
 
+    t.start('imread')
+    bgr = cv2.imread(args.input_image)
+    t.end('imread')
+
     while True:
         t.start('frame')
-        t.start('vid')
-        ret, bgr = cap.read()
-        t.end('vid')
-        if not ret:
-            break
-
         if not args.cpu_preprocess:
             detections = DETECTRON.gpu_preprocess(bgr, debug=args.show).infer() 
         else:
@@ -45,7 +42,7 @@ def main(args: argparse.Namespace) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--engine', type=str, help='Engine file')
-    parser.add_argument('--input-video', type=str, help='Input video path')
+    parser.add_argument('--input-image', type=str, help='Input image path')
     parser.add_argument('--show',
                         action='store_true',
                         help='Show the detection results')
