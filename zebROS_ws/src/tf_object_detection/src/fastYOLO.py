@@ -23,7 +23,7 @@ DETECTRON: YOLO900 = None
 
 def run_inference_for_single_image(msg):
     global min_confidence
-    rospy.logwarn("Callback recived!")
+    # rospy.logwarn("Callback recived!")
     debug = False
     if pub_debug.get_num_connections() > 0:
         debug = True
