@@ -17,7 +17,16 @@ def onnx_to_tensorrt(onnx_model,
                      fp16=False,
                      dla_core=None,
                      batch_size=1,
+                     batch_size_min=None,
+                     batch_size_max=None,
+                     input_width=None,
+                     input_width_min=None,
+                     input_width_max=None,
+                     input_height=None,
+                     input_height_min=None,
+                     input_height_max=None,
                      gpu_fallback=False,
+                     input_tensor='input',
                      dataset_path='datasets/FRC2023/images/train',
                      calibration_file='calib_FRC2023m.bin') -> None:
     import pycuda.autoinit # causes problems with multiple contexts if imported in global scope
@@ -28,13 +37,28 @@ def onnx_to_tensorrt(onnx_model,
     model = onnx.load(onnx_model)
     input_shapes = [[d.dim_value for d in _input.type.tensor_type.shape.dim] for _input in model.graph.input]
     print(input_shapes)
-    model_channels = input_shapes[0][1]
-    model_width = input_shapes[0][2]
-    model_height = input_shapes[0][3]
+    input_channels = input_shapes[0][1]
+    #input_height = input_shapes[0][2]
+    #input_width = input_shapes[0][3]
+    if batch_size_min is None:
+        batch_size_min = batch_size
+    if batch_size_max is None:
+        batch_size_max = batch_size
+
+    if input_shapes[0][2] != 0:
+        input_height = input_shapes[0][2]
+        input_height_min = input_height
+        input_height_max = input_height
+
+    if input_shapes[0][3] != 0:
+        input_width = input_shapes[0][3]
+        input_width_min = input_width
+        input_width_max = input_width
 
     logger = trt.Logger(trt.Logger.INFO)
     builder = trt.Builder(logger)
-    builder.max_batch_size = batch_size
+    print(f'batch_size_max = {batch_size_max}')
+    builder.max_batch_size = batch_size_max
     network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
     onnx_parser = trt.OnnxParser(network, logger)
 
@@ -42,11 +66,12 @@ def onnx_to_tensorrt(onnx_model,
         onnx_parser.parse(f.read())
 
     profile = builder.create_optimization_profile()
+
     profile.set_shape(
-        'input',
-        (batch_size, model_channels, model_height, model_width),
-        (batch_size, model_channels, model_height, model_width),
-        (batch_size, model_channels, model_height, model_width),
+        input_tensor,
+        (batch_size_min, input_channels, input_height_min, input_width_min), # min
+        (batch_size, input_channels, input_height, input_width), # opt
+        (batch_size_max, input_channels, input_height_max, input_width_max), # max
     )
 
     config = builder.create_builder_config()
@@ -61,7 +86,7 @@ def onnx_to_tensorrt(onnx_model,
         from calibrator import YOLOEntropyCalibrator
         config.set_flag(trt.BuilderFlag.INT8)
         config.int8_calibrator = YOLOEntropyCalibrator(dataset_path, 
-                                                    (model_height, model_width),
+                                                    (input_height, input_width),
                                                     calibration_file)
         config.set_calibration_profile(profile)
         print("Setting INT8 flag + calibrator")
@@ -99,7 +124,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--fp16', action='store_true')
     parser.add_argument('--dla-core', type=int, default=None)
     parser.add_argument('--batch-size', type=int, default=1)
+    parser.add_argument('--batch-size-max', type=int, default=None)
+    parser.add_argument('--batch-size-min', type=int, default=None)
+    parser.add_argument('--input-width', type=int, default=None)
+    parser.add_argument('--input-width-max', type=int, default=None)
+    parser.add_argument('--input-width-min', type=int, default=None)
+    parser.add_argument('--input-height', type=int, default=None)
+    parser.add_argument('--input-height-max', type=int, default=None)
+    parser.add_argument('--input-height-min', type=int, default=None)
     parser.add_argument('--gpu-fallback', action='store_true')
+    parser.add_argument('--input-tensor', type=str, default='input')
     parser.add_argument('--dataset-path', type=str, default='datasets/FRC2023/images/train')
     parser.add_argument('--calibration-file', type=str, default='calib_FRC2023m.bin')
     args = parser.parse_args()
@@ -111,10 +145,19 @@ if __name__ == '__main__':
     onnx_to_tensorrt(args.onnx,
                      args.output,
                      args.max_workspace_size,
-                     args.int8,
-                     args.fp16,
-                     args.dla_core,
-                     args.batch_size,
-                     args.gpu_fallback,
-                     args.dataset_path,
-                     args.calibration_file)
+                     int8=args.int8,
+                     fp16=args.fp16,
+                     dla_core=args.dla_core,
+                     batch_size=args.batch_size,
+                     batch_size_min=args.batch_size_min,
+                     batch_size_max=args.batch_size_max,
+                     input_width=args.input_width,
+                     input_width_min=args.input_width_min,
+                     input_width_max=args.input_width_max,
+                     input_height=args.input_height,
+                     input_height_min=args.input_height_min,
+                     input_height_max=args.input_height_max,
+                     gpu_fallback=args.gpu_fallback,
+                     input_tensor=args.input_tensor,
+                     dataset_path=args.dataset_path,
+                     calibration_file=args.calibration_file)
