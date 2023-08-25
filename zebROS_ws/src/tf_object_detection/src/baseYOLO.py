@@ -14,6 +14,43 @@ from collections import namedtuple
 from onnx_to_tensorrt import onnx_to_tensorrt
 from config_frc2023 import OBJECT_CLASSES, COLORS
 
+# working nearest neighbor
+'''
+yolo_preprocess = cupy.RawKernel(
+    r"""extern "C" __global__
+    void yolo_preprocess(const unsigned char* input, float* output, int oWidth, int oHeight, int iWidth, int iHeight, int rowsToShiftDown) {
+        const int oWindow = oHeight - (2 * rowsToShiftDown);
+        const int x = blockIdx.x * blockDim.x + threadIdx.x;
+        const int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+        if (x >= oWidth || y >= oWindow) { // || y < rowsToShiftDown did not work 
+            return;
+        }
+
+        const float new_x = float(x) / float(oWidth) * float(iWidth);
+        const float new_y = float(y) / float(oWindow) * float(iHeight);
+
+        int i;
+
+        for (i = 0; i < 3; i++) {
+            const int nearest_x = int(new_x + 0.5f);  // Nearest neighbor X coordinate
+            const int nearest_y = int(new_y + 0.5f);  // Nearest neighbor Y coordinate
+
+            const int clamped_x = max(0, min(nearest_x, iWidth - 1));  // Clamp X coordinate
+            const int clamped_y = max(0, min(nearest_y, iHeight - 1));  // Clamp Y coordinate
+
+            const float sample = (float)input[(clamped_y * iWidth + clamped_x) * 3 + i];
+
+            const int rgb_offset = (oWidth * oHeight);
+            int idx = rgb_offset * (2 - i) + (((y + rowsToShiftDown) * oWidth + x));
+
+            output[idx] = sample / 255.0f;
+        }
+    }
+""",
+    "yolo_preprocess",
+)
+''' 
 
 # @TODO make work on sideways images
 yolo_preprocess = cupy.RawKernel(
@@ -32,8 +69,7 @@ void yolo_preprocess(const unsigned char* input, float* output, int oWidth, int 
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     
-	if( x >= oWidth || y >= (oWindow) || (y) < rowsToShiftDown) {
-        //printf("failed x %i y %i", x, y);
+	if( x >= oWidth || y >= (oWindow)) { 
         return;
     }
     
@@ -91,8 +127,8 @@ void yolo_preprocess(const unsigned char* input, float* output, int oWidth, int 
     }
 }
 """,
-    "yolo_preprocess",
-)
+    "yolo_preprocess", )
+
 
 
 Detections = namedtuple("Detections", ["bboxes", "scores", "labels"])
@@ -130,6 +166,7 @@ class YOLO900:
         self.pixels_to_shift_down = 0
         self.use_timings = use_timings
         self.gpu_has_been_run = False # gpu has compile time + overhead for first run so don't count it in average
+        self.tensor = None
         if use_timings:
             self.t = timing.Timings()
     
@@ -169,6 +206,7 @@ class YOLO900:
 
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) # standard color conversion
         tensor = blob(rgb, return_seg=False) # convert to float, transpose, scale from 0.0->1.0
+        self.tensor = tensor
         self.input_tensor = torch.asarray(tensor, device=self.device)
         
         if self.use_timings:
@@ -176,6 +214,9 @@ class YOLO900:
         
         self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
         self.last_preprocess_was_gpu = False
+        print(f"{tensor}")
+        print(type(tensor))
+        print("---------CPU ABOVE-----------")
 
         # probably too fancy but x.cpu_preprocess(img).infer() is really cool
         # also lets x.gpu_preprocess(img).infer() work 
@@ -207,10 +248,12 @@ class YOLO900:
                 dw /= 2  # divide padding into 2 sides
                 dh /= 2
                 self.dwdh = torch.asarray((dw, dh) * 2, dtype=torch.float32, device=self.device)
-                
+            
+            
             # will shift image down this much, and use to determine where to draw letterbox color
             self.pixels_to_shift_down = self.engine_H - new_unpad[1]
             self.pixels_to_shift_down //= 2
+            print(f"pixels {self.pixels_to_shift_down}")
 
             yolo_preprocess(                    # X                      # Y
                 (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
@@ -223,9 +266,17 @@ class YOLO900:
         
         self.gpu_has_been_run = True
         self.last_preprocess_was_gpu = True
+        
+        print(f"{self.gpu_output_buffer}")
+        print(type(self.gpu_output_buffer))
+        print("--------GPU ABOVE------------")
+
         return self
     
-        
+    
+    def get_arrays(self):
+        return cupy.asnumpy(self.gpu_output_buffer), self.tensor
+    
     def infer(self) -> Detections:
         if self.use_timings:
             self.t.start("infer")
