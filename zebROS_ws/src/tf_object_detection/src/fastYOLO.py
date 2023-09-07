@@ -19,9 +19,13 @@ global OBJ_DET_SRC_DIR, DETECTRON
 rospack = rospkg.RosPack()
 OBJ_DET_SRC_DIR = os.path.join(rospack.get_path('tf_object_detection'), 'src/')
 
+'''
+Use this to capture images which don't have tags in them
+(good for finding images in which known objects aren't detected correctly)
 SECONDS_PER_WRITE = 1.1
 FILE_PREFIX = '/home/ubuntu/tags/tag8_'
 last_write_time = 0
+'''
 
 # // all caps to show its important
 DETECTRON: YOLO900 = None
