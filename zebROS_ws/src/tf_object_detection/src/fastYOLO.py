@@ -85,7 +85,7 @@ def main():
     else:
         rospy.logwarn("Unable to get image topic, defaulting to c920/rect_image")
 
-    sub = rospy.Subscriber(sub_topic, Image, run_inference_for_single_image, queue_size=10000)
+    sub = rospy.Subscriber(sub_topic, Image, run_inference_for_single_image, queue_size=1)
     pub = rospy.Publisher(pub_topic, TFDetection, queue_size=1)
     pub_debug = rospy.Publisher("debug_image", Image, queue_size=1)
 
