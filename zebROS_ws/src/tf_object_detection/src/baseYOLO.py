@@ -214,9 +214,9 @@ class YOLO900:
         
         self.dwdh = torch.asarray(self.dwdh * 2, dtype=torch.float32, device=self.device)
         self.last_preprocess_was_gpu = False
-        print(f"{tensor}")
-        print(type(tensor))
-        print("---------CPU ABOVE-----------")
+        #print(f"{tensor}")
+        #print(type(tensor))
+        #print("---------CPU ABOVE-----------")
 
         # probably too fancy but x.cpu_preprocess(img).infer() is really cool
         # also lets x.gpu_preprocess(img).infer() work 
@@ -253,7 +253,7 @@ class YOLO900:
             # will shift image down this much, and use to determine where to draw letterbox color
             self.pixels_to_shift_down = self.engine_H - new_unpad[1]
             self.pixels_to_shift_down //= 2
-            print(f"pixels {self.pixels_to_shift_down}")
+            #print(f"pixels {self.pixels_to_shift_down}")
 
             yolo_preprocess(                    # X                      # Y
                 (iDivUp(self.engine_W, block_sqrt), iDivUp(self.engine_H, block_sqrt)), (block_size), 
@@ -267,9 +267,9 @@ class YOLO900:
         self.gpu_has_been_run = True
         self.last_preprocess_was_gpu = True
         
-        print(f"{self.gpu_output_buffer}")
-        print(type(self.gpu_output_buffer))
-        print("--------GPU ABOVE------------")
+        #print(f"{self.gpu_output_buffer}")
+        #print(type(self.gpu_output_buffer))
+        #print("--------GPU ABOVE------------")
 
         return self
     
