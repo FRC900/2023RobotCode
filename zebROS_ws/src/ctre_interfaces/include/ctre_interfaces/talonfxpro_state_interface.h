@@ -232,6 +232,9 @@ public:
 	void setControlAcceleration(const double control_acceleration);
 	double getControlAcceleration(void) const;
 
+	void setControlJerk(const double control_acceleration);
+	double getControlJerk(void) const;
+
 	void setControlEnableFOC(const bool control_enable_foc);
 	bool getControlEnableFOC(void) const;
 
@@ -353,6 +356,8 @@ public:
 	bool getFaultUndervoltage(void) const;
 	void setFaultBootDuringEnable(const bool fault_bootduringenable);
 	bool getFaultBootDuringEnable(void) const;
+	void setFaultBridgeBrownout(const bool fault_bridgebrownout);
+	bool getFaultBridgeBrownout(void) const;
 	void setFaultUnlicensedFeatureInUse(const bool fault_unlicensed_feature_in_use);
 	bool getFaultUnlicensedFeatureInUse(void) const;
 	void setFaultRemoteSensorReset(const bool fault_remotesensorreset);
@@ -373,6 +378,8 @@ public:
 	bool getFaultReverseSoftLimit(void) const;
 	void setFaultForwardSoftLimit(const bool fault_forwardsoftlimit);
 	bool getFaultForwardSoftLimit(void) const;
+	void setFaultRemoteSensorDataInvalid(const bool fault_remotesensordatainvalid);
+	bool getFaultRemoteSensorDataInvalid(void) const;
 	void setFaultFusedSensorOutOfSync(const bool fault_fusedsensoroutofsync);
 	bool getFaultFusedSensorOutOfSync(void) const;
 	void setFaultStatorCurrLimit(const bool fault_statorcurrlimit);
@@ -390,6 +397,8 @@ public:
 	bool getStickyFaultUndervoltage(void) const;
 	void setStickyFaultBootDuringEnable(const bool sticky_fault_bootduringenable);
 	bool getStickyFaultBootDuringEnable(void) const;
+	void setStickyFaultBridgeBrownout(const bool sticky_fault_bridgebrownout);
+	bool getStickyFaultBridgeBrownout(void) const;
 	void setStickyFaultUnlicensedFeatureInUse(const bool sticky_fault_unlicensed_feature_in_use);
 	bool getStickyFaultUnlicensedFeatureInUse(void) const;
 	void setStickyFaultRemoteSensorReset(const bool sticky_fault_remotesensorreset);
@@ -410,6 +419,8 @@ public:
 	bool getStickyFaultReverseSoftLimit(void) const;
 	void setStickyFaultForwardSoftLimit(const bool sticky_fault_forwardsoftlimit);
 	bool getStickyFaultForwardSoftLimit(void) const;
+	void setStickyFaultRemoteSensorDataInvalid(const bool sticky_fault_remotesensordatainvalid);
+	bool getStickyFaultRemoteSensorDataInvalid(void) const;
 	void setStickyFaultFusedSensorOutOfSync(const bool sticky_fault_fusedsensoroutofsync);
 	bool getStickyFaultFusedSensorOutOfSync(void) const;
 	void setStickyFaultStatorCurrLimit(const bool sticky_fault_statorcurrlimit);
@@ -561,6 +572,7 @@ private:
 	double control_position_{0.0};
 	double control_velocity_{0.0};
 	double control_acceleration_{0.0};
+	double control_jerk_{0.0};
 	bool control_enable_foc_{true};
 	bool control_override_brake_dur_neutral_{false};
 	double control_max_abs_duty_cycle_{1.0};
@@ -616,6 +628,7 @@ private:
 	bool fault_devicetemp_{false};
 	bool fault_undervoltage_{false};
 	bool fault_bootduringenable_{false};
+	bool fault_bridgebrownout_{false};
 	bool fault_unlicensed_feature_in_use_{false};
 	bool fault_remotesensorreset_{false};
 	bool fault_missingdifferentialfx_{false};
@@ -626,6 +639,7 @@ private:
 	bool fault_forwardhardlimit_{false};
 	bool fault_reversesoftlimit_{false};
 	bool fault_forwardsoftlimit_{false};
+	bool fault_remotesensordatainvalid_{false};
 	bool fault_fusedsensoroutofsync_{false};
 	bool fault_statorcurrlimit_{false};
 	bool fault_supplycurrlimit_{false};
@@ -635,6 +649,7 @@ private:
 	bool sticky_fault_devicetemp_{false};
 	bool sticky_fault_undervoltage_{false};
 	bool sticky_fault_bootduringenable_{false};
+	bool sticky_fault_bridgebrownout_{false};
 	bool sticky_fault_unlicensed_feature_in_use_{false};
 	bool sticky_fault_remotesensorreset_{false};
 	bool sticky_fault_missingdifferentialfx_{false};
@@ -645,6 +660,7 @@ private:
 	bool sticky_fault_forwardhardlimit_{false};
 	bool sticky_fault_reversesoftlimit_{false};
 	bool sticky_fault_forwardsoftlimit_{false};
+	bool sticky_fault_remotesensordatainvalid_{false};
 	bool sticky_fault_fusedsensoroutofsync_{false};
 	bool sticky_fault_statorcurrlimit_{false};
 	bool sticky_fault_supplycurrlimit_{false};

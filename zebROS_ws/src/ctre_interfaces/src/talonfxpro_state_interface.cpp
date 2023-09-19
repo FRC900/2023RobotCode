@@ -744,6 +744,15 @@ double TalonFXProHWState::getControlAcceleration(void) const
 	return control_acceleration_;
 }
 
+void TalonFXProHWState::setControlJerk(const double control_jerk)
+{
+	control_jerk_ = control_jerk;
+}
+double TalonFXProHWState::getControlJerk(void) const
+{
+	return control_jerk_;
+}
+
 void TalonFXProHWState::setControlEnableFOC(const bool control_enable_foc)
 {
 	control_enable_foc_ = control_enable_foc;
@@ -1099,6 +1108,8 @@ bool TalonFXProHWState::getFaultUndervoltage(void) const {return fault_undervolt
 void TalonFXProHWState::setFaultBootDuringEnable(const bool fault_bootduringenable) {fault_bootduringenable_ = fault_bootduringenable;}
 bool TalonFXProHWState::getFaultBootDuringEnable(void) const {return fault_bootduringenable_;}
 void TalonFXProHWState::setFaultUnlicensedFeatureInUse(const bool fault_unlicensed_feature_in_use) { fault_unlicensed_feature_in_use_ = fault_unlicensed_feature_in_use; }
+void TalonFXProHWState::setFaultBridgeBrownout(const bool fault_bridgebrownout) {fault_bridgebrownout_ = fault_bridgebrownout;}
+bool TalonFXProHWState::getFaultBridgeBrownout(void) const {return fault_bridgebrownout_;}
 bool TalonFXProHWState::getFaultUnlicensedFeatureInUse(void) const { return fault_unlicensed_feature_in_use_; }
 void TalonFXProHWState::setFaultRemoteSensorReset(const bool fault_remotesensorreset) { fault_remotesensorreset_ = fault_remotesensorreset; }
 bool TalonFXProHWState::getFaultRemoteSensorReset(void) const { return fault_remotesensorreset_; }
@@ -1118,6 +1129,8 @@ void TalonFXProHWState::setFaultReverseSoftLimit(const bool fault_reversesoftlim
 bool TalonFXProHWState::getFaultReverseSoftLimit(void) const {return fault_reversesoftlimit_;}
 void TalonFXProHWState::setFaultForwardSoftLimit(const bool fault_forwardsoftlimit) {fault_forwardsoftlimit_ = fault_forwardsoftlimit;}
 bool TalonFXProHWState::getFaultForwardSoftLimit(void) const {return fault_forwardsoftlimit_;}
+void TalonFXProHWState::setFaultRemoteSensorDataInvalid(const bool fault_remotesensordatainvalid) {fault_remotesensordatainvalid_ = fault_remotesensordatainvalid;}
+bool TalonFXProHWState::getFaultRemoteSensorDataInvalid(void) const {return fault_remotesensordatainvalid_;}
 void TalonFXProHWState::setFaultFusedSensorOutOfSync(const bool fault_fusedsensoroutofsync) {fault_fusedsensoroutofsync_ = fault_fusedsensoroutofsync;}
 bool TalonFXProHWState::getFaultFusedSensorOutOfSync(void) const {return fault_fusedsensoroutofsync_;}
 void TalonFXProHWState::setFaultStatorCurrLimit(const bool fault_statorcurrlimit) {fault_statorcurrlimit_ = fault_statorcurrlimit;}
@@ -1135,6 +1148,8 @@ void TalonFXProHWState::setStickyFaultUndervoltage(const bool sticky_fault_under
 bool TalonFXProHWState::getStickyFaultUndervoltage(void) const {return sticky_fault_undervoltage_;}
 void TalonFXProHWState::setStickyFaultBootDuringEnable(const bool sticky_fault_bootduringenable) {sticky_fault_bootduringenable_ = sticky_fault_bootduringenable;}
 bool TalonFXProHWState::getStickyFaultBootDuringEnable(void) const {return sticky_fault_bootduringenable_;}
+void TalonFXProHWState::setStickyFaultBridgeBrownout(const bool sticky_fault_bridgebrownout) {sticky_fault_bridgebrownout_ = sticky_fault_bridgebrownout;}
+bool TalonFXProHWState::getStickyFaultBridgeBrownout(void) const {return sticky_fault_bridgebrownout_;}
 void TalonFXProHWState::setStickyFaultUnlicensedFeatureInUse(const bool sticky_fault_unlicensed_feature_in_use) { sticky_fault_unlicensed_feature_in_use_ = sticky_fault_unlicensed_feature_in_use; }
 bool TalonFXProHWState::getStickyFaultUnlicensedFeatureInUse(void) const { return sticky_fault_unlicensed_feature_in_use_; }
 void TalonFXProHWState::setStickyFaultRemoteSensorReset(const bool sticky_fault_remotesensorreset) { sticky_fault_remotesensorreset_ = sticky_fault_remotesensorreset; }
@@ -1155,6 +1170,8 @@ void TalonFXProHWState::setStickyFaultReverseSoftLimit(const bool sticky_fault_r
 bool TalonFXProHWState::getStickyFaultReverseSoftLimit(void) const {return sticky_fault_reversesoftlimit_;}
 void TalonFXProHWState::setStickyFaultForwardSoftLimit(const bool sticky_fault_forwardsoftlimit) {sticky_fault_forwardsoftlimit_ = sticky_fault_forwardsoftlimit;}
 bool TalonFXProHWState::getStickyFaultForwardSoftLimit(void) const {return sticky_fault_forwardsoftlimit_;}
+void TalonFXProHWState::setStickyFaultRemoteSensorDataInvalid(const bool sticky_fault_remotesensordatainvalid) {sticky_fault_remotesensordatainvalid_ = sticky_fault_remotesensordatainvalid;}
+bool TalonFXProHWState::getStickyFaultRemoteSensorDataInvalid(void) const {return sticky_fault_remotesensordatainvalid_;}
 void TalonFXProHWState::setStickyFaultFusedSensorOutOfSync(const bool sticky_fault_fusedsensoroutofsync) {sticky_fault_fusedsensoroutofsync_ = sticky_fault_fusedsensoroutofsync;}
 bool TalonFXProHWState::getStickyFaultFusedSensorOutOfSync(void) const {return sticky_fault_fusedsensoroutofsync_;}
 void TalonFXProHWState::setStickyFaultStatorCurrLimit(const bool sticky_fault_statorcurrlimit) {sticky_fault_statorcurrlimit_ = sticky_fault_statorcurrlimit;}

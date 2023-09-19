@@ -101,6 +101,7 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setFaultDeviceTemp(read_thread_state_->getFaultDeviceTemp());
     state_->setFaultUndervoltage(read_thread_state_->getFaultUndervoltage());
     state_->setFaultBootDuringEnable(read_thread_state_->getFaultBootDuringEnable());
+    state_->setFaultBridgeBrownout(read_thread_state_->getFaultBridgeBrownout());
     state_->setFaultUnlicensedFeatureInUse(read_thread_state_->getFaultUnlicensedFeatureInUse());
     state_->setFaultRemoteSensorReset(read_thread_state_->getFaultRemoteSensorReset());
     state_->setFaultMissingDifferentialFX(read_thread_state_->getFaultMissingDifferentialFX());
@@ -111,6 +112,7 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setFaultForwardHardLimit(read_thread_state_->getFaultForwardHardLimit());
     state_->setFaultReverseSoftLimit(read_thread_state_->getFaultReverseSoftLimit());
     state_->setFaultForwardSoftLimit(read_thread_state_->getFaultForwardSoftLimit());
+    state_->setFaultRemoteSensorDataInvalid(read_thread_state_->getFaultRemoteSensorDataInvalid());
     state_->setFaultFusedSensorOutOfSync(read_thread_state_->getFaultFusedSensorOutOfSync());
     state_->setFaultStatorCurrLimit(read_thread_state_->getFaultStatorCurrLimit());
     state_->setFaultSupplyCurrLimit(read_thread_state_->getFaultSupplyCurrLimit());
@@ -120,6 +122,7 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setStickyFaultDeviceTemp(read_thread_state_->getStickyFaultDeviceTemp());
     state_->setStickyFaultUndervoltage(read_thread_state_->getStickyFaultUndervoltage());
     state_->setStickyFaultBootDuringEnable(read_thread_state_->getStickyFaultBootDuringEnable());
+    state_->setStickyFaultBridgeBrownout(read_thread_state_->getStickyFaultBridgeBrownout());
     state_->setStickyFaultUnlicensedFeatureInUse(read_thread_state_->getStickyFaultUnlicensedFeatureInUse());
     state_->setStickyFaultRemoteSensorReset(read_thread_state_->getStickyFaultRemoteSensorReset());
     state_->setStickyFaultMissingDifferentialFX(read_thread_state_->getStickyFaultMissingDifferentialFX());
@@ -129,7 +132,7 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setStickyFaultReverseHardLimit(read_thread_state_->getStickyFaultReverseHardLimit());
     state_->setStickyFaultForwardHardLimit(read_thread_state_->getStickyFaultForwardHardLimit());
     state_->setStickyFaultReverseSoftLimit(read_thread_state_->getStickyFaultReverseSoftLimit());
-    state_->setStickyFaultForwardSoftLimit(read_thread_state_->getStickyFaultForwardSoftLimit());
+    state_->setStickyFaultRemoteSensorDataInvalid(read_thread_state_->getStickyFaultRemoteSensorDataInvalid());
     state_->setStickyFaultFusedSensorOutOfSync(read_thread_state_->getStickyFaultFusedSensorOutOfSync());
     state_->setStickyFaultStatorCurrLimit(read_thread_state_->getStickyFaultStatorCurrLimit());
     state_->setStickyFaultSupplyCurrLimit(read_thread_state_->getStickyFaultSupplyCurrLimit());
@@ -362,6 +365,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(fault_devicetemp, talonfxpro_->GetFault_DeviceTemp());
         SAFE_READ(fault_undervoltage, talonfxpro_->GetFault_Undervoltage());
         SAFE_READ(fault_bootduringenable, talonfxpro_->GetFault_BootDuringEnable());
+        SAFE_READ(fault_bridgebrownout, talonfxpro_->GetFault_BridgeBrownout());
         SAFE_READ(fault_unlicensed_feature_in_use, talonfxpro_->GetFault_UnlicensedFeatureInUse());
         SAFE_READ(fault_remotesensorreset, talonfxpro_->GetFault_RemoteSensorReset());
         SAFE_READ(fault_missingdifferentialfx, talonfxpro_->GetFault_MissingDifferentialFX());
@@ -372,6 +376,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(fault_forwardhardlimit, talonfxpro_->GetFault_ForwardHardLimit());
         SAFE_READ(fault_reversesoftlimit, talonfxpro_->GetFault_ReverseSoftLimit());
         SAFE_READ(fault_forwardsoftlimit, talonfxpro_->GetFault_ForwardSoftLimit());
+        SAFE_READ(fault_remotesensordatainvalid, talonfxpro_->GetFault_RemoteSensorDataInvalid());
         SAFE_READ(fault_fusedsensoroutofsync, talonfxpro_->GetFault_FusedSensorOutOfSync());
         SAFE_READ(fault_statorcurrlimit, talonfxpro_->GetFault_StatorCurrLimit());
         SAFE_READ(fault_supplycurrlimit, talonfxpro_->GetFault_SupplyCurrLimit());
@@ -381,6 +386,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(sticky_fault_devicetemp, talonfxpro_->GetStickyFault_DeviceTemp());
         SAFE_READ(sticky_fault_undervoltage, talonfxpro_->GetStickyFault_Undervoltage());
         SAFE_READ(sticky_fault_bootduringenable, talonfxpro_->GetStickyFault_BootDuringEnable());
+        SAFE_READ(sticky_fault_bridgebrownout, talonfxpro_->GetStickyFault_BridgeBrownout());
         SAFE_READ(sticky_fault_unlicensed_feature_in_use, talonfxpro_->GetStickyFault_UnlicensedFeatureInUse());
         SAFE_READ(sticky_fault_remotesensorreset, talonfxpro_->GetStickyFault_RemoteSensorReset());
         SAFE_READ(sticky_fault_missingdifferentialfx, talonfxpro_->GetStickyFault_MissingDifferentialFX());
@@ -391,6 +397,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(sticky_fault_forwardhardlimit, talonfxpro_->GetStickyFault_ForwardHardLimit());
         SAFE_READ(sticky_fault_reversesoftlimit, talonfxpro_->GetStickyFault_ReverseSoftLimit());
         SAFE_READ(sticky_fault_forwardsoftlimit, talonfxpro_->GetStickyFault_ForwardSoftLimit());
+        SAFE_READ(sticky_fault_remotesensordatainvalid, talonfxpro_->GetStickyFault_RemoteSensorDataInvalid());
         SAFE_READ(sticky_fault_fusedsensoroutofsync, talonfxpro_->GetStickyFault_FusedSensorOutOfSync());
         SAFE_READ(sticky_fault_statorcurrlimit, talonfxpro_->GetStickyFault_StatorCurrLimit());
         SAFE_READ(sticky_fault_supplycurrlimit, talonfxpro_->GetStickyFault_SupplyCurrLimit());
@@ -510,6 +517,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setFaultDeviceTemp(*fault_devicetemp);
             read_thread_state_->setFaultUndervoltage(*fault_undervoltage);
             read_thread_state_->setFaultBootDuringEnable(*fault_bootduringenable);
+            read_thread_state_->setFaultBridgeBrownout(*fault_bridgebrownout);
             read_thread_state_->setFaultUnlicensedFeatureInUse(*fault_unlicensed_feature_in_use);
             read_thread_state_->setFaultRemoteSensorReset(*fault_remotesensorreset);
             read_thread_state_->setFaultMissingDifferentialFX(*fault_missingdifferentialfx);
@@ -520,6 +528,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setFaultForwardHardLimit(*fault_forwardhardlimit);
             read_thread_state_->setFaultReverseSoftLimit(*fault_reversesoftlimit);
             read_thread_state_->setFaultForwardSoftLimit(*fault_forwardsoftlimit);
+            read_thread_state_->setFaultRemoteSensorDataInvalid(*fault_remotesensordatainvalid);
             read_thread_state_->setFaultFusedSensorOutOfSync(*fault_fusedsensoroutofsync);
             read_thread_state_->setFaultStatorCurrLimit(*fault_statorcurrlimit);
             read_thread_state_->setFaultSupplyCurrLimit(*fault_supplycurrlimit);
@@ -529,6 +538,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setStickyFaultDeviceTemp(*sticky_fault_devicetemp);
             read_thread_state_->setStickyFaultUndervoltage(*sticky_fault_undervoltage);
             read_thread_state_->setStickyFaultBootDuringEnable(*sticky_fault_bootduringenable);
+            read_thread_state_->setStickyFaultBridgeBrownout(*sticky_fault_bridgebrownout);
             read_thread_state_->setStickyFaultUnlicensedFeatureInUse(*sticky_fault_unlicensed_feature_in_use);
             read_thread_state_->setStickyFaultRemoteSensorReset(*sticky_fault_remotesensorreset);
             read_thread_state_->setStickyFaultMissingDifferentialFX(*sticky_fault_missingdifferentialfx);
@@ -539,6 +549,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setStickyFaultForwardHardLimit(*sticky_fault_forwardhardlimit);
             read_thread_state_->setStickyFaultReverseSoftLimit(*sticky_fault_reversesoftlimit);
             read_thread_state_->setStickyFaultForwardSoftLimit(*sticky_fault_forwardsoftlimit);
+            read_thread_state_->setStickyFaultRemoteSensorDataInvalid(*sticky_fault_remotesensordatainvalid);
             read_thread_state_->setStickyFaultFusedSensorOutOfSync(*sticky_fault_fusedsensoroutofsync);
             read_thread_state_->setStickyFaultStatorCurrLimit(*sticky_fault_statorcurrlimit);
             read_thread_state_->setStickyFaultSupplyCurrLimit(*sticky_fault_supplycurrlimit);
@@ -1290,6 +1301,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
     double control_position;
     double control_velocity;
     double control_acceleration;
+    double control_jerk;
     bool control_enable_foc;
     bool control_override_brake_dur_neutral;
     double control_max_abs_duty_cycle;
@@ -1312,6 +1324,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         state_->setControlPosition(control_position);
         state_->setControlVelocity(control_velocity);
         state_->setControlAcceleration(control_acceleration);
+        state_->setControlJerk(control_jerk);
         state_->setControlEnableFOC(control_enable_foc);
         state_->setControlOverrideBrakeDurNeutral(control_override_brake_dur_neutral);
         state_->setControlMaxAbsDutyCycle(control_max_abs_duty_cycle);
@@ -1328,6 +1341,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                                           control_position,
                                                           control_velocity,
                                                           control_acceleration,
+                                                          control_jerk,
                                                           control_enable_foc,
                                                           control_override_brake_dur_neutral,
                                                           control_max_abs_duty_cycle,
@@ -1493,6 +1507,95 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                                                                         control_slot,
                                                                                         control_override_brake_dur_neutral)),
                               "setControl(MotionMagicTorqueCurrentFOC)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::MotionMagicVelocityDutyCycle(units::radians_per_second_t{control_velocity},
+                                                                                         units::radians_per_second_squared_t{control_acceleration},
+                                                                                         control_enable_foc,
+                                                                                         control_feedforward,
+                                                                                         control_slot,
+                                                                                         control_override_brake_dur_neutral)),
+                              "setControl(MotionMagicVelocityDutyCycle)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityVoltage:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::MotionMagicVelocityVoltage(units::radians_per_second_t{control_velocity},
+                                                                                       units::radians_per_second_squared_t{control_acceleration},
+                                                                                       control_enable_foc,
+                                                                                       units::voltage::volt_t{control_feedforward},
+                                                                                       control_slot,
+                                                                                       control_override_brake_dur_neutral)),
+                              "setControl(MotionMagicVelocityVoltage)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityTorqueCurrentFOC:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::MotionMagicVelocityTorqueCurrentFOC(units::radians_per_second_t{control_velocity},
+                                                                                                units::radians_per_second_squared_t{control_acceleration},
+                                                                                                control_enable_foc,
+                                                                                                units::ampere_t{control_feedforward},
+                                                                                                control_slot,
+                                                                                                control_override_brake_dur_neutral)),
+                              "setControl(MotionMagicVelocityTorqueCurrentFOC)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::DynamicMotionMagicDutyCycle:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::DynamicMotionMagicDutyCycle(units::radian_t{control_position},
+                                                                                        units::radians_per_second_t{control_velocity},
+                                                                                        units::radians_per_second_squared_t{control_acceleration},
+                                                                                        units::dimensionless::scalar_t{control_jerk},
+                                                                                        control_enable_foc,
+                                                                                        control_feedforward,
+                                                                                        control_slot,
+                                                                                        control_override_brake_dur_neutral)),
+                              "setControl(DynamicMotionMagicDutyCycle)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::DynamicMotionMagicVoltage:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::DynamicMotionMagicVoltage(units::radian_t{control_position},
+                                                                                      units::radians_per_second_t{control_velocity},
+                                                                                      units::radians_per_second_squared_t{control_acceleration},
+                                                                                      units::dimensionless::scalar_t{control_jerk},
+                                                                                      control_enable_foc,
+                                                                                      units::voltage::volt_t{control_feedforward},
+                                                                                      control_slot,
+                                                                                      control_override_brake_dur_neutral)),
+                              "setControl(DynamicMotionMagicVoltage)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::DynamicMotionMagicTorqueCurrentFOC:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::DynamicMotionMagicTorqueCurrentFOC(units::radian_t{control_position},
+                                                                                               units::radians_per_second_t{control_velocity},
+                                                                                               units::radians_per_second_squared_t{control_acceleration},
+                                                                                               units::dimensionless::scalar_t{control_jerk},
+                                                                                               units::ampere_t{control_feedforward},
+                                                                                               control_slot,
+                                                                                               control_override_brake_dur_neutral)),
+                              "setControl(DynamicMotionMagicTorqueCurrentFOC)"))
                 {
                     command_->resetControl();
                     success = false;

@@ -321,6 +321,9 @@ public:
 	void setControlAcceleration(const double control_acceleration);
 	double getControlAcceleration(void) const;
 
+	void setControlJerk(const double control_jerk);
+	double getControlJerk(void) const;
+
 	void setControlEnableFOC(const bool control_enable_foc);
 	bool getControlEnableFOC(void) const;
 
@@ -353,6 +356,7 @@ public:
 						double &control_position,
 						double &control_velocity,
 						double &control_acceleration,
+						double &control_jerk,
 						bool &control_enable_foc,
 						bool &control_override_brake_dur_neutral,
 						double &control_max_abs_duty_cycle,
@@ -475,6 +479,7 @@ private :
 	double control_position_{0.0};
 	double control_velocity_{0.0};
 	double control_acceleration_{0.0};
+	double control_jerk_{0.0};
 	bool control_enable_foc_{true};
 	bool control_override_brake_dur_neutral_{false};
 	double control_max_abs_duty_cycle_{1.0};

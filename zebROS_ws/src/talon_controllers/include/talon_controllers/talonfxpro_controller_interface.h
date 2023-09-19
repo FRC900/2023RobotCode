@@ -9,6 +9,8 @@
 #endif
 #include "ctre_interfaces/talonfxpro_command_interface.h"
 
+// Define a function which reads and returns something from
+// the talon's state buffer
 #define STATE_PASSTHRU_FN(fn) \
     auto fn(void) const \
     { \
@@ -250,6 +252,7 @@ public:
     virtual void setControlPosition(const double control_position);
     virtual void setControlVelocity(const double control_velocity);
     virtual void setControlAcceleration(const double control_acceleration);
+    virtual void setControlJerk(const double control_jerk);
 
     // Functions which handle dynamic reconfigurable config vars
     void setkP(const double kP, const size_t index, const bool update_ddr = true);
@@ -431,6 +434,7 @@ public:
     STATE_PASSTHRU_FN(getFaultDeviceTemp);
     STATE_PASSTHRU_FN(getFaultUndervoltage);
     STATE_PASSTHRU_FN(getFaultBootDuringEnable);
+    STATE_PASSTHRU_FN(getFaultBridgeBrownout);
     STATE_PASSTHRU_FN(getFaultUnlicensedFeatureInUse);
     STATE_PASSTHRU_FN(getFaultRemoteSensorReset);
     STATE_PASSTHRU_FN(getFaultMissingDifferentialFX);
@@ -441,6 +445,7 @@ public:
     STATE_PASSTHRU_FN(getFaultForwardHardLimit);
     STATE_PASSTHRU_FN(getFaultReverseSoftLimit);
     STATE_PASSTHRU_FN(getFaultForwardSoftLimit);
+    STATE_PASSTHRU_FN(getFaultRemoteSensorDataInvalid);
     STATE_PASSTHRU_FN(getFaultFusedSensorOutOfSync);
     STATE_PASSTHRU_FN(getFaultStatorCurrLimit);
     STATE_PASSTHRU_FN(getFaultSupplyCurrLimit);
@@ -449,6 +454,7 @@ public:
     STATE_PASSTHRU_FN(getStickyFaultDeviceTemp);
     STATE_PASSTHRU_FN(getStickyFaultUndervoltage);
     STATE_PASSTHRU_FN(getStickyFaultBootDuringEnable);
+    STATE_PASSTHRU_FN(getStickyFaultBridgeBrownout);
     STATE_PASSTHRU_FN(getStickyFaultUnlicensedFeatureInUse);
     STATE_PASSTHRU_FN(getStickyFaultRemoteSensorReset);
     STATE_PASSTHRU_FN(getStickyFaultMissingDifferentialFX);
@@ -459,6 +465,7 @@ public:
     STATE_PASSTHRU_FN(getStickyFaultForwardHardLimit);
     STATE_PASSTHRU_FN(getStickyFaultReverseSoftLimit);
     STATE_PASSTHRU_FN(getStickyFaultForwardSoftLimit);
+    STATE_PASSTHRU_FN(getStickyFaultRemoteSensorDataInvalid);
     STATE_PASSTHRU_FN(getStickyFaultFusedSensorOutOfSync);
     STATE_PASSTHRU_FN(getStickyFaultStatorCurrLimit);
     STATE_PASSTHRU_FN(getStickyFaultSupplyCurrLimit);
@@ -547,6 +554,7 @@ protected:
     // Disable changing mode for controllers derived from this class
     void setControlMode(hardware_interface::talonfxpro::TalonMode /*mode*/) override;
     bool setInitialControlMode(void) override;
+    virtual void setControlJerk(const double control_jerk) override;
 };
 
 // A derived class which emits a warning on potentially invalid control output calls
@@ -583,7 +591,7 @@ public:
     void setControlPosition(const double control_position) override;
 };
 
-// A derived class which emits a warning on potentially invalid control output calls
+// Derived classes which emits a warning on potentially invalid control output calls
 template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
 class TalonFXProMotionMagicControllerInterface : public TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>
 {
@@ -601,6 +609,39 @@ public:
     void setControlAcceleration(const double control_acceleration) override;
 };
 
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+class TalonFXProMotionMagicVelocityControllerInterface : public TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>
+{
+public:
+    TalonFXProMotionMagicVelocityControllerInterface() : TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>() {}
+    TalonFXProMotionMagicVelocityControllerInterface(const TalonFXProMotionMagicVelocityControllerInterface &) = default; 
+    TalonFXProMotionMagicVelocityControllerInterface(TalonFXProMotionMagicVelocityControllerInterface &&) noexcept = default;
+    virtual ~TalonFXProMotionMagicVelocityControllerInterface() = default;
+
+    TalonFXProMotionMagicVelocityControllerInterface &operator=(const TalonFXProMotionMagicVelocityControllerInterface &other) = default;
+    TalonFXProMotionMagicVelocityControllerInterface &operator=(TalonFXProMotionMagicVelocityControllerInterface &&other) noexcept = default;
+
+    void setControlOutput(const double control_output) override;
+    void setControlPosition(const double control_position) override;
+    void setControlAcceleration(const double control_acceleration) override;
+};
+
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+class TalonFXProDynamicMotionMagicControllerInterface : public TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>
+{
+public:
+    TalonFXProDynamicMotionMagicControllerInterface() : TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>() {}
+    TalonFXProDynamicMotionMagicControllerInterface(const TalonFXProDynamicMotionMagicControllerInterface &) = default; 
+    TalonFXProDynamicMotionMagicControllerInterface(TalonFXProDynamicMotionMagicControllerInterface &&) noexcept = default;
+    virtual ~TalonFXProDynamicMotionMagicControllerInterface() = default;
+
+    TalonFXProDynamicMotionMagicControllerInterface &operator=(const TalonFXProDynamicMotionMagicControllerInterface &other) = default;
+    TalonFXProDynamicMotionMagicControllerInterface &operator=(TalonFXProDynamicMotionMagicControllerInterface &&other) noexcept = default;
+
+    void setControlOutput(const double control_output) override;
+    void setControlJerk(const double control_jerk) override;
+};
+
 extern const char DUTY_CYCLE_NAME[];
 extern const char TORQUE_CURRENT_FOC_NAME[];
 extern const char VOLTAGE_NAME[];
@@ -613,6 +654,12 @@ extern const char VELOCITY_TORQUE_CURRENT_FOC_NAME[];
 extern const char MOTION_MAGIC_DUTY_CYCLE_NAME[];
 extern const char MOTION_MAGIC_VOLTAGE_NAME[];
 extern const char MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME[];
+extern const char MOTION_MAGIC_VELOCITY_DUTY_CYCLE_NAME[];
+extern const char MOTION_MAGIC_VELOCITY_VOLTAGE_NAME[];
+extern const char MOTION_MAGIC_VELOCITY_TORQUE_CURRENT_FOC_NAME[];
+extern const char DYNAMIC_MOTION_MAGIC_DUTY_CYCLE_NAME[];
+extern const char DYNAMIC_MOTION_MAGIC_VOLTAGE_NAME[];
+extern const char DYNAMIC_MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME[];
 using TalonFXProDutyCycleOutControllerInterface = TalonFXProFixedModeControllerInterface<hardware_interface::talonfxpro::TalonMode::DutyCycleOut, DUTY_CYCLE_NAME>;
 using TalonFXProTorqueCurrentFOCControllerInterface = TalonFXProFixedModeControllerInterface<hardware_interface::talonfxpro::TalonMode::TorqueCurrentFOC, TORQUE_CURRENT_FOC_NAME>;
 using TalonFXProVoltageOutControllerInterface = TalonFXProFixedModeControllerInterface<hardware_interface::talonfxpro::TalonMode::VoltageOut, VOLTAGE_NAME>;
@@ -625,6 +672,9 @@ using TalonFXProVelocityTorqueCurrentFOCControllerInterface = TalonFXProVelocity
 using TalonFXProMotionMagicDutyCycleControllerInterface = TalonFXProMotionMagicControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicDutyCycle, MOTION_MAGIC_DUTY_CYCLE_NAME>;
 using TalonFXProMotionMagicVoltageControllerInterface = TalonFXProMotionMagicControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVoltage, MOTION_MAGIC_VOLTAGE_NAME>;
 using TalonFXProMotionMagicTorqueCurrentFOCControllerInterface = TalonFXProMotionMagicControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicTorqueCurrentFOC, MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME>;
+using TalonFXProMotionMagicVelocityDutyCycleControllerInterface = TalonFXProMotionMagicVelocityControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle, MOTION_MAGIC_DUTY_CYCLE_NAME>;
+using TalonFXProMotionMagicVelocityVoltageControllerInterface = TalonFXProMotionMagicVelocityControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityVoltage, MOTION_MAGIC_VOLTAGE_NAME>;
+using TalonFXProMotionMagicVelocityTorqueCurrentFOCControllerInterface = TalonFXProMotionMagicVelocityControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityTorqueCurrentFOC, MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME>;
 
 template <bool STRICT>
 class TalonFXProFollowerControllerInterfaceBase : public TalonFXProControllerInterface

@@ -1323,6 +1323,19 @@ double TalonFXProHWCommand::getControlAcceleration(void) const
 	return control_acceleration_;
 }
 
+void TalonFXProHWCommand::setControlJerk(const double control_jerk)
+{
+	if (fabs(control_jerk - control_jerk_) > double_value_epsilon)
+	{
+		control_jerk_ = control_jerk;
+		control_changed_ = true;
+	}
+}
+double TalonFXProHWCommand::getControlJerk(void) const
+{
+	return control_jerk_;
+}
+
 void TalonFXProHWCommand::setControlEnableFOC(const bool control_enable_foc)
 {
 	if (control_enable_foc != control_enable_foc_)
@@ -1455,6 +1468,7 @@ bool TalonFXProHWCommand::controlChanged(TalonMode &control_mode,
 										 double &control_position,
 										 double &control_velocity,
 										 double &control_acceleration,
+										 double &control_jerk,
 										 bool &control_enable_foc,
 										 bool &control_override_brake_dur_neutral,
 										 double &control_max_abs_duty_cycle,
@@ -1470,6 +1484,7 @@ bool TalonFXProHWCommand::controlChanged(TalonMode &control_mode,
 	control_position = control_position_;
 	control_velocity = control_velocity_;
 	control_acceleration = control_acceleration_;
+	control_jerk = control_jerk_;
 	control_enable_foc = control_enable_foc_;
 	control_override_brake_dur_neutral = control_override_brake_dur_neutral_;
 	control_max_abs_duty_cycle = control_max_abs_duty_cycle_;

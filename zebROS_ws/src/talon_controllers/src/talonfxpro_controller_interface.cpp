@@ -16,6 +16,12 @@ const char VELOCITY_TORQUE_CURRENT_FOC_NAME[] = "VelocityTorqueCurrentFOC";
 const char MOTION_MAGIC_DUTY_CYCLE_NAME[] = "MotionMagicDutyCycle";
 const char MOTION_MAGIC_VOLTAGE_NAME[] = "MotionMagicVoltage";
 const char MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME[] = "MotionMagicTorqueCurrentFOC";
+const char MOTION_MAGIC_VELOCITY_DUTY_CYCLE_NAME[] = "MotionMagicVelocityDutyCycle";
+const char MOTION_MAGIC_VELOCITY_VOLTAGE_NAME[] = "MotionMagicVelocityVoltage";
+const char MOTION_MAGIC_VELOCITY_TORQUE_CURRENT_FOC_NAME[] = "MotionMagicVelocityTorqueCurrentFOC";
+const char DYNAMIC_MOTION_MAGIC_DUTY_CYCLE_NAME[] = "DynamicMotionMagicDutyCycle";
+const char DYNAMIC_MOTION_MAGIC_VOLTAGE_NAME[] = "DynamicMotionMagicVoltage";
+const char DYNAMIC_MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME[] = "DynamicMotionMagicTorqueCurrentFOC";
 
 template <typename T>
 bool readIntoScalar(ros::NodeHandle &n, const std::string &name, std::atomic<T> &scalar)
@@ -1147,17 +1153,17 @@ bool TalonFXProControllerInterface::init(hardware_interface::talonfxpro::TalonFX
                                                     [this]() { return params_.motion_magic_cruise_velocity_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setMotionMagicCruiseVelocity, this, _1, false),
                                                     "Motion Magic Cruise Velocity",
-                                                    0, 500);
+                                                    0, 9999);
         ddr_updater_->ddr_.registerVariable<double>("motion_magic_acceleration",
                                                     [this]() { return params_.motion_magic_acceleration_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setMotionMagicAcceleration, this, _1, false),
                                                     "Motion Magic Acceleration",
-                                                    0, 500);
+                                                    0, 9999);
         ddr_updater_->ddr_.registerVariable<double>("motion_magic_jerk",
                                                     [this]() { return params_.motion_magic_jerk_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setMotionMagicJerk, this, _1, false),
                                                     "Motion Magic Jerk",
-                                                    0, 500);
+                                                    0, 9999);
         ddr_updater_->ddr_.registerVariable<bool>  ("continuous_wrap",
                                                     [this]() { return params_.continuous_wrap_.load();},
                                                     boost::bind(&TalonFXProControllerInterface::setContinuousWrap, this, _1, false),
@@ -1227,6 +1233,11 @@ void TalonFXProControllerInterface::setControlVelocity(const double control_velo
 void TalonFXProControllerInterface::setControlAcceleration(const double control_acceleration)
 {
     talon_->setControlAcceleration(control_acceleration);
+}
+
+void TalonFXProControllerInterface::setControlJerk(const double control_jerk)
+{
+    talon_->setControlJerk(control_jerk);
 }
 
 void TalonFXProControllerInterface::setControlDifferentialPosition(const double control_differential_position, const bool update_ddr)
@@ -2099,6 +2110,9 @@ void TalonFXProControllerInterface::setControlMode(const hardware_interface::tal
         case hardware_interface::talonfxpro::TalonMode::VelocityDutyCycle:
         case hardware_interface::talonfxpro::TalonMode::VelocityVoltage:
         case hardware_interface::talonfxpro::TalonMode::VelocityTorqueCurrentFOC:
+        case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle:
+        case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityVoltage:
+        case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityTorqueCurrentFOC:
             talon_->setControlOutput(0);
             talon_->setControlPosition(0);
             talon_->setControlVelocity(command);
@@ -2278,6 +2292,12 @@ bool TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>::setIni
     talon_->setControlMode(TALON_MODE);
     return true;
 }
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+void TalonFXProFixedModeControllerInterface<TALON_MODE, TALON_MODE_NAME>::setControlJerk(const double control_jerk)
+{
+    ROS_WARN_THROTTLE(1, "Control jerk is not used for this controller type");
+    TalonFXProControllerInterface::setControlJerk(control_jerk);
+}
 
 template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
 void TalonFXProPositionControllerInterface<TALON_MODE, TALON_MODE_NAME>::setControlOutput(const double control_output)
@@ -2322,6 +2342,33 @@ void TalonFXProMotionMagicControllerInterface<TALON_MODE, TALON_MODE_NAME>::setC
 {
     ROS_WARN_THROTTLE(1, "Control acceleration is not used for motion magic controllers, use setControlPosition() for setpoint");
     TalonFXProControllerInterface::setControlAcceleration(control_acceleration);
+}
+
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+void TalonFXProMotionMagicVelocityControllerInterface<TALON_MODE, TALON_MODE_NAME>::setControlOutput(const double control_output)
+{
+    ROS_WARN_THROTTLE(1, "Control output is not used for velocity motion magic controllers, use setControlVelocity() for setpoint");
+    TalonFXProControllerInterface::setControlOutput(control_output);
+}
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+void TalonFXProMotionMagicVelocityControllerInterface<TALON_MODE, TALON_MODE_NAME>::setControlPosition(const double control_position)
+{
+    ROS_WARN_THROTTLE(1, "Control position is not used for velocity motion magic controllers, use setControlVelocity() for setpoint");
+    TalonFXProControllerInterface::setControlPosition(control_position);
+}
+
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+void TalonFXProDynamicMotionMagicControllerInterface<TALON_MODE, TALON_MODE_NAME>::setControlOutput(const double control_output)
+{
+    ROS_WARN_THROTTLE(1, "Control output is not used for dynamic motion magic controllers, use setControlPosition() for setpoint");
+    TalonFXProControllerInterface::setControlOutput(control_output);
+}
+// This is the only set of controllers which cares about the control jerk setting
+// so override the function in the base class which warns if it is set
+template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
+void TalonFXProDynamicMotionMagicControllerInterface<TALON_MODE, TALON_MODE_NAME>::setControlJerk(const double control_jerk)
+{
+    TalonFXProControllerInterface::setControlJerk(control_jerk);
 }
 
 template <bool STRICT>

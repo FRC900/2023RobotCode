@@ -70,6 +70,7 @@ public:
 			m.control_position.push_back(0);
 			m.control_velocity.push_back(0);
 			m.control_acceleration.push_back(0);
+			m.control_jerk.push_back(0);
 			m.control_enable_foc.push_back(false);
 			m.control_override_brake_dur_neutral.push_back(false);
 			m.control_max_abs_duty_cycle.push_back(0);
@@ -116,6 +117,7 @@ public:
 			m.fault_devicetemp.push_back(false);
 			m.fault_undervoltage.push_back(false);
 			m.fault_bootduringenable.push_back(false);
+			m.fault_bridgebrownout.push_back(false);
 			m.fault_unlicensedfeatureinuse.push_back(false);
 			m.fault_remotesensorreset.push_back(false);
 			m.fault_missingdifferentialfx.push_back(false);
@@ -126,6 +128,7 @@ public:
 			m.fault_forwardhardlimit.push_back(false);
 			m.fault_reversesoftlimit.push_back(false);
 			m.fault_forwardsoftlimit.push_back(false);
+			m.fault_remotesensordatainvalid.push_back(false);
 			m.fault_fusedsensoroutofsync.push_back(false);
 			m.fault_statorcurrlimit.push_back(false);
 			m.fault_supplycurrlimit.push_back(false);
@@ -135,6 +138,7 @@ public:
 			m.sticky_fault_devicetemp.push_back(false);
 			m.sticky_fault_undervoltage.push_back(false);
 			m.sticky_fault_bootduringenable.push_back(false);
+			m.sticky_fault_bridgebrownout.push_back(false);
 			m.sticky_fault_unlicensedfeatureinuse.push_back(false);
 			m.sticky_fault_remotesensorreset.push_back(false);
 			m.sticky_fault_missingdifferentialfx.push_back(false);
@@ -145,6 +149,7 @@ public:
 			m.sticky_fault_forwardhardlimit.push_back(false);
 			m.sticky_fault_reversesoftlimit.push_back(false);
 			m.sticky_fault_forwardsoftlimit.push_back(false);
+			m.sticky_fault_remotesensordatainvalid.push_back(false);
 			m.sticky_fault_fusedsensoroutofsync.push_back(false);
 			m.sticky_fault_statorcurrlimit.push_back(false);
 			m.sticky_fault_supplycurrlimit.push_back(false);
@@ -289,6 +294,7 @@ public:
 					m.control_position[i] = ts->getControlPosition();
 					m.control_velocity[i] = ts->getControlVelocity();
 					m.control_acceleration[i] = ts->getControlAcceleration();
+					m.control_jerk[i] = ts->getControlJerk();
 					m.control_enable_foc[i] = ts->getControlEnableFOC();
 					m.control_override_brake_dur_neutral[i] = ts->getControlOverrideBrakeDurNeutral();
 					m.control_max_abs_duty_cycle[i] = ts->getControlMaxAbsDutyCycle();
@@ -432,6 +438,7 @@ public:
 					m.fault_devicetemp[i] = ts->getFaultDeviceTemp();
 					m.fault_undervoltage[i] = ts->getFaultUndervoltage();
 					m.fault_bootduringenable[i] = ts->getFaultBootDuringEnable();
+					m.fault_bridgebrownout[i] = ts->getFaultBridgeBrownout();
 					m.fault_unlicensedfeatureinuse[i] = ts->getFaultUnlicensedFeatureInUse();
 					m.fault_remotesensorreset[i] = ts->getFaultRemoteSensorReset();
 					m.fault_missingdifferentialfx[i] = ts->getFaultMissingDifferentialFX();
@@ -442,6 +449,7 @@ public:
 					m.fault_forwardhardlimit[i] = ts->getFaultForwardHardLimit();
 					m.fault_reversesoftlimit[i] = ts->getFaultReverseSoftLimit();
 					m.fault_forwardsoftlimit[i] = ts->getFaultForwardSoftLimit();
+					m.fault_remotesensordatainvalid[i] = ts->getFaultRemoteSensorDataInvalid();
 					m.fault_fusedsensoroutofsync[i] = ts->getFaultFusedSensorOutOfSync();
 					m.fault_statorcurrlimit[i] = ts->getFaultStatorCurrLimit();
 					m.fault_supplycurrlimit[i] = ts->getFaultSupplyCurrLimit();
@@ -451,6 +459,7 @@ public:
 					m.sticky_fault_devicetemp[i] = ts->getStickyFaultDeviceTemp();
 					m.sticky_fault_undervoltage[i] = ts->getStickyFaultUndervoltage();
 					m.sticky_fault_bootduringenable[i] = ts->getStickyFaultBootDuringEnable();
+					m.sticky_fault_bridgebrownout[i] = ts->getStickyFaultBridgeBrownout();
 					m.sticky_fault_unlicensedfeatureinuse[i] = ts->getStickyFaultUnlicensedFeatureInUse();
 					m.sticky_fault_remotesensorreset[i] = ts->getStickyFaultRemoteSensorReset();
 					m.sticky_fault_missingdifferentialfx[i] = ts->getStickyFaultMissingDifferentialFX();
@@ -461,6 +470,7 @@ public:
 					m.sticky_fault_forwardhardlimit[i] = ts->getStickyFaultForwardHardLimit();
 					m.sticky_fault_reversesoftlimit[i] = ts->getStickyFaultReverseSoftLimit();
 					m.sticky_fault_forwardsoftlimit[i] = ts->getStickyFaultForwardSoftLimit();
+					m.sticky_fault_remotesensordatainvalid[i] = ts->getStickyFaultRemoteSensorDataInvalid();
 					m.sticky_fault_fusedsensoroutofsync[i] = ts->getStickyFaultFusedSensorOutOfSync();
 					m.sticky_fault_statorcurrlimit[i] = ts->getStickyFaultStatorCurrLimit();
 					m.sticky_fault_supplycurrlimit[i] = ts->getStickyFaultSupplyCurrLimit();
