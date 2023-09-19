@@ -441,7 +441,6 @@ public:
     STATE_PASSTHRU_FN(getFaultForwardHardLimit);
     STATE_PASSTHRU_FN(getFaultReverseSoftLimit);
     STATE_PASSTHRU_FN(getFaultForwardSoftLimit);
-    STATE_PASSTHRU_FN(getFaultMissingRemoteSensor);
     STATE_PASSTHRU_FN(getFaultFusedSensorOutOfSync);
     STATE_PASSTHRU_FN(getFaultStatorCurrLimit);
     STATE_PASSTHRU_FN(getFaultSupplyCurrLimit);
@@ -460,7 +459,6 @@ public:
     STATE_PASSTHRU_FN(getStickyFaultForwardHardLimit);
     STATE_PASSTHRU_FN(getStickyFaultReverseSoftLimit);
     STATE_PASSTHRU_FN(getStickyFaultForwardSoftLimit);
-    STATE_PASSTHRU_FN(getStickyFaultMissingRemoteSensor);
     STATE_PASSTHRU_FN(getStickyFaultFusedSensorOutOfSync);
     STATE_PASSTHRU_FN(getStickyFaultStatorCurrLimit);
     STATE_PASSTHRU_FN(getStickyFaultSupplyCurrLimit);

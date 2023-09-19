@@ -373,8 +373,6 @@ public:
 	bool getFaultReverseSoftLimit(void) const;
 	void setFaultForwardSoftLimit(const bool fault_forwardsoftlimit);
 	bool getFaultForwardSoftLimit(void) const;
-	void setFaultMissingRemoteSensor(const bool fault_missingremotesensor);
-	bool getFaultMissingRemoteSensor(void) const;
 	void setFaultFusedSensorOutOfSync(const bool fault_fusedsensoroutofsync);
 	bool getFaultFusedSensorOutOfSync(void) const;
 	void setFaultStatorCurrLimit(const bool fault_statorcurrlimit);
@@ -412,8 +410,6 @@ public:
 	bool getStickyFaultReverseSoftLimit(void) const;
 	void setStickyFaultForwardSoftLimit(const bool sticky_fault_forwardsoftlimit);
 	bool getStickyFaultForwardSoftLimit(void) const;
-	void setStickyFaultMissingRemoteSensor(const bool sticky_fault_missingremotesensor);
-	bool getStickyFaultMissingRemoteSensor(void) const;
 	void setStickyFaultFusedSensorOutOfSync(const bool sticky_fault_fusedsensoroutofsync);
 	bool getStickyFaultFusedSensorOutOfSync(void) const;
 	void setStickyFaultStatorCurrLimit(const bool sticky_fault_statorcurrlimit);
@@ -630,7 +626,6 @@ private:
 	bool fault_forwardhardlimit_{false};
 	bool fault_reversesoftlimit_{false};
 	bool fault_forwardsoftlimit_{false};
-	bool fault_missingremotesensor_{false};
 	bool fault_fusedsensoroutofsync_{false};
 	bool fault_statorcurrlimit_{false};
 	bool fault_supplycurrlimit_{false};
@@ -650,7 +645,6 @@ private:
 	bool sticky_fault_forwardhardlimit_{false};
 	bool sticky_fault_reversesoftlimit_{false};
 	bool sticky_fault_forwardsoftlimit_{false};
-	bool sticky_fault_missingremotesensor_{false};
 	bool sticky_fault_fusedsensoroutofsync_{false};
 	bool sticky_fault_statorcurrlimit_{false};
 	bool sticky_fault_supplycurrlimit_{false};

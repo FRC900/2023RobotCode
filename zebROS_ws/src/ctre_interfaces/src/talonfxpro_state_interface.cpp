@@ -1118,8 +1118,6 @@ void TalonFXProHWState::setFaultReverseSoftLimit(const bool fault_reversesoftlim
 bool TalonFXProHWState::getFaultReverseSoftLimit(void) const {return fault_reversesoftlimit_;}
 void TalonFXProHWState::setFaultForwardSoftLimit(const bool fault_forwardsoftlimit) {fault_forwardsoftlimit_ = fault_forwardsoftlimit;}
 bool TalonFXProHWState::getFaultForwardSoftLimit(void) const {return fault_forwardsoftlimit_;}
-void TalonFXProHWState::setFaultMissingRemoteSensor(const bool fault_missingremotesensor) {fault_missingremotesensor_ = fault_missingremotesensor;}
-bool TalonFXProHWState::getFaultMissingRemoteSensor(void) const {return fault_missingremotesensor_;}
 void TalonFXProHWState::setFaultFusedSensorOutOfSync(const bool fault_fusedsensoroutofsync) {fault_fusedsensoroutofsync_ = fault_fusedsensoroutofsync;}
 bool TalonFXProHWState::getFaultFusedSensorOutOfSync(void) const {return fault_fusedsensoroutofsync_;}
 void TalonFXProHWState::setFaultStatorCurrLimit(const bool fault_statorcurrlimit) {fault_statorcurrlimit_ = fault_statorcurrlimit;}
@@ -1157,8 +1155,6 @@ void TalonFXProHWState::setStickyFaultReverseSoftLimit(const bool sticky_fault_r
 bool TalonFXProHWState::getStickyFaultReverseSoftLimit(void) const {return sticky_fault_reversesoftlimit_;}
 void TalonFXProHWState::setStickyFaultForwardSoftLimit(const bool sticky_fault_forwardsoftlimit) {sticky_fault_forwardsoftlimit_ = sticky_fault_forwardsoftlimit;}
 bool TalonFXProHWState::getStickyFaultForwardSoftLimit(void) const {return sticky_fault_forwardsoftlimit_;}
-void TalonFXProHWState::setStickyFaultMissingRemoteSensor(const bool sticky_fault_missingremotesensor) {sticky_fault_missingremotesensor_ = sticky_fault_missingremotesensor;}
-bool TalonFXProHWState::getStickyFaultMissingRemoteSensor(void) const {return sticky_fault_missingremotesensor_;}
 void TalonFXProHWState::setStickyFaultFusedSensorOutOfSync(const bool sticky_fault_fusedsensoroutofsync) {sticky_fault_fusedsensoroutofsync_ = sticky_fault_fusedsensoroutofsync;}
 bool TalonFXProHWState::getStickyFaultFusedSensorOutOfSync(void) const {return sticky_fault_fusedsensoroutofsync_;}
 void TalonFXProHWState::setStickyFaultStatorCurrLimit(const bool sticky_fault_statorcurrlimit) {sticky_fault_statorcurrlimit_ = sticky_fault_statorcurrlimit;}

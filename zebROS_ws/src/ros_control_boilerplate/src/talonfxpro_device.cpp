@@ -111,7 +111,6 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setFaultForwardHardLimit(read_thread_state_->getFaultForwardHardLimit());
     state_->setFaultReverseSoftLimit(read_thread_state_->getFaultReverseSoftLimit());
     state_->setFaultForwardSoftLimit(read_thread_state_->getFaultForwardSoftLimit());
-    state_->setFaultMissingRemoteSensor(read_thread_state_->getFaultMissingRemoteSensor());
     state_->setFaultFusedSensorOutOfSync(read_thread_state_->getFaultFusedSensorOutOfSync());
     state_->setFaultStatorCurrLimit(read_thread_state_->getFaultStatorCurrLimit());
     state_->setFaultSupplyCurrLimit(read_thread_state_->getFaultSupplyCurrLimit());
@@ -131,7 +130,6 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setStickyFaultForwardHardLimit(read_thread_state_->getStickyFaultForwardHardLimit());
     state_->setStickyFaultReverseSoftLimit(read_thread_state_->getStickyFaultReverseSoftLimit());
     state_->setStickyFaultForwardSoftLimit(read_thread_state_->getStickyFaultForwardSoftLimit());
-    state_->setStickyFaultMissingRemoteSensor(read_thread_state_->getStickyFaultMissingRemoteSensor());
     state_->setStickyFaultFusedSensorOutOfSync(read_thread_state_->getStickyFaultFusedSensorOutOfSync());
     state_->setStickyFaultStatorCurrLimit(read_thread_state_->getStickyFaultStatorCurrLimit());
     state_->setStickyFaultSupplyCurrLimit(read_thread_state_->getStickyFaultSupplyCurrLimit());
@@ -374,7 +372,6 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(fault_forwardhardlimit, talonfxpro_->GetFault_ForwardHardLimit());
         SAFE_READ(fault_reversesoftlimit, talonfxpro_->GetFault_ReverseSoftLimit());
         SAFE_READ(fault_forwardsoftlimit, talonfxpro_->GetFault_ForwardSoftLimit());
-        SAFE_READ(fault_missingremotesensor, talonfxpro_->GetFault_MissingRemoteSensor());
         SAFE_READ(fault_fusedsensoroutofsync, talonfxpro_->GetFault_FusedSensorOutOfSync());
         SAFE_READ(fault_statorcurrlimit, talonfxpro_->GetFault_StatorCurrLimit());
         SAFE_READ(fault_supplycurrlimit, talonfxpro_->GetFault_SupplyCurrLimit());
@@ -394,7 +391,6 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(sticky_fault_forwardhardlimit, talonfxpro_->GetStickyFault_ForwardHardLimit());
         SAFE_READ(sticky_fault_reversesoftlimit, talonfxpro_->GetStickyFault_ReverseSoftLimit());
         SAFE_READ(sticky_fault_forwardsoftlimit, talonfxpro_->GetStickyFault_ForwardSoftLimit());
-        SAFE_READ(sticky_fault_missingremotesensor, talonfxpro_->GetStickyFault_MissingRemoteSensor());
         SAFE_READ(sticky_fault_fusedsensoroutofsync, talonfxpro_->GetStickyFault_FusedSensorOutOfSync());
         SAFE_READ(sticky_fault_statorcurrlimit, talonfxpro_->GetStickyFault_StatorCurrLimit());
         SAFE_READ(sticky_fault_supplycurrlimit, talonfxpro_->GetStickyFault_SupplyCurrLimit());
@@ -524,7 +520,6 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setFaultForwardHardLimit(*fault_forwardhardlimit);
             read_thread_state_->setFaultReverseSoftLimit(*fault_reversesoftlimit);
             read_thread_state_->setFaultForwardSoftLimit(*fault_forwardsoftlimit);
-            read_thread_state_->setFaultMissingRemoteSensor(*fault_missingremotesensor);
             read_thread_state_->setFaultFusedSensorOutOfSync(*fault_fusedsensoroutofsync);
             read_thread_state_->setFaultStatorCurrLimit(*fault_statorcurrlimit);
             read_thread_state_->setFaultSupplyCurrLimit(*fault_supplycurrlimit);
@@ -544,7 +539,6 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setStickyFaultForwardHardLimit(*sticky_fault_forwardhardlimit);
             read_thread_state_->setStickyFaultReverseSoftLimit(*sticky_fault_reversesoftlimit);
             read_thread_state_->setStickyFaultForwardSoftLimit(*sticky_fault_forwardsoftlimit);
-            read_thread_state_->setStickyFaultMissingRemoteSensor(*sticky_fault_missingremotesensor);
             read_thread_state_->setStickyFaultFusedSensorOutOfSync(*sticky_fault_fusedsensoroutofsync);
             read_thread_state_->setStickyFaultStatorCurrLimit(*sticky_fault_statorcurrlimit);
             read_thread_state_->setStickyFaultSupplyCurrLimit(*sticky_fault_supplycurrlimit);

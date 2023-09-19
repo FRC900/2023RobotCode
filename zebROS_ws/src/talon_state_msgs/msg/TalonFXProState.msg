@@ -62,7 +62,6 @@ bool[]    fault_reversehardlimit
 bool[]    fault_forwardhardlimit
 bool[]    fault_reversesoftlimit
 bool[]    fault_forwardsoftlimit
-bool[]    fault_missingremotesensor
 bool[]    fault_fusedsensoroutofsync
 bool[]    fault_statorcurrlimit
 bool[]    fault_supplycurrlimit
@@ -82,7 +81,6 @@ bool[]    sticky_fault_reversehardlimit
 bool[]    sticky_fault_forwardhardlimit
 bool[]    sticky_fault_reversesoftlimit
 bool[]    sticky_fault_forwardsoftlimit
-bool[]    sticky_fault_missingremotesensor
 bool[]    sticky_fault_fusedsensoroutofsync
 bool[]    sticky_fault_statorcurrlimit
 bool[]    sticky_fault_supplycurrlimit

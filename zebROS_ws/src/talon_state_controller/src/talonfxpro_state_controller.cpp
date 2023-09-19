@@ -126,7 +126,6 @@ public:
 			m.fault_forwardhardlimit.push_back(false);
 			m.fault_reversesoftlimit.push_back(false);
 			m.fault_forwardsoftlimit.push_back(false);
-			m.fault_missingremotesensor.push_back(false);
 			m.fault_fusedsensoroutofsync.push_back(false);
 			m.fault_statorcurrlimit.push_back(false);
 			m.fault_supplycurrlimit.push_back(false);
@@ -146,7 +145,6 @@ public:
 			m.sticky_fault_forwardhardlimit.push_back(false);
 			m.sticky_fault_reversesoftlimit.push_back(false);
 			m.sticky_fault_forwardsoftlimit.push_back(false);
-			m.sticky_fault_missingremotesensor.push_back(false);
 			m.sticky_fault_fusedsensoroutofsync.push_back(false);
 			m.sticky_fault_statorcurrlimit.push_back(false);
 			m.sticky_fault_supplycurrlimit.push_back(false);
@@ -444,7 +442,6 @@ public:
 					m.fault_forwardhardlimit[i] = ts->getFaultForwardHardLimit();
 					m.fault_reversesoftlimit[i] = ts->getFaultReverseSoftLimit();
 					m.fault_forwardsoftlimit[i] = ts->getFaultForwardSoftLimit();
-					m.fault_missingremotesensor[i] = ts->getFaultMissingRemoteSensor();
 					m.fault_fusedsensoroutofsync[i] = ts->getFaultFusedSensorOutOfSync();
 					m.fault_statorcurrlimit[i] = ts->getFaultStatorCurrLimit();
 					m.fault_supplycurrlimit[i] = ts->getFaultSupplyCurrLimit();
@@ -464,7 +461,6 @@ public:
 					m.sticky_fault_forwardhardlimit[i] = ts->getStickyFaultForwardHardLimit();
 					m.sticky_fault_reversesoftlimit[i] = ts->getStickyFaultReverseSoftLimit();
 					m.sticky_fault_forwardsoftlimit[i] = ts->getStickyFaultForwardSoftLimit();
-					m.sticky_fault_missingremotesensor[i] = ts->getStickyFaultMissingRemoteSensor();
 					m.sticky_fault_fusedsensoroutofsync[i] = ts->getStickyFaultFusedSensorOutOfSync();
 					m.sticky_fault_statorcurrlimit[i] = ts->getStickyFaultStatorCurrLimit();
 					m.sticky_fault_supplycurrlimit[i] = ts->getStickyFaultSupplyCurrLimit();
