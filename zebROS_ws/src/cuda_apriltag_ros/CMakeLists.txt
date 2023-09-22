@@ -10,7 +10,6 @@ cmake_minimum_required(VERSION 3.20)
 project(cuda_apriltag_ros LANGUAGES C CXX CUDA)
 include("../cmake_modules/CMakeOpt.cmake")
 find_package(catkin REQUIRED COMPONENTS
-  angles
   cv_bridge
   geometry_msgs
   marker_msgs
@@ -84,13 +83,13 @@ link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-# NVAprilTags
-include_directories(nvapriltags)
-add_library(nvapriltags STATIC IMPORTED)
+# CUAprilTags
+include_directories(cuapriltags)
+add_library(cuapriltags STATIC IMPORTED)
 if( ${ARCHITECTURE} STREQUAL "x86_64" )
-  set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_x86_64_cuda_11_4/libapril_tagging.a)
+  set_property(TARGET cuapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/cuapriltags/lib_x86_64_cuda_11_8/libcuapriltags.a)
 elseif( ${ARCHITECTURE} STREQUAL "aarch64" )
-  set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_aarch64_jetpack44/libapril_tagging.a)
+  set_property(TARGET cuapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/cuapriltags/lib_aarch64_jetpack51/libcuapriltags.a)
 endif()
 
 # Catkin
@@ -122,7 +121,7 @@ target_link_libraries(cuda_continuous_detector
   ${catkin_LIBRARIES}
   ${CUDA_nvToolsExt_LIBRARY}
   ${OpenCV_LIBS}
-  nvapriltags
+  cuapriltags
   ${CUDA_LIBRARIES}
 )
 MESSAGE("INSTALL : ${CMAKE_DESTINATION}")
