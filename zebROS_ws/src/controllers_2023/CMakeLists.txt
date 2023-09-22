@@ -9,7 +9,8 @@ include("../cmake_modules/CMakeOpt.cmake")
 find_package(catkin REQUIRED COMPONENTS
   controller_interface
   controllers_2023_msgs
-  dynamic_reconfigure_wrapper
+  ctre_interfaces
+  ddynamic_reconfigure
   hardware_interface
   pluginlib
   realtime_tools
@@ -17,8 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   talon_controllers
-  ctre_interfaces
-  ddynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions

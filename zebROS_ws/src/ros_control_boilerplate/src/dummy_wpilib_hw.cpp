@@ -434,43 +434,6 @@ void HALSIM_SetJoystickButtons(int32_t joystickNum, const HAL_JoystickButtons* p
 	ROS_INFO_STREAM("Called HALSIM_SetJoystickButtons on unsupported platform?");
 }
 
-#include "hal/simulation/MockHooks.h"
-int32_t HALSIM_RegisterSimPeriodicBeforeCallback(HALSIM_SimPeriodicCallback callback, void *param)
-{
-	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
-	return 0;
-}
-
-void HALSIM_CancelSimPeriodicBeforeCallback(int32_t uid)
-{
-	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
-}
-
-void HALSIM_CancelSimValueChangedCallback(int32_t uid)
-{
-	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
-}
-
-const char *HALSIM_GetSimDeviceName(HAL_SimDeviceHandle handle)
-{
-	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
-	return "";
-}
-HAL_SimDeviceHandle HALSIM_GetSimValueDeviceHandle(HAL_SimValueHandle handle)
-{
-	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
-	return 0;
-}
-
-#include "hal/simulation/SimDeviceData.h"
-int32_t HALSIM_RegisterSimValueChangedCallback(HAL_SimValueHandle handle,
-											   void *param,
-											   HALSIM_SimValueCallback callback,
-											   HAL_Bool initialNotify)
-{
-	ROS_ERROR_STREAM("Call to " << __PRETTY_FUNCTION__ << " on unsupported platform");
-	return 0;
-}
 
 HAL_Bool HAL_SetCurrentThreadPriority(HAL_Bool realTime, int32_t priority,
 									  int32_t *status)

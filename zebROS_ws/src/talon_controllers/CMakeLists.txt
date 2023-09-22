@@ -22,17 +22,17 @@ generate_dynamic_reconfigure_options(cfg/TalonConfig.cfg)
 catkin_package(
   CATKIN_DEPENDS
     controller_interface
-	dynamic_reconfigure
-	message_runtime
+	  ctre_interfaces
+	  ddynamic_reconfigure
+	  message_runtime
     realtime_tools
-	ctre_interfaces
   INCLUDE_DIRS include
-  #LIBRARIES ${PROJECT_NAME}
+  LIBRARIES talon_controllers
 )
 
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
   src/talon_controller.cpp
   src/talon_controller_interface.cpp
   src/talonfxpro_controller.cpp

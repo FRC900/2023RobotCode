@@ -6,16 +6,16 @@ include ("../cmake_modules/CMakeOpt.cmake")
 find_package(catkin REQUIRED COMPONENTS
     cmake_modules
     controller_interface
+    ctre_interfaces
     geometry_msgs
     message_generation
     nav_msgs
     std_msgs
-	std_srvs
+	  std_srvs
     realtime_tools
-	roscpp
+	  roscpp
     talon_controllers
-    ctre_interfaces
-	talon_state_msgs
+	  talon_state_msgs
     tf
     trajectory_msgs
     urdf
