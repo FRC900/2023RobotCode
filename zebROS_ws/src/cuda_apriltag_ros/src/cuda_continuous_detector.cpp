@@ -28,33 +28,22 @@
  * policies, either expressed or implied, of the California Institute of
  * Technology.
  */
-#include <set>
 #include <cassert>
-#include <chrono>
-#include "cuda.h"
-#include "cuda_runtime.h"
-#include <opencv2/opencv.hpp>
-#include "cuapriltags/cuAprilTags.h"
-#include <ros/ros.h>
+#include <set>
 #include <string>
-#include <sstream>
 #include <vector>
-#include <map>
 
 #include <ros/ros.h>
-#include <ros/console.h>
+#include "cuapriltags/cuAprilTags.h"
+#include "cuda_apriltag_ros/AprilTagDetectionArray.h"
+#include "cuda_runtime.h"
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
-#include <image_transport/image_transport.h>
-#include <sensor_msgs/image_encodings.h>
-#include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Transform.h>
+#include "sensor_msgs/CameraInfo.h"                    // for CameraInfo
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
-#include "cuda_apriltag_ros/AprilTagDetectionArray.h"
+#include <tf2_ros/transform_broadcaster.h>
 
 struct AprilTagsImpl
 {
@@ -161,12 +150,10 @@ class CudaApriltagDetector
 
         geometry_msgs::Transform ToTransformMsg(const cuAprilTagsID_t &detection)
         {
-
             geometry_msgs::Transform t;
             t.translation.x = detection.translation[0];
             t.translation.y = detection.translation[1];
             t.translation.z = detection.translation[2];
-
 
             //
             auto o = detection.orientation;
@@ -174,7 +161,6 @@ class CudaApriltagDetector
             matrix.setValue(o[0], o[3], o[6], o[1], o[4], o[7], o[2], o[5], o[8]);
             tf2::Quaternion q;
             matrix.getRotation(q);
-
 
             // Rotation matrix from cuAprilTags is column major
             //const Eigen::Map<const Eigen::Matrix<float, 3, 3, Eigen::ColMajor>>
@@ -188,12 +174,10 @@ class CudaApriltagDetector
 
             //ROS_INFO_STREAM("t.translation = " << t.translation << " t.rotation = " << t.rotation);
             return t;
-
         }
 
         void imageCallback (const sensor_msgs::ImageConstPtr &image_rect)
         {
-
             if (!caminfovalid)
             {
                 ROS_WARN_STREAM("Waiting for camera info");
@@ -322,7 +306,6 @@ class CudaApriltagDetector
             }
 
             pub_.publish(msg_detections);
-
         }
 
     private:
@@ -370,7 +353,6 @@ int main(int argc, char **argv)
         ROS_ERROR("tag_ids not specified");
         return -1;
     }
-
 
     ros::Subscriber camera_info_sub_ = nh.subscribe(camera_info, 1, camera_info_callback);
 
