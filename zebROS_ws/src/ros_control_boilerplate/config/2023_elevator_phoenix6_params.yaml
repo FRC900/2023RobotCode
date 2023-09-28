@@ -1,6 +1,7 @@
 elevator_controller_2023:
     type: elevator_controller_2023/ElevatorController_2023_Phoenix6
 
+    #elevator_joint: [ 'elevator_leader']
     elevator_joint: [ 'elevator_leader', 'elevator_follower']
     fourbar_joint: 'four_bar'
 
@@ -14,15 +15,17 @@ elevator_controller_2023:
     four_bar_diagonal_bar_length: 0.243
     four_bar_intake_length: 0.22
 
-    arb_feed_forward_high: 0.04
-    arb_feed_forward_low: 0.03
+    arb_feed_forward_high: 0.4
+    arb_feed_forward_low: 0.37
 
     arb_feed_forward_angle: 0.01
     straight_up_angle: 0.52
     
-    motion_magic_velocity: 3.0 # could be 3.5 or 3 
-    motion_magic_acceleration: 7.0 # could be 9.0 or 7
-    motion_s_curve_strength: 8 # Maps to v6 motion magic jerk value
+    # Think I heard skipping at this speed at the start of a path
+    # but needs more testing
+    motion_magic_velocity: 1.5 # could be 3.5 or 3 
+    motion_magic_acceleration: 3.0 # could be 9.0 or 7
+    motion_s_curve_strength: 10.0 # Maps to v6 motion magic jerk value
 
     # How quickly the elevator moves down when zeroing itself
     elevator_zeroing_percent_output: -0.2 # TODO : tune me
@@ -37,8 +40,8 @@ elevator_controller_2023:
         type: talon_controllers/TalonFXProControllerInterface 
         joint: elevator_leader
         close_loop_values:
-            - {kP: 2.88, kI: 0.000, kD: 0.00, kV: 0.12, kS: 0}
-        invert_output: clockwise_positive
+            - {kP: 550, kI: 0.000, kD: 0.00, kV: 20, kS: 0}
+        invert: clockwise_positive
 
         # linear position along 
         #conversion_factor: 0.00626535
@@ -59,6 +62,8 @@ elevator_controller_2023:
 
         neutral_deadband: 0.001
 
+        neutral_mode: Brake
+
         dynamic_reconfigure: True
 
     elevator_follower: 
@@ -66,4 +71,5 @@ elevator_controller_2023:
 
         #invert_output: counterclockwise_positive
         control_oppose_master_direction: True
-        dynamic_reconfigure: false
+        neutral_mode: Brake
+        dynamic_reconfigure: False

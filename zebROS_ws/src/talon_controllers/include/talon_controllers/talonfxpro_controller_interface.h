@@ -8,6 +8,7 @@
 #include "ctre_interfaces/talon_state_types.h"
 #endif
 #include "ctre_interfaces/talonfxpro_command_interface.h"
+#include "ddr_updater/ddr_updater.h"
 
 // Define a function which reads and returns something from
 // the talon's state buffer
@@ -26,10 +27,6 @@
         return fxpro_fn(); \
     }
 
-namespace ddr_updater
-{
-    class DDRUpdater;
-}
 
 /*
 There are several paths used to set config values
@@ -515,7 +512,7 @@ private:
     bool readParams(ros::NodeHandle &n, TalonFXProCIParams &params);
     void writeParamsToHW(TalonFXProCIParams &params, hardware_interface::talonfxpro::TalonFXProCommandHandle &talon);
 
-    std::shared_ptr<ddr_updater::DDRUpdater> ddr_updater_;
+    std::unique_ptr<ddr_updater::DDRUpdater> ddr_updater_;
 
 protected:
     TalonFXProCIParams params_;

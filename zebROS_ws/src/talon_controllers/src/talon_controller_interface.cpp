@@ -1626,7 +1626,9 @@ bool TalonControllerInterface::init(hardware_interface::TalonCommandInterface *t
     // Read params from startup and intialize Talon using them
     TalonCIParams params;
     if (!readParams(n, params))
+    {
         return false;
+    }
     ROS_WARN("init past readParams");
 
     talon = tci->getHandle(params.joint_name_);

@@ -4,7 +4,7 @@
 	<!-- GDB functionality -->
 	<arg name="debug" default="false" />
 	<arg unless="$(arg debug)" name="launch_prefix" value="" />
-	<arg     if="$(arg debug)" name="launch_prefix" value="valgrind " />
+	<arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args " />
 
 
 	<arg name="hw_or_sim" default="hw" />
@@ -23,8 +23,8 @@
 		<!--
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_params.yaml" command="load"/>
-		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_phoenix6_params.yaml" command="load"/>
 		-->
+		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_phoenix6_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_phoenix6_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_angle_swerve_tuning.yaml" command="load"/>
 		
@@ -44,6 +44,7 @@
 		<!-- Load controller manager-->
 		<node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
 			output="screen" args="spawn
+			 elevator_controller_2023
 			 four_bar_controller_2023
 			 joint_state_controller_jetson
 			 joint_state_listener_controller
@@ -59,7 +60,6 @@
 		<!--
 		 	 intake_talonfxpro_controller
 			 swerve_drive_controller
-			 elevator_controller_2023
 
 				intake_controller
 			 pigeon2_imu_state_controller

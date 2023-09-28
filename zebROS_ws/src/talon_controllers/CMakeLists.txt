@@ -6,12 +6,12 @@ include ("../cmake_modules/CMakeOpt.cmake")
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
   controller_interface
+  ctre_interfaces
   dynamic_reconfigure
   ddr_updater
   message_generation
   realtime_tools
   roscpp
-  ctre_interfaces
   talon_controller_msgs
   pluginlib
 )
@@ -23,6 +23,7 @@ catkin_package(
   CATKIN_DEPENDS
     controller_interface
 	  ctre_interfaces
+    ddr_updater
 	  ddynamic_reconfigure
 	  message_runtime
     realtime_tools
@@ -48,7 +49,10 @@ add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
 )
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+INTERFACE
+-Wl,--whole-archive ${catkin_LIBRARIES} -Wl,--no-whole-archive # Hack needed to make sure all symbols from .a files are pulled into resulting .o
+)
 
 add_library(orchestra_controller src/orchestra_controller.cpp)
 target_link_libraries(orchestra_controller ${catkin_LIBRARIES})

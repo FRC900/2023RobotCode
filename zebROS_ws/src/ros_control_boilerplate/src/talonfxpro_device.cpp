@@ -1234,9 +1234,9 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                      motion_magic_acceleration,
                                      motion_magic_jerk))
     {
-        config.MotionMagic.MotionMagicCruiseVelocity = motion_magic_cruise_velocity * state_->getSensorToMechanismRatio() / (2.0 * M_PI);
-        config.MotionMagic.MotionMagicAcceleration = motion_magic_acceleration * state_->getSensorToMechanismRatio() / (2.0 * M_PI);
-        config.MotionMagic.MotionMagicJerk = motion_magic_jerk * state_->getSensorToMechanismRatio() /  (2.0 * M_PI);
+        config.MotionMagic.MotionMagicCruiseVelocity = motion_magic_cruise_velocity;
+        config.MotionMagic.MotionMagicAcceleration = motion_magic_acceleration;
+        config.MotionMagic.MotionMagicJerk = motion_magic_jerk;
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.MotionMagic), "GetConfigurator().Apply(config.MotionMagic)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " MotionMagic " << config.MotionMagic);
@@ -1355,6 +1355,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
     {
         if (control_changed)
         {
+            //ROS_INFO_STREAM("curr_robot_enabled = " << (int)curr_robot_enabled << " control_changed = " << control_changed);
             bool success = true; // only update state_ on a successful SetControl call
             switch (control_mode)
             {
@@ -1798,11 +1799,11 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         // debugging. Don't actually write them to the physical
         // Talons until the robot is re-enabled, though.
         updateControlStatus(false);
+        // call resetMode() to queue up a change back to the correct mode / outputs / etc
+        // when the robot switches from disabled back to enabled
+        command_->resetControl();
         if (prev_robot_enabled)
         {
-            // call resetMode() to queue up a change back to the correct mode / outputs / etc
-            // when the robot switches from disabled back to enabled
-            command_->resetControl();
             // Set the mode to Disabled to indicate the code knows the robot is disabled
             // This is a hack to avoid having everything also subscribe to match data to
             // figure out if the robot is enabled or not

@@ -102,7 +102,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ddr_updater
+  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS ddynamic_reconfigure
 #  DEPENDS system_lib
 )
