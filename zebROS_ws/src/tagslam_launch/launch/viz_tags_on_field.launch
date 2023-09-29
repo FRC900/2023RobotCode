@@ -1,8 +1,8 @@
 <launch>
 
-  <arg name="model" default="'$(find frcrobot_description)/urdf/2024_field.urdf' "/>
+  <arg name="model" default="'$(find frcrobot_description)/urdf/2024_field.urdf'"/>
   <arg name="gui" default="false" />
-  <arg name="rvizconfig" default="$(find four_bar_elevator_2023)/rviz/urdf.rviz"/>
+  <arg name="rvizconfig" default="$(find tagslam_launch)/rviz/tagslam_wfield.rviz"/>
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
   <node name="fake_sensors_node" pkg="fake_sensors" type="talon_state_republisher" output="screen"/>
@@ -19,5 +19,10 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 	<node pkg="tf" type="static_transform_publisher" name="link_basetomap" args="0 0 0 0 0 0 1 map base_link 10" />
+  <!--tagslam_viz visualize_tags.launch tag_id_file:=$HOME/.ros/poses.yaml
+  <include file="$(find tagslam_viz)/launch/visualize_tags.launch">
+    <arg name="tag_id_file" value="/home/ubuntu/.ros/poses.yaml" />
+  </include>-->
+
 
 </launch>
