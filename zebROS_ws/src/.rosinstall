@@ -32,6 +32,10 @@
     local-name: stage_ros
     uri: https://github.com/FRC900/stage_ros
 - git:
+    local-name: tagslam_root
+    uri: https://github.com/berndpfrommer/tagslam_root
+    version: master
+- git:
     local-name: teraranger
     uri: https://github.com/Terabee/teraranger-release.git
     version: release/melodic/teraranger/2.1.0-1
