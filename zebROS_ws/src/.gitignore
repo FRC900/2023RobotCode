@@ -21,6 +21,7 @@ rplidar_ros
 sick_tim
 stage_ros
 steered_wheel_base_controller
+tagslam_root
 teleop_twist_joy
 teraranger
 teraranger_array
