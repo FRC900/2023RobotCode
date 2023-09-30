@@ -37,7 +37,7 @@ class CANCoderCIParams : public ddr_updater::DDRUpdater
 		const std::map<std::string, int> absolute_sensor_range_enum_map_ =
 		{
 			{"Unsigned_0To1", static_cast<int>(hardware_interface::cancoder::AbsoluteSensorRange::Unsigned_0To1)},
-			{"igned_PlusMinusHalf", static_cast<int>(hardware_interface::cancoder::AbsoluteSensorRange::Signed_PlusMinusHalf)}
+			{"Signed_PlusMinusHalf", static_cast<int>(hardware_interface::cancoder::AbsoluteSensorRange::Signed_PlusMinusHalf)}
 		};
 
 		template <typename T>

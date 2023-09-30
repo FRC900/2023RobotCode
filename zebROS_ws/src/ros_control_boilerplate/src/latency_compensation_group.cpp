@@ -199,13 +199,15 @@ void LatencyCompensationGroup::read(void)
     std::unique_lock<std::mutex> l(read_state_mutex_, std::try_to_lock);
     if (l.owns_lock())
     {
+        // Copy from the most recent value read from hardware
+        // into the state buffer accessable by the rest of the code
         for (const auto &entry : entries_)
         {
             ros::Time timestamp;
             double value;
             double slope;
             read_thread_state_->getEntry(entry.first, timestamp, value, slope);
-            state_->getEntry(entry.first, timestamp, value, slope);
+            state_->setEntry(entry.first, timestamp, value, slope);
         }
     }
 }

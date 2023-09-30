@@ -35,11 +35,11 @@ public:
     LatencyCompensationGroup(const LatencyCompensationGroup &) = delete;
     LatencyCompensationGroup(LatencyCompensationGroup &&other) noexcept = delete;
     virtual ~LatencyCompensationGroup();
-    void registerInterfaces(hardware_interface::latency_compensation::CTRELatencyCompensationStateInterface &state_interface);
 
     LatencyCompensationGroup &operator=(const LatencyCompensationGroup &) = delete;
     LatencyCompensationGroup &operator=(LatencyCompensationGroup &&) noexcept = delete;
 
+    void registerInterfaces(hardware_interface::latency_compensation::CTRELatencyCompensationStateInterface &state_interface);
     void read(void);
 
 private:
