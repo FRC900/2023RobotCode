@@ -1,41 +1,33 @@
-# 2022 TODO Set correct values for robot TODO TODO    TODO TODO  TODO TODO
 swerve_drive_controller:
     type: talon_swerve_drive_controller/TalonFXProSwerveDriveController
 
     speed: ['speed_joint_fl', 'speed_joint_fr', 'speed_joint_bl', 'speed_joint_br']
     steering: ['steering_joint_fl', 'steering_joint_fr', 'steering_joint_bl', 'steering_joint_br']
     publish_cmd: True
-    publish_odometry_to_base_transform: true
+    publish_odometry_to_base_transform: True
     pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
     twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
 
     wheel_radius: 0.050 # m
     cmd_vel_timout: 0.5
-    max_speed: 5.75 # TODO
-    max_accel: 1.8 # TODO
-    max_brake_accel: 2.5 # TODO
-    ang_accel_conv: 2.0
-    max_rotational_vel: 10 # TODO
+    max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
 
     # TODO : multiplied ctre5 values by 12v/ 100% output as a guess, need to verify
+    # f_s is static feedfoward - the is the min motor output used by
+    # the speed motors to overcome static friction
     f_s: 0.228
+    # Small amount of power given to motors to get the swerve to coast to a 
+    # stop rather than snapping on brake mode immediately
     stopping_ff: 0.228
-    f_a: 0.005 #use torque curve instead? TODO: FIX
+
+    # TODO - currently not used, but perhaps map to kV / kA values 
+    # passed to the motor controller
+    f_a: 0.005
     f_v: 0.0379
 
-    #TODO: FIX BELOW!!!!
-    f_s_s: 0.05
-    f_s_v: 0.07
-
-    #consider adding stuff for the steering wheels too
-    mass: 70 # TODO 2022 Update
-    motor_free_speed: 5840
-    motor_stall_torque: 1.4
-    motor_quantity: 4
-    invert_wheel_angle: False
+    # TODO : move this into sensor_to_mechanism_ratio for Falcons
     ratio_encoder_to_rotations: 0.148148148 # Test me, will show up in odom results
-    ratio_motor_to_rotations: 1 # TODO?
-    ratio_motor_to_steering: 1 # TODO?
+
     encoder_drive_get_V_units: 1
     encoder_drive_set_V_units: 1
     encoder_drive_get_P_units: 1
@@ -59,15 +51,13 @@ swerve_drive_controller:
         voltage_closed_loop_ramp_period: 0.25
         dynamic_reconfigure: True
         neutral_mode: Brake
+        forward_limit_enable: False
+        reverse_limit_enable: False
         #neutral_deadband: 0.01
     speed_joint_fr:
         joint: fr_drive
         close_loop_values:
             - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
-        #invert_output: Counterclockwise_positive
-        #feedback_type: IntegratedSensor
-        voltage_compensation_enable: True
-        voltage_compensation_saturation: 12
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25
         #current_limit_peak_msec: 50
@@ -75,15 +65,14 @@ swerve_drive_controller:
         voltage_closed_loop_ramp_period: 0.25
         dynamic_reconfigure: True
         neutral_mode: "Brake"
+        forward_limit_enable: False
+        reverse_limit_enable: False
         #neutral_deadband: 0.01
     speed_joint_bl:
-        joint: bl_drive #fix pid
+        joint: bl_drive
         close_loop_values:
             - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
-        #invert_output: Counterclockwise_positive
         #feedback_type: IntegratedSensor
-        voltage_compensation_enable: True
-        voltage_compensation_saturation: 12
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25
         #current_limit_peak_msec: 50
@@ -91,15 +80,14 @@ swerve_drive_controller:
         voltage_closed_loop_ramp_period: 0.25
         dynamic_reconfigure: True
         neutral_mode: "Brake"
+        forward_limit_enable: False
+        reverse_limit_enable: False
         #neutral_deadband: 0.01
     speed_joint_br:
-        joint: br_drive #fix pid
+        joint: br_drive
         close_loop_values:
             - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
-        #invert_output: Counterclockwise_positive
         #feedback_type: IntegratedSensor
-        voltage_compensation_enable: True
-        voltage_compensation_saturation: 12
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25
         #current_limit_peak_msec: 50
@@ -107,6 +95,8 @@ swerve_drive_controller:
         voltage_closed_loop_ramp_period: 0.25
         dynamic_reconfigure: True
         neutral_mode: "Brake"
+        forward_limit_enable: False
+        reverse_limit_enable: False
         #neutral_deadband: 0.01
     steering_joint_fl:
         joint: fl_angle
@@ -119,6 +109,8 @@ swerve_drive_controller:
         motion_magic_cruise_velocity: 45
         motion_magic_acceleration: 153.3
         motion_magic_jerk: 350.0
+        forward_limit_enable: False
+        reverse_limit_enable: False
         dynamic_reconfigure: True
     steering_joint_fr:
         joint: fr_angle
@@ -131,11 +123,13 @@ swerve_drive_controller:
         motion_magic_cruise_velocity: 45
         motion_magic_acceleration: 153.3
         motion_magic_jerk: 350.0
+        forward_limit_enable: False
+        reverse_limit_enable: False
         dynamic_reconfigure: True
     steering_joint_br:
         joint: br_angle
         feedback_sensor_source: RemoteCANCoder
-        remote_feedback_device_id0: 12
+        remote_feedback_device_id0: 14
         close_loop_values:
             - {kP: 54, kI: 0.000, kD: 0.0, f: 1.23, kS: 0}
         invert: clockwise_positive
@@ -143,6 +137,8 @@ swerve_drive_controller:
         motion_magic_cruise_velocity: 45
         motion_magic_acceleration: 153.3
         motion_magic_jerk: 350.0
+        forward_limit_enable: False
+        reverse_limit_enable: False
         dynamic_reconfigure: True
     steering_joint_bl:
         joint: bl_angle
@@ -156,4 +152,6 @@ swerve_drive_controller:
         motion_magic_cruise_velocity: 45
         motion_magic_acceleration: 153.3
         motion_magic_jerk: 350.0
+        forward_limit_enable: False
+        reverse_limit_enable: False
         dynamic_reconfigure: True

@@ -44,7 +44,6 @@
 #include <nav_msgs/Odometry.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <realtime_tools/realtime_publisher.h>
-#include <std_msgs/Bool.h>
 #include <std_srvs/Empty.h>
 #include <std_srvs/SetBool.h>
 #include <tf/tfMessage.h>
@@ -104,7 +103,7 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	// TODO : see if model_, driveRatios, units can be local instead of member vars
 	// If either parameter is not available, we need to look up the value in the URDF
 	//bool lookup_wheel_coordinates = !controller_nh.getParam("wheel_coordinates", wheel_coordinates_);
-	if (!controller_nh.getParam("wheel_radius", wheel_radius_))
+	if (!controller_nh.getParam("wheel_radius", model_.wheelRadius))
 	{
 		ROS_ERROR("talon_swerve_drive_controller : could not read wheel_radius");
 		return false;
@@ -119,40 +118,10 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 		ROS_ERROR("talon_swerve_drive_controller : could not read max_speed");
 		return false;
 	}
-	if (!controller_nh.getParam("mass", model_.mass))
-	{
-		ROS_ERROR("talon_swerve_drive_controller : could not read mass");
-		return false;
-	}
-	if (!controller_nh.getParam("motor_free_speed", model_.motorFreeSpeed))
-	{
-		ROS_ERROR("talon_swerve_drive_controller : could not read motor_free_speed");
-		return false;
-	}
-	if (!controller_nh.getParam("motor_stall_torque", model_.motorStallTorque))
-	{
-		ROS_ERROR("talon_swerve_drive_controller : could not read motor_stall_torque");
-		return false;
-	}
-	// TODO : why not just use the number of wheels read from yaml?
-	if (!controller_nh.getParam("motor_quantity", model_.motorQuantity))
-	{
-		ROS_ERROR("talon_swerve_drive_controller : could not read motor_quantity");
-		return false;
-	}
+
 	if (!controller_nh.getParam("ratio_encoder_to_rotations", driveRatios_.encodertoRotations))
 	{
 		ROS_ERROR("talon_swerve_drive_controller : could not read ratio_encoder_to_rotations");
-		return false;
-	}
-	if (!controller_nh.getParam("ratio_motor_to_rotations", driveRatios_.motortoRotations))
-	{
-		ROS_ERROR("talon_swerve_drive_controller : could not read ratio_motor_to_rotations");
-		return false;
-	}
-	if (!controller_nh.getParam("ratio_motor_to_steering", driveRatios_.motortoSteering)) // TODO : not used
-	{
-		ROS_ERROR("talon_swerve_drive_controller : could not read ratio_motor_to_steering");
 		return false;
 	}
 	if (!controller_nh.getParam("encoder_drive_get_V_units", units_.rotationGetV))
@@ -198,16 +167,6 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	if (!controller_nh.getParam("f_v", f_v_))
 	{
 		ROS_ERROR("Could not read f_v in talon swerve drive controller");
-		return false;
-	}
-	if (!controller_nh.getParam("f_s_v", f_s_v_))
-	{
-		ROS_ERROR("Could not read f_s_v in talon swerve drive controller");
-		return false;
-	}
-	if (!controller_nh.getParam("f_s_s", f_s_s_))
-	{
-		ROS_ERROR("Could not read f_s_s in talon swerve drive controller");
 		return false;
 	}
 	if (!controller_nh.getParam("stopping_ff", stopping_ff_))
@@ -296,8 +255,8 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	model.motorFreeSpeed = 5330;
 	model.motorStallTorque = 2.41;
 	model.motorQuantity = 4;
-	*/
 	model_.wheelRadius = wheel_radius_;
+	*/
 
 	/*
 	swerveVar::ratios driveRatios({20, 7, 7});
@@ -665,7 +624,7 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 		// to linear distance using wheel radius and drive ratios
 		const double new_wheel_rot = speed_joints_[k].getPosition();
 		const double delta_rot     = new_wheel_rot - last_wheel_rot_[k];
-		const double dist          = delta_rot * wheel_radius_ * driveRatios_.encodertoRotations;
+		const double dist          = delta_rot * model_.wheelRadius * driveRatios_.encodertoRotations;
 
 		// Get the offset-corrected steering angle
 		const double steer_angle = swerveC_->getWheelAngle(k, steer_angles[k]);
@@ -1094,9 +1053,6 @@ std::atomic<bool> reset_odom_{false};
 /// Publish executed commands
 std::unique_ptr<realtime_tools::RealtimePublisher<geometry_msgs::TwistStamped>> cmd_vel_pub_;
 
-/// Wheel radius (assuming it's the same for the left and right wheels):
-double wheel_radius_{};
-
 swerveVar::driveModel model_;
 
 swerveVar::ratios driveRatios_;
@@ -1105,11 +1061,9 @@ swerveVar::encoderUnits units_;
 
 // Feed forward terms
 double f_s_{0};
+double stopping_ff_{0};
 double f_a_{0};
 double f_v_{0};
-double f_s_v_{0};
-double f_s_s_{0};
-double stopping_ff_{0};
 /// Timeout to consider cmd_vel commands old:
 double cmd_vel_timeout_{0.5};
 

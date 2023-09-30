@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include "talon_state_msgs/TalonState.h"
-#include "talon_state_msgs/TalonConfig.h"
 #include <fstream>
 #include <angles/angles.h>
 
