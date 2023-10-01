@@ -35,7 +35,6 @@ public:
     void setTalonFXData(const std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &talonfxs);
 
 private:
-    double read_hz_{100};
     std::vector<std::unique_ptr<TalonOrchestraDevice<SIMFLAG>>> devices_;
     std::unique_ptr<hardware_interface::OrchestraStateInterface> state_interface_;
     std::unique_ptr<hardware_interface::OrchestraCommandInterface> command_interface_;

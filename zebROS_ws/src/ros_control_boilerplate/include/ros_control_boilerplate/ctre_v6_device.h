@@ -1,3 +1,8 @@
+// Base class for all devices using the CTREv6 API
+// Provides utility functions for error checking as well
+// as a function used to hook devices up to other CTREv6
+// devices (for example, setting up a Falcon500 as an 
+// orchestra instrument)
 #ifndef CTRE_V6_DEVICE_INC__
 #define CTRE_V6_DEVICE_INC__
 

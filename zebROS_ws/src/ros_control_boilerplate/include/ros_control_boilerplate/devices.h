@@ -1,3 +1,19 @@
+// Base class for all devices classes.  This provides a common interface
+// to the hardware interface as well as defaults for required functions.
+// Derived classes implementing code specific to a type of device
+// will derive from the class and override those functions needed
+// to provide support for the device.
+// A typical devices class will store a vector holding a device class.
+// The devices code will parse joint list param and create device instances for
+// all of the defined device of that type.
+// The read and write functions (and sim and hw variants) are responsible
+// for iterating through each device and calling the appropriate functions
+// to set the device state from hardware / write the command buffer out to hardware.
+// Each device class instance will hold a buffer for device state and commands,
+// as well as the interface glue code needed for controllers to access them.
+// It'll also have the details of communicating with hardware, typically
+// by creating and storing a device object for that type.
+// Individual device types might add more as needed.
 #ifndef INC_DEVICES_H__
 #define INC_DEVICES_H__
 
@@ -38,6 +54,7 @@ public:
     // Used to signal that all controllers are finished loading
     static void signalReady(void) { ready_ = true; }
 
+    // Updates the robot's enable/disable state
     static void setEnabled(const bool enabled) { enabled_ = enabled; }
 
 protected:

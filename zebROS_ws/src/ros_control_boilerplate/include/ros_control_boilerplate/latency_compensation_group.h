@@ -1,3 +1,11 @@
+// This is a device which creates a set of CTREv6 sensor signals
+// For each signal, both the value and slope are stored
+// (for example, both position and velocity) along with
+// the timestamp of the most recent sensor reading.  Reads
+// of all sensors in a group are synchronized.
+// Using the timestamp plus slope, a linear approximation
+// can be applied to compensate for latency between
+// reading and using the signals.
 #ifndef LATENCY_COMPENSATION_GROUP_INC__
 #define LATENCY_COMPENSATION_GROUP_INC__
 
