@@ -14,7 +14,14 @@
 
 		<!-- Load controller settings -->
 		<!-- These need to be replaced with the real thing -->
-		<rosparam file="$(find ros_control_boilerplate)/config/2023_turret_params.yaml" command="load"/>
+		<group if="$(eval arg('hw_or_sim')=='hw')">
+			<rosparam file="$(find ros_control_boilerplate)/config/2023_turret_params.yaml" command="load"/>
+		</group>
+		
+		<group if="$(eval arg('hw_or_sim')=='sim')">
+			<rosparam file="$(find ros_control_boilerplate)/config/2023_turret_params_SIM_ONLY.yaml" command="load"/>
+		</group>	
+
 		<rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_rio.yaml" command="load"/>
 
 		<!-- Load hardware interface -->
@@ -31,6 +38,9 @@
 			output="screen" args="spawn turret_controller_2023 
 			talon_state_controller joint_state_controller_rio match_state_controller 
 			robot_code_ready_controller" />
+
+		<!-- Run rqt driver station for sim-->
+		<node name="driversim" pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" screen="true"/>
 
 	</group>
 </launch>

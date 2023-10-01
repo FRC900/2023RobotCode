@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="model" default="$(find urdf_tutorials)/urdf/06-flexible.urdf"/>
+  <arg name="model" default="$(find turret_2023)/urdf/turret.xacro"/>
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find four_bar_elevator_2023)/rviz/urdf.rviz"/>
 
