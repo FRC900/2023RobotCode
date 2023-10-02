@@ -1,4 +1,3 @@
-
 #include <pluginlib/class_list_macros.h> //to compile as a controller
 #include <angles/angles.h>
 
@@ -81,7 +80,7 @@ class TurretController : public controller_interface::MultiInterfaceController<h
         }
 
         void update(const ros::Time & time, const ros::Duration& period) {
-            ROS_INFO_STREAM_THROTTLE(0.001, "Moving turret to " << position_command_);
+            ROS_INFO_STREAM_THROTTLE(0.5, "Moving turret to " << position_command_);
             if (turret_joint_.getMode() == hardware_interface::TalonMode_Disabled)
             {
                 if (turret_joint_.getPosition() != position_command_) {
