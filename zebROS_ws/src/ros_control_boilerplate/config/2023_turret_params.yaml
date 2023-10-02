@@ -35,8 +35,7 @@ hardware_interface:
 turret_controller_2023:
     type: turret_controller/TurretController
     cancoder_offset_from_0: 0
-    fourbar_joint: 'four_bar'
-
+    
     dynamic_reconfigure: true
     lower_angle_bound: -2.0
     upper_angle_bound: 2.0
@@ -51,6 +50,10 @@ turret_controller_2023:
 
         sensor_phase: False 
         invert_output: True
+
+        # THIS MAY MAKE 0 SENSE IN REAL LIFE
+        motion_cruise_velocity: 1
+        motion_acceleration: 1
 
         # linear position along 
         conversion_factor: 0.000061187

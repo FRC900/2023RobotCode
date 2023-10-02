@@ -56,8 +56,12 @@ class TalonStateRepublisher
             {
                 msgOut.name.push_back("joint2");
                 msgOut.position.push_back(0 - *four_bar_angle);
+                msgOut.velocity.push_back(0);
+                msgOut.effort.push_back(0);
                 msgOut.name.push_back("joint1");
                 msgOut.position.push_back(*four_bar_angle);
+                msgOut.velocity.push_back(0);
+                msgOut.effort.push_back(0);
             }
         }
 
