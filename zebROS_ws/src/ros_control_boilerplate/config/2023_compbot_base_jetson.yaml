@@ -43,7 +43,7 @@ hardware_interface:
        
        #- {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        #- {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
-       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, local: true}
+       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, can_id: 0, local: true}
        - {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        - {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
        - {name: four_bar, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
@@ -56,6 +56,7 @@ hardware_interface:
        - {name: robot_code_ready_rio, local: false, type: ready} # Probably not really needed?
 
        - {name: babys_first_orchestra, type: orchestra, id: 1}
+       - {name: turret_joint, type: can_talon_fx, can_bus: CANivore, can_id: 60, local: true}
 
        - {name: candle1, can_id: 0, can_bus: CANivore, type: candle, local: true}
 

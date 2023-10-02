@@ -1,36 +1,3 @@
-generic_hw_control_loop:
-  loop_hz: 100
-  cycle_time_error_threshold: 0.01
-  canifier_read_hz: 100
-  cancoder_read_hz: 100
-  #some processes have lower frequencies than the main control loop
-  ctre_mc_read_hz: 100
-  pcm_read_hz: 20
-  pdh_read_hz: 20
-  pdp_read_hz: 20
-  ph_read_hz: 20
-  robot_iteration_hz: 20
-  spark_max_read_hz: 100
-  joystick_read_hz: 50
-  match_data_read_hz: 2
-  robot_controller_read_hz: 20
-  as726x_read_hz: 7
-
-
-# Settings for ros_control hardware interface
-# Map a name for each valid joint to a CAN id
-# For future expansion, change hw_id to specify one
-# of several types of HW interface : CAN_id, PWM_id, DIO_id, AIO_id, etc.
-hardware_interface:
-
-   joints:
-       # add mechanisms here
-       - {name: turret_joint, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
-       - {name: robot_code_ready_rio, local: false, type: ready}
-       # JETSON CODE READY COMMENTED OUT HERE
-       #- {name: robot_code_ready_jetson, local: true, type: ready}
-       - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, can_id: 0, local: true}
-
 
 turret_controller_2023:
     type: turret_controller/TurretController
