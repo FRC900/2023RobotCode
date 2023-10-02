@@ -54,4 +54,20 @@
     </visual>
   </link>
 
+  <joint name="to_robot" type="fixed">
+    <parent link="base_link"/>
+    <child link="robot_chassis"/>
+    <origin xyz="0.0 0 0.0"/>
+  </joint>
+
+  <link name="robot_chassis">
+    <parent link="base_link"/>
+    <visual>
+      <origin rpy="0.0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://turret_2023/meshes/900_2023_NO_ELEVATOR.dae"/>
+      </geometry>
+    </visual>
+  </link>
+
 </robot>
