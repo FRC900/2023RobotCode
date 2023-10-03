@@ -17,30 +17,6 @@ bool CANCoderController::init(hardware_interface::cancoder::CANCoderCommandInter
 
 	auto cancoder_handle = hw->getHandle(joint_name);
 	interface_ = std::make_unique<cancoder_controller_interface::CANCoderControllerInterface>(controller_nh, joint_name, cancoder_handle);
-
-	/* 
-	std::string initialization_strategy;
-	hardware_interface::cancoder::SensorInitializationStrategy strategy = hardware_interface::cancoder::SensorInitializationStrategy::BootToAbsolutePosition;
-
-	if (controller_nh.getParam("initialization_strategy", initialization_strategy))
-	{	
-		if (initialization_strategy == "boot_to_zero")
-		{
-			strategy = hardware_interface::cancoder::SensorInitializationStrategy::BootToZero;
-		}
-		else if (initialization_strategy == "boot_to_absolute_position")
-		{
-			strategy = hardware_interface::cancoder::SensorInitializationStrategy::BootToAbsolutePosition;
-		}
-		else
-		{
-			ROS_ERROR_STREAM("cancoder controller - invalid initialization_strategy param");
-		}
-	}
-
-	interface_->setInitializationStrategy(strategy);
-	*/
-
 	return true;
 }
 
