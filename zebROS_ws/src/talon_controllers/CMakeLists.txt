@@ -11,10 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   ddynamic_reconfigure
   ddr_updater
   message_generation
+  pluginlib
   realtime_tools
   roscpp
   talon_controller_msgs
-  pluginlib
 )
 
 generate_dynamic_reconfigure_options(cfg/TalonConfig.cfg)
@@ -51,8 +51,6 @@ target_link_libraries(talon_controller_interface
 add_library(${PROJECT_NAME}
   src/talon_controller.cpp
   src/talonfxpro_controller.cpp
-  #src/talon_controller_interface.cpp
-  #src/talonfxpro_controller_interface.cpp
 )
 
 ## Add cmake target dependencies of the executable

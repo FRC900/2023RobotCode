@@ -140,7 +140,12 @@ using TalonFXProVelocityTorqueCurrentFOCController = TalonFXProCloseLoopControll
 using TalonFXProMotionMagicDutyCycleController = TalonFXProCloseLoopController<TalonFXProMotionMagicDutyCycleControllerInterface, &TalonFXProMotionMagicDutyCycleControllerInterface::setControlPosition>;
 using TalonFXProMotionMagicVoltageController = TalonFXProCloseLoopController<TalonFXProMotionMagicVoltageControllerInterface, &TalonFXProMotionMagicVoltageControllerInterface::setControlPosition>;
 using TalonFXProMotionMagicTorqueCurrentFOCController = TalonFXProCloseLoopController<TalonFXProMotionMagicTorqueCurrentFOCControllerInterface, &TalonFXProMotionMagicTorqueCurrentFOCControllerInterface::setControlPosition>;
-
+using TalonFXProMotionMagicVelocityDutyCycleController = TalonFXProCloseLoopController<TalonFXProMotionMagicVelocityDutyCycleControllerInterface, &TalonFXProMotionMagicVelocityDutyCycleControllerInterface::setControlPosition>;
+using TalonFXProMotionMagicVelocityVoltageController = TalonFXProCloseLoopController<TalonFXProMotionMagicVelocityVoltageControllerInterface, &TalonFXProMotionMagicVelocityVoltageControllerInterface::setControlPosition>;
+using TalonFXProMotionMagicVelocityTorqueCurrentFOCController = TalonFXProCloseLoopController<TalonFXProMotionMagicVelocityTorqueCurrentFOCControllerInterface, &TalonFXProMotionMagicVelocityTorqueCurrentFOCControllerInterface::setControlPosition>;
+using TalonFXProDynamicMotionMagicDutyCycleController = TalonFXProCloseLoopController<TalonFXProDynamicMotionMagicDutyCycleControllerInterface, &TalonFXProDynamicMotionMagicDutyCycleControllerInterface::setControlPosition>;
+using TalonFXProDynamicMotionMagicVoltageController = TalonFXProCloseLoopController<TalonFXProDynamicMotionMagicVoltageControllerInterface, &TalonFXProDynamicMotionMagicVoltageControllerInterface::setControlPosition>;
+using TalonFXProDynamicMotionMagicTorqueCurrentFOCController = TalonFXProCloseLoopController<TalonFXProDynamicMotionMagicTorqueCurrentFOCControllerInterface, &TalonFXProDynamicMotionMagicTorqueCurrentFOCControllerInterface::setControlPosition>;
 // Follower controller sets up a Talon to mirror the actions
 // of another talon. This talon is defined by joint name in
 // params/yaml config.
@@ -193,7 +198,6 @@ using TalonFXProStrictFollowerController = TalonFXProFollowerControllerBase<Talo
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProDutyCycleOutController,
 					   controller_interface::ControllerBase)
 
-#if 0
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProTorqueCurrentFOCController,
 					   controller_interface::ControllerBase)
 
@@ -227,11 +231,26 @@ PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicVoltageContr
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicTorqueCurrentFOCController,
 					   controller_interface::ControllerBase)
 
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicVelocityDutyCycleController,
+					   controller_interface::ControllerBase)
+
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicVelocityVoltageController,
+					   controller_interface::ControllerBase)
+
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicVelocityTorqueCurrentFOCController,
+					   controller_interface::ControllerBase)
+
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProDynamicMotionMagicDutyCycleController,
+					   controller_interface::ControllerBase)
+
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProDynamicMotionMagicVoltageController,
+					   controller_interface::ControllerBase)
+
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProDynamicMotionMagicTorqueCurrentFOCController,
+					   controller_interface::ControllerBase)
+
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProFollowerController,
 					   controller_interface::ControllerBase)
 
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProStrictFollowerController,
-					   controller_interface::ControllerBase)
-#endif
-PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicVoltageController,
 					   controller_interface::ControllerBase)
