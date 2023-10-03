@@ -474,7 +474,7 @@ private :
 	double set_position_{0};
 	bool set_position_changed_{false};
 
-	TalonMode control_mode_{TalonMode::Disabled}; 
+	TalonMode control_mode_{TalonMode::CoastOut}; 
 	double control_output_{0.0};
 	double control_position_{0.0};
 	double control_velocity_{0.0};

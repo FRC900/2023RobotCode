@@ -547,11 +547,12 @@ public:
     TalonFXProFixedModeControllerInterface &operator=(const TalonFXProFixedModeControllerInterface &other) = delete;
     TalonFXProFixedModeControllerInterface &operator=(TalonFXProFixedModeControllerInterface &&other) noexcept = delete;
 
+    virtual void setControlMode(const hardware_interface::talonfxpro::TalonMode mode) override;
+    virtual void setControlJerk(const double control_jerk) override;
+
 protected:
     // Disable changing mode for controllers derived from this class
-    void setControlMode(hardware_interface::talonfxpro::TalonMode /*mode*/) override;
-    bool setInitialControlMode(void) override;
-    virtual void setControlJerk(const double control_jerk) override;
+    virtual bool setInitialControlMode(void) override;
 };
 
 // A derived class which emits a warning on potentially invalid control output calls
@@ -567,8 +568,9 @@ public:
     TalonFXProPositionControllerInterface &operator=(const TalonFXProPositionControllerInterface &other) = delete;
     TalonFXProPositionControllerInterface &operator=(TalonFXProPositionControllerInterface &&other) noexcept = delete;
 
-    void setControlOutput(const double control_output) override;
-    void setControlAcceleration(const double control_acceleration) override;
+    virtual void setControlMode(const hardware_interface::talonfxpro::TalonMode mode) override;
+    virtual void setControlOutput(const double control_output) override;
+    virtual void setControlAcceleration(const double control_acceleration) override;
 };
 
 // A derived class which emits a warning on potentially invalid control output calls
@@ -584,8 +586,8 @@ public:
     TalonFXProVelocityControllerInterface &operator=(const TalonFXProVelocityControllerInterface &other) = delete;
     TalonFXProVelocityControllerInterface &operator=(TalonFXProVelocityControllerInterface &&other) noexcept = delete;
 
-    void setControlOutput(const double control_output) override;
-    void setControlPosition(const double control_position) override;
+    virtual void setControlOutput(const double control_output) override;
+    virtual void setControlPosition(const double control_position) override;
 };
 
 // Derived classes which emits a warning on potentially invalid control output calls
@@ -601,9 +603,9 @@ public:
     TalonFXProMotionMagicControllerInterface &operator=(const TalonFXProMotionMagicControllerInterface &other) = delete;
     TalonFXProMotionMagicControllerInterface &operator=(TalonFXProMotionMagicControllerInterface &&other) noexcept = delete;
 
-    void setControlOutput(const double control_output) override;
-    void setControlVelocity(const double control_velocity) override;
-    void setControlAcceleration(const double control_acceleration) override;
+    virtual void setControlOutput(const double control_output) override;
+    virtual void setControlVelocity(const double control_velocity) override;
+    virtual void setControlAcceleration(const double control_acceleration) override;
 };
 
 template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
@@ -618,9 +620,9 @@ public:
     TalonFXProMotionMagicVelocityControllerInterface &operator=(const TalonFXProMotionMagicVelocityControllerInterface &other) = delete;
     TalonFXProMotionMagicVelocityControllerInterface &operator=(TalonFXProMotionMagicVelocityControllerInterface &&other) noexcept = delete;
 
-    void setControlOutput(const double control_output) override;
-    void setControlPosition(const double control_position) override;
-    void setControlAcceleration(const double control_acceleration) override;
+    virtual void setControlOutput(const double control_output) override;
+    virtual void setControlPosition(const double control_position) override;
+    virtual void setControlAcceleration(const double control_acceleration) override;
 };
 
 template<typename hardware_interface::talonfxpro::TalonMode TALON_MODE, const char *TALON_MODE_NAME>
@@ -635,8 +637,8 @@ public:
     TalonFXProDynamicMotionMagicControllerInterface &operator=(const TalonFXProDynamicMotionMagicControllerInterface &other) = delete;
     TalonFXProDynamicMotionMagicControllerInterface &operator=(TalonFXProDynamicMotionMagicControllerInterface &&other) noexcept = delete;
 
-    void setControlOutput(const double control_output) override;
-    void setControlJerk(const double control_jerk) override;
+    virtual void setControlOutput(const double control_output) override;
+    virtual void setControlJerk(const double control_jerk) override;
 };
 
 extern const char DUTY_CYCLE_NAME[];
@@ -672,6 +674,9 @@ using TalonFXProMotionMagicTorqueCurrentFOCControllerInterface = TalonFXProMotio
 using TalonFXProMotionMagicVelocityDutyCycleControllerInterface = TalonFXProMotionMagicVelocityControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle, MOTION_MAGIC_DUTY_CYCLE_NAME>;
 using TalonFXProMotionMagicVelocityVoltageControllerInterface = TalonFXProMotionMagicVelocityControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityVoltage, MOTION_MAGIC_VOLTAGE_NAME>;
 using TalonFXProMotionMagicVelocityTorqueCurrentFOCControllerInterface = TalonFXProMotionMagicVelocityControllerInterface<hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityTorqueCurrentFOC, MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME>;
+using TalonFXProDynamicMotionMagicDutyCycleControllerInterface = TalonFXProDynamicMotionMagicControllerInterface<hardware_interface::talonfxpro::TalonMode::DynamicMotionMagicDutyCycle, DYNAMIC_MOTION_MAGIC_DUTY_CYCLE_NAME>;
+using TalonFXProDynamicMotionMagicVoltageControllerInterface = TalonFXProDynamicMotionMagicControllerInterface<hardware_interface::talonfxpro::TalonMode::DynamicMotionMagicVoltage, DYNAMIC_MOTION_MAGIC_VOLTAGE_NAME>;
+using TalonFXProDynamicMotionMagicTorqueCurrentFOCControllerInterface = TalonFXProDynamicMotionMagicControllerInterface<hardware_interface::talonfxpro::TalonMode::DynamicMotionMagicTorqueCurrentFOC, DYNAMIC_MOTION_MAGIC_TORQUE_CURRENT_FOC_NAME>;
 
 template <bool STRICT>
 class TalonFXProFollowerControllerInterfaceBase : public TalonFXProControllerInterface
@@ -689,7 +694,7 @@ public:
                       ros::NodeHandle &n) override;
 
     // Disable changing mode for controllers derived from this class
-    void setControlMode(hardware_interface::talonfxpro::TalonMode /*mode*/) override;
+    void setControlMode(const hardware_interface::talonfxpro::TalonMode /*mode*/) override;
 
     // Disable all of these since followers can't set their control output
     void setControlOutput(const double /*control_output*/) override;

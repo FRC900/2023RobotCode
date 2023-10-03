@@ -15,15 +15,8 @@
 
 	<group ns="frcrobot_jetson">
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson.yaml" command="load"/>
-		<!--
-		<rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive.yaml" command="load"/>
-		-->
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive_phoenix6.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_offsets.yaml" command="load"/>
-		<!--
-		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_params.yaml" command="load"/>
-		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_params.yaml" command="load"/>
-		-->
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_phoenix6_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_four_bar_phoenix6_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_angle_swerve_tuning.yaml" command="load"/>
@@ -46,6 +39,7 @@
 			output="screen" args="spawn
 			 elevator_controller_2023
 			 four_bar_controller_2023
+		 	 intake_talonfxpro_controller
 			 swerve_drive_controller
 			 joint_state_controller_jetson
 			 joint_state_listener_controller
@@ -59,10 +53,8 @@
 			 orchestra_state_controller
 			 robot_code_ready_controller" />
 		<!--
-		 	 intake_talonfxpro_controller
-
-				intake_controller
 			 pigeon2_imu_state_controller
+			 pigeon2_state_controller
 		-->
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />
@@ -92,7 +84,6 @@
 	-->
 	</group>
 
-<!-- KCJ
 	<include file="$(find teleop_joystick_control)/launch/2023_snap_to_angle.launch"/>
 	<include file="$(find controller_node)/launch/teleop.launch">
 		<arg name="year" value="2023" />
@@ -105,7 +96,6 @@
 		</node>
 	</group>
 	
-	-->
 <!-- KCJ
 	<include file="$(find controller_node)/launch/hold_position.launch"/>
 	<include file="$(find controller_node)/launch/path_follower.launch"/>

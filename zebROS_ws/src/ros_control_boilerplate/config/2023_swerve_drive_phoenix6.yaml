@@ -103,11 +103,11 @@ swerve_drive_controller:
         feedback_sensor_source: RemoteCANCoder
         feedback_remote_sensor_id: 11
         close_loop_values:
-            - {kP: 54, kI: 0.000, kD: 0.0, f: 1.23, kS: 0}
+            - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
         invert: clockwise_positive
         #neutral_deadband: 0.01
-        motion_magic_cruise_velocity: 45
-        motion_magic_acceleration: 153.3
+        motion_magic_cruise_velocity: 5.0
+        motion_magic_acceleration: 50.0
         motion_magic_jerk: 350.0
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -117,11 +117,11 @@ swerve_drive_controller:
         feedback_sensor_source: RemoteCANCoder
         remote_feedback_device_id0: 12
         close_loop_values:
-            - {kP: 54, kI: 0.000, kD: 0.0, f: 1.23, kS: 0}
+            - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
         invert: clockwise_positive
         #neutral_deadband: 0.01
-        motion_magic_cruise_velocity: 45
-        motion_magic_acceleration: 153.3
+        motion_magic_cruise_velocity: 5.0
+        motion_magic_acceleration: 50.0
         motion_magic_jerk: 350.0
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -131,11 +131,11 @@ swerve_drive_controller:
         feedback_sensor_source: RemoteCANCoder
         remote_feedback_device_id0: 14
         close_loop_values:
-            - {kP: 54, kI: 0.000, kD: 0.0, f: 1.23, kS: 0}
+            - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
         invert: clockwise_positive
         #neutral_deadband: 0.01
-        motion_magic_cruise_velocity: 45
-        motion_magic_acceleration: 153.3
+        motion_magic_cruise_velocity: 5.0
+        motion_magic_acceleration: 50.0
         motion_magic_jerk: 350.0
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -146,12 +146,30 @@ swerve_drive_controller:
         remote_feedback_device_id0: 13
         #neutral_deadband: 0.01
         close_loop_values:
-            - {kP: 54, kI: 0.000, kD: 0.0, f: 1.23, kS: 0}
+            - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
         invert: clockwise_positive
         neutral_deadband: 0.01
-        motion_magic_cruise_velocity: 45
-        motion_magic_acceleration: 153.3
+        motion_magic_cruise_velocity: 5.0
+        motion_magic_acceleration: 50.0
         motion_magic_jerk: 350.0
         forward_limit_enable: False
         reverse_limit_enable: False
         dynamic_reconfigure: True
+
+# Stand-alone controller used to tune PID constants
+swerve_angle_phoenix6_controller:
+    type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
+    joint: bl_angle
+    feedback_sensor_source: RemoteCANCoder
+    remote_feedback_device_id0: 13
+    #neutral_deadband: 0.01
+    close_loop_values:
+        - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
+    invert: clockwise_positive
+    neutral_deadband: 0.01
+    motion_magic_cruise_velocity: 5.0
+    motion_magic_acceleration: 50.0
+    motion_magic_jerk: 350.0
+    forward_limit_enable: False
+    reverse_limit_enable: False
+    dynamic_reconfigure: True

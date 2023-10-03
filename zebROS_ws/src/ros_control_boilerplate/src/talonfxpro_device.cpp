@@ -1778,7 +1778,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                 }
                 break;
             default:
-                ROS_ERROR_STREAM("Unknown control_mode " << static_cast<int>(control_mode) << " in talonfxpro write()");
+                ROS_ERROR_STREAM("Unknown control_mode " << static_cast<int>(control_mode) << " in talonfxpro write() for motor " << getName());
                 success = false;
                 break;
             } // switch(control_mode)

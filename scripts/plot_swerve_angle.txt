@@ -1,0 +1,6 @@
+
+rosrun rqt_plot rqt_plot \
+	/frcrobot_jetson/talonfxpro_states/position[1] \
+	/frcrobot_jetson/talonfxpro_states/velocity[1] \
+	/frcrobot_jetson/talonfxpro_states/closed_loop_reference[1] \
+	/frcrobot_jetson/talonfxpro_states/closed_loop_reference_slope[1]

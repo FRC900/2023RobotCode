@@ -193,6 +193,7 @@ using TalonFXProStrictFollowerController = TalonFXProFollowerControllerBase<Talo
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProDutyCycleOutController,
 					   controller_interface::ControllerBase)
 
+#if 0
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProTorqueCurrentFOCController,
 					   controller_interface::ControllerBase)
 
@@ -230,4 +231,7 @@ PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProFollowerController,
 					   controller_interface::ControllerBase)
 
 PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProStrictFollowerController,
+					   controller_interface::ControllerBase)
+#endif
+PLUGINLIB_EXPORT_CLASS(talonfxpro_controllers::TalonFXProMotionMagicVoltageController,
 					   controller_interface::ControllerBase)

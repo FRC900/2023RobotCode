@@ -7,7 +7,7 @@
  *  are met:
  *
  *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
+ *     notice, this listweof conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
@@ -53,7 +53,7 @@
 #include <talon_controllers/talon_controller_interface.h>
 #include <talon_controllers/talonfxpro_controller_interface.h>
 
-#include "talon_swerve_drive_controller/SetXY.h"
+#include "talon_swerve_drive_controller_msgs/SetXY.h"
 #include <talon_swerve_drive_controller/Swerve.h>
 
 namespace talon_swerve_drive_controller
@@ -810,7 +810,7 @@ void cmdVelCallback(const geometry_msgs::Twist &command)
 	}
 }
 
-bool changeCenterOfRotationService(talon_swerve_drive_controller::SetXY::Request& req, talon_swerve_drive_controller::SetXY::Response &/*res*/)
+bool changeCenterOfRotationService(talon_swerve_drive_controller_msgs::SetXY::Request& req, talon_swerve_drive_controller_msgs::SetXY::Response &/*res*/)
 {
 	if(this->isRunning())
 	{
