@@ -1085,7 +1085,7 @@ inline static const std::string DEF_BASE_FRAME{"base_link"};
 static constexpr double DEF_INIT_X{0};
 static constexpr double DEF_INIT_Y{0};
 static constexpr double DEF_INIT_YAW{0};
-static constexpr double DEF_SD{0.01};
+static constexpr double DEF_SD{0.05};
 
 std::array<Eigen::Vector2d, WHEELCOUNT> wheel_coords_;
 

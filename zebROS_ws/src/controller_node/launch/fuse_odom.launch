@@ -6,14 +6,23 @@
 -->
 
 <launch>
+
+	<node name="override_covariance_zed" pkg="controller_node" type="override_covariance.py" output="screen">
+		<param name="topic" value="/zed_objdetect/odom"/>
+		<param name="standard_deviation" value="0.5"/>
+	</node>
+	<node name="override_covariance_odom" pkg="controller_node" type="override_covariance.py" output="screen">
+		<param name="topic" value="/frcrobot_jetson/swerve_drive_controller/odom"/>
+		<param name="standard_deviation" value="1.0"/>
+	</node>
 	<node name="swerve_imu_ekf_node" pkg="robot_localization" type="ekf_localization_node" output="screen"> 
 		<param name="cmd_vel" value="/frcrobot_jetson/swerve_drive_controller/cmd_vel_out"/>
 		<param name="use_control" value="true"/>
-		<rosparam param="control_config">[true,  true, true,
-                                  true, true, true]</rosparam>
+		<rosparam param="control_config"> [true, true, true,
+                                          false, false, false]</rosparam>
 
 		<param name="frequency" value="100" />
-		<param name="sensor_timeout" value="0.025" />
+		<param name="sensor_timeout" value="0.05" />
 		<!-- 
 			Change the frame parametrs when re-localization
 			is implementated
@@ -30,7 +39,7 @@
 
 		<param name="smooth_lagged_data" value="false" />
 
-		<param name="dynamic_process_noise_covariance" value="true" />
+		<param name="dynamic_process_noise_covariance" value="false" />
 
 		<!--
 			Sensor Configuration:
@@ -50,10 +59,10 @@
 			 have significant net motion in those directions 
 			 (unless we are tipping over) and even so, do
 			 we want to trust the navx data instead? -->
-		<param name="odom0" value="/frcrobot_jetson/swerve_drive_controller/odom" />
-		<rosparam param="odom0_config"> [false,  false,  false,
+		<param name="odom0" value="/frcrobot_jetson/swerve_drive_controller/odom_overridden" />
+		<rosparam param="odom0_config"> [true,  true,  false,
                                          false, false, false, 
-                                         true, true, false,
+                                         false, false, false,
                                          false, false, false,
                                          false, false, false]
         </rosparam>
@@ -75,13 +84,25 @@
 		<param name="imu0_relative"     value="false" />
 		<param name="imu0_nodelay"      value="true" />
 		<param name="imu0_remove_gravitational_acceleration" value="false" />
+<!-- 
+		<param name="imu1" value="/zed_objdetect/imu/data" />
+		<rosparam param="imu1_config"> [false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]
+        </rosparam>
+		<param name="imu1_differential" value="false"/>
+		<param name="imu1_relative"     value="true" />
+		<param name="imu1_nodelay"      value="true" />
+		<param name="imu1_remove_gravitational_acceleration" value="false" /> -->
 		
 		<param name="print_diagnostics" value="true"/>
 		<param name="debug" value="true"/>
 		
 
 		<!-- ZED -->
-		<param name="odom1" value="/zed_objdetect/odom" />
+		<param name="odom1" value="/zed_objdetect/odom_overridden" />
 		<rosparam param="odom1_config"> [true,  true,  false,
                                          false, false, false, 
                                          false, false, false,
@@ -92,21 +113,22 @@
 		<param name="odom1_relative"     value="true" />
 		<param name="odom1_nodelay"      value="true" />
 
-        <rosparam param="process_noise_covariance"> [0.2, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0.2, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,  0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0.005, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0.005, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0.005, 0,     0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0.025, 0,     0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0.025, 0,    0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0, 0,    0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0.001, 0,    0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.001, 0,    0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.001, 0,    0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
-                                                    0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]
+		<!-- x, y, z, r, p, y, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az --> 
+        <rosparam param="process_noise_covariance"> [0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0.03, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0.06, 0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0.025, 0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0.025, 0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0.04, 0,    0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.02, 0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
+                           0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]
         </rosparam>
 	</node>
 </launch>
