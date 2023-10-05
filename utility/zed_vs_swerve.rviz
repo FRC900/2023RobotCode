@@ -8,11 +8,15 @@ Panels:
         - /Status1
         - /Odometry1
         - /Odometry1/Shape1
+        - /Odometry1/Covariance1
+        - /Odometry1/Covariance1/Position1
         - /Odometry2
         - /Odometry2/Shape1
+        - /Odometry2/Covariance1
         - /Odometry3
         - /Odometry3/Shape1
         - /Odometry3/Covariance1
+        - /Odometry3/Covariance1/Position1
         - /Axes1
       Splitter Ratio: 0.5
     Tree Height: 812
@@ -69,10 +73,10 @@ Visualization Manager:
           Frame: Local
           Offset: 1
           Scale: 1
-          Value: true
+          Value: false
         Position:
           Alpha: 0.30000001192092896
-          Color: 204; 51; 204
+          Color: 204; 51; 0
           Scale: 1
           Value: true
         Value: true
@@ -91,7 +95,7 @@ Visualization Manager:
         Shaft Length: 0.10000000149011612
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /frcrobot_jetson/swerve_drive_controller/odom
+      Topic: /frcrobot_jetson/swerve_drive_controller/odom_overridden
       Unreliable: false
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -104,7 +108,7 @@ Visualization Manager:
           Frame: Local
           Offset: 1
           Scale: 1
-          Value: true
+          Value: false
         Position:
           Alpha: 0.30000001192092896
           Color: 204; 51; 204
@@ -126,7 +130,7 @@ Visualization Manager:
         Shaft Length: 0.10000000149011612
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /zed_objdetect/odom
+      Topic: /zed_objdetect/odom_overridden
       Unreliable: false
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -142,7 +146,7 @@ Visualization Manager:
           Value: false
         Position:
           Alpha: 0.30000001192092896
-          Color: 204; 51; 204
+          Color: 0; 51; 204
           Scale: 1
           Value: true
         Value: true
@@ -201,7 +205,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.964529037475586
+      Distance: 8.701510429382324
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -217,9 +221,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.45979642868042
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 2.1204004287719727
+      Yaw: 3.0504088401794434
     Saved: ~
 Window Geometry:
   Displays:

@@ -7,13 +7,36 @@
 
 <launch>
 
+	<node pkg="tf2_ros" type="static_transform_publisher" name="link_zedodomtoodom" args="0 0 0 0 0 0 1 zed_objdet_odom odom" />
+	<node name="override_covariance_imu" pkg="controller_node" type="override_covariance.py" output="screen">
+		<param name="topic" value="/imu/zeroed_imu"/>
+		<param name="type" value="Imu"/>
+		<param name="standard_deviation/x_rotation" value="0.005"/>
+		<param name="standard_deviation/y_rotation" value="0.005"/>
+		<param name="standard_deviation/z_rotation" value="0.005"/>
+		<param name="standard_deviation/x_acceleration" value="0.2"/>
+		<param name="standard_deviation/y_acceleration" value="0.2"/>
+		<param name="standard_deviation/z_acceleration" value="0.2"/>
+	</node>
 	<node name="override_covariance_zed" pkg="controller_node" type="override_covariance.py" output="screen">
 		<param name="topic" value="/zed_objdetect/odom"/>
-		<param name="standard_deviation" value="0.5"/>
+		<param name="type" value="Odometry"/>
+		<param name="standard_deviation/x" value="0.1"/>
+		<param name="standard_deviation/y" value="0.1"/>
+		<param name="standard_deviation/z" value="0.1"/>
+		<param name="standard_deviation/x_rotation" value="10"/>
+		<param name="standard_deviation/y_rotation" value="10"/>
+		<param name="standard_deviation/z_rotation" value="10"/>
 	</node>
 	<node name="override_covariance_odom" pkg="controller_node" type="override_covariance.py" output="screen">
 		<param name="topic" value="/frcrobot_jetson/swerve_drive_controller/odom"/>
-		<param name="standard_deviation" value="1.0"/>
+		<param name="type" value="Odometry"/>
+		<param name="standard_deviation/x" value="0.02"/>
+		<param name="standard_deviation/y" value="0.02"/>
+		<param name="standard_deviation/z" value="0.02"/>
+		<param name="standard_deviation/x_rotation" value="10"/>
+		<param name="standard_deviation/y_rotation" value="10"/>
+		<param name="standard_deviation/z_rotation" value="10"/>
 	</node>
 	<node name="swerve_imu_ekf_node" pkg="robot_localization" type="ekf_localization_node" output="screen"> 
 		<param name="cmd_vel" value="/frcrobot_jetson/swerve_drive_controller/cmd_vel_out"/>
@@ -21,8 +44,8 @@
 		<rosparam param="control_config"> [true, true, true,
                                           false, false, false]</rosparam>
 
-		<param name="frequency" value="100" />
-		<param name="sensor_timeout" value="0.05" />
+		<param name="frequency" value="250" />
+		<param name="sensor_timeout" value="10000000.0" />
 		<!-- 
 			Change the frame parametrs when re-localization
 			is implementated
@@ -66,19 +89,19 @@
                                          false, false, false,
                                          false, false, false]
         </rosparam>
-		<param name="odom0_differential" value="false" />
+		<param name="odom0_differential" value="true" />
 		<param name="odom0_relative"     value="false" />
 		<param name="odom0_nodelay"      value="true" />
 
 		<!-- imu0 (IMU attached to Jetson via USB): 
 			 roll, pitch, yaw, x-acc, y-acc, z-acc -->
 		<!-- probably won't use roll or pitch but no harm fusing them -->
-		<param name="imu0" value="/imu/zeroed_imu" />
+		<param name="imu0" value="/imu/zeroed_imu_overridden" />
 		<rosparam param="imu0_config"> [false, false, false,
                                         true, true, true,
                                         false, false, false,
                                         false, false, false,
-                                        false, false, false]
+                                        true, true, true]
         </rosparam>
 		<param name="imu0_differential" value="false"/>
 		<param name="imu0_relative"     value="false" />
@@ -114,9 +137,9 @@
 		<param name="odom1_nodelay"      value="true" />
 
 		<!-- x, y, z, r, p, y, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az --> 
-        <rosparam param="process_noise_covariance"> [0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                           0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                           0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+        <rosparam param="process_noise_covariance"> [0.2, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0.2, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0,    0.0, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0,    0.03, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0,    0,    0.06, 0,     0,     0,    0,    0,    0,    0,    0,    0,
