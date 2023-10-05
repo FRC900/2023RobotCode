@@ -1,19 +1,32 @@
 #! /usr/bin/env python3
 
-
 import rospy
 from dynamic_reconfigure.client import Client
 from dynamic_reconfigure.msg import ConfigDescription
-
-
 
 class Joints:
     speed_option = False
     steering_option = False
 
 joints = Joints()
+joints.steering_option = rospy.get_param('/reconfigure_client/steering_option')
+joints.speed_option = rospy.get_param('/reconfigure_server/speed_option')
+
+
+#switch statement poss:
+#device = rospy.get_param('/node_name/mode') # node_name/argsname
+#
+var = 0 
+speed_param = 0
+steering_param = 0
+#steering_param = rospy.get_param('/talon_reconfigure_client_dynamic/steering_option)
+#speed_param = rospy.get_param('/talon_reconfigure_client_dynamic/speed_option)
 
 #setting up speed stuff for the speed joints
+
+
+
+
 if joints.speed_option == True:
 
     speed_fr = Client('/frcrobot_jetson/swerve_drive_controller/speed_joint_fr')
@@ -55,7 +68,8 @@ def handle_config_changes(config_dict): #callback for the subscriber cases
 
 
 def main():
-    rospy.init_node('my_node')
+    
+    rospy.init_node('talon_reconfigure_client_dynamic')
     #subscribes to the first parameter rostopic, should appear on rostopic list
     rospy.Subscriber('/talon_reconfigure_server/parameter_updates', ConfigDescription, handle_config_changes)
     #subscribes to the first parameter rostopic, should appear on rostopic list

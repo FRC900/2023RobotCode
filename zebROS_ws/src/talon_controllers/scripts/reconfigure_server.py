@@ -34,7 +34,7 @@
 #********************************************************************/
 
 
-#rearrange the reconfigure srever and client in a manner such that case switches may be implmeented based on args passed
+#rearrange the reconfigure server and client in a manner such that case switches may be implemented based on args passed
 
 
 
@@ -49,7 +49,8 @@ from talon_controllers.cfg import TalonConfigConfig
 import time
 
 
-
+#switch statement poss:
+#device = rospy.get_param('/node_name/mode') # node_name/argsname
 
 
 
@@ -61,6 +62,19 @@ class Joints:
     
 
 joints = Joints()
+joints.steering_option = rospy.get_param('/reconfigure_client/steering_option')
+joints.speed_option = rospy.get_param('/reconfigure_server/speed_option')
+
+
+var = 0
+speed_param = 0
+steering_param = 0
+#steering_param = rospy.get_param('/talon_reconfigure_server_dynamic/steering_param')
+#speed_param = rospy.get_param('/talon_reconfigure_server_dynamic/speed_param')
+
+
+
+
 
 if joints.steering_option == True:
     Joints.steering_joints.append(DynamicReconfigureClient('/frcrobot_jetson/swerve_drive_controller/steering_joint_fr', timeout=5))
@@ -118,7 +132,7 @@ def reconfigure(config, level):
 #actaulyll find the updates on these joints
 
 def main():
-    rospy.init_node("talon_reconfigure_server")
+    rospy.init_node("talon_reconfigure_server_dynamic")
     
     dynamic_reconfigure.server.Server(TalonConfigConfig, reconfigure)
     #creates server for the reconfigure server.
