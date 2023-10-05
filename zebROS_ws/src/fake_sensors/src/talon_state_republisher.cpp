@@ -66,7 +66,7 @@ class TalonStateRepublisher
                     msgOut.position.push_back(angles::normalize_angle_positive(msgIn->position[i] - br_offset));
                 }
                 else if(msgIn->name[i]=="fl_angle") {
-                    msgOut.position.push_backangles::normalize_angle_positive(msgIn->position[i] - fl_offset));
+                    msgOut.position.push_back(angles::normalize_angle_positive(msgIn->position[i] - fl_offset));
                 }
                 else if(msgIn->name[i]=="fr_angle") {
                     msgOut.position.push_back(angles::normalize_angle_positive(msgIn->position[i] - fr_offset));

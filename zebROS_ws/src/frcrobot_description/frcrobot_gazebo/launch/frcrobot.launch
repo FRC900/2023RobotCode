@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-	<param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/urdf/frcrobot.xacro" />
+	<param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/y2023_urdf/robot.urdf" />
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
