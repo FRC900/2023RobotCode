@@ -2,6 +2,7 @@
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
+from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 
 rospy.init_node('override_covariance', anonymous=True)
 
@@ -9,11 +10,25 @@ topic = rospy.get_param("~topic")
 
 standard_deviation_names = ["x", "y", "z", "x_rotation", "y_rotation", "z_rotation", "x_velocity", "y_velocity", "z_velocity", "x_acceleration", "y_acceleration", "z_acceleration"]
 
+ddr = DDynamicReconfigure(f"{topic}/covariances")
+
 variances = {}
 for name in standard_deviation_names:
     if rospy.has_param(f"~standard_deviation/{name}"):
         stdev = float(rospy.get_param(f"~standard_deviation/{name}"))
         variances[name] = stdev * stdev
+        ddr.add_variable(name, f"Variance for {name}", variances[name], 0.0, 10.0)
+
+def dyn_rec_callback(config, level):
+    rospy.loginfo("Received reconf call: " + str(config))
+    # Update all variables
+    var_names = ddr.get_variable_names()
+    for var_name in var_names:
+        if var_name in variances:
+            variances[var_name] = config[var_name]
+    return config
+
+ddr.start(dyn_rec_callback)
 
 string_type = rospy.get_param("~type") # Imu or Odometry currently
 

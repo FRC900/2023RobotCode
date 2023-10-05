@@ -91,10 +91,10 @@ Visualization Manager:
         Axes Length: 1
         Axes Radius: 0.10000000149011612
         Color: 255; 25; 0
-        Head Length: 0.10000000149011612
-        Head Radius: 0.10000000149011612
-        Shaft Length: 0.10000000149011612
-        Shaft Radius: 0.05000000074505806
+        Head Length: 0.05000000074505806
+        Head Radius: 0.05000000074505806
+        Shaft Length: 0.05000000074505806
+        Shaft Radius: 0.019999999552965164
         Value: Arrow
       Topic: /frcrobot_jetson/swerve_drive_controller/odom_overridden
       Unreliable: false
@@ -126,10 +126,10 @@ Visualization Manager:
         Axes Length: 1
         Axes Radius: 0.10000000149011612
         Color: 0; 25; 255
-        Head Length: 0.10000000149011612
-        Head Radius: 0.10000000149011612
-        Shaft Length: 0.10000000149011612
-        Shaft Radius: 0.05000000074505806
+        Head Length: 0.05000000074505806
+        Head Radius: 0.05000000074505806
+        Shaft Length: 0.05000000074505806
+        Shaft Radius: 0.019999999552965164
         Value: Arrow
       Topic: /zed_objdetect/odom_overridden
       Unreliable: false
@@ -161,10 +161,10 @@ Visualization Manager:
         Axes Length: 1
         Axes Radius: 0.10000000149011612
         Color: 0; 255; 0
-        Head Length: 0.10000000149011612
-        Head Radius: 0.10000000149011612
-        Shaft Length: 0.10000000149011612
-        Shaft Radius: 0.05000000074505806
+        Head Length: 0.05000000074505806
+        Head Radius: 0.05000000074505806
+        Shaft Length: 0.05000000074505806
+        Shaft Radius: 0.019999999552965164
         Value: Arrow
       Topic: /abc/odometry/filtered
       Unreliable: false
@@ -206,7 +206,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.6716818809509277
+      Distance: 7.45912504196167
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
