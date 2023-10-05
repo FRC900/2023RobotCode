@@ -137,8 +137,8 @@
 		<param name="odom1_nodelay"      value="true" />
 
 		<!-- x, y, z, r, p, y, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az --> 
-        <rosparam param="process_noise_covariance"> [0.2, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
-                           0,    0.2, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+        <rosparam param="process_noise_covariance"> [0.1, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                           0,    0.1, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0.0, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0,    0.03, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
