@@ -13,6 +13,7 @@ Panels:
         - /Odometry2
         - /Odometry2/Shape1
         - /Odometry2/Covariance1
+        - /Odometry2/Covariance1/Position1
         - /Odometry3
         - /Odometry3/Shape1
         - /Odometry3/Covariance1
@@ -111,7 +112,7 @@ Visualization Manager:
           Value: false
         Position:
           Alpha: 0.30000001192092896
-          Color: 204; 51; 204
+          Color: 0; 51; 204
           Scale: 1
           Value: true
         Value: true
@@ -146,7 +147,7 @@ Visualization Manager:
           Value: false
         Position:
           Alpha: 0.30000001192092896
-          Color: 0; 51; 204
+          Color: 51; 204; 51
           Scale: 1
           Value: true
         Value: true
@@ -205,7 +206,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.701510429382324
+      Distance: 2.6716818809509277
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
