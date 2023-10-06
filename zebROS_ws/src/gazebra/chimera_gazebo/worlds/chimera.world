@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://y2023/y2023_urdf/robot.urdf</uri>
+    </include>
+  </world>
+</sdf>

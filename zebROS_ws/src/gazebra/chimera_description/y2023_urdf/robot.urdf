@@ -9,22 +9,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/central_chassis_visual.stl"/>
+<mesh filename="package:///central_chassis_visual.stl"/>
 </geometry>
 <material name="central_chassis_material">
-<color rgba="0.59658581071440286436 0.62025664106601552383 0.63761838421033945057 1.0"/>
+<color rgba="0.59658581071440275334 0.62025664106601530179 0.63761838421033922852 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/central_chassis_collision.stl"/>
+<mesh filename="package:///central_chassis_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="-0.001927300536847842069 0.086159516777112241104 0.32950095935229994915" rpy="0 0 0"/>
-<mass value="7.7787891582795705148" />
-<inertia ixx="0.692049321943721929" ixy="0.0020725732451341667348"  ixz="-0.00019563921735655728784" iyy="0.61874181701311536941" iyz="0.11955242865535568864" izz="0.43424100425481654275" />
+<origin xyz="-0.0019273005368478602836 0.086159516777112268859 0.32950095935230000466" rpy="0 0 0"/>
+<mass value="7.7787891582795740675" />
+<inertia ixx="0.69204932194372226206" ixy="0.0020725732451341441834"  ixz="-0.00019563921735660358327" iyy="0.61874181701311536941" iyz="0.11955242865535581354" izz="0.43424100425481687582" />
 </inertial>
 </link>
 
@@ -32,22 +32,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_visual.stl"/>
+<mesh filename="package:///fixed_stage_visual.stl"/>
 </geometry>
 <material name="fixed_stage_material">
-<color rgba="0.40580203232833966798 0.41204827568168778118 0.42591498950982964455 1.0"/>
+<color rgba="0.40580203232839273664 0.41204827568174384744 0.42591498950989253869 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_collision.stl"/>
+<mesh filename="package:///fixed_stage_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.093086953924036083818 -0.0076968875686517076659 0.0064477325072258284688" rpy="0 0 0"/>
-<mass value="2.1102377118690225366" />
-<inertia ixx="0.0072740667010526031608" ixy="-0.00053724169913343608213"  ixz="0.0025793419797938564771" iyy="0.010711313332962575998" iyz="-0.00048364111010919496854" izz="0.0072293168828361700079" />
+<origin xyz="0.093086953924054083309 -0.0076968875686334835284 0.0064477325071934680698" rpy="0 0 0"/>
+<mass value="2.1102377118679833679" />
+<inertia ixx="0.0072740667010466790801" ixy="-0.00053724169913203041402"  ixz="0.0025793419797913606437" iyy="0.010711313332956690081" iyz="-0.00048364111011172229802" izz="0.0072293168828333554191" />
 </inertial>
 </link>
 
@@ -55,22 +55,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_visual.stl"/>
+<mesh filename="package:///first_stage_visual.stl"/>
 </geometry>
 <material name="first_stage_material">
-<color rgba="0.62679849529055442492 0.64535024166481924635 0.68477270271013201963 1.0"/>
+<color rgba="0.62679849529055442492 0.64535024166481913532 0.68477270271013190861 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_collision.stl"/>
+<mesh filename="package:///first_stage_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.00065761094785689354694 0.00065772624260732688497 0.013546669400210410716" rpy="0 0 0"/>
-<mass value="0.37485540355657037681" />
-<inertia ixx="0.00039226399064708553088" ixy="-8.0584943533433810604e-05"  ixz="2.2105941443719405475e-05" iyy="0.00039226841599643492335" iyz="2.2036140493595731034e-05" izz="0.0003823667674338889844" />
+<origin xyz="0.0006576109478568944143 0.00065772624260732796917 0.013546669400210403778" rpy="0 0 0"/>
+<mass value="0.37485540355657043232" />
+<inertia ixx="0.00039226399064708574772" ixy="-8.0584943533433742841e-05"  ixz="2.2105941443719435968e-05" iyy="0.00039226841599643508599" iyz="2.2036140493595741198e-05" izz="0.00038236676743388893019" />
 </inertial>
 </link>
 
@@ -78,22 +78,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_visual.stl"/>
+<mesh filename="package:///second_stage_visual.stl"/>
 </geometry>
 <material name="second_stage_material">
-<color rgba="0.43962129049865933395 0.48422362538019175782 0.58086036059590284708 1.0"/>
+<color rgba="0.43962129049865944497 0.48422362538019192435 0.58086036059590284708 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_collision.stl"/>
+<mesh filename="package:///second_stage_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="-0.00060219608071351339324 -0.0004298975173458140773 -0.025814159072832135872" rpy="0 0 0"/>
-<mass value="0.34193546654456347111" />
-<inertia ixx="0.00025919001370537067715" ixy="-4.3830553719888089097e-06"  ixz="9.5090523028358196318e-07" iyy="0.00026221580444056905804" iyz="6.770447702628630414e-07" izz="0.00043171455134411151336" />
+<origin xyz="-0.00060219608071355264136 -0.00042989751734581114996 -0.025814159072832135872" rpy="0 0 0"/>
+<mass value="0.34193546654456352663" />
+<inertia ixx="0.00025919001370537073136" ixy="-4.3830553719887962042e-06"  ixz="9.5090523028358471603e-07" iyy="0.00026221580444056911225" iyz="6.7704477026286145322e-07" izz="0.00043171455134411156757" />
 </inertial>
 </link>
 
@@ -128,22 +128,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_2_visual.stl"/>
+<mesh filename="package:///fixed_stage_2_visual.stl"/>
 </geometry>
 <material name="fixed_stage_2_material">
-<color rgba="0.40580203232833950144 0.41204827568168744811 0.42591498950982925598 1.0"/>
+<color rgba="0.40580203232839251459 0.41204827568174356989 0.42591498950989220562 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_2_collision.stl"/>
+<mesh filename="package:///fixed_stage_2_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.093086953924035972796 -0.0076968875686515818985 0.0064477325072258163258" rpy="0 0 0"/>
-<mass value="2.1102377118690238689" />
-<inertia ixx="0.0072740667010526092323" ixy="-0.00053724169913344323787"  ixz="0.0025793419797938465024" iyy="0.010711313332962589875" iyz="-0.00048364111010919952219" izz="0.0072293168828361734773" />
+<origin xyz="0.093086953924053972287 -0.0076968875686333568936 0.0064477325071934498552" rpy="0 0 0"/>
+<mass value="2.1102377118679847001" />
+<inertia ixx="0.0072740667010466868864" ixy="-0.00053724169913203713607"  ixz="0.0025793419797913485006" iyy="0.01071131333295669702" iyz="-0.0004836411101117270143" izz="0.0072293168828333545517" />
 </inertial>
 </link>
 
@@ -151,22 +151,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_2_visual.stl"/>
+<mesh filename="package:///first_stage_2_visual.stl"/>
 </geometry>
 <material name="first_stage_2_material">
-<color rgba="0.6267984952905543139 0.64535024166481913532 0.68477270271013190861 1.0"/>
+<color rgba="0.62679849529055420287 0.6453502416648190243 0.68477270271013190861 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_2_collision.stl"/>
+<mesh filename="package:///first_stage_2_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.00065761094785723344432 0.00065772624260738098666 0.01354666940021067266" rpy="0 0 0"/>
-<mass value="0.37485540355657043232" />
-<inertia ixx="0.00039226399064709111452" ixy="-8.0584943533433851261e-05"  ixz="2.2105941443718226405e-05" iyy="0.00039226841599643969384" iyz="2.2036140493596283299e-05" izz="0.00038236676743388996018" />
+<origin xyz="0.00065761094785723344432 0.00065772624260738087824 0.013546669400210662251" rpy="0 0 0"/>
+<mass value="0.37485540355657048783" />
+<inertia ixx="0.00039226399064709116873" ixy="-8.0584943533433797051e-05"  ixz="2.2105941443718250122e-05" iyy="0.00039226841599643974805" iyz="2.2036140493596303628e-05" izz="0.00038236676743388990597" />
 </inertial>
 </link>
 
@@ -174,22 +174,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_2_visual.stl"/>
+<mesh filename="package:///second_stage_2_visual.stl"/>
 </geometry>
 <material name="second_stage_2_material">
-<color rgba="0.43962129049865933395 0.48422362538019181333 0.58086036059590284708 1.0"/>
+<color rgba="0.43962129049865938946 0.48422362538019181333 0.58086036059590284708 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_2_collision.stl"/>
+<mesh filename="package:///second_stage_2_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="-0.00060219608071357768643 -0.00042989751734580974049 -0.025814159072832118524" rpy="0 0 0"/>
-<mass value="0.3419354665445634156" />
-<inertia ixx="0.00025919001370537073136" ixy="-4.3830553719887699462e-06"  ixz="9.5090523028355941092e-07" iyy="0.00026221580444056900383" iyz="6.7704477026275324476e-07" izz="0.00043171455134411162178" />
+<origin xyz="-0.00060219608071357150648 -0.00042989751734580659631 -0.025814159072832104647" rpy="0 0 0"/>
+<mass value="0.34193546654456352663" />
+<inertia ixx="0.00025919001370537067715" ixy="-4.3830553719887775695e-06"  ixz="9.5090523028352595312e-07" iyy="0.00026221580444056905804" iyz="6.7704477026275186833e-07" izz="0.00043171455134411156757" />
 </inertial>
 </link>
 
@@ -224,22 +224,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_3_visual.stl"/>
+<mesh filename="package:///fixed_stage_3_visual.stl"/>
 </geometry>
 <material name="fixed_stage_3_material">
-<color rgba="0.40580203232833939042 0.41204827568168755914 0.425914989509829367 1.0"/>
+<color rgba="0.40580203232839245908 0.41204827568174368091 0.42591498950989231664 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_3_collision.stl"/>
+<mesh filename="package:///fixed_stage_3_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="-0.092585482507225730364 -0.0073158875686516978629 0.0065682039240360272705" rpy="0 0 0"/>
-<mass value="2.1102377118690234248" />
-<inertia ixx="0.0072293168828361769468" ixy="0.00048364111010919301698"  ixz="-0.0025793419797938586455" iyy="0.010711313332962575998" iyz="-0.00053724169913343629897" izz="0.0072740667010526040281" />
+<origin xyz="-0.092585482507193353485 -0.007315887568633472858 0.0065682039240540267613" rpy="0 0 0"/>
+<mass value="2.110237711867984256" />
+<inertia ixx="0.0072293168828333580211" ixy="0.00048364111011172045487"  ixz="-0.0025793419797913610773" iyy="0.010711313332956684877" iyz="-0.00053724169913202987191" izz="0.0072740667010466799475" />
 </inertial>
 </link>
 
@@ -247,22 +247,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_3_visual.stl"/>
+<mesh filename="package:///first_stage_3_visual.stl"/>
 </geometry>
 <material name="first_stage_3_material">
-<color rgba="0.6267984952905543139 0.64535024166481913532 0.68477270271013201963 1.0"/>
+<color rgba="0.6267984952905543139 0.64535024166481924635 0.68477270271013201963 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_3_collision.stl"/>
+<mesh filename="package:///first_stage_3_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.0018255910263493997647 0.0018257063211000452811 0.013546669400209765399" rpy="0 0 0"/>
+<origin xyz="0.0018255910263494014995 0.0018257063211000476664 0.01354666940020976193" rpy="0 0 0"/>
 <mass value="0.37485540355657043232" />
-<inertia ixx="0.00039226399064707897146" ixy="-8.0584943533434339152e-05"  ixz="2.2105941443719002288e-05" iyy="0.00039226841599642858077" iyz="2.2036140493594995809e-05" izz="0.00038236676743388692441" />
+<inertia ixx="0.00039226399064707913409" ixy="-8.0584943533434298495e-05"  ixz="2.2105941443719026004e-05" iyy="0.0003922684159964287434" iyz="2.2036140493595005973e-05" izz="0.00038236676743388681599" />
 </inertial>
 </link>
 
@@ -270,22 +270,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_3_visual.stl"/>
+<mesh filename="package:///second_stage_3_visual.stl"/>
 </geometry>
 <material name="second_stage_3_material">
-<color rgba="0.43962129049865933395 0.48422362538019175782 0.58086036059590284708 1.0"/>
+<color rgba="0.43962129049865944497 0.48422362538019192435 0.58086036059590284708 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_3_collision.stl"/>
+<mesh filename="package:///second_stage_3_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="-0.00060219608071357530119 -0.00042989751734580898155 -0.025814159072832180974" rpy="0 0 0"/>
-<mass value="0.34193546654456347111" />
-<inertia ixx="0.00025919001370537089399" ixy="-4.3830553719887733343e-06"  ixz="9.509052302837354879e-07" iyy="0.00026221580444056932909" iyz="6.7704477026274106866e-07" izz="0.00043171455134411140494" />
+<origin xyz="-0.0006021960807134611347 -0.000429897517345806 -0.025814159072832170566" rpy="0 0 0"/>
+<mass value="0.34193546654456352663" />
+<inertia ixx="0.00025919001370537089399" ixy="-4.3830553719887775695e-06"  ixz="9.5090523028371526499e-07" iyy="0.0002622158044405693833" iyz="6.7704477026274000987e-07" izz="0.00043171455134411135073" />
 </inertial>
 </link>
 
@@ -320,22 +320,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_4_visual.stl"/>
+<mesh filename="package:///fixed_stage_4_visual.stl"/>
 </geometry>
 <material name="fixed_stage_4_material">
-<color rgba="0.40580203232833955695 0.41204827568168755914 0.42591498950982947802 1.0"/>
+<color rgba="0.4058020323283925701 0.41204827568174368091 0.42591498950989242767 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/fixed_stage_4_collision.stl"/>
+<mesh filename="package:///fixed_stage_4_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.092705953924035910951 0.0073158875686516709747 -0.0064477325072257538757" rpy="0 0 0"/>
-<mass value="2.1102377118690234248" />
-<inertia ixx="0.0072740667010525970892" ixy="0.00053724169913343456425"  ixz="-0.0025793419797938564771" iyy="0.010711313332962567324" iyz="-0.00048364111010919290856" izz="0.0072293168828361717426" />
+<origin xyz="0.092705953924053882687 0.0073158875686334459698 -0.0064477325071933900072" rpy="0 0 0"/>
+<mass value="2.110237711867984256" />
+<inertia ixx="0.0072740667010466738759" ixy="0.00053724169913202846245"  ixz="-0.0025793419797913593426" iyy="0.010711313332956676203" iyz="-0.00048364111011172040066" izz="0.0072293168828333493475" />
 </inertial>
 </link>
 
@@ -343,22 +343,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_4_visual.stl"/>
+<mesh filename="package:///first_stage_4_visual.stl"/>
 </geometry>
 <material name="first_stage_4_material">
-<color rgba="0.62679849529055442492 0.64535024166481924635 0.68477270271013179759 1.0"/>
+<color rgba="0.62679849529055420287 0.6453502416648190243 0.68477270271013179759 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/first_stage_4_collision.stl"/>
+<mesh filename="package:///first_stage_4_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="0.00065761094785712263886 0.00065772624260720816483 0.013546669400210601536" rpy="0 0 0"/>
-<mass value="0.37485540355657037681" />
-<inertia ixx="0.00039226399064709035558" ixy="-8.058494353343336337e-05"  ixz="2.2105941443718311109e-05" iyy="0.00039226841599643860964" iyz="2.2036140493596618724e-05" izz="0.00038236676743388930966" />
+<origin xyz="0.00065761094785712274728 0.00065772624260720914061 0.013546669400210589393" rpy="0 0 0"/>
+<mass value="0.37485540355657048783" />
+<inertia ixx="0.000392263990647090464" ixy="-8.058494353343330916e-05"  ixz="2.2105941443718321273e-05" iyy="0.00039226841599643866385" iyz="2.2036140493596635665e-05" izz="0.00038236676743388914703" />
 </inertial>
 </link>
 
@@ -366,22 +366,22 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_4_visual.stl"/>
+<mesh filename="package:///second_stage_4_visual.stl"/>
 </geometry>
 <material name="second_stage_4_material">
-<color rgba="0.43962129049865933395 0.48422362538019175782 0.58086036059590284708 1.0"/>
+<color rgba="0.43962129049865944497 0.48422362538019197986 0.58086036059590284708 1.0"/>
 </material>
 </visual>
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://frcrobot_description/y2023_urdf/second_stage_4_collision.stl"/>
+<mesh filename="package:///second_stage_4_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
-<origin xyz="-0.00060219608071350417752 -0.00042989751734580567474 -0.025814159072832139341" rpy="0 0 0"/>
-<mass value="0.34193546654456347111" />
-<inertia ixx="0.00025919001370537062294" ixy="-4.3830553719888029805e-06"  ixz="9.5090523028352669428e-07" iyy="0.00026221580444056889541" iyz="6.7704477026273461003e-07" izz="0.00043171455134411135073" />
+<origin xyz="-0.00060219608071353724569 -0.00042989751734580247634 -0.025814159072832139341" rpy="0 0 0"/>
+<mass value="0.34193546654456352663" />
+<inertia ixx="0.00025919001370537062294" ixy="-4.383055371988789428e-06"  ixz="9.509052302835286001e-07" iyy="0.00026221580444056900383" iyz="6.7704477026273386888e-07" izz="0.00043171455134411140494" />
 </inertial>
 </link>
 
