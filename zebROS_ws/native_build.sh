@@ -50,7 +50,6 @@ catkin config --skiplist \
 	controllers_2020 \
 	controllers_2020_msgs \
 	diff_drive_controller \
-	effort_controllers \
 	force_torque_sensor_controller \
 	four_wheel_steering_controller \
 	goal_detection \
@@ -75,7 +74,6 @@ catkin config --skiplist \
 	teraranger_array \
 	teraranger_array_converter \
 	turing_smart_screen \
-	velocity_controllers \
 	zed_ros \
 	$EXTRA_SKIPLIST_PACKAGES
 

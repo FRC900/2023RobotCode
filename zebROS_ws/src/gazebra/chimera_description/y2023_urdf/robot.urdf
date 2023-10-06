@@ -4,7 +4,7 @@
 <!-- I ADDED THIS-->
 <gazebo>
   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-    <robotNamespace>/frcrobot_jetson</robotNamespace>
+    <robotNamespace>/chimera</robotNamespace>
   </plugin>
 </gazebo>
 
@@ -125,16 +125,27 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<transmission name="simple_trans">
-  <type>transmission_interface/SimpleTransmission</type>
-  <joint name="left_front_angle_wheel">
-    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-  </joint>
-  <actuator name="foo_motor">
-    <mechanicalReduction>1</mechanicalReduction>
-    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-  </actuator>
-</transmission>
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_front_angle_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="left_front_drive_wheel">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor2">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
 
 <joint name="XX1_center" type="fixed">
 <origin xyz="-0.23098760000000007064 0.31750000000000000444 0.097205800000000008865" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
