@@ -2,7 +2,10 @@
 <sdf version="1.4">
   <world name="default">
     <include>
-      <uri>model://y2023/y2023_urdf/robot.urdf</uri>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://chimera_description</uri>
     </include>
   </world>
 </sdf>

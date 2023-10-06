@@ -9,7 +9,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///central_chassis_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/central_chassis_visual.stl"/>
 </geometry>
 <material name="central_chassis_material">
 <color rgba="0.59658581071440275334 0.62025664106601530179 0.63761838421033922852 1.0"/>
@@ -18,7 +18,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///central_chassis_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/central_chassis_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -32,7 +32,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_visual.stl"/>
 </geometry>
 <material name="fixed_stage_material">
 <color rgba="0.40580203232839273664 0.41204827568174384744 0.42591498950989253869 1.0"/>
@@ -41,7 +41,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -55,7 +55,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_visual.stl"/>
 </geometry>
 <material name="first_stage_material">
 <color rgba="0.62679849529055442492 0.64535024166481913532 0.68477270271013190861 1.0"/>
@@ -64,7 +64,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -78,7 +78,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_visual.stl"/>
 </geometry>
 <material name="second_stage_material">
 <color rgba="0.43962129049865944497 0.48422362538019192435 0.58086036059590284708 1.0"/>
@@ -87,7 +87,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -128,7 +128,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_2_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_2_visual.stl"/>
 </geometry>
 <material name="fixed_stage_2_material">
 <color rgba="0.40580203232839251459 0.41204827568174356989 0.42591498950989220562 1.0"/>
@@ -137,7 +137,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_2_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_2_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -151,7 +151,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_2_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_2_visual.stl"/>
 </geometry>
 <material name="first_stage_2_material">
 <color rgba="0.62679849529055420287 0.6453502416648190243 0.68477270271013190861 1.0"/>
@@ -160,7 +160,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_2_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_2_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -174,7 +174,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_2_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_2_visual.stl"/>
 </geometry>
 <material name="second_stage_2_material">
 <color rgba="0.43962129049865938946 0.48422362538019181333 0.58086036059590284708 1.0"/>
@@ -183,7 +183,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_2_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_2_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -224,7 +224,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_3_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_3_visual.stl"/>
 </geometry>
 <material name="fixed_stage_3_material">
 <color rgba="0.40580203232839245908 0.41204827568174368091 0.42591498950989231664 1.0"/>
@@ -233,7 +233,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_3_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_3_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -247,7 +247,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_3_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_3_visual.stl"/>
 </geometry>
 <material name="first_stage_3_material">
 <color rgba="0.6267984952905543139 0.64535024166481924635 0.68477270271013201963 1.0"/>
@@ -256,7 +256,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_3_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_3_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -270,7 +270,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_3_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_3_visual.stl"/>
 </geometry>
 <material name="second_stage_3_material">
 <color rgba="0.43962129049865944497 0.48422362538019192435 0.58086036059590284708 1.0"/>
@@ -279,7 +279,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_3_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_3_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -320,7 +320,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_4_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_4_visual.stl"/>
 </geometry>
 <material name="fixed_stage_4_material">
 <color rgba="0.4058020323283925701 0.41204827568174368091 0.42591498950989242767 1.0"/>
@@ -329,7 +329,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///fixed_stage_4_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/fixed_stage_4_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -343,7 +343,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_4_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_4_visual.stl"/>
 </geometry>
 <material name="first_stage_4_material">
 <color rgba="0.62679849529055420287 0.6453502416648190243 0.68477270271013179759 1.0"/>
@@ -352,7 +352,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///first_stage_4_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/first_stage_4_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -366,7 +366,7 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_4_visual.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_4_visual.stl"/>
 </geometry>
 <material name="second_stage_4_material">
 <color rgba="0.43962129049865944497 0.48422362538019197986 0.58086036059590284708 1.0"/>
@@ -375,7 +375,7 @@
 <collision>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package:///second_stage_4_collision.stl"/>
+<mesh filename="package://chimera_description/y2023_urdf/second_stage_4_collision.stl"/>
 </geometry>
 </collision>
 <inertial>
