@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="model" default="$(find frcrobot_description)/y2023_urdf/robot.urdf"/>
+  <arg name="model" default="$(find gazebra)/y2023_urdf/robot.urdf"/>
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find four_bar_elevator_2023)/rviz/urdf.rviz"/>
 

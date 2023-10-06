@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   base_trajectory_msgs
   behavior_actions
   #color_spin
-  controllers_2019_msgs
   #controllers_2020_msgs
   controllers_2022_msgs
   controllers_2023_msgs
@@ -301,10 +300,11 @@ add_executable(test_actionlib src/test_actionlib.cpp)
 target_link_libraries(test_actionlib ${catkin_LIBRARIES})
 add_dependencies(test_actionlib ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-endif()
+
 add_executable(elevator_server src/elevator_server.cpp)
 target_link_libraries(elevator_server ${catkin_LIBRARIES})
 add_dependencies(elevator_server ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+endif()
 
 #add_executable(dummy src/dummy.cpp)
 #target_link_libraries(
