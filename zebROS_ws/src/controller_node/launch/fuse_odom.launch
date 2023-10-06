@@ -31,9 +31,9 @@
 	<node name="override_covariance_odom" pkg="controller_node" type="override_covariance.py" output="screen">
 		<param name="topic" value="/frcrobot_jetson/swerve_drive_controller/odom"/>
 		<param name="type" value="Odometry"/>
-		<param name="standard_deviation/x" value="0.02"/>
-		<param name="standard_deviation/y" value="0.02"/>
-		<param name="standard_deviation/z" value="0.02"/>
+		<param name="standard_deviation/x" value="0.1"/>
+		<param name="standard_deviation/y" value="0.1"/>
+		<param name="standard_deviation/z" value="0.1"/>
 		<param name="standard_deviation/x_rotation" value="10"/>
 		<param name="standard_deviation/y_rotation" value="10"/>
 		<param name="standard_deviation/z_rotation" value="10"/>
@@ -89,7 +89,7 @@
                                          false, false, false,
                                          false, false, false]
         </rosparam>
-		<param name="odom0_differential" value="true" />
+		<param name="odom0_differential" value="false" />
 		<param name="odom0_relative"     value="false" />
 		<param name="odom0_nodelay"      value="true" />
 
@@ -132,8 +132,8 @@
                                          false, false, false,
                                          false, false, false]
         </rosparam>
-		<param name="odom1_differential" value="false" />
-		<param name="odom1_relative"     value="true" />
+		<param name="odom1_differential" value="true" />
+		<param name="odom1_relative"     value="false" />
 		<param name="odom1_nodelay"      value="true" />
 
 		<!-- x, y, z, r, p, y, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az --> 

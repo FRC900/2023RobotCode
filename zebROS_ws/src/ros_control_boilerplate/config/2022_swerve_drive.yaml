@@ -8,6 +8,8 @@ swerve_drive_controller:
     pose_covariance_diagonal: [0.01, 0.01, 1000000.0, 1000000.0, 1000000.0, 1000.0]
     twist_covariance_diagonal: [0.01, 0.01, 1000000.0, 1000000.0, 1000000.0, 1000.0]
 
+    odometry_publishing_frequency: 250
+
     wheel_radius: 0.050 # m
     cmd_vel_timout: 0.5
     max_speed: 5.75 # TODO
@@ -75,7 +77,7 @@ swerve_drive_controller:
         #status_1_general_period: 100
         #status_2_feedback0_period: 100
         #status_1_general_period: 10
-        #status_2_feedback0_period: 20
+        status_2_feedback0_period: 4
         status_3_quadrature_period: 250
         #status_4_aintempvbat_period: 160
         #status_6_misc_period: 0
@@ -113,7 +115,7 @@ swerve_drive_controller:
         #status_1_general_period: 100
         #status_2_feedback0_period: 100
         #status_1_general_period: 10
-        #status_2_feedback0_period: 20
+        status_2_feedback0_period: 4
         status_3_quadrature_period: 250
         #status_4_aintempvbat_period: 160
         #status_6_misc_period: 0
@@ -149,7 +151,7 @@ swerve_drive_controller:
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
         #status_1_general_period: 100
-        #status_2_feedback0_period: 100
+        status_2_feedback0_period: 4
         #status_1_general_period: 10
         #status_2_feedback0_period: 20
         status_3_quadrature_period: 250
@@ -186,7 +188,7 @@ swerve_drive_controller:
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
         #status_1_general_period: 100
-        #status_2_feedback0_period: 100
+        status_2_feedback0_period: 4
         #status_1_general_period: 10
         #status_2_feedback0_period: 20
         status_3_quadrature_period: 250

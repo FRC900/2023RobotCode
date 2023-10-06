@@ -1,12 +1,12 @@
 # ros_control_boilerplate Settings -----------------------
 # Settings for ros_control control loop
 generic_hw_control_loop:
-  loop_hz: 100
-  cycle_time_error_threshold: 0.01
+  loop_hz: 250
+  cycle_time_error_threshold: 0.004
   canifier_read_hz: 100
-  cancoder_read_hz: 100
+  cancoder_read_hz: 250
   #some processes have lower frequencies than the main control loop
-  ctre_mc_read_hz: 100
+  ctre_mc_read_hz: 250
   pcm_read_hz: 20
   pdh_read_hz: 20
   pdp_read_hz: 20
@@ -326,7 +326,7 @@ intake_controller:
 # to figure out what to map e.g. effort to in the Talon world
 talon_state_controller_jetson:
    type:         talon_state_controller/TalonStateController
-   publish_rate: 100
+   publish_rate: 250
 talon_config_controller:
    type:         talon_config_controller/TalonConfigController
    publish_rate: 5

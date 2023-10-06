@@ -10,7 +10,7 @@
 	<arg name="joy_or_key" default="joy" />
 	<arg name="button_box" default="true"/>
 	<arg name="record" default="false" />
-	<arg name="primary_imu" default="ZED" />
+	<arg name="primary_imu" default="ADI" />
 
 	<group ns="frcrobot_jetson">
 		<rosparam file="$(find ros_control_boilerplate)/config/2022_compbot_base_jetson.yaml" command="load"/>
@@ -42,13 +42,6 @@ elevator_controller_2023 four_bar_controller_2023 intake_leader_controller
 
 		<include file="$(find cpu_monitor)/launch/cpu_monitor.launch">
 			<arg name="poll_period" value="5"/>
-		</include>
-	</group>
-
-	<group ns="imu">
-		<include file="$(find controller_node)/launch/2019_compbot_jetson_imu.launch">
-			<arg name="hw_or_sim" value="$(arg hw_or_sim)" />
-			<arg name="primary_imu" value="$(arg primary_imu)" />
 		</include>
 	</group>
 
@@ -129,4 +122,12 @@ elevator_controller_2023 four_bar_controller_2023 intake_leader_controller
 	</include> -->
 	
 	<!--  <include file="$(find controller_node)/launch/rosbridge_websocket.launch"> -->
+	
+	<group ns="imu">
+		<include file="$(find controller_node)/launch/2019_compbot_jetson_imu.launch">
+			<arg name="hw_or_sim" value="$(arg hw_or_sim)" />
+			<arg name="primary_imu" value="$(arg primary_imu)" />
+		</include>
+	</group>
+
 </launch>

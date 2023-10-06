@@ -42,6 +42,7 @@
 #include <controller_interface/controller.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <sensor_msgs/Imu.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <std_srvs/Empty.h>
@@ -55,6 +56,9 @@
 
 #include "talon_swerve_drive_controller_msgs/SetXY.h"
 #include <talon_swerve_drive_controller/Swerve.h>
+
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace talon_swerve_drive_controller
 {
@@ -277,6 +281,7 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	}
 
 	sub_command_ = controller_nh.subscribe("cmd_vel", 1, &TalonSwerveDriveController::cmdVelCallback, this);
+	sub_imu_ = controller_nh.subscribe("/imu/zeroed_imu", 1, &TalonSwerveDriveController::imuCallback, this);
 	if (publish_cmd_)
 	{
 	  cmd_vel_pub_ = std::make_unique<realtime_tools::RealtimePublisher<geometry_msgs::TwistStamped>>(controller_nh, "cmd_vel_out", 2);
@@ -678,6 +683,10 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 	// add motion for this timestep to the overall odom_to_base transform
 	odom_to_base_ = odom_to_base_ * odom_rigid_transf_;
 
+	// update yaw based on IMU??
+	odom_to_base_(1, 0) = sin(yaw_);
+	odom_to_base_(0, 0) = cos(yaw_);
+
 	const double odom_x = odom_to_base_.translation().x();
 	const double odom_y = odom_to_base_.translation().y();
 	const double odom_yaw = atan2(odom_to_base_(1, 0), odom_to_base_(0, 0));
@@ -729,6 +738,8 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 
 		last_odom_pub_time_ += odom_pub_period_;
 	}
+
+	last_yaw_ = yaw_;
 }
 
 void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &time, bool force_parking_mode = false)
@@ -749,6 +760,20 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 	// Reset the timer which delays drive wheel velocity a bit after
 	// the robot's been stopped
 	brake_last_ = time.toSec();
+}
+
+double getYaw(const geometry_msgs::Quaternion &o) {
+    tf2::Quaternion q;
+    tf2::fromMsg(o, q);
+    tf2::Matrix3x3 m(q);
+    double r, p, y;
+    m.getRPY(r, p, y);
+    return y;
+}
+
+void imuCallback(const sensor_msgs::ImuConstPtr &imu)
+{
+	yaw_ = getYaw(imu->orientation);
 }
 
 void cmdVelCallback(const geometry_msgs::Twist &command)
@@ -1036,6 +1061,10 @@ double drive_speed_time_delay_{0.1};
 std::array<Eigen::Vector2d, WHEELCOUNT> speeds_angles_;
 
 ros::Subscriber sub_command_;
+ros::Subscriber sub_imu_;
+
+double yaw_;
+double last_yaw_;
 
 ros::ServiceServer change_center_of_rotation_serv_;
 ros::ServiceServer set_neutral_mode_serv_;
