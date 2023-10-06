@@ -1,4 +1,13 @@
+
 <robot name="onshape">
+
+<!-- I ADDED THIS-->
+<gazebo>
+  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <robotNamespace>/chimera</robotNamespace>
+  </plugin>
+</gazebo>
+
 <link name="base_link"></link>
 <joint name="base_link_to_base" type="fixed">
 <parent link="base_link"/>
@@ -27,6 +36,7 @@
 <inertia ixx="0.69204932194372226206" ixy="0.0020725732451341441834"  ixz="-0.00019563921735660358327" iyy="0.61874181701311536941" iyz="0.11955242865535581354" izz="0.43424100425481687582" />
 </inertial>
 </link>
+
 
 <link name="fixed_stage">
 <visual>
@@ -114,6 +124,17 @@
 <limit effort="1" velocity="20" />
 <joint_properties friction="0.0"/>
 </joint>
+
+<transmission name="simple_trans">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="left_front_angle_wheel">
+    <hardwareInterface>JointStateInterface</hardwareInterface>
+  </joint>
+  <actuator name="foo_motor">
+    <mechanicalReduction>1</mechanicalReduction>
+    <hardwareInterface>JointStateInterface</hardwareInterface>
+  </actuator>
+</transmission>
 
 <joint name="XX1_center" type="fixed">
 <origin xyz="-0.23098760000000007064 0.31750000000000000444 0.097205800000000008865" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
