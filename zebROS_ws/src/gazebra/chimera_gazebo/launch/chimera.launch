@@ -1,4 +1,7 @@
 <launch>
+  <arg name="model" default="$(find chimera_description)/y2023_urdf/robot.urdf"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find chimera_gazebo)/worlds/chimera.world"/>

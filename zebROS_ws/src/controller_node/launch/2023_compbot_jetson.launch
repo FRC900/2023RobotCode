@@ -128,10 +128,10 @@ elevator_controller_2023 four_bar_controller_2023 intake_leader_controller
 	<include file="$(find controller_node)/launch/record_2023_compbot.launch" if="$(arg record)" />
 
 	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
-	
+	<!-- FIND THIS IN A PR YOU DUMMY 
 	<include file="$(find tf_object_detection)/launch/yolo_detection.launch">
 		<arg name="input_type" value="live_camera" if="$(eval hw_or_sim == 'hw')"/>
 	</include>
-	
+	-->
 	<!--  <include file="$(find controller_node)/launch/rosbridge_websocket.launch"> -->
 </launch>

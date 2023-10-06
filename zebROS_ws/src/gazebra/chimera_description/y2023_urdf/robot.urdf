@@ -4,7 +4,7 @@
 <!-- I ADDED THIS-->
 <gazebo>
   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-    <robotNamespace>/chimera</robotNamespace>
+    <robotNamespace>/frcrobot_jetson</robotNamespace>
   </plugin>
 </gazebo>
 
@@ -128,11 +128,11 @@
 <transmission name="simple_trans">
   <type>transmission_interface/SimpleTransmission</type>
   <joint name="left_front_angle_wheel">
-    <hardwareInterface>JointStateInterface</hardwareInterface>
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
   </joint>
   <actuator name="foo_motor">
     <mechanicalReduction>1</mechanicalReduction>
-    <hardwareInterface>JointStateInterface</hardwareInterface>
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
   </actuator>
 </transmission>
 
