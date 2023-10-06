@@ -99,4 +99,3 @@ if [ $? -ne 1 ]; then
   ./merge_compile_commands.sh
   echo "build/compile_commands.json created"
 fi
-
