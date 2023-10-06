@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!-- Simple swerve base -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="frcrobot">
+
+	<!-- base width and depth -->
+	<xacro:property name="base_height" value=".15" /> 
+	<xacro:property name="base_width" value=".75" /> 
+	<xacro:property name="base_depth" value=".75" /> 
+
+	<xacro:property name="swerve_box_size" value=".075" /> 
+	<xacro:property name="wheel_diameter" value=".0675" /> 
+	<xacro:macro name="swerve_module" params="prefix x y">
+		<link name="${prefix}_angle">
+			<visual>
+				<geometry>
+					<box size="${swerve_box_size} ${swerve_box_size} ${swerve_box_size}"/>
+				</geometry>
+				<origin xyz="0 0 -${swerve_box_size / 2}" rpy="0 0 0"/>
+				<material name="red">
+					<color rgba="1 0 0 .5"/>
+				</material>
+			</visual>
+			<collision>
+				<origin xyz="0 0 -${swerve_box_size / 2}" rpy="0 0 0"/>
+				<geometry>
+					<box size="${swerve_box_size} ${swerve_box_size} ${swerve_box_size}"/>
+				</geometry>
+			</collision>
+			<inertial>
+				<mass value="0.5"/>
+				<inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0.0" ixz="0.0" iyz="0.0"/>
+			</inertial>
+		</link> 
+
+		<link name="${prefix}_speed">
+			<visual>
+				<geometry>
+					<cylinder length=".04" radius="${wheel_diameter}"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+				<material name="black">
+					<color rgba="0 0 0 1"/>
+				</material>
+			</visual>
+			<collision>
+				<origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+				<geometry>
+					<cylinder length=".04" radius="${wheel_diameter}"/>
+				</geometry>
+			</collision>
+			<inertial>
+				<mass value="0.5"/>
+				<inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0.0" ixz="0.0" iyz="0.0"/>
+			</inertial>
+		</link>
+		<joint name="base_to_${prefix}_angle" type="continuous">
+			<parent link="base_plate"/>
+			<child link="${prefix}_angle"/>
+			<origin xyz="${x} ${y} -${base_height/2}" rpy="0 0 0"/>
+			<axis xyz="0 0 1" />
+		</joint>
+		<joint name="${prefix}_angle_to_speed" type="continuous">
+			<parent link="${prefix}_angle"/>
+			<child link="${prefix}_speed"/>
+			<origin xyz="0 0 -${wheel_diameter}" rpy="0 0 0"/>
+			<axis xyz="0 1 0" />
+		</joint>
+	</xacro:macro>
+
+	<link name="base_plate">
+		<visual>
+			<geometry>
+				<box size="${base_width} ${base_depth} ${base_height}"/>
+			</geometry>
+			<material name="blue">
+				<color rgba="0 0 1 1"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="${base_width} ${base_depth} ${base_height}"/>
+			</geometry>
+		</collision>
+		<inertial>
+		  <mass value="10.0"/>
+		  <inertia ixx="1.0" iyy="1.0" izz="1.0" ixy="0.0" ixz="0.0" iyz="0.0"/>
+		</inertial>
+	</link>
+	<joint name="base_plate_to_base_link" type="fixed">
+		<parent link="base_link"/>
+		<child link="base_plate"/>
+		<origin xyz="0 0 ${wheel_diameter + base_height/2}" rpy="0 0 0"/>
+	</joint>
+
+	<xacro:property name="elevator_height" value="1.1" /> 
+	<xacro:property name="elevator_width"  value="${base_width / 2.}" /> 
+	<link name="elevator_plate">
+		<visual>
+			<geometry>
+				<box size="${elevator_width} 0.05 ${elevator_height}"/>
+			</geometry>
+			<material name="yellow">
+				<color rgba="1 1 0 1"/>
+			</material>
+		</visual>
+	</link>
+	<joint name="elevator_plate_to_base_link" type="fixed">
+		<parent link="base_plate"/>
+		<child link="elevator_plate"/>
+		<origin xyz="-0.25 0 ${elevator_height/2 + base_height/2}" rpy="0 0 ${pi/2}"/>
+	</joint>
+
+	<xacro:swerve_module prefix="lf" x="${base_width/2 - swerve_box_size/2}" y="${base_depth/2 - swerve_box_size/2}"/>
+	<xacro:swerve_module prefix="rf" x="${base_width/2 - swerve_box_size/2}" y="-${base_depth/2 - swerve_box_size/2}"/>
+	<xacro:swerve_module prefix="lr" x="-${base_width/2 - swerve_box_size/2}" y="${base_depth/2 - swerve_box_size/2}"/>
+	<xacro:swerve_module prefix="rr" x="-${base_width/2 - swerve_box_size/2}" y="-${base_depth/2 - swerve_box_size/2}"/>
+	<xacro:include filename="$(find controller_node)/urdf/2019_compbot.urdf"/>
+</robot>
