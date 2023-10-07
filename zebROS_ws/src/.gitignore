@@ -17,6 +17,9 @@ ros_bridge
 ros_controllers
 rospy_message_converter
 rosserial
+tagslam*
+apriltag
+flex_sync
 rplidar_ros
 sick_tim
 stage_ros
