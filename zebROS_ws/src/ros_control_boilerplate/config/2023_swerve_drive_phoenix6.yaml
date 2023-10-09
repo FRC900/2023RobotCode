@@ -13,12 +13,14 @@ swerve_drive_controller:
     max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
 
     # TODO : multiplied ctre5 values by 12v/ 100% output as a guess, need to verify
+    # This would be a good guess, except we're using % duty cycle, not voltage out
     # f_s is static feedfoward - the is the min motor output used by
     # the speed motors to overcome static friction
-    f_s: 0.228
+    
+    f_s: 0.019
     # Small amount of power given to motors to get the swerve to coast to a 
     # stop rather than snapping on brake mode immediately
-    stopping_ff: 0.228
+    stopping_ff: 0.019
 
     # TODO - currently not used, but perhaps map to kV / kA values 
     # passed to the motor controller
@@ -43,7 +45,7 @@ swerve_drive_controller:
     speed_joint_fl:
         joint: fl_drive
         close_loop_values:
-            - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
+            - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25
         #current_limit_peak_msec: 50
@@ -57,7 +59,7 @@ swerve_drive_controller:
     speed_joint_fr:
         joint: fr_drive
         close_loop_values:
-            - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
+            - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25
         #current_limit_peak_msec: 50
@@ -71,7 +73,7 @@ swerve_drive_controller:
     speed_joint_bl:
         joint: bl_drive
         close_loop_values:
-            - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
+            - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #feedback_type: IntegratedSensor
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25
@@ -86,7 +88,7 @@ swerve_drive_controller:
     speed_joint_br:
         joint: br_drive
         close_loop_values:
-            - {kP: 0.36, kI: 0.0, kD: 0.192, kV: 0.00769, kS: 0.0}
+            - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #feedback_type: IntegratedSensor
         #current_limit_continuous_amps: 15
         #current_limit_peak_amps: 25

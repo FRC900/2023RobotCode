@@ -51,11 +51,9 @@
 			 candle_controller
 			 orchestra_controller
 			 orchestra_state_controller
-			 robot_code_ready_controller" />
-		<!--
 			 pigeon2_imu_state_controller
 			 pigeon2_state_controller
-		-->
+			 robot_code_ready_controller" />
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />
 
@@ -96,17 +94,14 @@
 		</node>
 	</group>
 	
-<!-- KCJ
 	<include file="$(find controller_node)/launch/hold_position.launch"/>
 	<include file="$(find controller_node)/launch/path_follower.launch"/>
 	
 	<include file="$(find controller_node)/launch/distance_to_pose.launch"/>
 	<include file="$(find behaviors)/launch/auto_node.launch"/>
-	-->
 
 	<!-- Add 2023 actionlib servers here -->
 	
-<!-- KCJ
 	<include file="$(find behaviors)/launch/2023_intake.launch">
 	</include>
 
@@ -138,7 +133,6 @@
 
 	<include file="$(find controller_node)/launch/2023_terabee.launch" if="$(eval arg('hw_or_sim')=='hw')">
 	</include>
-	-->
 		
 	<!-- Will advertise /zed_objdetect/left/image_rect_color_throttle -->
 	<!--<node name="throttle_zed" pkg="topic_tools" type="throttle"  args="messages /zed_objdetect/left/image_rect_color 4" output="screen"/>-->
@@ -149,11 +143,9 @@
 
 	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
 	
-<!-- KCJ
 	<include file="$(find tf_object_detection)/launch/yolo_detection.launch">
 		<arg name="input_type" value="live_camera" if="$(eval hw_or_sim == 'hw')"/>
 	</include>
-	-->
 	
 	<!--  <include file="$(find controller_node)/launch/rosbridge_websocket.launch"> -->
 </launch>
