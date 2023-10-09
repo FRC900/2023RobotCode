@@ -60,7 +60,7 @@ swerve_drive_controller:
         current_limit_peak_msec: 50
         current_limit_enable: True
         closed_loop_ramp: 0.25
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         neutral_mode: "Brake"
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
@@ -96,7 +96,7 @@ swerve_drive_controller:
         current_limit_peak_amps: 25
         current_limit_peak_msec: 50
         current_limit_enable: True
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         neutral_mode: "Brake"
         neutral_deadband: 0.01
         closed_loop_ramp: 0.25
@@ -134,7 +134,7 @@ swerve_drive_controller:
         current_limit_peak_amps: 25
         current_limit_peak_msec: 50
         current_limit_enable: True
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         neutral_mode: "Brake"
         neutral_deadband: 0.01
         closed_loop_ramp: 0.25
@@ -171,7 +171,7 @@ swerve_drive_controller:
         current_limit_peak_amps: 25
         current_limit_peak_msec: 50
         current_limit_enable: True
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         neutral_mode: "Brake"
         neutral_deadband: 0.01
         closed_loop_ramp: 0.25
@@ -216,7 +216,7 @@ swerve_drive_controller:
         voltage_compensation_saturation: 12
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         #status_1_general_period: 100
         #status_2_feedback0_period: 100
         #status_1_general_period: 10
@@ -256,7 +256,7 @@ swerve_drive_controller:
         voltage_compensation_saturation: 12
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         #status_1_general_period: 100
         #status_2_feedback0_period: 100
         #status_1_general_period: 10
@@ -296,7 +296,7 @@ swerve_drive_controller:
         voltage_compensation_saturation: 12
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         #status_1_general_period: 100
         #status_2_feedback0_period: 100
         #status_1_general_period: 10
@@ -336,7 +336,7 @@ swerve_drive_controller:
         voltage_compensation_saturation: 12
         velocity_measurement_period: Period_10Ms
         velocity_measurement_window: 4
-        dynamic_reconfigure: True
+        dynamic_reconfigure: False
         #status_1_general_period: 100
         #status_2_feedback0_period: 100
         #status_1_general_period: 10
