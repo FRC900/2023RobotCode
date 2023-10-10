@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <talon_state_msgs/TalonState.h>
 #include <utility>
-#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <angles/angles.h>
 
 template <size_t WHEELCOUNT>
@@ -104,14 +104,21 @@ class ROSSwerveKinematics
             frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(states);
 
             // publish twist
-            geometry_msgs::TwistStamped twist_msg;
+            geometry_msgs::TwistWithCovarianceStamped twist_msg;
             twist_msg.header.stamp = ros::Time::now();
             twist_msg.header.frame_id = "base_link";
             // x = y and y = -x in the talon swerve drive controller, so copying that here
             // and it seems to work
-            twist_msg.twist.linear.x = speeds.vy.value();
-            twist_msg.twist.linear.y = -speeds.vx.value();
-            twist_msg.twist.angular.z = speeds.omega.value();
+            twist_msg.twist.twist.linear.x = speeds.vy.value();
+            twist_msg.twist.twist.linear.y = -speeds.vx.value();
+            twist_msg.twist.twist.angular.z = speeds.omega.value();
+
+            twist_msg.twist.covariance = boost::array<double, 36>{0.01, 0, 0, 0, 0, 0,
+                                          0, 0.01, 0, 0, 0, 0,
+                                          0, 0, 0.01, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0};
 
             twist_pub.publish(twist_msg);
         }
@@ -305,7 +312,7 @@ class ROSSwerveKinematics
             talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
 
             // create publisher to publish twist
-            twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
+            twist_pub = nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
 
             return true;
         }

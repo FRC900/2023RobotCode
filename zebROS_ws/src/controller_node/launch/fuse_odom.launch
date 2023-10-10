@@ -40,7 +40,7 @@
 	</node>
 	<node name="swerve_imu_ekf_node" pkg="robot_localization" type="ekf_localization_node" output="screen"> 
 		<param name="cmd_vel" value="/frcrobot_jetson/swerve_drive_controller/cmd_vel_out"/>
-		<param name="use_control" value="true"/>
+		<param name="use_control" value="false"/>
 		<rosparam param="control_config"> [true, true, true,
                                           false, false, false]</rosparam>
 
@@ -83,7 +83,7 @@
 			 (unless we are tipping over) and even so, do
 			 we want to trust the navx data instead? -->
 		<param name="odom0" value="/frcrobot_jetson/swerve_drive_controller/odom_overridden" />
-		<rosparam param="odom0_config"> [true,  true,  false,
+		<rosparam param="odom0_config"> [false,  false,  false,
                                          false, false, false, 
                                          false, false, false,
                                          false, false, false,
@@ -126,15 +126,26 @@
 
 		<!-- ZED -->
 		<param name="odom1" value="/zed_objdetect/odom_overridden" />
-		<rosparam param="odom1_config"> [true,  true,  false,
+		<rosparam param="odom1_config"> [false,  false,  false,
                                          false, false, false, 
                                          false, false, false,
                                          false, false, false,
                                          false, false, false]
         </rosparam>
-		<param name="odom1_differential" value="true" />
+		<param name="odom1_differential" value="false" />
 		<param name="odom1_relative"     value="false" />
 		<param name="odom1_nodelay"      value="true" />
+
+		<param name="twist0" value="/frcrobot_jetson/swerve_drive_odom/twist" />
+		<rosparam param="twist0_config"> [false,  false,  false,
+                                         false, false, false, 
+                                         true, true, false,
+                                         false, false, false,
+                                         false, false, false]
+        </rosparam>
+		<param name="twist0_differential" value="false" />
+		<param name="twist0_relative"     value="false" />
+		<param name="twist0_nodelay"      value="true" />
 
 		<!-- x, y, z, r, p, y, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az --> 
         <rosparam param="process_noise_covariance"> [0.1, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
