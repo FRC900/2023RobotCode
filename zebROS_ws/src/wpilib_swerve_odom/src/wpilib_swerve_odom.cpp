@@ -26,14 +26,18 @@ public:
     double wheel_radius = 0.050; // meters
     double encoder_to_rotations = 0.148148148; // 1/6.75
 
+    ros::Subscriber talon_state_sub;
+
     frc::SwerveModuleState getState(size_t module_index) {
         size_t steer_index, speed_index = 0;
+        std::cout << steering_names[module_index] << std::endl;
         if (auto index = index_map.find(steering_names[module_index]); index != index_map.end()) {
             steer_index = index->second;
         } else {
             for (size_t i = 0; i < latest_talon_states.name.size(); i++) {
                 if (latest_talon_states.name[i] == steering_names[module_index]) {
                     index_map[steering_names[module_index]] = i;
+                    steer_index = i;
                 }
             }
         }
@@ -44,12 +48,15 @@ public:
             for (size_t i = 0; i < latest_talon_states.name.size(); i++) {
                 if (latest_talon_states.name[i] == speed_names[module_index]) {
                     index_map[speed_names[module_index]] = i;
+                    speed_index = i;
                 }
             }
         }
 
         double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_index]);
         double velocity = latest_talon_states.speed[speed_index] * wheel_radius * encoder_to_rotations;
+
+        ROS_INFO_STREAM(steering_names[module_index] << " has an angle of " << angle << " and a velocity of " << velocity);
 
         return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
     }
@@ -65,6 +72,9 @@ public:
 
         for (size_t i = 0; i < WHEELCOUNT; i++) {
             states[i] = getState(i);
+            double v = states[i].speed;
+            double theta = states[i].angle.Radians();
+            ROS_INFO_STREAM("State #" << std::to_string(i) << " is " << v << " with an angle of " << theta);
         }
 
         frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(states);
@@ -73,9 +83,11 @@ public:
         geometry_msgs::TwistStamped twist_msg;
         twist_msg.header.stamp = ros::Time::now();
         twist_msg.header.frame_id = "base_link";
-        twist_msg.twist.linear.x = speeds.vx.to<double>();
-        twist_msg.twist.linear.y = speeds.vy.to<double>();
-        twist_msg.twist.angular.z = speeds.omega.to<double>();
+        twist_msg.twist.linear.x = speeds.vx.value();
+        twist_msg.twist.linear.y = speeds.vy.value();
+        twist_msg.twist.angular.z = speeds.omega.value();
+
+        ROS_INFO_STREAM(speeds.vx.value());
         twist_pub.publish(twist_msg);
     }
 
@@ -192,6 +204,8 @@ public:
             double y = wheel_coords[i][1];
             moduleLocations[i] = frc::Translation2d(units::meter_t(x), units::meter_t(y));
         }
+        
+        m_kinematics = frc::SwerveDriveKinematics<4>(moduleLocations);
 
         // read offsets using nh_params, see the 2023_swerve_drive.yaml file for how these are encoded
         for (size_t i = 0; i < WHEELCOUNT; i++)
@@ -200,6 +214,20 @@ public:
             if (!nh.getParam("offset", offsets[i]))
             {
                 ROS_ERROR_STREAM("Can not read offset for " << steering_names[i]);
+                return false;
+            }
+        }
+
+        // now that we've retrieved offsets, overwrite speed and steering names with joint names
+        for (size_t i = 0; i < WHEELCOUNT; i++) {
+            ros::NodeHandle nh_steer(params_nh, steering_names[i]);
+            if (!nh_steer.getParam("joint", steering_names[i])) {
+                ROS_ERROR_STREAM("Can not read joint name for " << steering_names[i]);
+                return false;
+            }
+            ros::NodeHandle nh_speed(params_nh, speed_names[i]);
+            if (!nh_speed.getParam("joint", speed_names[i])) {
+                ROS_ERROR_STREAM("Can not read joint name for " << speed_names[i]);
                 return false;
             }
         }
@@ -227,7 +255,7 @@ public:
             return false;
         }
 
-        ros::Subscriber talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
+        talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
 
         // create publisher to publish twist
         twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
