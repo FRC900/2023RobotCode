@@ -125,6 +125,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
+
   <transmission name="tran1">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="left_front_angle_wheel">
@@ -146,6 +147,85 @@
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
   </transmission>
+
+
+
+
+
+
+  <transmission name="tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_back_angle_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran4">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="left_back_drive_wheel">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor4">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+
+
+
+
+
+  <transmission name="tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_front_angle_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor5">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran6">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="right_front_drive_wheel">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor6">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+
+
+
+
+  <transmission name="tran7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_back_angle_wheel">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor7">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran8">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="right_back_drive_wheel">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor8">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+
 
 <joint name="XX1_center" type="fixed">
 <origin xyz="-0.23098760000000007064 0.31750000000000000444 0.097205800000000008865" rpy="-1.570796326794896558 -0 -1.570796326794896558" />

@@ -15,7 +15,10 @@
   <!-- load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 	output="screen" ns="/chimera" args="joint_state_controller
-					  left_front_angle_position_controller left_front_drive_velocity_controller"/>
+					  left_front_angle_position_controller left_front_drive_velocity_controller
+            left_back_angle_position_controller left_back_drive_velocity_controller
+            right_front_angle_position_controller right_front_drive_velocity_controller
+            right_back_angle_position_controller right_back_drive_velocity_controller "/>
 
   <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen" ns="/chimera">
