@@ -4,6 +4,7 @@
 #include <talon_state_msgs/TalonState.h>
 #include <utility>
 #include <geometry_msgs/TwistStamped.h>
+#include <angles/angles.h>
 
 /*
 // Read wheel rotation from encoder.  Subtract previous position
@@ -39,7 +40,8 @@ frc::SwerveDriveKinematics<4> m_kinematics = frc::SwerveDriveKinematics<4>{
 
 talon_state_msgs::TalonState latest_talon_states;
 std::map<std::string, std::pair<size_t, size_t>> index_map; // <drive_index, steer_index>
-std::map<std::string, double> offsets;
+// this is the 2022 config
+std::map<std::string, double> offsets = {{"fl", -1.106}, {"fr", -3.56344}, {"bl", 1.34684}, {"br", 2.84247}};
 
 // hardcoded for now, should load from 2023_swerve_drive.yaml
 double wheel_radius = 0.050; // meters
@@ -52,10 +54,12 @@ frc::SwerveModuleState getState(std::string module_id) {
         steer_index = indices->second.second;
     } else {
         for (size_t i = 0; i < latest_talon_states.name.size(); i++) {
-            if (latest_talon_states.name[i].find(module_id + "_") != std::string::npos) {
+            if (latest_talon_states.name[i].find(module_id) != std::string::npos) {
                 if (latest_talon_states.name[i].find("drive") != std::string::npos) {
+                    std::cout << "drive index for " << module_id << " is " << i << std::endl;
                     drive_index = i;
                 } else if (latest_talon_states.name[i].find("angle") != std::string::npos) {
+                    std::cout << "steer index for " << module_id << " is " << i << std::endl;
                     steer_index = i;
                 }
             }
@@ -63,16 +67,38 @@ frc::SwerveModuleState getState(std::string module_id) {
         index_map[module_id] = std::make_pair(drive_index, steer_index);
     }
 
-    double angle = latest_talon_states.position[steer_index] - offsets[module_id];
+    double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_id]);
     double velocity = latest_talon_states.speed[drive_index] * wheel_radius * encoder_to_rotations;
 
-    return frc::SwerveModuleState{units::meters_per_second_t{velocity}, frc::Rotation2d(units::radian_t(angle))};
+    ROS_INFO_STREAM(module_id << " angle is " << angle);
+
+    return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
 }
+
+ros::Publisher twist_pub;
 
 // talon state callback
 void talon_state_callback(const talon_state_msgs::TalonState::ConstPtr& msg)
 {
     latest_talon_states = *msg;
+
+    // get latest swerve module states
+    frc::SwerveModuleState front_left = getState("fl");
+    frc::SwerveModuleState front_right = getState("fr");
+    frc::SwerveModuleState back_left = getState("bl");
+    frc::SwerveModuleState back_right = getState("br");
+
+    // get latest twist
+    frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(front_left, front_right, back_left, back_right);
+
+    // publish twist
+    geometry_msgs::TwistStamped twist_msg;
+    twist_msg.header.stamp = ros::Time::now();
+    twist_msg.header.frame_id = "base_link";
+    twist_msg.twist.linear.x = speeds.vx.to<double>();
+    twist_msg.twist.linear.y = speeds.vy.to<double>();
+    twist_msg.twist.angular.z = speeds.omega.to<double>();
+    twist_pub.publish(twist_msg);
 }
 
 int main(int argc, char** argv)
@@ -86,31 +112,7 @@ int main(int argc, char** argv)
     ros::Subscriber talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, talon_state_callback);
 
     // create publisher to publish twist
-    ros::Publisher twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
+    twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
 
-    // spin
-    ros::Rate loop_rate(50);
-    while (ros::ok()) {
-        // get latest talon states
-        ros::spinOnce();
-
-        // get latest swerve module states
-        frc::SwerveModuleState front_left = getState("fl");
-        frc::SwerveModuleState front_right = getState("fr");
-        frc::SwerveModuleState back_left = getState("bl");
-        frc::SwerveModuleState back_right = getState("br");
-
-        // get latest twist
-        frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(front_left, front_right, back_left, back_right);
-
-        // publish twist
-        geometry_msgs::TwistStamped twist_msg;
-        twist_msg.header.stamp = ros::Time::now();
-        twist_msg.twist.linear.x = speeds.vx.to<double>();
-        twist_msg.twist.linear.y = speeds.vy.to<double>();
-        twist_msg.twist.angular.z = speeds.omega.to<double>();
-        twist_pub.publish(twist_msg);
-
-        loop_rate.sleep();
-    }
+    ros::spin();
 }
