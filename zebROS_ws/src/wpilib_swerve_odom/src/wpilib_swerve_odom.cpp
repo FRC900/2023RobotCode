@@ -113,9 +113,9 @@ class ROSSwerveKinematics
             twist_msg.twist.twist.linear.y = -speeds.vx.value();
             twist_msg.twist.twist.angular.z = speeds.omega.value();
 
-            twist_msg.twist.covariance = boost::array<double, 36>{0.01, 0, 0, 0, 0, 0,
-                                          0, 0.01, 0, 0, 0, 0,
-                                          0, 0, 0.01, 0, 0, 0,
+            twist_msg.twist.covariance = boost::array<double, 36>{0.0001, 0, 0, 0, 0, 0,
+                                          0, 0.0001, 0, 0, 0, 0,
+                                          0, 0, 0.0001, 0, 0, 0,
                                           0, 0, 0, 0, 0, 0,
                                           0, 0, 0, 0, 0, 0,
                                           0, 0, 0, 0, 0, 0};

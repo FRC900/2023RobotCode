@@ -21,9 +21,9 @@
 	<node name="override_covariance_zed" pkg="controller_node" type="override_covariance.py" output="screen">
 		<param name="topic" value="/zed_objdetect/odom"/>
 		<param name="type" value="Odometry"/>
-		<param name="standard_deviation/x" value="0.1"/>
-		<param name="standard_deviation/y" value="0.1"/>
-		<param name="standard_deviation/z" value="0.1"/>
+		<param name="standard_deviation/x" value="1.0"/>
+		<param name="standard_deviation/y" value="1.0"/>
+		<param name="standard_deviation/z" value="1.0"/>
 		<param name="standard_deviation/x_rotation" value="10"/>
 		<param name="standard_deviation/y_rotation" value="10"/>
 		<param name="standard_deviation/z_rotation" value="10"/>
