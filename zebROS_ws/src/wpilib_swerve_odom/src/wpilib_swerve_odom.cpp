@@ -28,10 +28,10 @@ const Eigen::Vector2d delta_pos{dist * cos(average_steer_angle), dist * sin(aver
 */
 
 // Locations for the swerve drive modules relative to the robot center.
-frc::Translation2d m_frontLeftLocation{0.250825_m, 0.250825_m};
-frc::Translation2d m_frontRightLocation{0.250825_m, -0.250825_m};
-frc::Translation2d m_backLeftLocation{-0.250825_m, 0.250825_m};
-frc::Translation2d m_backRightLocation{-0.250825_m, -0.250825_m};
+frc::Translation2d m_frontLeftLocation{-0.250825_m, 0.250825_m};
+frc::Translation2d m_frontRightLocation{0.250825_m, 0.250825_m};
+frc::Translation2d m_backLeftLocation{-0.250825_m, -0.250825_m};
+frc::Translation2d m_backRightLocation{0.250825_m, -0.250825_m};
 
 // Creating my kinematics object using the module locations.
 frc::SwerveDriveKinematics<4> m_kinematics = frc::SwerveDriveKinematics<4>{
@@ -70,7 +70,7 @@ frc::SwerveModuleState getState(std::string module_id) {
     double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_id]);
     double velocity = latest_talon_states.speed[drive_index] * wheel_radius * encoder_to_rotations;
 
-    ROS_INFO_STREAM(module_id << " angle is " << angle);
+    ROS_INFO_STREAM(module_id << " angle is " << angle << ", speed is " << velocity);
 
     return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
 }
