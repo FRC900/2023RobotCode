@@ -1,4 +1,5 @@
 #include "frc/geometry/Rotation2d.h"
+#include "frc/geometry/Translation2d.h"
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include <ros/ros.h>
 #include <talon_state_msgs/TalonState.h>
@@ -6,113 +7,243 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <angles/angles.h>
 
-/*
-// Read wheel rotation from encoder.  Subtract previous position
-// to get the motion since the last odom update. Convert from rotation
-// to linear distance using wheel radius and drive ratios
-const double new_wheel_rot = speed_joints_[k].getPosition();
-const double delta_rot     = new_wheel_rot - last_wheel_rot_[k];
-const double dist          = delta_rot * wheel_radius_ * driveRatios_.encodertoRotations;
+template <size_t WHEELCOUNT>
+class ROSSwerveKinematics {
+public:
+    wpi::array<frc::Translation2d, WHEELCOUNT> moduleLocations{wpi::empty_array};
 
-// Get the offset-corrected steering angle
-const double steer_angle = swerveC_->getWheelAngle(k, steer_angles[k]);
-// And then average it with the last reading - moving the full
-// wheel rot distance in a direction of the average of the start
-// and end steer directions for this timestep is an approximation
-// of the actual direction. It ignores changes in speed of the
-// steer motor, but it is the best we can do given the info we have.
-const double average_steer_angle = angle_midpoint(last_wheel_angle_[k], steer_angle);
+    // Creating my kinematics object using the module locations.
+    frc::SwerveDriveKinematics<WHEELCOUNT> m_kinematics{moduleLocations};
 
-// delta_pos of the wheel in x,y - decompose vector into x&y components
-const Eigen::Vector2d delta_pos{dist * cos(average_steer_angle), dist * sin(average_steer_angle)};
-*/
+    talon_state_msgs::TalonState latest_talon_states;
+    std::map<std::string, size_t> index_map; // <drive_index, steer_index>
 
-// Locations for the swerve drive modules relative to the robot center.
-frc::Translation2d m_frontLeftLocation{-0.250825_m, 0.250825_m};
-frc::Translation2d m_frontRightLocation{0.250825_m, 0.250825_m};
-frc::Translation2d m_backLeftLocation{-0.250825_m, -0.250825_m};
-frc::Translation2d m_backRightLocation{0.250825_m, -0.250825_m};
+    std::array<double, WHEELCOUNT> offsets;
 
-// Creating my kinematics object using the module locations.
-frc::SwerveDriveKinematics<4> m_kinematics = frc::SwerveDriveKinematics<4>{
-    m_frontLeftLocation, m_frontRightLocation,
-    m_backLeftLocation, m_backRightLocation};
+    std::array<std::string, WHEELCOUNT> speed_names;
+    std::array<std::string, WHEELCOUNT> steering_names;
 
-talon_state_msgs::TalonState latest_talon_states;
-std::map<std::string, std::pair<size_t, size_t>> index_map; // <drive_index, steer_index>
-// this is the 2022 config
-std::map<std::string, double> offsets = {{"fl", -1.106}, {"fr", -3.56344}, {"bl", 1.34684}, {"br", 2.84247}};
+    double wheel_radius = 0.050; // meters
+    double encoder_to_rotations = 0.148148148; // 1/6.75
 
-// hardcoded for now, should load from 2023_swerve_drive.yaml
-double wheel_radius = 0.050; // meters
-double encoder_to_rotations = 0.148148148; // 1/6.75
-
-frc::SwerveModuleState getState(std::string module_id) {
-    size_t drive_index, steer_index = 0;
-    if (auto indices = index_map.find(module_id); indices != index_map.end()) {
-        drive_index = indices->second.first;
-        steer_index = indices->second.second;
-    } else {
-        for (size_t i = 0; i < latest_talon_states.name.size(); i++) {
-            if (latest_talon_states.name[i].find(module_id) != std::string::npos) {
-                if (latest_talon_states.name[i].find("drive") != std::string::npos) {
-                    std::cout << "drive index for " << module_id << " is " << i << std::endl;
-                    drive_index = i;
-                } else if (latest_talon_states.name[i].find("angle") != std::string::npos) {
-                    std::cout << "steer index for " << module_id << " is " << i << std::endl;
-                    steer_index = i;
+    frc::SwerveModuleState getState(size_t module_index) {
+        size_t steer_index, speed_index = 0;
+        if (auto index = index_map.find(steering_names[module_index]); index != index_map.end()) {
+            steer_index = index->second;
+        } else {
+            for (size_t i = 0; i < latest_talon_states.name.size(); i++) {
+                if (latest_talon_states.name[i] == steering_names[module_index]) {
+                    index_map[steering_names[module_index]] = i;
                 }
             }
         }
-        index_map[module_id] = std::make_pair(drive_index, steer_index);
+
+        if (auto index = index_map.find(speed_names[module_index]); index != index_map.end()) {
+            speed_index = index->second;
+        } else {
+            for (size_t i = 0; i < latest_talon_states.name.size(); i++) {
+                if (latest_talon_states.name[i] == speed_names[module_index]) {
+                    index_map[speed_names[module_index]] = i;
+                }
+            }
+        }
+
+        double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_index]);
+        double velocity = latest_talon_states.speed[speed_index] * wheel_radius * encoder_to_rotations;
+
+        return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
     }
 
-    double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_id]);
-    double velocity = latest_talon_states.speed[drive_index] * wheel_radius * encoder_to_rotations;
+    ros::Publisher twist_pub;
 
-    ROS_INFO_STREAM(module_id << " angle is " << angle << ", speed is " << velocity);
+    // talon state callback
+    void talon_state_callback(const talon_state_msgs::TalonState::ConstPtr& msg)
+    {
+        latest_talon_states = *msg;
 
-    return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
-}
+        wpi::array<frc::SwerveModuleState, WHEELCOUNT> states{wpi::empty_array};
 
-ros::Publisher twist_pub;
+        for (size_t i = 0; i < WHEELCOUNT; i++) {
+            states[i] = getState(i);
+        }
 
-// talon state callback
-void talon_state_callback(const talon_state_msgs::TalonState::ConstPtr& msg)
-{
-    latest_talon_states = *msg;
+        frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(states);
 
-    // get latest swerve module states
-    frc::SwerveModuleState front_left = getState("fl");
-    frc::SwerveModuleState front_right = getState("fr");
-    frc::SwerveModuleState back_left = getState("bl");
-    frc::SwerveModuleState back_right = getState("br");
+        // publish twist
+        geometry_msgs::TwistStamped twist_msg;
+        twist_msg.header.stamp = ros::Time::now();
+        twist_msg.header.frame_id = "base_link";
+        twist_msg.twist.linear.x = speeds.vx.to<double>();
+        twist_msg.twist.linear.y = speeds.vy.to<double>();
+        twist_msg.twist.angular.z = speeds.omega.to<double>();
+        twist_pub.publish(twist_msg);
+    }
 
-    // get latest twist
-    frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(front_left, front_right, back_left, back_right);
+    bool getWheelNames(ros::NodeHandle &controller_nh,
+		const std::string &wheel_param,
+		std::array<std::string, WHEELCOUNT> &wheel_names)
+    {
+        XmlRpc::XmlRpcValue wheel_list;
+        if (!controller_nh.getParam(wheel_param, wheel_list))
+        {
+            ROS_ERROR_STREAM("Couldn't retrieve wheel param '" << wheel_param << "'.");
+            return false;
+        }
 
-    // publish twist
-    geometry_msgs::TwistStamped twist_msg;
-    twist_msg.header.stamp = ros::Time::now();
-    twist_msg.header.frame_id = "base_link";
-    twist_msg.twist.linear.x = speeds.vx.to<double>();
-    twist_msg.twist.linear.y = speeds.vy.to<double>();
-    twist_msg.twist.angular.z = speeds.omega.to<double>();
-    twist_pub.publish(twist_msg);
-}
+        if (wheel_list.getType() == XmlRpc::XmlRpcValue::TypeArray)
+        {
+            if (wheel_list.size() == 0)
+            {
+                ROS_ERROR_STREAM("Wheel param '" << wheel_param << "' is an empty list");
+                return false;
+            }
+            if (wheel_list.size() != WHEELCOUNT)
+            {
+                ROS_ERROR_STREAM("Wheel param size (" << wheel_list.size() <<
+                                    " != WHEELCOUNT (" << WHEELCOUNT <<")." );
+                return false;
+            }
 
-int main(int argc, char** argv)
-{
-    // ros init node
+            for (int i = 0; i < wheel_list.size(); ++i)
+            {
+                if (wheel_list[i].getType() != XmlRpc::XmlRpcValue::TypeString)
+                {
+                    ROS_ERROR_STREAM("Wheel param '" << wheel_param << "' #" << i <<
+                                        " isn't a string.");
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < wheel_list.size(); ++i)
+            {
+                wheel_names[i] = static_cast<std::string>(wheel_list[i]);
+            }
+        }
+        else
+        {
+            ROS_ERROR_STREAM("Wheel param '" << wheel_param <<
+                                "' is neither a list of strings nor a string.");
+            return false;
+        }
+        return true;
+    }
+
+    bool read_params() {
+        // node handle with the /frcrobot_jetson/swerve_drive_controller namespace
+        ros::NodeHandle params_nh("/frcrobot_jetson/swerve_drive_controller");
+
+        // Get joint names from the parameter server
+        if (!getWheelNames(params_nh, "speed", speed_names) or
+            !getWheelNames(params_nh, "steering", steering_names))
+        {
+            return false;
+        }
+
+        if (speed_names.size() != steering_names.size())
+        {
+            ROS_ERROR_STREAM("#speed (" << speed_names.size() << ") != " <<
+                                "#steering (" << steering_names.size() << ").");
+            return false;
+        }
+        if (speed_names.size() != WHEELCOUNT)
+        {
+            ROS_ERROR_STREAM("#speed (" << speed_names.size() << ") != " <<
+                                "WHEELCOUNT (" << WHEELCOUNT << ").");
+            return false;
+        }
+
+        // read swerve drive module locations from rosparam
+        XmlRpc::XmlRpcValue wheel_coords;
+
+        if(!params_nh.getParam("wheel_coords", wheel_coords))
+        {
+            ROS_ERROR("talon_swerve_drive_controller : could not read wheel_coords");
+            return false;
+        }
+        if(wheel_coords.getType() != XmlRpc::XmlRpcValue::TypeArray )
+        {
+            ROS_ERROR("talon_swerve_drive_controller : param 'wheel_coords' is not a list");
+            return false;
+        }
+        if (wheel_coords.size() != WHEELCOUNT)
+        {
+            ROS_ERROR_STREAM("talon_swerve_drive_controller : param 'wheel_coords' is not correct length (expecting WHEELCOUNT = " << WHEELCOUNT << ")");
+            return false;
+        }
+        for(int i=0; i < wheel_coords.size(); ++i)
+        {
+            if(wheel_coords[i].getType() != XmlRpc::XmlRpcValue::TypeArray )
+            {
+                ROS_ERROR("talon_swerve_drive_controller : param wheel_coords[%d] is not a list", i);
+                return false;
+            }
+            if(wheel_coords[i].size() != 2)
+            {
+                ROS_ERROR("talon_swerve_drive_controller: param wheel_coords[%d] is not a pair", i);
+                return false;
+            }
+            if(	wheel_coords[i][0].getType() != XmlRpc::XmlRpcValue::TypeDouble ||
+                wheel_coords[i][1].getType() != XmlRpc::XmlRpcValue::TypeDouble)
+            {
+                ROS_ERROR("talon_swerve_drive_controller : param wheel_coords[%d] is not a pair of doubles", i);
+                return false;
+            }
+            double x = wheel_coords[i][0];
+            double y = wheel_coords[i][1];
+            moduleLocations[i] = frc::Translation2d(units::meter_t(x), units::meter_t(y));
+        }
+
+        // read offsets using nh_params, see the 2023_swerve_drive.yaml file for how these are encoded
+        for (size_t i = 0; i < WHEELCOUNT; i++)
+        {
+            ros::NodeHandle nh(params_nh, steering_names[i]);
+            if (!nh.getParam("offset", offsets[i]))
+            {
+                ROS_ERROR_STREAM("Can not read offset for " << steering_names[i]);
+                return false;
+            }
+        }
+
+        // Load wheel radius and encoder to rotations
+        if (!params_nh.getParam("wheel_radius", wheel_radius))
+        {
+            ROS_ERROR_STREAM("Cannot read wheel_radius");
+            return false;
+        }
+        if (!params_nh.getParam("ratio_encoder_to_rotations", encoder_to_rotations))
+        {
+            ROS_ERROR_STREAM("Cannot read ratio_encoder_to_rotations");
+            return false;
+        }
+        
+        return true;
+    }
+
+    bool init() {
+        // set up subscriber with callback to store latest talon states in latest_talon_states variable
+        ros::NodeHandle nh;
+
+        if (!read_params()) {
+            return false;
+        }
+
+        ros::Subscriber talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
+
+        // create publisher to publish twist
+        twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
+
+        return true;
+    }
+
+};
+
+int main(int argc, char** argv) {
     ros::init(argc, argv, "wpilib_swerve_odom");
-
-    // set up subscriber with callback to store latest talon states in latest_talon_states variable
-    ros::NodeHandle nh;
-
-    ros::Subscriber talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, talon_state_callback);
-
-    // create publisher to publish twist
-    twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
-
+    ROSSwerveKinematics<4> swerve_kinematics;
+    if (!swerve_kinematics.init()) {
+        ROS_ERROR_STREAM("Initialization failed");
+        exit(-1);
+    }
     ros::spin();
+    // swerve_kinematics.main(argc, argv);
 }
