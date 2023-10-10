@@ -66,7 +66,7 @@ struct NodeCTX {
 		{
 			for (size_t i = 0; i < talon_state.name.size(); i++)
 			{
-				if (talon_state.name[i] == "intake_leader")
+				if (talon_state.name[i] == "intake")
 				{
 					intake_idx = i;
 					break;
