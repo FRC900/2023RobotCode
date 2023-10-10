@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <talon_state_msgs/TalonState.h>
 #include <utility>
+#include <geometry_msgs/TwistStamped.h>
 
 /*
 // Read wheel rotation from encoder.  Subtract previous position
@@ -25,7 +26,17 @@ const double average_steer_angle = angle_midpoint(last_wheel_angle_[k], steer_an
 const Eigen::Vector2d delta_pos{dist * cos(average_steer_angle), dist * sin(average_steer_angle)};
 */
 
-frc::SwerveDriveKinematics<4> m_kinematics;
+// Locations for the swerve drive modules relative to the robot center.
+frc::Translation2d m_frontLeftLocation{0.250825_m, 0.250825_m};
+frc::Translation2d m_frontRightLocation{0.250825_m, -0.250825_m};
+frc::Translation2d m_backLeftLocation{-0.250825_m, 0.250825_m};
+frc::Translation2d m_backRightLocation{-0.250825_m, -0.250825_m};
+
+// Creating my kinematics object using the module locations.
+frc::SwerveDriveKinematics<4> m_kinematics = frc::SwerveDriveKinematics<4>{
+    m_frontLeftLocation, m_frontRightLocation,
+    m_backLeftLocation, m_backRightLocation};
+
 talon_state_msgs::TalonState latest_talon_states;
 std::map<std::string, std::pair<size_t, size_t>> index_map; // <drive_index, steer_index>
 std::map<std::string, double> offsets;
@@ -55,7 +66,7 @@ frc::SwerveModuleState getState(std::string module_id) {
     double angle = latest_talon_states.position[steer_index] - offsets[module_id];
     double velocity = latest_talon_states.speed[drive_index] * wheel_radius * encoder_to_rotations;
 
-    return frc::SwerveModuleState{units::meters_per_second_t{velocity}, frc::Rotation2d{angle}};
+    return frc::SwerveModuleState{units::meters_per_second_t{velocity}, frc::Rotation2d(units::radian_t(angle))};
 }
 
 // talon state callback
@@ -64,7 +75,7 @@ void talon_state_callback(const talon_state_msgs::TalonState::ConstPtr& msg)
     latest_talon_states = *msg;
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
     // ros init node
     ros::init(argc, argv, "wpilib_swerve_odom");
@@ -73,17 +84,6 @@ int main(void)
     ros::NodeHandle nh;
 
     ros::Subscriber talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, talon_state_callback);
-
-    // Locations for the swerve drive modules relative to the robot center.
-    frc::Translation2d m_frontLeftLocation{0.250825_m, 0.250825_m};
-    frc::Translation2d m_frontRightLocation{0.250825_m, -0.250825_m};
-    frc::Translation2d m_backLeftLocation{-0.250825_m, 0.250825_m};
-    frc::Translation2d m_backRightLocation{-0.250825_m, -0.250825_m};
-
-    // Creating my kinematics object using the module locations.
-    m_kinematics = frc::SwerveDriveKinematics<4>{
-        m_frontLeftLocation, m_frontRightLocation,
-        m_backLeftLocation, m_backRightLocation};
 
     // create publisher to publish twist
     ros::Publisher twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
