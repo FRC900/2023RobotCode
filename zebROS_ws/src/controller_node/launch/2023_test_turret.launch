@@ -14,6 +14,7 @@
 
 		<!-- Load controller settings -->
 		<!-- These need to be replaced with the real thing -->
+        <rosparam file="$(find ros_control_boilerplate)/config/2023_turret_testing.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_turret_params.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_rio.yaml" command="load"/>
 
@@ -33,7 +34,7 @@
 			robot_code_ready_controller" />
 
 		<!-- Run rqt driver station for sim-->
-		<node name="driversim" pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" screen="true"/>
+		<node name="driversim" pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" output="screen"/>
 
 	</group>
 </launch>
