@@ -45,6 +45,8 @@ catkin config --skiplist \
 	adi_pico_driver \
 	ar_track_alvar \
 	color_spin \
+	controllers_2019 \
+	controllers_2019_msgs \
 	controllers_2020 \
 	controllers_2020_msgs \
 	diff_drive_controller \
@@ -97,3 +99,4 @@ if [ $? -ne 1 ]; then
   ./merge_compile_commands.sh
   echo "build/compile_commands.json created"
 fi
+
