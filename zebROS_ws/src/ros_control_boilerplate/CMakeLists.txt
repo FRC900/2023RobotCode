@@ -146,7 +146,7 @@ set (FRCROBOT_HW_MAIN_SRCS
 )
 
 set (ALLWPILIB ../../../allwpilib)
-set (WPI_SYSROOT $ENV{HOME}/wpilib/2023/roborio/arm-frc2023-linux-gnueabi)
+set (WPI_SYSROOT $ENV{HOME}/wpilib/2024/roborio/arm-frc2024-linux-gnueabi)
 include_directories(
 	include
 	${catkin_INCLUDE_DIRS}
@@ -158,7 +158,7 @@ include_directories(
 set (WPI_BASE_LIB_DIR ${WPI_SYSROOT}/lib/wpilib/linux)
 
 # Rio-only code
-if ("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi")
+if ("${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi")
 	set (CTRE_LIB_DIR ${WPI_SYSROOT}/lib/ctre/linux/athena/shared)
 	set (REV_LIB_DIR ${WPI_SYSROOT}/lib/rev/linux/athena/shared)
 
@@ -216,7 +216,7 @@ include_directories(${WPI_SYSROOT}/include/wpilib)
 
 # Non-rio builds are more complex - we have to grab appropriate
 # parts of WPIlib source and include it manually
-if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi")
+if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi")
 	# WPIlib code common to both hardware and sim interfaces.
 	# Create it as a library to avoid building all of these twice
 	add_library(frc_common_wpilib STATIC
@@ -324,7 +324,7 @@ endif()
 # Don't build sim code for the Rio or Jetson -
 # saves time and space for something which will
 # never be run
-if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
+if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi") OR
 	     ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "arm-linux-gnueabihf") OR
 		 ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "aarch64-linux-gnu") )) 
     # Sim version of main control executable.  This hooks into
@@ -502,58 +502,6 @@ add_dependencies(q_to_rpy
   ${catkin_EXPORTED_TARGETS}
 )
 ## Install ------------------------------------------------------------
-
-if (0)
-# Test trajectory generator node
-add_executable(${PROJECT_NAME}_test_trajectory src/tools/test_trajectory.cpp)
-set_target_properties(${PROJECT_NAME}_test_trajectory PROPERTIES OUTPUT_NAME test_trajectory PREFIX "")
-target_link_libraries(${PROJECT_NAME}_test_trajectory
-  ${catkin_LIBRARIES}
-)
-
-## TOOLS ------------------------------------------------------
-
-# Tool for analyzing controller performance
-add_executable(${PROJECT_NAME}_controller_to_csv_main 
-	src/tools/controller_to_csv_main.cpp
-	src/tools/controller_to_csv.cpp)
-set_target_properties(${PROJECT_NAME}_controller_to_csv_main PROPERTIES OUTPUT_NAME controller_to_csv_main PREFIX "")
-target_link_libraries(${PROJECT_NAME}_controller_to_csv_main
-  ${Gflags_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-
-# Tool for analyzing controller performance
-add_library(csv_to_controller src/tools/csv_to_controller.cpp)
-target_link_libraries(csv_to_controller
-  ${catkin_LIBRARIES}
-)
-add_executable(${PROJECT_NAME}_csv_to_controller_main 
-	src/tools/csv_to_controller_main.cpp
-	src/tools/csv_to_controller.cpp)
-set_target_properties(${PROJECT_NAME}_csv_to_controller_main PROPERTIES OUTPUT_NAME csv_to_controller_main PREFIX "")
-target_link_libraries(${PROJECT_NAME}_csv_to_controller_main
-  ${Gflags_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-
-# Tool for controlling a robot from keyboard
-add_executable(${PROJECT_NAME}_keyboard_teleop src/tools/keyboard_teleop.cpp)
-set_target_properties(${PROJECT_NAME}_keyboard_teleop PROPERTIES OUTPUT_NAME keyboard_teleop PREFIX "")
-target_link_libraries(${PROJECT_NAME}_keyboard_teleop
-  ${catkin_LIBRARIES}
-
-install(TARGETS
-    ${PROJECT_NAME}_test_trajectory
-    ${PROJECT_NAME}_controller_to_csv_main
-    ${PROJECT_NAME}_csv_to_controller_main
-    ${PROJECT_NAME}_keyboard_teleop
-    
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-)
-endif()
 
 # Install header files
 install(DIRECTORY 
