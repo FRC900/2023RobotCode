@@ -3,10 +3,10 @@
 cd ~/2023RobotCode/zebROS_ws/
 
 if [ -z $ROS_ROOT ]; then
-	#PATH=$PATH:$HOME/wpilib/2023/roborio/bin
-	source ~/wpilib/2023/roborio/arm-nilrt-linux-gnueabi/sysroot/opt/ros/noetic/setup.bash
+	#PATH=$PATH:$HOME/wpilib/2024/roborio/bin
+	source ~/wpilib/2024/roborio/arm-nilrt-linux-gnueabi/sysroot/opt/ros/noetic/setup.bash
 	PYTHONPATH=$PYTHONPATH:/opt/ros/noetic/lib/python3.10/site-packages
-elif [[ ! $ROS_ROOT = "$HOME/wpilib/2023/roborio/arm-nilrt-linux-gnueabi/sysroot/opt/ros/noetic/share/ros" ]]; then
+elif [[ ! $ROS_ROOT = "$HOME/wpilib/2024/roborio/arm-nilrt-linux-gnueabi/sysroot/opt/ros/noetic/share/ros" ]]; then
 	echo -e "\e[1m\e[31mROS is not configured for a cross build (maybe set up for a native build instead?)\e[0m"
 	echo -e "\e[1m\e[31mRun ./cross_build.sh in a new terminal window\e[0m"
 	exit 1

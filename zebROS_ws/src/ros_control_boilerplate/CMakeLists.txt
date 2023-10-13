@@ -172,11 +172,11 @@ if ("${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi")
 		${WPI_SHARED_LIB_DIR}/libwpimath.so
 		${WPI_SHARED_LIB_DIR}/libwpinet.so
 		${WPI_SHARED_LIB_DIR}/libwpiutil.so
-		${WPI_SHARED_LIB_DIR}/libvisa.so.22.5.0
+		${WPI_SHARED_LIB_DIR}/libvisa.so.23.3.0
 		${WPI_SHARED_LIB_DIR}/libembcanshim.so
 		${WPI_SHARED_LIB_DIR}/libfpgalvshim.so
-		${WPI_SHARED_LIB_DIR}/libFRC_NetworkCommunication.so.23.0.0
-		${WPI_SHARED_LIB_DIR}/libRoboRIO_FRC_ChipObject.so.23.0.0
+		${WPI_SHARED_LIB_DIR}/libFRC_NetworkCommunication.so.24.0.0
+		${WPI_SHARED_LIB_DIR}/libRoboRIO_FRC_ChipObject.so.24.0.0
 		${WPI_SYSROOT}/lib/navx/linux/athena/static/libnavx_frc.a
 	)
 	set (FRCROBOT_HW_MAIN_SRCS ${FRCROBOT_HW_MAIN_SRCS}
