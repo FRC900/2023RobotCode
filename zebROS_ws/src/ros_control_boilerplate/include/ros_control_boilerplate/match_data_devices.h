@@ -9,7 +9,7 @@
 #include "hal/DriverStationTypes.h"
 
 class MatchDataDevice;
-namespace hardware_interface
+namespace hardware_interface::match_data
 {
     class MatchStateInterface;
     class RemoteMatchStateInterface;
@@ -39,8 +39,8 @@ public:
 
 private:
     std::vector<std::unique_ptr<DEVICE_TYPE>> devices_;
-    std::unique_ptr<hardware_interface::MatchStateInterface> state_interface_;
-    std::unique_ptr<hardware_interface::RemoteMatchStateInterface> remote_state_interface_;
+    std::unique_ptr<hardware_interface::match_data::MatchStateInterface> state_interface_;
+    std::unique_ptr<hardware_interface::match_data::RemoteMatchStateInterface> remote_state_interface_;
     hardware_interface::InterfaceManager interface_manager_;
 };
 

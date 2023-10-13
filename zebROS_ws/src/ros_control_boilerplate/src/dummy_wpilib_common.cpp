@@ -138,15 +138,14 @@ frc::PWM::PWM(int, bool)
 frc::PWM::~PWM()
 {
 	ROS_ERROR("Called PWM::~PWM() on unsupported platform");
-}
-void frc::PWM::SetRaw(uint16_t)
+}  
+void frc::PWM::SetPulseTime(units::microsecond_t time)
 {
-	ROS_ERROR("Called PWM::SetRaw(uint16_t value) on unsupported platform");
+	ROS_ERROR("Called PWM::SetPulseTime() on unsupported platform");
 }
-uint16_t frc::PWM::GetRaw() const
+units::microsecond_t frc::PWM::GetPulseTime() const
 {
-	ROS_ERROR("Called PWM::GetRaw() const on unsupported platform");
-	return -1;
+	ROS_ERROR("Called PWM::GetPulseTime() on unsupported platform");
 }
 void frc::PWM::SetPosition(double)
 {

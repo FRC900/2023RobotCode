@@ -9,8 +9,8 @@
 #include "periodic_interval_counter/periodic_interval_counter.h"
 #include "ros_control_boilerplate/match_data_device.h"
 
-MatchDataDevice::MatchDataDevice(const ros::NodeHandle &nh)
-    : state_{std::make_unique<hardware_interface::MatchHWState>()}
+MatchDataDevice::MatchDataDevice(ros::NodeHandle &nh)
+    : state_{std::make_unique<hardware_interface::match_data::MatchHWState>()}
 {
     ros::NodeHandle hwi_nh(nh, "hardware_interface");
     hwi_nh.param("run_hal_robot", local_, local_);
@@ -36,16 +36,21 @@ MatchDataDevice::MatchDataDevice(const ros::NodeHandle &nh)
 
 MatchDataDevice::~MatchDataDevice() = default;
 
+<<<<<<< HEAD
 void MatchDataDevice::registerInterfaces(hardware_interface::MatchStateInterface &state_interface,
                                          hardware_interface::RemoteMatchStateInterface &remote_state_interface) const
+=======
+void MatchDataDevice::registerInterfaces(hardware_interface::match_data::MatchStateInterface &state_interface,
+                                         hardware_interface::match_data::RemoteMatchStateInterface &remote_state_interface)
+>>>>>>> 3a2edc4fa (WPIlib native builds work)
 {
     ROS_INFO_STREAM("FRCRobotInterface: Registering interface for Match Data");
-    hardware_interface::MatchStateHandle state_handle("match_data", state_.get());
+    hardware_interface::match_data::MatchStateHandle state_handle("match_data", state_.get());
     state_interface.registerHandle(state_handle);
 
     if (!local_)
     {
-        hardware_interface::MatchStateWritableHandle remote_state_handle("match_data", state_.get());
+        hardware_interface::match_data::MatchStateWritableHandle remote_state_handle("match_data", state_.get());
         remote_state_interface.registerHandle(remote_state_handle);
     }
 }
@@ -71,21 +76,21 @@ void MatchDataDevice::read(const ros::Time &/*time*/, const ros::Duration &perio
         status = 0;
         auto allianceStationID = HAL_GetAllianceStation(&status);
         state_->setGetAllianceStationStatus(std::to_string(status) + ": " + HAL_GetErrorMessage(status));
-        frc::DriverStation::Alliance color;
+        hardware_interface::match_data::AllianceColor color;
         switch (allianceStationID)
         {
         case HAL_AllianceStationID_kRed1:
         case HAL_AllianceStationID_kRed2:
         case HAL_AllianceStationID_kRed3:
-            color = frc::DriverStation::kRed;
+            color = hardware_interface::match_data::AllianceColor::Red;
             break;
         case HAL_AllianceStationID_kBlue1:
         case HAL_AllianceStationID_kBlue2:
         case HAL_AllianceStationID_kBlue3:
-            color = frc::DriverStation::kBlue;
+            color = hardware_interface::match_data::AllianceColor::Blue;
             break;
         default:
-            color = frc::DriverStation::kInvalid;
+            color = hardware_interface::match_data::AllianceColor::Unknown;
         }
         state_->setAllianceColor(color);
 
