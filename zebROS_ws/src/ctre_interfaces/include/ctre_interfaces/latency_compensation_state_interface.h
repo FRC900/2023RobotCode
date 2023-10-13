@@ -24,7 +24,9 @@ public:
 
     void addEntry(const std::string &name);
     void setEntry(const std::string &name, const ros::Time &timestamp, const double value, const double slope);
-    void getEntry(const std::string &name, ros::Time &timestamp, double &value, double &slope);
+    void getEntry(const std::string &name, ros::Time &timestamp, double &value, double &slope) const;
+
+    std::vector<std::string> getEntryNames(void) const;
 
     double getLatencyCompensatedValue(const std::string &name, const ros::Time &timestamp) const;
 

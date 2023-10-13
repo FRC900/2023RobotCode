@@ -72,19 +72,20 @@ void CTRELatencyCompensationState::setEntry(const std::string &name, const ros::
     auto entry = entries_.find(name);
     if (entry == entries_.end())
     {
-        ROS_WARN_STREAM("setEntry() can't find latency group name " << name);
+        ROS_WARN_STREAM("setEntry() can't find latency group entry name " << name);
         return;
     }
     entry->second->setTimestamp(timestamp);
     entry->second->setValue(value);
     entry->second->setSlope(slope);
 }
-void CTRELatencyCompensationState::getEntry(const std::string &name, ros::Time &timestamp, double &value, double &slope)
+
+void CTRELatencyCompensationState::getEntry(const std::string &name, ros::Time &timestamp, double &value, double &slope) const
 {
-    auto entry = entries_.find(name);
+    const auto entry = entries_.find(name);
     if (entry == entries_.end())
     {
-        ROS_WARN_STREAM("getEntry() can't find latency group name " << name);
+        ROS_WARN_STREAM("getEntry() can't find latency group entry name " << name);
         return;
     }
     timestamp = entry->second->getTimestamp();
@@ -97,12 +98,22 @@ double CTRELatencyCompensationState::getLatencyCompensatedValue(const std::strin
     auto entry = entries_.find(name);
     if (entry == entries_.end())
     {
-        ROS_WARN_STREAM("getLatencyCompensatedValue() can't find latency group name " << name);
+        ROS_WARN_STREAM("getLatencyCompensatedValue() can't find latency group entry name " << name);
         return 0;
     }
     const auto &e = entry->second;
 
     return e->getValue() + e->getSlope() * (timestamp - e->getTimestamp()).toSec();
+}
+
+std::vector<std::string> CTRELatencyCompensationState::getEntryNames(void) const
+{
+    std::vector<std::string> ret;
+    for (const auto &entry : entries_)
+    {
+        ret.push_back(entry.first);
+    }
+    return ret;
 }
 
 } // namespace

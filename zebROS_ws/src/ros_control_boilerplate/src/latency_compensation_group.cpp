@@ -32,6 +32,11 @@ public:
     virtual double getSlope(void) const = 0;
 };
 
+// Each entry in a group stores the value of a signal as well as the slope
+// (derivative w.r.t. time) of that signal at the same time.  All entries
+// in a group have their data synchronized, so that they are read at the 
+// same time. 
+// Using the value + dt * slope gives the latency compensated value
 template <typename VALUE_SIGNAL_TYPE, typename SLOPE_SIGNAL_TYPE>
 class LatencyCompensationGroupEntry : public LatencyCompensationGroupEntryBase
 {
@@ -103,7 +108,8 @@ LatencyCompensationGroup::LatencyCompensationGroup(const XmlRpc::XmlRpcValue &en
             const auto talon_fx_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CoreTalonFX>();
             if (talon_fx_ptr)
             {
-                create_group_entry(entry_name, &(talon_fx_ptr->GetPosition()), &(talon_fx_ptr->GetVelocity()));
+                ROS_WARN_STREAM("Got device ID " << talon_fx_ptr->GetDeviceID() << " for entry " << entry_name);
+                create_group_entry(entry_name, &talon_fx_ptr->GetPosition(), &talon_fx_ptr->GetVelocity());
             }
             else
             {
@@ -161,6 +167,7 @@ LatencyCompensationGroup::LatencyCompensationGroup(const XmlRpc::XmlRpcValue &en
     }
     for (auto &signal : signals_)
     {
+        ROS_WARN_STREAM("Setting update frequency to " << update_frequency << " for signal " << signal->GetName());
         signal->SetUpdateFrequency(units::frequency::hertz_t{update_frequency});
     }
     read_thread_ = std::thread(&LatencyCompensationGroup::read_thread, this);
@@ -192,6 +199,7 @@ void LatencyCompensationGroup::create_group_entry(const std::string &name,
                      std::make_unique<LatencyCompensationGroupEntry<VALUE_SIGNAL_TYPE, SLOPE_SIGNAL_TYPE>>(value_signal, slope_signal));
     state_->addEntry(name);
     read_thread_state_->addEntry(name);
+    ROS_INFO_STREAM("Created entry in latency group " << name_ << " for entry " << name);
 }
 
 void LatencyCompensationGroup::read(void)
@@ -217,10 +225,12 @@ void LatencyCompensationGroup::read_thread()
     ros::Duration(2.63).sleep();
     Tracer tracer("latency compensation " + name_);
     ROS_INFO_STREAM("Starting latency compensation read thread for " << name_ << " at " << ros::Time::now());
+    ROS_INFO_STREAM("CTRE time = " << ctre:: phoenix6::GetCurrentTimeSeconds());
+    ros::Duration time_offset{ros::Time::now().toSec() - ctre::phoenix6::GetCurrentTimeSeconds()};
     while (ros::ok())
     {
         tracer.start("WaitForAll");
-        auto status = ctre::phoenix6::BaseStatusSignal::WaitForAll(units::time::second_t{0.1}, signals_);
+        auto status = ctre::phoenix6::BaseStatusSignal::WaitForAll(units::time::second_t{0.01}, signals_);
         tracer.start_unique("Update state");
         if (status.IsOK())
         {
@@ -229,10 +239,14 @@ void LatencyCompensationGroup::read_thread()
             for (const auto &entry : entries_)
             {
                 read_thread_state_->setEntry(entry.first,
-                                             entry.second->getTimestamp(),
+                                             entry.second->getTimestamp() + time_offset,
                                              entry.second->getValue(),
                                              entry.second->getSlope());
             }
+        }
+        else
+        {
+            ROS_ERROR_STREAM("waitForAll failed for latency compensation group " << name_ << " : " << status.GetName());
         }
         tracer.report(60);
     }

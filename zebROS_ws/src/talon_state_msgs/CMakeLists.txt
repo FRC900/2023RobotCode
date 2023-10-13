@@ -50,6 +50,8 @@ add_message_files(
   CANCoderState.msg
   CANifierState.msg
   InstrumentList.msg
+  LatencyCompensationGroup.msg
+  LatencyCompensationState.msg
   OrchestraState.msg
   TalonConfig.msg
   TalonState.msg

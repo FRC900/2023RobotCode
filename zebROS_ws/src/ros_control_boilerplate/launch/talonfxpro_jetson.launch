@@ -31,7 +31,13 @@
 				talonfxpro_config_controller
 				joint_state_controller
 				joint_state_listener_controller
+				latency_compensation_state_controller
 				match_state_listener_controller
+				talonfxpro1_motionmagicvoltage_controller
+				talonfxpro2_motionmagicvoltage_controller
+				robot_code_ready_controller"
+			/>
+			<!--
 				solenoid_controller
 				double_solenoid_controller
 				ph_double_solenoid_controller
@@ -40,9 +46,6 @@
 				pcm_state_controller
 				candle_controller
 				talonfxpro_motionmagicvoltage_controller
-				robot_code_ready_controller"
-			/>
-			<!--
 				pigeon2_state_controller
 				pigeon2_imu_state_controller
 				pigeon2_controller
@@ -50,7 +53,8 @@
 				pdp_state_controller
 				pcm_state_controller
 				ph_state_controller
-				talon_controller
+				talonfxpro1_controller
+				talonfxpro2_controller
 				four_bar_controller_2023
 				swerve_drive_controller
 				-->

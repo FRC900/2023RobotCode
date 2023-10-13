@@ -1,12 +1,13 @@
 # ros_control_boilerplate Settings -----------------------
 # Settings for ros_control control loop
 generic_hw_control_loop:
-  loop_hz: 100
+  loop_hz: 250
   cycle_time_error_threshold: 0.01
   canifier_read_hz: 100
   cancoder_read_hz: 100
   #some processes have lower frequencies than the main control loop
   ctre_mc_read_hz: 100
+  talonfxpro_read_hz: 100
   pcm_read_hz: 20
   pdh_read_hz: 20
   pdp_read_hz: 20
@@ -17,7 +18,7 @@ generic_hw_control_loop:
   match_data_read_hz: 2
   robot_controller_read_hz: 20
   as726x_read_hz: 7
-  pigeon2_read_hz: 100
+  pigeon2_read_hz: 250
   talonfxpro_read_hz: 100
 
 hardware_interface:
@@ -27,20 +28,20 @@ hardware_interface:
        #- {name: terrance, type: can_talon_fx, can_bus: CANivore, can_id: 1, local: true}
        #- {name: phillip, type: can_talon_fx, can_bus: CANivore, can_id: 2, local: true}
        #- {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 1, local: true}
-       - {name: pdp, local: true, type: pdp, module: 0, local: true}
+       #- {name: pdp, local: true, type: pdp, module: 0, local: true}
        #- {name: pdh, local: true, type: pdh, module: 1, local: true}
        #- {name: ph, local: true, type: ph, ph_id: 1, local: true}
-       - {name: pcm, local: true, type: pcm, pcm_id: 0}
-       - {name: solenoid, type: solenoid, local_hardware: false, local_update: true}
-       - {name: double_solenoid, type: double_solenoid, local_hardware: false, local_update: true} 
+       #- {name: pcm, local: true, type: pcm, pcm_id: 0}
+       #- {name: solenoid, type: solenoid, local_hardware: false, local_update: true}
+       #- {name: double_solenoid, type: double_solenoid, local_hardware: false, local_update: true} 
 
-       - {name: ph_solenoid, type: solenoid, module_type: revph, module_id: 1, channel: 1, local: true}
-       - {name: ph_double_solenoid, type: double_solenoid, module_type: revph, module_id: 1, forward_channel: 2, reverse_channel: 3, local: true}
+       #- {name: ph_solenoid, type: solenoid, module_type: revph, module_id: 1, channel: 1, local: true}
+       #- {name: ph_double_solenoid, type: double_solenoid, module_type: revph, module_id: 1, forward_channel: 2, reverse_channel: 3, local: true}
 
        #- {name: talonfx, type: can_talon_fx, can_bus: CANivore, can_id: 1, local: true}
-       - {name: talonfxpro, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
-       #- {name: talonfxpro2, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
-       #- {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: talonfxpro, type: talonfx}, {name: talonfxpro2, type: talonfx} ] }
+       - {name: talonfxpro1, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
+       - {name: talonfxpro2, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
+       - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: talonfxpro1, type: talonfx}, {name: talonfxpro2, type: talonfx} ] }
        #- {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        #- {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
        #- {name: four_bar, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
@@ -54,7 +55,7 @@ hardware_interface:
        #- {name: bl_drive, type: can_talon_fx, can_bus: CANivore, can_id: 23, local: true}
        #- {name: bl_angle, type: can_talon_fx, can_bus: CANivore, can_id: 13, local: true}
        
-       - {name: candle1, can_id: 5, can_bus: CANivore, type: candle, local: true}
+       #- {name: candle1, can_id: 5, can_bus: CANivore, type: candle, local: true}
 
        - {name: robot_code_ready_jetson, local: true, type: ready}
        - {name: robot_code_ready_rio, local: false, type: ready} # Probably not really needed?
@@ -119,7 +120,6 @@ pcm_state_controller:
 ph_state_controller:
    type:         ph_state_controller/PHStateController
    publish_rate: 20
-   publish_rate: 20
 
 # Similar to above, but this one prints non-Talon state
 # (stuff that fits into the more standard ROS position/
@@ -136,9 +136,14 @@ talonfxpro_controller:
     joint: talonfxpro
     dynamic_reconfigure: True
 
-talonfxpro_motionmagicvoltage_controller:
+talonfxpro2_controller:
+    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    joint: talonfxpro2
+    dynamic_reconfigure: True
+
+talonfxpro1_motionmagicvoltage_controller:
     type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
-    joint: talonfxpro
+    joint: talonfxpro1
     motion_magic_cruise_velocity: 8.0
     motion_magic_acceleration: 16.0
     motion_magic_jerk: 24.0
@@ -148,11 +153,17 @@ talonfxpro_motionmagicvoltage_controller:
         - {kP: 65, kI: 1, kD: 0.00, kV: 0.085, kS: 0}
     dynamic_reconfigure: True
 
-talon_controller:
-    type: talon_controllers/TalonPercentOutputController
-    joint: talonfx
+talonfxpro2_motionmagicvoltage_controller:
+    type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
+    joint: talonfxpro2
+    motion_magic_cruise_velocity: 8.0
+    motion_magic_acceleration: 16.0
+    motion_magic_jerk: 24.0
+    sensor_to_mechanism_ratio: 1.0
+    rotor_to_sensor_ratio: 1.0
+    close_loop_values:
+        - {kP: 65, kI: 1, kD: 0.00, kV: 0.085, kS: 0}
     dynamic_reconfigure: True
-
 candle_controller:
     type: candle_controller/CANdleController
     name: candle1
@@ -188,3 +199,7 @@ ph_solenoid_controller:
 ph_double_solenoid_controller:
   type: position_controllers/JointPositionController
   joint: ph_double_solenoid
+
+latency_compensation_state_controller:
+  type: latency_compensation_state_controller/LatencyCompensationStateController
+  publish_rate: 250
