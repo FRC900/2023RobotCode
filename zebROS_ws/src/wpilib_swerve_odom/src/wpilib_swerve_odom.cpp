@@ -96,8 +96,8 @@ class ROSSwerveKinematics
             for (size_t i = 0; i < WHEELCOUNT; i++)
             {
                 states[i] = getState(i);
-                double v = states[i].speed;
-                double theta = states[i].angle.Radians();
+                double v = states[i].speed.value();
+                double theta = states[i].angle.Radians().value();
             }
 
             // calculate chassis speeds (WPILib magic)
