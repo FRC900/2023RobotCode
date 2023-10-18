@@ -2,7 +2,7 @@
 #include "frc/geometry/Translation2d.h"
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include <ros/ros.h>
-#include <talon_state_msgs/TalonState.h>
+#include <talon_state_msgs/TalonFXProState.h>
 #include <utility>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <angles/angles.h>
@@ -18,7 +18,7 @@ class ROSSwerveKinematics
         frc::SwerveDriveKinematics<WHEELCOUNT> m_kinematics{moduleLocations};
 
         // The latest talon states
-        talon_state_msgs::TalonState latest_talon_states;
+        talon_state_msgs::TalonFXProState latest_talon_states;
 
         // Maps talon names to indices in latest_talon_states for optimization
         std::map<std::string, size_t> index_map;
@@ -77,7 +77,7 @@ class ROSSwerveKinematics
 
             // calculate angle and velocity
             double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_index]);
-            double velocity = latest_talon_states.speed[speed_index] * wheel_radius * encoder_to_rotations;
+            double velocity = latest_talon_states.velocity[speed_index] * wheel_radius * encoder_to_rotations;
 
             // return calculated state in WPILib format
             return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
@@ -124,7 +124,7 @@ class ROSSwerveKinematics
         }
 
         // talon state callback
-        void talon_state_callback(const talon_state_msgs::TalonState::ConstPtr &msg)
+        void talon_state_callback(const talon_state_msgs::TalonFXProState::ConstPtr &msg)
         {
             // Store latest talon states
             latest_talon_states = *msg;
@@ -309,7 +309,7 @@ class ROSSwerveKinematics
             }
 
             // subscribe to talon states
-            talon_state_sub = nh.subscribe<talon_state_msgs::TalonState>("/frcrobot_jetson/talon_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
+            talon_state_sub = nh.subscribe<talon_state_msgs::TalonFXProState>("/frcrobot_jetson/talonfxpro_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
 
             // create publisher to publish twist
             twist_pub = nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
