@@ -7,16 +7,17 @@
 
 <launch>
 
+	<include file="$(find wpilib_swerve_odom)/launch/odom.launch"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="link_zedodomtoodom" args="0 0 0 0 0 0 1 zed_objdet_odom odom" />
 	<node name="override_covariance_imu" pkg="controller_node" type="override_covariance.py" output="screen">
 		<param name="topic" value="/imu/zeroed_imu"/>
 		<param name="type" value="Imu"/>
-		<param name="standard_deviation/x_rotation" value="0.005"/>
-		<param name="standard_deviation/y_rotation" value="0.005"/>
-		<param name="standard_deviation/z_rotation" value="0.005"/>
-		<param name="standard_deviation/x_acceleration" value="0.2"/>
-		<param name="standard_deviation/y_acceleration" value="0.2"/>
-		<param name="standard_deviation/z_acceleration" value="0.2"/>
+		<param name="standard_deviation/x_rotation" value="0.0001"/>
+		<param name="standard_deviation/y_rotation" value="0.0001"/>
+		<param name="standard_deviation/z_rotation" value="0.0001"/>
+		<param name="standard_deviation/x_acceleration" value="0.05"/>
+		<param name="standard_deviation/y_acceleration" value="0.05"/>
+		<param name="standard_deviation/z_acceleration" value="0.05"/>
 	</node>
 	<node name="override_covariance_zed" pkg="controller_node" type="override_covariance.py" output="screen">
 		<param name="topic" value="/zed_objdetect/odom"/>
@@ -82,16 +83,16 @@
 			 have significant net motion in those directions 
 			 (unless we are tipping over) and even so, do
 			 we want to trust the navx data instead? -->
-		<param name="odom0" value="/frcrobot_jetson/swerve_drive_controller/odom_overridden" />
+		<!-- <param name="odom0" value="/frcrobot_jetson/swerve_drive_controller/odom_overridden" />
 		<rosparam param="odom0_config"> [false,  false,  false,
                                          false, false, false, 
                                          false, false, false,
                                          false, false, false,
                                          false, false, false]
         </rosparam>
-		<param name="odom0_differential" value="false" />
+		<param name="odom0_differential" value="true" />
 		<param name="odom0_relative"     value="false" />
-		<param name="odom0_nodelay"      value="true" />
+		<param name="odom0_nodelay"      value="true" /> -->
 
 		<!-- imu0 (IMU attached to Jetson via USB): 
 			 roll, pitch, yaw, x-acc, y-acc, z-acc -->
@@ -125,7 +126,7 @@
 		
 
 		<!-- ZED -->
-		<param name="odom1" value="/zed_objdetect/odom_overridden" />
+		<!-- <param name="odom1" value="/zed_objdetect/odom_overridden" />
 		<rosparam param="odom1_config"> [false,  false,  false,
                                          false, false, false, 
                                          false, false, false,
@@ -134,13 +135,13 @@
         </rosparam>
 		<param name="odom1_differential" value="false" />
 		<param name="odom1_relative"     value="false" />
-		<param name="odom1_nodelay"      value="true" />
+		<param name="odom1_nodelay"      value="true" /> -->
 
 		<param name="twist0" value="/frcrobot_jetson/swerve_drive_odom/twist" />
 		<rosparam param="twist0_config"> [false,  false,  false,
                                          false, false, false, 
                                          true, true, false,
-                                         false, false, false,
+                                         false, false, true,
                                          false, false, false]
         </rosparam>
 		<param name="twist0_differential" value="false" />
@@ -148,7 +149,7 @@
 		<param name="twist0_nodelay"      value="true" />
 
 		<!-- x, y, z, r, p, y, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az --> 
-        <rosparam param="process_noise_covariance"> [0.1, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+        <!-- <rosparam param="process_noise_covariance"> [0.1, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0.1, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0.0, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
@@ -163,6 +164,6 @@
                            0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
                            0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
                            0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]
-        </rosparam>
+        </rosparam> -->
 	</node>
 </launch>

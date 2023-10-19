@@ -17,9 +17,6 @@ class ROSSwerveKinematics
         // The WPILib swerve kinematics object
         frc::SwerveDriveKinematics<WHEELCOUNT> m_kinematics{moduleLocations};
 
-        // The latest talon states
-        talon_state_msgs::TalonFXProState latest_talon_states;
-
         // Maps talon names to indices in latest_talon_states for optimization
         std::map<std::string, size_t> index_map;
 
@@ -38,7 +35,7 @@ class ROSSwerveKinematics
         ros::Subscriber talon_state_sub;
 
         // Get the state of a module
-        frc::SwerveModuleState getState(size_t module_index)
+        frc::SwerveModuleState getState(size_t module_index, const talon_state_msgs::TalonFXProState::ConstPtr &latest_talon_states)
         {
             // get the index of the speed and steering talons
             size_t steer_index, speed_index = 0;
@@ -49,9 +46,9 @@ class ROSSwerveKinematics
             }
             else
             {
-                for (size_t i = 0; i < latest_talon_states.name.size(); i++)
+                for (size_t i = 0; i < latest_talon_states->name.size(); i++)
                 {
-                    if (latest_talon_states.name[i] == steering_names[module_index])
+                    if (latest_talon_states->name[i] == steering_names[module_index])
                     {
                         index_map[steering_names[module_index]] = i;
                         steer_index = i;
@@ -65,9 +62,9 @@ class ROSSwerveKinematics
             }
             else
             {
-                for (size_t i = 0; i < latest_talon_states.name.size(); i++)
+                for (size_t i = 0; i < latest_talon_states->name.size(); i++)
                 {
-                    if (latest_talon_states.name[i] == speed_names[module_index])
+                    if (latest_talon_states->name[i] == speed_names[module_index])
                     {
                         index_map[speed_names[module_index]] = i;
                         speed_index = i;
@@ -76,8 +73,8 @@ class ROSSwerveKinematics
             }
 
             // calculate angle and velocity
-            double angle = angles::normalize_angle(latest_talon_states.position[steer_index] - offsets[module_index]);
-            double velocity = latest_talon_states.velocity[speed_index] * wheel_radius * encoder_to_rotations;
+            double angle = angles::normalize_angle(latest_talon_states->position[steer_index] - offsets[module_index]);
+            double velocity = latest_talon_states->velocity[speed_index] * wheel_radius * encoder_to_rotations;
 
             // return calculated state in WPILib format
             return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
@@ -86,51 +83,52 @@ class ROSSwerveKinematics
         // Publisher for twists
         ros::Publisher twist_pub;
 
-        // Publish latest twist from talon states
-        void publish_twist()
-        {
-            // array to store states in WPILib format
-            wpi::array<frc::SwerveModuleState, WHEELCOUNT> states{wpi::empty_array};
+        geometry_msgs::TwistWithCovarianceStamped twist_msg;
 
+        wpi::array<frc::SwerveModuleState, WHEELCOUNT> states{wpi::empty_array};
+        boost::array<double, 36> covariance_matrix{0.00001, 0, 0, 0, 0, 0,
+                                          0, 0.00001, 0, 0, 0, 0,
+                                          0, 0, 0.00001, 0, 0, 0,
+                                          0, 0, 0, 1.0, 0, 0,
+                                          0, 0, 0, 0, 1.0, 0,
+                                          0, 0, 0, 0, 0, 1.0};
+
+        // Publish latest twist from talon states
+        void publish_twist(const ros::Time &t, const talon_state_msgs::TalonFXProState::ConstPtr &latest_talon_states)
+        {
+
+            // entire function runs in <15000ns = <15us = extremely fast
+            std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
             // get states for each module
             for (size_t i = 0; i < WHEELCOUNT; i++)
             {
-                states[i] = getState(i);
+                states[i] = getState(i, latest_talon_states);
                 double v = states[i].speed.value();
                 double theta = states[i].angle.Radians().value();
             }
 
             // calculate chassis speeds (WPILib magic)
+            // very fast, only ~833ns
             frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(states);
 
-            // publish twist
-            geometry_msgs::TwistWithCovarianceStamped twist_msg;
-            twist_msg.header.stamp = ros::Time::now();
-            twist_msg.header.frame_id = "base_link";
+            twist_msg.header.stamp = t;
             // x = y and y = -x in the talon swerve drive controller, so copying that here
             // and it seems to work
             twist_msg.twist.twist.linear.x = speeds.vy.value();
             twist_msg.twist.twist.linear.y = -speeds.vx.value();
             twist_msg.twist.twist.angular.z = speeds.omega.value();
 
-            twist_msg.twist.covariance = boost::array<double, 36>{0.0001, 0, 0, 0, 0, 0,
-                                          0, 0.0001, 0, 0, 0, 0,
-                                          0, 0, 0.0001, 0, 0, 0,
-                                          0, 0, 0, 0, 0, 0,
-                                          0, 0, 0, 0, 0, 0,
-                                          0, 0, 0, 0, 0, 0};
-
             twist_pub.publish(twist_msg);
+
+            std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+            //ROS_INFO_STREAM(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
         }
 
         // talon state callback
         void talon_state_callback(const talon_state_msgs::TalonFXProState::ConstPtr &msg)
         {
-            // Store latest talon states
-            latest_talon_states = *msg;
-
             // Call function to calculate and publish twist
-            publish_twist();
+            publish_twist(msg->header.stamp, msg);
         }
 
         // Get wheel names from rosparam, given a node handle and a parameter name
@@ -309,10 +307,13 @@ class ROSSwerveKinematics
             }
 
             // subscribe to talon states
-            talon_state_sub = nh.subscribe<talon_state_msgs::TalonFXProState>("/frcrobot_jetson/talonfxpro_states", 1, &ROSSwerveKinematics::talon_state_callback, this);
+            talon_state_sub = nh.subscribe<talon_state_msgs::TalonFXProState>("/frcrobot_jetson/talonfxpro_states", 100, &ROSSwerveKinematics::talon_state_callback, this);
 
             // create publisher to publish twist
-            twist_pub = nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 1); // sure copilot great topic name
+            twist_pub = nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 100); // sure copilot great topic name
+
+            twist_msg.twist.covariance = covariance_matrix;
+            twist_msg.header.frame_id = "base_link";
 
             return true;
         }
@@ -334,5 +335,6 @@ int main(int argc, char **argv)
     }
 
     // spin forever
-    ros::spin();
+    ros::MultiThreadedSpinner spinner(8);
+    spinner.spin();
 }
