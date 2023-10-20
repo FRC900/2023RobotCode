@@ -58,8 +58,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	// Start the control loop
-	ros_control_boilerplate::GenericHWControlLoop control_loop(nh, frcrobot_sim_interface);
+	// Start the control loop - true for SIM template param means simulation
+	ros_control_boilerplate::GenericHWControlLoop<true> control_loop(nh, frcrobot_sim_interface);
 
 	control_loop.run(); // Blocks until shutdown signal recieved
 

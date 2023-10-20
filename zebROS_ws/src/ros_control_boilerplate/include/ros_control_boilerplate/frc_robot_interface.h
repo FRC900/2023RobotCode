@@ -54,6 +54,7 @@ namespace ros_control_boilerplate
 {
 
 /// \brief Hardware interface for a robot
+template <bool SIM>
 class FRCRobotInterface : public hardware_interface::RobotHW
 {
 	public:

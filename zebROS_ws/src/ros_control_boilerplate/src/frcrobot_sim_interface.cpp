@@ -41,21 +41,15 @@ For a more detailed simulation example, see sim_hw_interface.cpp
 #include "hal/HALBase.h"
 #include "../sim/HALInitializer.h"
 
+#include "ros_control_boilerplate/devices.h"
 #include "ros_control_boilerplate/frcrobot_sim_interface.h"
-
-#include "ros_control_boilerplate/as726x_devices.h"
-#include "ros_control_boilerplate/canifier_devices.h"
-#include "ros_control_boilerplate/joystick_devices.h"
 #include "ros_control_boilerplate/match_data_devices.h"
-#include "ros_control_boilerplate/sparkmax_devices.h"
-#include "ros_control_boilerplate/talon_orchestra_devices.h"
-#include "ros_control_boilerplate/talonfxpro_devices.h"
 
 namespace ros_control_boilerplate
 {
 
 FRCRobotSimInterface::FRCRobotSimInterface()
-	: ros_control_boilerplate::FRCRobotInterface()
+	: ros_control_boilerplate::FRCRobotInterface<true>()
 {
 }
 FRCRobotSimInterface::~FRCRobotSimInterface() = default;
@@ -72,35 +66,9 @@ bool FRCRobotSimInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot
 		return false;
 	}
 
-	// Create devices which have different code for HW vs. Sim
-	// (hw interface has a similar block, but using HW vs Sim devices)
-	devices_.emplace_back(std::make_unique<SimAS726xDevices>(root_nh));
-	devices_.emplace_back(std::make_unique<SimCANifierDevices>(root_nh));
-	devices_.emplace_back(std::make_unique<SimJoystickDevices>(root_nh));
-	devices_.emplace_back(std::make_unique<SimMatchDataDevices>(root_nh));
-	devices_.emplace_back(std::make_unique<SimSparkMaxDevices>(root_nh));
-	devices_.emplace_back(std::make_unique<SimTalonOrchestraDevices>(root_nh));
-
-	// Orchestra needs a set of previously created TalonFXs to use as instruments
-	const auto orchestra_devices = getDevicesOfType<SimTalonOrchestraDevices>(devices_);
-	const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices>(devices_);
-	if (talonfxpro_devices && orchestra_devices)
-	{
-		std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs;
-		talonfxpro_devices->appendDeviceMap(talonfxs);
-		orchestra_devices->setTalonFXData(talonfxs);
-	}
-
 	for (const auto &d : devices_)
 	{
 		d->simInit(root_nh);
-	}
-	// Need to do this here rather than in the base class so
-	// registerInterface isn't called twice for devices
-	// created in the base init().
-	for (const auto &d : devices_)
-	{
-		registerInterfaceManager(d->registerInterface());
 	}
 	hal::init::InitializeDriverStationData();
 
@@ -150,7 +118,7 @@ void FRCRobotSimInterface::write(const ros::Time& time, const ros::Duration& per
 {
 	// Was the robot enabled last time write was run?
 	write_tracer_->start_unique("read robot enabled");
-	if (bool robot_enabled = false; read_device_enabled<SimMatchDataDevices>(devices_, robot_enabled))
+	if (bool robot_enabled = false; read_device_enabled<MatchDataDevices<true>>(devices_, robot_enabled))
 	{
 		Devices::setEnabled(robot_enabled);
 	}

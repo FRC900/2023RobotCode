@@ -3,4 +3,4 @@
 #include "ros_control_boilerplate/../../src/match_data_device.cpp"
 #include "ros_control_boilerplate/../../src/sim_match_data_device.cpp"
 
-template class MatchDataDevices<SimMatchDataDevice>;
+template class MatchDataDevices<true>;

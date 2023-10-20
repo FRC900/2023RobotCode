@@ -2,4 +2,4 @@
 #include "ros_control_boilerplate/../../src/match_data_devices.cpp"
 #include "ros_control_boilerplate/../../src/match_data_device.cpp"
 
-template class MatchDataDevices<MatchDataDevice>;
+template class MatchDataDevices<false>;

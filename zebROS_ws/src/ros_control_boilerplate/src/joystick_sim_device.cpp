@@ -3,4 +3,4 @@
 #include "ros_control_boilerplate/../../src/joystick_device.cpp"
 #include "ros_control_boilerplate/../../src/sim_joystick_device.cpp"
 
-template class JoystickDevices<SimJoystickDevice>;
+template class JoystickDevices<true>;
