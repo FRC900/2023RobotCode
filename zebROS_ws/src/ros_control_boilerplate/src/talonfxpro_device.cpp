@@ -85,6 +85,7 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setRotorPosition(read_thread_state_->getRotorPosition());
     state_->setVelocity(read_thread_state_->getVelocity());
     state_->setPosition(read_thread_state_->getPosition());
+    state_->setAcceleration(read_thread_state_->getAcceleration());
 
     state_->setMotionMagicIsRunning(read_thread_state_->getMotionMagicIsRunning());
     state_->setDeviceEnable(read_thread_state_->getDeviceEnable());
@@ -226,6 +227,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(rotor_position, talonfxpro_->GetRotorPosition());
         SAFE_READ(velocity, talonfxpro_->GetVelocity());
         SAFE_READ(position, talonfxpro_->GetPosition());
+        SAFE_READ(acceleration, talonfxpro_->GetAcceleration());
         SAFE_READ(device_enable, talonfxpro_->GetDeviceEnable());
         SAFE_READ(motion_magic_is_running, talonfxpro_->GetMotionMagicIsRunning());
 
@@ -500,6 +502,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setRotorPosition(units::radian_t{*rotor_position}.value());
             read_thread_state_->setVelocity(units::radians_per_second_t{*velocity}.value());
             read_thread_state_->setPosition(units::radian_t{*position}.value());
+            read_thread_state_->setAcceleration(units::radians_per_second_squared_t{*acceleration}.value());
 
             read_thread_state_->setDeviceEnable(*device_enable == ctre::phoenix6::signals::DeviceEnableValue::Enabled);
             read_thread_state_->setMotionMagicIsRunning(*motion_magic_is_running == ctre::phoenix6::signals::MotionMagicIsRunningValue::Enabled);
@@ -632,6 +635,10 @@ void TalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration &p
         const double invert = state_->getInvert() == hardware_interface::talonfxpro::Inverted::Clockwise_Positive ? -1.0 : 1.0;
         units::radian_t target_position{invert * state_->getClosedLoopReference() * state_->getSensorToMechanismRatio()};
         units::angular_velocity::radians_per_second_t target_velocity{invert * state_->getClosedLoopReferenceSlope() * state_->getSensorToMechanismRatio()};
+        if (state_->getClosedLoopReferenceSlope() != 0)
+        {
+            ROS_INFO_STREAM_THROTTLE(0.1, "target_position = " << target_position.value() << " target_velocity = " << target_velocity.value());
+        }
         sim_state.SetRawRotorPosition(target_position);
         sim_state.SetRotorVelocity(target_velocity);
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
@@ -1254,9 +1261,9 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                      motion_magic_jerk))
     {
         // Our units are radians/ sec (sec^2, sec^3), CTRE's are turns / sec
-        config.MotionMagic.MotionMagicCruiseVelocity = units::turn_t{units::radian_t{motion_magic_cruise_velocity}}.value();
-        config.MotionMagic.MotionMagicAcceleration = units::turn_t{units::radian_t{motion_magic_acceleration}}.value();
-        config.MotionMagic.MotionMagicJerk = units::turn_t{units::radian_t{motion_magic_jerk}}.value();
+        config.MotionMagic.MotionMagicCruiseVelocity = units::turns_per_second_t{units::radians_per_second_t{motion_magic_cruise_velocity}}.value();
+        config.MotionMagic.MotionMagicAcceleration = units::turns_per_second_squared_t{units::radians_per_second_squared_t{motion_magic_acceleration}}.value();
+        config.MotionMagic.MotionMagicJerk = motion_magic_jerk / (2.0 * M_PI); // units does't have cubed?
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.MotionMagic), "GetConfigurator().Apply(config.MotionMagic)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " MotionMagic " << config.MotionMagic);

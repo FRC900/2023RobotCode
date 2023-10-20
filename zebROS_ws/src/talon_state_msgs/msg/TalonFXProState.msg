@@ -36,6 +36,7 @@ float64[] rotor_velocity
 float64[] rotor_position
 float64[] velocity
 float64[] position
+float64[] acceleration
 
 bool[]    motion_magic_is_running
 

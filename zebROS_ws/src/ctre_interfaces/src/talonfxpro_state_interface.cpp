@@ -1025,6 +1025,15 @@ double TalonFXProHWState::getPosition(void) const
 	return position_;
 }
 
+void TalonFXProHWState::setAcceleration(const double acceleration)
+{
+	acceleration_ = acceleration;
+}
+double TalonFXProHWState::getAcceleration(void) const
+{
+	return acceleration_;
+}
+
 void TalonFXProHWState::setMotionMagicIsRunning(const bool motion_magic_is_running)
 {
 	motion_magic_is_running_ = motion_magic_is_running;

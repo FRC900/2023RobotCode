@@ -325,6 +325,7 @@ public:
     void setEnableReadThread(const bool enable_read_thread, const bool update_ddr = true);
     void setRotorPosition(const double set_position, const bool update_ddr = true);
 
+    // Long list of functions which allow access of state interface vars
 	STATE_PASSTHRU_FN(getCANID);
     double getkP(const int index) const { return talon_.state()->getkP(index); }
     double getkI(const int index) const { return talon_.state()->getkI(index); }
@@ -418,6 +419,7 @@ public:
     STATE_PASSTHRU_FN(getRotorPosition);
     STATE_PASSTHRU_FN(getVelocity);
     STATE_PASSTHRU_FN(getPosition);
+    STATE_PASSTHRU_FN(getAcceleration);
     STATE_PASSTHRU_FN(getMotionMagicIsRunning);
     STATE_PASSTHRU_FN(getDeviceEnable);
     STATE_PASSTHRU_FN(getDifferentialControlMode);

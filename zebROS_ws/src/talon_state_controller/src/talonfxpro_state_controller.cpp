@@ -100,6 +100,7 @@ public:
 			m.rotor_position.push_back(0);
 			m.velocity.push_back(0);
 			m.position.push_back(0);
+			m.acceleration.push_back(0);
 
 			m.motion_magic_is_running.push_back(false);
 
@@ -336,6 +337,7 @@ public:
 					m.rotor_position[i] = ts->getRotorPosition();
 					m.velocity[i] = ts->getVelocity();
 					m.position[i] = ts->getPosition();
+					m.acceleration[i] = ts->getAcceleration();
 
 					m.motion_magic_is_running[i] = ts->getMotionMagicIsRunning();
 

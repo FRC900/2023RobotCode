@@ -322,6 +322,9 @@ public:
 	void setPosition(const double position);
 	double getPosition(void) const;
 
+	void setAcceleration(const double acceleration);
+	double getAcceleration(void) const;
+
 	void setMotionMagicIsRunning(const bool motion_magic_is_running);
 	bool getMotionMagicIsRunning(void) const;
 
@@ -610,6 +613,7 @@ private:
 	double rotor_position_{0};
 	double velocity_{0};
 	double position_{0};
+	double acceleration_{0};
 
 	bool motion_magic_is_running_{false};
 
