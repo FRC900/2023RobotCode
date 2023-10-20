@@ -1080,8 +1080,8 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
 
     hardware_interface::talonfxpro::DifferentialSensorSource differential_sensor_source;
     if (command_->differentialSensorsChanged(differential_sensor_source,
-                                 config.DifferentialSensors.DifferentialTalonFXSensorID,
-                                 config.DifferentialSensors.DifferentialRemoteSensorID) &&
+                                             config.DifferentialSensors.DifferentialTalonFXSensorID,
+                                             config.DifferentialSensors.DifferentialRemoteSensorID) &&
         convertDifferentialSensorSource(differential_sensor_source, config.DifferentialSensors.DifferentialSensorSource))
     {
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.DifferentialSensors), "GetConfigurator().Apply(config.DifferentialSensors)"))
@@ -1159,15 +1159,17 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
     hardware_interface::talonfxpro::LimitType reverse_limit_type;
     hardware_interface::talonfxpro::LimitSource forward_limit_source;
     hardware_interface::talonfxpro::LimitSource reverse_limit_source;
+    double forward_limit_position_value;
+    double reverse_limit_position_value;
     if (command_->limitChanged(forward_limit_type,
                                config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable,
-                               config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue,
+                               forward_limit_position_value,
                                config.HardwareLimitSwitch.ForwardLimitEnable,
                                forward_limit_source,
                                config.HardwareLimitSwitch.ForwardLimitRemoteSensorID,
                                reverse_limit_type,
                                config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable,
-                               config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue,
+                               reverse_limit_position_value,
                                config.HardwareLimitSwitch.ReverseLimitEnable,
                                reverse_limit_source,
                                config.HardwareLimitSwitch.ReverseLimitRemoteSensorID) &&
@@ -1176,20 +1178,20 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         convertLimitType(reverse_limit_type, config.HardwareLimitSwitch.ReverseLimitType) &&
         convertLimitSource(reverse_limit_source, config.HardwareLimitSwitch.ReverseLimitSource))
     {
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue *= state_->getSensorToMechanismRatio() / (2.0 * M_PI);
-        config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue *= state_->getSensorToMechanismRatio() / (2.0 * M_PI);
+        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue = units::turn_t{units::radian_t{forward_limit_position_value}}.value();
+        config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = units::turn_t{units::radian_t{reverse_limit_position_value}}.value();
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.HardwareLimitSwitch), "GetConfigurator().Apply(config.HardwareLimitSwitch)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " HardwareLimitSwitch " << config.HardwareLimitSwitch);
             state_->setForwardLimitType(forward_limit_type);
             state_->setForwardLimitAutosetPositionEnable(config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable);
-            state_->setForwardLimitAutosetPositionValue(config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue);
+            state_->setForwardLimitAutosetPositionValue(forward_limit_position_value);
             state_->setForwardLimitEnable(config.HardwareLimitSwitch.ForwardLimitEnable);
             state_->setForwardLimitSource(forward_limit_source);
             state_->setForwardLimitRemoteSensorID(config.HardwareLimitSwitch.ForwardLimitRemoteSensorID);
             state_->setReverseLimitType(reverse_limit_type);
             state_->setReverseLimitAutosetPositionEnable(config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable);
-            state_->setReverseLimitAutosetPositionValue(config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue);
+            state_->setReverseLimitAutosetPositionValue(reverse_limit_position_value);
             state_->setReverseLimitEnable(config.HardwareLimitSwitch.ReverseLimitEnable);
             state_->setReverseLimitSource(reverse_limit_source);
             state_->setReverseLimitRemoteSensorID(config.HardwareLimitSwitch.ReverseLimitRemoteSensorID);
@@ -1219,20 +1221,23 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         }
     }
 
+    double forward_soft_limit_threshold;
+    double reverse_soft_limit_threshold;
     if (command_->softLimitChanged(config.SoftwareLimitSwitch.ForwardSoftLimitEnable,
                                    config.SoftwareLimitSwitch.ReverseSoftLimitEnable,
-                                   config.SoftwareLimitSwitch.ForwardSoftLimitThreshold,
-                                   config.SoftwareLimitSwitch.ReverseSoftLimitThreshold))
+                                   forward_soft_limit_threshold,
+                                   reverse_soft_limit_threshold))
     {
-        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold *= state_->getSensorToMechanismRatio() / (2 * M_PI);
-        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold *= state_->getSensorToMechanismRatio() / (2 * M_PI);
+        // Our units are radians, CTRE's are rotations
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = units::turn_t{units::radian_t{forward_soft_limit_threshold}}.value();
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = units::turn_t{units::radian_t{reverse_soft_limit_threshold}}.value();
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.SoftwareLimitSwitch), "GetConfigurator().Apply(config.SoftwareLimitSwitch)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " SoftwareLimitSwitch " << config.SoftwareLimitSwitch);
             state_->setForwardSoftLimitEnable(config.SoftwareLimitSwitch.ForwardSoftLimitEnable);
-            state_->setForwardSoftLimitThreshold(config.SoftwareLimitSwitch.ForwardSoftLimitThreshold);
+            state_->setForwardSoftLimitThreshold(forward_soft_limit_threshold);
             state_->setReverseSoftLimitEnable(config.SoftwareLimitSwitch.ReverseSoftLimitEnable);
-            state_->setReverseSoftLimitThreshold(config.SoftwareLimitSwitch.ReverseSoftLimitThreshold);
+            state_->setReverseSoftLimitThreshold(reverse_soft_limit_threshold);
         }
         else
         {
@@ -1248,9 +1253,10 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                      motion_magic_acceleration,
                                      motion_magic_jerk))
     {
-        config.MotionMagic.MotionMagicCruiseVelocity = motion_magic_cruise_velocity;
-        config.MotionMagic.MotionMagicAcceleration = motion_magic_acceleration;
-        config.MotionMagic.MotionMagicJerk = motion_magic_jerk;
+        // Our units are radians/ sec (sec^2, sec^3), CTRE's are turns / sec
+        config.MotionMagic.MotionMagicCruiseVelocity = units::turn_t{units::radian_t{motion_magic_cruise_velocity}}.value();
+        config.MotionMagic.MotionMagicAcceleration = units::turn_t{units::radian_t{motion_magic_acceleration}}.value();
+        config.MotionMagic.MotionMagicJerk = units::turn_t{units::radian_t{motion_magic_jerk}}.value();
         if (safeCall(talonfxpro_->GetConfigurator().Apply(config.MotionMagic), "GetConfigurator().Apply(config.MotionMagic)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " MotionMagic " << config.MotionMagic);
@@ -1369,7 +1375,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
     {
         if (control_changed)
         {
-            //ROS_INFO_STREAM("curr_robot_enabled = " << (int)curr_robot_enabled << " control_changed = " << control_changed);
+            ROS_INFO_STREAM(getName() << " curr_robot_enabled = " << (int)curr_robot_enabled << " control_changed = " << control_changed << " control_mode = " << (int)control_mode);
             bool success = true; // only update state_ on a successful SetControl call
             switch (control_mode)
             {

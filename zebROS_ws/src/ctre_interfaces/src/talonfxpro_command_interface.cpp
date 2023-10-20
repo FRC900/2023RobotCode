@@ -1072,7 +1072,7 @@ bool TalonFXProHWCommand::audioChanged(bool &beep_on_boot,
 {
 	beep_on_boot = beep_on_boot_;
 	beep_on_config = beep_on_config_;
-	allow_music_dur_disable_ = allow_music_dur_disable;
+	allow_music_dur_disable = allow_music_dur_disable_;
 	const auto rc = audio_changed_;
 	audio_changed_ = false;
 	return rc;
@@ -1262,6 +1262,7 @@ void TalonFXProHWCommand::setControlMode(const TalonMode control_mode)
 {
 	if (control_mode != control_mode_)
 	{
+		ROS_INFO_STREAM("setControlMode : mode = " << (int)control_mode);
 		control_mode_ = control_mode;
 		control_changed_ = true;
 	}
@@ -1493,7 +1494,7 @@ bool TalonFXProHWCommand::controlChanged(TalonMode &control_mode,
 	control_slot = control_slot_;
 	control_differential_position = control_differential_position_;
 	control_differential_slot = control_differential_slot_;
-	control_oppose_master_direction_ = control_oppose_master_direction;
+	control_oppose_master_direction = control_oppose_master_direction_;
 	const auto rc = control_changed_;
 	control_changed_ = false;
 	return rc;

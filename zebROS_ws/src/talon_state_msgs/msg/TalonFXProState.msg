@@ -9,6 +9,7 @@ float64[] control_acceleration
 float64[] control_jerk
 bool[]    control_enable_foc
 bool[]    control_override_brake_dur_neutral
+bool[]    control_oppose_master_direction
 float64[] control_max_abs_duty_cycle
 float64[] control_deadband
 float64[] control_feedforward

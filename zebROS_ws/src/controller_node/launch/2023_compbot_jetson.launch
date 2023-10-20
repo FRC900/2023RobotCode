@@ -37,10 +37,8 @@
 		<!-- Load controller manager-->
 		<node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
 			output="screen" args="spawn
-			 elevator_controller_2023
 			 four_bar_controller_2023
-		 	 intake_talonfxpro_controller
-			 swerve_drive_controller
+			 elevator_controller_2023
 			 joint_state_controller_jetson
 			 joint_state_listener_controller
 			 talon_state_controller_jetson
@@ -54,6 +52,11 @@
 			 pigeon2_imu_state_controller
 			 pigeon2_state_controller
 			 robot_code_ready_controller" />
+			<!-- 
+		 	 intake_talonfxpro_controller
+			 swerve_drive_controller
+
+			-->
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />
 
@@ -82,6 +85,7 @@
 	-->
 	</group>
 
+	<!-- KCJ
 	<include file="$(find teleop_joystick_control)/launch/2023_snap_to_angle.launch"/>
 	<include file="$(find controller_node)/launch/teleop.launch">
 		<arg name="year" value="2023" />
@@ -99,9 +103,11 @@
 	
 	<include file="$(find controller_node)/launch/distance_to_pose.launch"/>
 	<include file="$(find behaviors)/launch/auto_node.launch"/>
+	-->
 
 	<!-- Add 2023 actionlib servers here -->
 	
+	<!-- KCJ
 	<include file="$(find behaviors)/launch/2023_intake.launch">
 	</include>
 
@@ -128,8 +134,11 @@
 
 	<include file="$(find behaviors)/launch/2023_align_to_grid.launch">
 	</include>
+	-->
 
+	<!-- KCJ 
 	<node name="candle_node" pkg="candle_node" type="candle_node" respawn="false" output="screen"/>
+	-->
 
 	<include file="$(find controller_node)/launch/2023_terabee.launch" if="$(eval arg('hw_or_sim')=='hw')">
 	</include>
@@ -143,9 +152,11 @@
 
 	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
 	
+	<!-- KCJ 
 	<include file="$(find tf_object_detection)/launch/yolo_detection.launch">
 		<arg name="input_type" value="live_camera" if="$(eval hw_or_sim == 'hw')"/>
 	</include>
+	-->
 	
 	<!--  <include file="$(find controller_node)/launch/rosbridge_websocket.launch"> -->
 </launch>

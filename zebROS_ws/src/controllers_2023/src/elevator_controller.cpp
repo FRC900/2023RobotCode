@@ -294,7 +294,7 @@ public:
                 [this](int b)
                 { motion_s_curve_strength.store(b); },
                 "S Curve Strength",
-                0, 50);
+                0, 200);
 
             ddr_->publishServicesTopics();
         }

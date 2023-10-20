@@ -73,6 +73,7 @@ public:
 			m.control_jerk.push_back(0);
 			m.control_enable_foc.push_back(false);
 			m.control_override_brake_dur_neutral.push_back(false);
+			m.control_oppose_master_direction.push_back(false);
 			m.control_max_abs_duty_cycle.push_back(0);
 			m.control_deadband.push_back(0);
 			m.control_feedforward.push_back(0);
@@ -297,6 +298,7 @@ public:
 					m.control_jerk[i] = ts->getControlJerk();
 					m.control_enable_foc[i] = ts->getControlEnableFOC();
 					m.control_override_brake_dur_neutral[i] = ts->getControlOverrideBrakeDurNeutral();
+					m.control_oppose_master_direction[i] = ts->getControlOpposeMasterDirection();
 					m.control_max_abs_duty_cycle[i] = ts->getControlMaxAbsDutyCycle();
 					m.control_deadband[i] = ts->getControlDeadband();
 					m.control_feedforward[i] = ts->getControlFeedforward();
