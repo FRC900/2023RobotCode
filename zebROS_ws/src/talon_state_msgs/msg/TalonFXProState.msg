@@ -16,6 +16,9 @@ float64[] control_feedforward
 int8[]    control_slot
 float64[] control_differential_position
 int8[]    control_differential_slot
+
+float64[] motor_voltage
+
 uint8[]   version_major
 uint8[]   version_minor
 uint8[]   version_bugfix

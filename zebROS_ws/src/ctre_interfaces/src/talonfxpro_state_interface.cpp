@@ -899,6 +899,15 @@ int TalonFXProHWState::getVersionBuild(void) const
 	return version_build_;
 }
 
+void TalonFXProHWState::setMotorVoltage(const double motor_voltage)
+{
+	motor_voltage_ = motor_voltage;
+}
+double TalonFXProHWState::getMotorVoltage(void) const
+{
+	return motor_voltage_;
+}
+
 void TalonFXProHWState::setForwardLimit(const bool forward_limit)
 {
 	forward_limit_ = forward_limit;

@@ -68,6 +68,8 @@ void TalonFXProDevice::read(const ros::Time &/*time*/, const ros::Duration &/*pe
     state_->setVersionBugfix(read_thread_state_->getVersionBugfix());
     state_->setVersionBuild(read_thread_state_->getVersionBuild());
 
+    state_->setMotorVoltage(read_thread_state_->getMotorVoltage());
+
     state_->setForwardLimit(read_thread_state_->getForwardLimit());
     state_->setReverseLimit(read_thread_state_->getReverseLimit());
 
@@ -201,6 +203,8 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(version_minor, talonfxpro_->GetVersionMinor());
         SAFE_READ(version_bugfix, talonfxpro_->GetVersionBugfix());
         SAFE_READ(version_build, talonfxpro_->GetVersionBuild());
+
+        SAFE_READ(motor_voltage, talonfxpro_->GetMotorVoltage());
 
         SAFE_READ(forward_limit, talonfxpro_->GetForwardLimit());
         SAFE_READ(reverse_limit, talonfxpro_->GetReverseLimit());
@@ -484,6 +488,8 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setVersionMinor(*version_minor);
             read_thread_state_->setVersionBugfix(*version_bugfix);
             read_thread_state_->setVersionBuild(*version_build);
+
+            read_thread_state_->setMotorVoltage(motor_voltage->value());
 
             read_thread_state_->setForwardLimit(*forward_limit == ctre::phoenix6::signals::ForwardLimitValue::ClosedToGround);
             read_thread_state_->setReverseLimit(*reverse_limit == ctre::phoenix6::signals::ReverseLimitValue::ClosedToGround);

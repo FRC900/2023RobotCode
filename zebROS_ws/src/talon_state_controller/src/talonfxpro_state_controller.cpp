@@ -84,6 +84,7 @@ public:
 			m.version_minor.push_back(0);
 			m.version_bugfix.push_back(0);
 			m.version_build.push_back(0);
+			m.motor_voltage.push_back(0);
 			m.forward_limit.push_back(false);
 			m.reverse_limit.push_back(false);
 			m.applied_rotor_polarity.push_back("");
@@ -310,6 +311,7 @@ public:
 					m.version_minor[i] = ts->getVersionMinor();
 					m.version_bugfix[i] = ts->getVersionBugfix();
 					m.version_build[i] = ts->getVersionBuild();
+					m.motor_voltage[i] = ts->getMotorVoltage();
 					m.forward_limit[i] = ts->getForwardLimit();
 					m.reverse_limit[i] = ts->getReverseLimit();
 					switch(ts->getAppliedRotorPolarity())

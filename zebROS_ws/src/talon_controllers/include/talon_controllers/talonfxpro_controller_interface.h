@@ -405,6 +405,7 @@ public:
 	STATE_PASSTHRU_FN(getVersionMinor);
 	STATE_PASSTHRU_FN(getVersionBugfix);
 	STATE_PASSTHRU_FN(getVersionBuild);
+	STATE_PASSTHRU_FN(getMotorVoltage);
 	STATE_PASSTHRU_FN(getForwardLimit);
 	STATE_PASSTHRU_FN(getReverseLimit);
 	STATE_PASSTHRU_FN(getAppliedRotorPolarity);

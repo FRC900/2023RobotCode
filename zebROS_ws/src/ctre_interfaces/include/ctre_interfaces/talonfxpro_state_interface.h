@@ -280,6 +280,9 @@ public:
 	void setVersionBuild(const int version_build);
 	int getVersionBuild(void) const;
 
+	void setMotorVoltage(const double motor_voltage);
+	double getMotorVoltage(void) const;
+
 	void setForwardLimit(const bool forward_limit);
 	bool getForwardLimit(void) const;
 
@@ -595,6 +598,8 @@ private:
 	int version_minor_{0};
 	int version_bugfix_{0};
 	int version_build_{0};
+
+	double motor_voltage_{0};
 
 	bool forward_limit_{false};
 	bool reverse_limit_{false};
