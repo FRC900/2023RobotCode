@@ -1,14 +1,14 @@
 # ros_control_boilerplate Settings -----------------------
 # Settings for ros_control control loop
 generic_hw_control_loop:
-  loop_hz: 100
+  loop_hz: 250
   cycle_time_error_threshold: 0.01
   canifier_read_hz: 100
   cancoder_read_hz: 100
   #some processes have lower frequencies than the main control loop
   ctre_mc_read_hz: 100
   talonfxpro_read_hz: 100
-  pigeon2_read_hz: 100
+  pigeon2_read_hz: 250
   pcm_read_hz: 20
   pdh_read_hz: 20
   pdp_read_hz: 20
@@ -50,7 +50,7 @@ hardware_interface:
        - {name: intake, type: talonfxpro, can_bus: CANivore, can_id: 51, local: true}
        
        #- {name: pcm, type: pcm, pcm_id: 0}
-       #- {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
+       - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
 
        - {name: candle1, can_id: 0, can_bus: CANivore, type: candle, local: true}
 
@@ -59,6 +59,8 @@ hardware_interface:
        - {name: robot_code_ready_jetson, local: true, type: ready}
        - {name: robot_code_ready_rio, local: false, type: ready} # Probably not really needed?
 
+       - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: fl_drive, type: talonfx}, {name: fl_angle, type: talonfx}, {name: fr_drive, type: talonfx}, {name: fr_angle, type: talonfx}, {name: br_drive, type: talonfx}, {name: br_angle, type: talonfx}, {name: bl_drive, type: talonfx}, {name: bl_angle, type: talonfx}, {name: pigeon2, type: pigeon2_yaw} ] }
+    #    - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: intake, type: talonfx} ]}
 
 # Create controllers for each joint
 #
@@ -147,3 +149,7 @@ pigeon2_imu_state_controller:
 candle_controller:
     type: candle_controller/CANdleController
     name: candle1
+
+latency_compensation_state_controller:
+  type: latency_compensation_state_controller/LatencyCompensationStateController
+  publish_rate: 250
