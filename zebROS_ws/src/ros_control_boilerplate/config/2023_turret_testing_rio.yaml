@@ -19,15 +19,25 @@ generic_hw_control_loop:
 
 # Settings for ros_control hardware interface
 # Map a name for each valid joint to a CAN id
-# For future expansion, change hw_id to specify one
-# of several types of HW interface : CAN_id, PWM_id, DIO_id, AIO_id, etc.
 hardware_interface:
 
    joints:
-       # add mechanisms here
        - {name: turret_joint, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
-       - {name: robot_code_ready_rio, local: false, type: ready}
-       # JETSON CODE READY COMMENTED OUT HERE
-       #- {name: robot_code_ready_jetson, local: true, type: ready}
        - {name: cancoder_for_turret_zero, type: cancoder, can_bus: CANivore, can_id: 0, local: true}
+       - {name: robot_code_ready_rio, local: true, type: ready}
+       - {name: robot_code_ready_jetson, local: false, type: ready}
 
+joint_state_controller_rio:
+   type:         joint_state_controller/JointStateController
+   publish_rate: 100
+
+# Used to listen for remote joint states published from the given topic
+# (in this case the Jetson) and copy them to internal copies of
+# joint data
+joint_state_listener_controller_rio:
+    type:      state_listener_controller/JointStateListenerController
+    topic:     /frcrobot_jetson/joint_states
+
+match_state_controller:
+   type:         match_state_controller/MatchStateController
+   publish_rate: 20

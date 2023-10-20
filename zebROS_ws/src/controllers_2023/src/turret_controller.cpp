@@ -32,8 +32,7 @@ class TurretController : public controller_interface::MultiInterfaceController<h
             // has type of CANCoderStateInterface, check if this is correct
             cancoder_joint_ = cancoder_joint_iface->getHandle("cancoder_for_turret_zero"); //joint name comes from ros_control_boilerplate/config/[insert_year]_compbot_base_jetson.yaml
 
-            cancoder_joint_->setInitializationStrategy(hardware_interface::cancoder::SensorInitializationStrategy::BootToZero);
-            inital_cancoder_angle_ = cancoder_joint_->getPosition(); // take the initial angle of the cancoder
+            inital_cancoder_angle_ = cancoder_joint_.state()->getPosition(); // take the initial angle of the cancoder
 
             // initialize motor joint using those config values
             if (!turret_joint_.initWithNode(talon_command_iface, nullptr, controller_nh, XmlRpc::XmlRpcValue("turret_leader"))) {

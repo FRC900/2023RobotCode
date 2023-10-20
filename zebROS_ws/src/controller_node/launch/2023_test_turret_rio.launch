@@ -2,20 +2,16 @@
 <launch>
 
 	<!-- GDB functionality -->
-	<arg name="debug" default="false" />
-	<arg unless="$(arg debug)" name="launch_prefix" value="" />
-	<arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
 
 	<arg name="joy_or_key" default="joy" />
 	<arg name="button_box" default="true"/>
-	<arg name="hw_or_sim" default="sim" />
+	<arg name="hw_or_sim" default="hw" />
+	<arg name="launch_prefix" default="" />
 
 	<group ns="frcrobot_rio">
 
 		<!-- Load controller settings -->
-		<!-- These need to be replaced with the real thing -->
-        <rosparam file="$(find ros_control_boilerplate)/config/2023_turret_testing.yaml" command="load"/>
-		<rosparam file="$(find ros_control_boilerplate)/config/2023_turret_params.yaml" command="load"/>
+		<rosparam file="$(find ros_control_boilerplate)/config/2023_turret_testing_rio.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_rio.yaml" command="load"/>
 
 		<!-- Load hardware interface -->
@@ -29,12 +25,21 @@
 
 		<!-- Load controller manager -->
 		<node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
-			output="screen" args="spawn turret_controller_2023 
-			talon_state_controller joint_state_controller_rio match_state_controller 
-			robot_code_ready_controller" />
+			output="screen" args="spawn joint_state_controller_rio
+			                            joint_state_listener_controller_rio
+										match_state_controller
+										robot_code_ready_controller" />
 
 		<!-- Run rqt driver station for sim-->
 		<node name="driversim" pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" output="screen"/>
 
+
+<!--
+		<node name="uptime_rio" pkg="uptime" type="uptime_node" output="screen" />
+
+		<include file="$(find cpu_monitor)/launch/cpu_monitor.launch">
+			<arg name="poll_period" value="10"/>
+		</include>
+-->
 	</group>
 </launch>

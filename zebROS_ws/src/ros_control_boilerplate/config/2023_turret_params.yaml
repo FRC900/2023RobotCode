@@ -1,4 +1,3 @@
-
 turret_controller_2023:
     type: turret_controller/TurretController
     cancoder_offset_from_0: 0
@@ -40,24 +39,3 @@ turret_controller_2023:
 
         dynamic_reconfigure: True
         motion_s_curve_strength: 8
-
-talon_state_controller:
-   type:         talon_state_controller/TalonStateController
-   publish_rate: 100
-
-joint_state_controller_rio:
-   type:         joint_state_controller/JointStateController
-   publish_rate: 100
-
-match_state_controller:
-   type:         match_state_controller/MatchStateController
-   publish_rate: 20
-
-cancoder_controller:
-    type:      cancoder_controller/CANCoderController
-    joint_name: cancoder_for_turret_zero
-    initialization_strategy: boot_to_absolute_position
-
-cancoder_state_controller:
-    type:     cancoder_state_controller/CANCoderStateController
-    publish_rate: 100
