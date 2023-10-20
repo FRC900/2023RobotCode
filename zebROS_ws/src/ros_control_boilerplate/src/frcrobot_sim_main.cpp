@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	spinner.start();
 
 	// Create the hardware interface specific to your robot
-	auto frcrobot_sim_interface = std::make_shared<ros_control_boilerplate::FRCRobotSimInterface>(nh);
+	auto frcrobot_sim_interface = std::make_shared<ros_control_boilerplate::FRCRobotSimInterface>();
 	if (!frcrobot_sim_interface->init(nh, robot_nh))
 	{
 		ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << " : frcrobot_sim_interface->init() returned false");

@@ -1,12 +1,95 @@
 <?xml version="1.0"?>
 
 <launch>
-	<param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/urdf/frcrobot.xacro" />
-
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find frcrobot_gazebo)/worlds/frcrobot.world"/>
     <!-- more default parameters can be changed here -->
   </include>
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.2 -param robot_description -urdf -model robot" />
+<!--
+  <param name="field_description" command="$(find xacro)/xacro $(find field_description)/urdf/field2019_textured.urdf" />
+  <node name="spawn_field_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.001 -param field_description -urdf -model field" />
+-->
+<!--
+  <param name="props_description" command="$(find xacro)/xacro $(find field_description)/urdf/field_props_2019.urdf" />
+  <node name="props_state_publisher" pkg="robot_state_publisher" type="state_publisher" >
+    <remap from="robot_description" to="props_description" />
+  </node>
+  <node name="spawn_props_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.0 -param props_description -urdf -model props" />
+-->
+  <!-- Add a few params which tells gazebo which sim interfaces to load
+	   and, in each of the namespaces of those interfaces, their types
+	-->
+  <rosparam file="$(find frcrobot_gazebo)/config/robots.yaml" command="load"/>
+  <!-- process the xacro file into a urdf, load the text of that urdf into a ros 
+	   string parameter. This is used by gazebo to build its robot model
+	-->
+  <param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/urdf/frcrobot.xacro" />
+  <!-- TODO : Update me for 2023 robot-->
+  <group ns="frcrobot_jetson">
+	  <!-- publishes transforms between the various ROS joints
+		   TODO - check that this shouldn't be in the root namespace
+	-->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+
+    <rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson.yaml" command="load"/>
+    <rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive.yaml" command="load"/>
+    <rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_offsets.yaml" command="load"/>
+    <rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_params.yaml" command="load"/>
+    <rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_jetson.yaml" command="load"/>
+  </group>
+ 
+  <group ns="frcrobot_rio">
+    <rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_rio.yaml" command="load"/>
+    <rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_rio.yaml" command="load"/>
+  </group>
+
+  <node name="spawn_robot_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.5 -param robot_description -urdf -model robot" />
+
+  <group ns="frcrobot_jetson">
+    <node name="controller_spawner_jetson" pkg="controller_manager" type="controller_manager" respawn="false"
+      output="screen" args="spawn
+       panel_intake_controller
+       joint_state_controller
+       joint_state_listener_controller
+       talon_state_controller
+       match_state_listener_controller
+       swerve_drive_controller
+       robot_code_ready_controller" />
+  </group>
+
+  <group ns="frcrobot_rio">
+    <node name="controller_spawner_rio" pkg="controller_manager" type="controller_manager" respawn="false"
+      output="screen" args="spawn
+       joint_state_controller
+       joint_state_listener_controller
+       imu_sensor_controller
+       match_state_controller
+       navx_offset_controller
+       robot_controller_state_controller
+       robot_code_ready_controller" /> 
+  </group>
+
+  <include file="$(find controller_node)/launch/joysticks_sim.launch">
+    <arg name="joy_or_key" value="joy"/>
+  </include>
+
+  <group ns="teleop">
+    <rosparam file="$(find teleop_joystick_control)/config/teleop_joystick_comp.yaml" command="load"/>
+    <node name="teleop_joystick_comp" pkg="teleop_joystick_control" type="teleop_joystick_comp" output="screen" >
+      <remap from="navx_mxp" to="/frcrobot_rio/navx_mxp"/>
+    </node>
+
+    <group ns="translator0">
+      <node name="translate_joystick_data_node" pkg="teleop_joystick_control" type="translate_joystick_data_node" output="screen"/>
+    </group>
+
+  </group>
+  <group ns="cmd_vel_mux">
+    <node name="twist_mux" pkg="twist_mux" type="twist_mux">
+      <rosparam command="load" file="$(find talon_swerve_drive_controller)/config/twist_mux.yaml"/>
+      <remap from="cmd_vel_out" to="/frcrobot_jetson/swerve_drive_controller/cmd_vel"/>
+    </node> 
+  </group>
+
 </launch>

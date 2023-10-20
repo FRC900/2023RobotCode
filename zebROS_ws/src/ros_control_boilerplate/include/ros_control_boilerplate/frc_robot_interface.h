@@ -40,7 +40,7 @@
 #ifndef FRC_ROBOT_INTERFACE_INC_
 #define FRC_ROBOT_INTERFACE_INC_
 
-#include <thread>
+#include <memory>
 
 #include <hardware_interface/robot_hw.h>
 #include <ros/ros.h>
@@ -63,7 +63,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		 * \param nh - Node handle for topics.
 		 * \param urdf - optional pointer to a parsed robot model
 		 */
-		FRCRobotInterface(ros::NodeHandle &nh, urdf::Model *urdf_model = NULL);
+		FRCRobotInterface(void);
 		FRCRobotInterface(const FRCRobotInterface &) = delete;
 		FRCRobotInterface(const FRCRobotInterface &&) noexcept = delete;
 		~FRCRobotInterface() override;
@@ -100,22 +100,17 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		}
 
 	protected:
-		/** \brief Get the URDF XML from the parameter server */
-		virtual void loadURDF(ros::NodeHandle &nh, std::string param_name);
-
 		// Short name of this class
 		std::string name_;
 
 		bool run_hal_robot_{true};
 		std::string can_interface_{"can0"};
 
-		urdf::Model *urdf_model_{nullptr};
-
 		bool robot_code_ready_{false};
 		bool last_robot_enabled_{false};
 
-		Tracer read_tracer_;
-		Tracer write_tracer_;
+		std::unique_ptr<Tracer> read_tracer_;
+		std::unique_ptr<Tracer> write_tracer_;
 
 		std::vector<std::unique_ptr<Devices>> devices_;
 };  // class

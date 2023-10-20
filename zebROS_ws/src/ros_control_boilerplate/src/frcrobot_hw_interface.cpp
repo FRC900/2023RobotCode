@@ -128,8 +128,8 @@ namespace ros_control_boilerplate
 {
 // Constructor. Pass appropriate params to base class constructor,
 // initialze robot_ pointer to NULL
-FRCRobotHWInterface::FRCRobotHWInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
-	: ros_control_boilerplate::FRCRobotInterface(nh, urdf_model)
+FRCRobotHWInterface::FRCRobotHWInterface()
+	: ros_control_boilerplate::FRCRobotInterface()
 {
 }
 
@@ -200,7 +200,7 @@ void FRCRobotHWInterface::read(const ros::Time& time, const ros::Duration& perio
 {
 	for (const auto &d : devices_)
 	{
-		d->hwRead(time, period, read_tracer_);
+		d->hwRead(time, period, *read_tracer_);
 	}
 	FRCRobotInterface::read(time, period);
 }
@@ -237,7 +237,7 @@ void FRCRobotHWInterface::write(const ros::Time& time, const ros::Duration& peri
 
 	for (const auto &d : devices_)
 	{
-		d->hwWrite(time, period, write_tracer_);
+		d->hwWrite(time, period, *write_tracer_);
 	}
 	FRCRobotInterface::write(time, period);
 }

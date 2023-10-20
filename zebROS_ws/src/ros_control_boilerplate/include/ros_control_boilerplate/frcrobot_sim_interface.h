@@ -52,7 +52,7 @@ class FRCRobotSimInterface : public ros_control_boilerplate::FRCRobotInterface
 		 * \brief Constructor
 		 * \param nh - Node handle for topics.
 		 */
-		FRCRobotSimInterface(ros::NodeHandle &nh, urdf::Model *urdf_model = NULL);
+		FRCRobotSimInterface();
 		FRCRobotSimInterface(const FRCRobotSimInterface &) = delete;
 		FRCRobotSimInterface(const FRCRobotSimInterface &&) noexcept = delete;
 		~FRCRobotSimInterface() override;

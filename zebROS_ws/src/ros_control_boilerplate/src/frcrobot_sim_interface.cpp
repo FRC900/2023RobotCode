@@ -36,7 +36,6 @@
 Desc:   Example ros_control hardware interface blank template for the FRCRobot
 For a more detailed simulation example, see sim_hw_interface.cpp
 */
-#include <memory> // for make_unique()
 #include <ros/ros.h>
 
 #include "hal/HALBase.h"
@@ -55,8 +54,8 @@ For a more detailed simulation example, see sim_hw_interface.cpp
 namespace ros_control_boilerplate
 {
 
-FRCRobotSimInterface::FRCRobotSimInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
-	: ros_control_boilerplate::FRCRobotInterface(nh, urdf_model)
+FRCRobotSimInterface::FRCRobotSimInterface()
+	: ros_control_boilerplate::FRCRobotInterface()
 {
 }
 FRCRobotSimInterface::~FRCRobotSimInterface() = default;
@@ -118,15 +117,15 @@ void FRCRobotSimInterface::read(const ros::Time &time, const ros::Duration &peri
 	// shouldn't matter which just so long as the sim mechanisms are
 	// updated once per control loop using the appropriate timestep
 
-	read_tracer_.start_unique("HAL_SimPeriodicBefore");
+	read_tracer_->start_unique("HAL_SimPeriodicBefore");
 	HAL_SimPeriodicBefore();
 
 	for (const auto &d : devices_)
 	{
-		d->simRead(time, period, read_tracer_);
+		d->simRead(time, period, *read_tracer_);
 	}
 
-	read_tracer_.start_unique("HAL_SimPeriodicAfter");
+	read_tracer_->start_unique("HAL_SimPeriodicAfter");
 	HAL_SimPeriodicAfter();
 
 	FRCRobotInterface::read(time, period);
@@ -150,7 +149,7 @@ static bool read_device_enabled(const std::vector<std::unique_ptr<Devices>> &dev
 void FRCRobotSimInterface::write(const ros::Time& time, const ros::Duration& period)
 {
 	// Was the robot enabled last time write was run?
-	write_tracer_.start_unique("read robot enabled");
+	write_tracer_->start_unique("read robot enabled");
 	if (bool robot_enabled = false; read_device_enabled<SimMatchDataDevices>(devices_, robot_enabled))
 	{
 		Devices::setEnabled(robot_enabled);
@@ -158,7 +157,7 @@ void FRCRobotSimInterface::write(const ros::Time& time, const ros::Duration& per
 
 	for (const auto &d: devices_)
 	{
-		d->simWrite(time, period, write_tracer_);
+		d->simWrite(time, period, *write_tracer_);
 	}
 	FRCRobotInterface::write(time, period);
 }

@@ -73,31 +73,22 @@
 namespace ros_control_boilerplate
 {
 
-FRCRobotInterface::FRCRobotInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
+FRCRobotInterface::FRCRobotInterface(void)
 	: name_("generic_hw_interface")
-	, read_tracer_("FRCRobotInterface " + nh.getNamespace() + "::read()")
-	, write_tracer_("FRCRobotInterface " + nh.getNamespace() + "::write()")
 {
-	// Check if the URDF model needs to be loaded
-	if (urdf_model == nullptr)
-	{
-		loadURDF(nh, "robot_description");
-	}
-	else
-	{
-		urdf_model_ = urdf_model;
-	}
-
-	// Load rosparams
-	ros::NodeHandle rpnh(nh, "hardware_interface"); // TODO(davetcoleman): change the namespace to "frc_robot_interface" aka name_
-	run_hal_robot_ = rpnh.param<bool>("run_hal_robot", run_hal_robot_);
-	can_interface_ = rpnh.param<std::string>("can_interface", can_interface_);
 }
 
 FRCRobotInterface::~FRCRobotInterface() = default;
 
 bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_hw_nh*/)
 {
+	read_tracer_ = std::make_unique<Tracer>("FRCRobotInterface " + root_nh.getNamespace() + "::read()");
+	write_tracer_ = std::make_unique<Tracer>("FRCRobotInterface " + root_nh.getNamespace() + "::write()");
+
+	// Load rosparams
+	ros::NodeHandle rpnh(root_nh, "hardware_interface"); // TODO(davetcoleman): change the namespace to "frc_robot_interface" aka name_
+	run_hal_robot_ = rpnh.param<bool>("run_hal_robot", run_hal_robot_);
+	can_interface_ = rpnh.param<std::string>("can_interface", can_interface_);
 #ifdef __linux__
 #if 0
 	struct sched_param schedParam{};
@@ -193,7 +184,7 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_
 
 void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 {
-	read_tracer_.start_unique("Check for ready");
+	read_tracer_->start_unique("Check for ready");
 	if (!robot_code_ready_)
 	{
 		const auto ready_device = getDevicesOfType<ReadyDevices>(devices_);
@@ -212,59 +203,25 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 
 	for (const auto &d: devices_)
 	{
-		d->read(time, period, read_tracer_);
+		d->read(time, period, *read_tracer_);
 	}
-	read_tracer_.report(60);
+	read_tracer_->report(60);
 }
 
 void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period)
 {
 	for (const auto &d: devices_)
 	{
-		d->write(time, period, write_tracer_);
+		d->write(time, period, *write_tracer_);
 	}
 
-	write_tracer_.report(60);
+	write_tracer_->report(60);
 }
 
 bool FRCRobotInterface::prepareSwitch(const std::list<hardware_interface::ControllerInfo> &/*start_list*/,
 									  const std::list<hardware_interface::ControllerInfo> &/*stop_list*/)
 {
 	return true;
-}
-
-void FRCRobotInterface::loadURDF(ros::NodeHandle &/*nh*/, std::string /*param_name*/)
-{
-	return;
-#if 0
-	std::string urdf_string;
-	urdf_model_ = new urdf::Model();
-
-	// search and wait for robot_description on param server
-	while (urdf_string.empty() && ros::ok())
-	{
-		std::string search_param_name;
-		if (nh.searchParam(param_name, search_param_name))
-		{
-			ROS_INFO_STREAM_NAMED(name_, "Waiting for model URDF on the ROS param server at location: " <<
-								  nh.getNamespace() << search_param_name);
-			nh.getParam(search_param_name, urdf_string);
-		}
-		else
-		{
-			ROS_INFO_STREAM_NAMED(name_, "Waiting for model URDF on the ROS param server at location: " <<
-								  nh.getNamespace() << param_name);
-			nh.getParam(param_name, urdf_string);
-		}
-
-		usleep(100000);
-	}
-
-	if (!urdf_model_->initString(urdf_string))
-		ROS_ERROR_STREAM_NAMED(name_, "Unable to load URDF model");
-	else
-		ROS_DEBUG_STREAM_NAMED(name_, "Received URDF from param server");
-#endif
 }
 
 }  // namespace

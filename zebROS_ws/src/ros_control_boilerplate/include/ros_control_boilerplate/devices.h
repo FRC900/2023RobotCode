@@ -46,6 +46,11 @@ public:
     virtual void simRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
     virtual void simWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
 
+    // Read and write functions which add additional sim features
+    virtual void gazeboSimInit(ros::NodeHandle /*nh*/) {}
+    virtual void gazeboSimRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
+    virtual void gazeboSimWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
+
     // Read and write functions which add additional hardware-only features
     virtual void hwInit(ros::NodeHandle &/*nh*/) {}
     virtual void hwRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}

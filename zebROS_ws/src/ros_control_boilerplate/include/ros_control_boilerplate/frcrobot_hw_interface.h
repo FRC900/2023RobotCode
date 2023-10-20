@@ -54,7 +54,7 @@ class FRCRobotHWInterface : public ros_control_boilerplate::FRCRobotInterface
 		 * \brief Constructor
 		 * \param nh - Node handle for topics.
 		 */
-		FRCRobotHWInterface(ros::NodeHandle &nh, urdf::Model *urdf_model = NULL);
+		FRCRobotHWInterface();
 		FRCRobotHWInterface(const FRCRobotHWInterface &) = delete;
 		FRCRobotHWInterface(const FRCRobotHWInterface &&) noexcept = delete;
 		~FRCRobotHWInterface() override = default;
