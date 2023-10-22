@@ -41,6 +41,8 @@
 
 #include <gazebo_frcrobot_control/gazebo_frcrobot_control_plugin.h>
 #include <urdf/model.h>
+#include <chrono>
+#include <thread>
 
 namespace gazebo_ros_control
 {
@@ -198,7 +200,7 @@ void GazeboFRCRobotControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::El
       }
 
       // Load in plugin for this type
-	  boost::shared_ptr<RobotHWSim> robot_hw;
+      boost::shared_ptr<RobotHWSim> robot_hw;
       try
       {
         robot_hw = class_loader_.createInstance(type);
@@ -334,7 +336,7 @@ std::string GazeboFRCRobotControlPlugin::getURDF(std::string param_name) const
       model_nh_.getParam(param_name, urdf_string);
     }
 
-    usleep(100000);
+    std::this_thread::sleep_for(std::chrono::microseconds(100000));
   }
   ROS_DEBUG_STREAM_NAMED("gazebo_ros_control", "Recieved urdf from param server, parsing...");
 
