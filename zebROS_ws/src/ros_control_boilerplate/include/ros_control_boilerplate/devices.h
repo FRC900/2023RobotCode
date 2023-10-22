@@ -25,6 +25,11 @@ namespace hardware_interface
     class InterfaceManager;
 }
 
+namespace gazebo::physics
+{
+    class Model;
+}
+
 class Devices
 {
 public:
@@ -47,9 +52,9 @@ public:
     virtual void simWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
 
     // Read and write functions which add additional sim features
-    virtual void gazeboSimInit(ros::NodeHandle /*nh*/) {}
+    virtual bool gazeboSimInit(ros::NodeHandle /*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model) { return true;}
     virtual void gazeboSimRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
-    virtual void gazeboSimWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
+    virtual void gazeboSimWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/, const bool e_stop_active_) {}
 
     // Read and write functions which add additional hardware-only features
     virtual void hwInit(ros::NodeHandle &/*nh*/) {}

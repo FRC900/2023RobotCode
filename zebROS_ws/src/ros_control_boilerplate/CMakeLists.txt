@@ -116,8 +116,6 @@ add_library(frc_robot_interface STATIC
 	src/canifier_device.cpp
 	src/canifier_devices.cpp
     src/ctre_v5_device.cpp
-    src/ctre_v5_motor_controller.cpp
-	src/ctre_v5_motor_controllers.cpp
     src/ctre_v6_device.cpp
     src/digital_input_device.cpp
 	src/digital_input_devices.cpp
@@ -171,6 +169,7 @@ add_dependencies(frc_robot_interface
 # some files which make sense for one case don't for the other
 set (FRCROBOT_HW_MAIN_SRCS 
 	src/as726x_hw_device.cpp
+	src/ctre_v5_motor_controller_hw_device.cpp
 	src/error_queue.cpp
 	src/frcrobot_hw_main.cpp
 	src/frcrobot_hw_interface.cpp
@@ -448,14 +447,16 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 	)
 
 	add_executable(frcrobot_sim_main 
-		src/as726x_sim_device.cpp
 		src/frcrobot_sim_main.cpp
+		src/as726x_sim_device.cpp
+		src/ctre_v5_motor_controller_sim_device.cpp
 		src/frcrobot_sim_interface.cpp
 		src/dummy_powerdistribution.cpp
 		src/dummy_wpilib_common.cpp
 		src/dummy_wpilib_sim.cpp
 		src/joystick_sim_device.cpp
 		src/match_data_sim_device.cpp
+		src/sim_ctre_v5_motor_controller.cpp
 		src/sparkmax_sim_device.cpp
 	)
 
@@ -486,14 +487,16 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 	)
 
 	add_library(frcrobot_gazebosim
-		src/as726x_sim_device.cpp
 		src/frcrobot_gazebosim_interface.cpp
+		src/as726x_sim_device.cpp
+		src/ctre_v5_motor_controller_sim_device.cpp
 		src/frcrobot_sim_interface.cpp
 		src/dummy_powerdistribution.cpp
 		src/dummy_wpilib_common.cpp
 		src/dummy_wpilib_sim.cpp
 		src/joystick_sim_device.cpp
 		src/match_data_sim_device.cpp
+		src/sim_ctre_v5_motor_controller.cpp
 		src/sparkmax_sim_device.cpp
 	)
 

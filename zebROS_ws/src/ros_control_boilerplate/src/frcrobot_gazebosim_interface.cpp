@@ -17,33 +17,10 @@ namespace frcrobot_control
 
 		for (auto &d : devices_)
 		{
-			d->gazeboSimInit(model_nh);
+			d->gazeboSimInit(model_nh, parent_model);
 		}
 
 #if 0
-		for (size_t i = 0; i < can_ctre_mc_names_.size(); i++)
-		{
-			ROS_INFO_STREAM_NAMED("frcrobot_gazebosim_interface",
-								  "Connecting to gazebo : CTRE MC joint" << i << "=" << can_ctre_mc_names_[i] << (can_ctre_mc_local_updates_[i] ? " local" : " remote") << " update, " << (can_ctre_mc_local_hardwares_[i] ? "local" : "remote") << " hardware"
-																		 << " as " << (can_ctre_mc_is_talon_[i] ? "TalonSRX" : "VictorSPX")
-																		 << " CAN id " << can_ctre_mc_can_ids_[i]);
-
-			if (can_ctre_mc_local_hardwares_[i])
-			{
-				gazebo::physics::JointPtr joint = parent_model->GetJoint(can_ctre_mc_names_[i]);
-				if (!joint)
-				{
-					ROS_WARN_STREAM_NAMED("frcrobot_gazebosim_interface", "This robot has a joint named \"" << can_ctre_mc_names_[i]
-																											<< "\" which is not in the gazebo model.");
-				}
-				sim_joints_ctre_mcs_.push_back(joint);
-			}
-			else
-			{
-				ROS_INFO_STREAM("   skipping non-local hardware");
-				sim_joints_ctre_mcs_.push_back(nullptr);
-			}
-		}
 
 		for (size_t i = 0; i < num_solenoids_; i++)
 		{
@@ -115,38 +92,6 @@ namespace frcrobot_control
 		{
 			d->gazeboSimRead(time, period, *read_tracer_);
 		}
-#if 0
-		for (size_t i = 0; i < num_can_ctre_mcs_; i++)
-		{
-			if (sim_joints_ctre_mcs_[i] && can_ctre_mc_local_hardwares_[i])
-			{
-				// Gazebo has an interesting API...
-#if GAZEBO_MAJOR_VERSION >= 8
-				const double position = sim_joints_ctre_mcs_[i]->Position(0);
-#else
-				const double position = sim_joints_ctre_mcs_[i]->GetAngle(0).Radian();
-#endif
-				auto &ts = talon_state_[i];
-				ts.setPosition(position);
-				if (ts.getTalonMode() != hardware_interface::TalonMode_MotionMagic)
-					ts.setSpeed(sim_joints_ctre_mcs_[i]->GetVelocity(0));
-
-#if 0
-				if (joint_types_[j] == urdf::Joint::PRISMATIC)
-				{
-					joint_position_[j] = position;
-				}
-				else
-				{
-					joint_position_[j] += angles::shortest_angular_distance(joint_position_[j],
-							position);
-				}
-				joint_velocity_[j] = sim_joints_ctre_mcs_[j]->GetVelocity(0);
-#endif
-			}
-		}
-		// solenoid and double solenoid state is set in FRCRobotSimInterface::write()
-#endif
 	}
 
 	void FRCRobotGazeboSimInterface::writeSim(ros::Time time, ros::Duration period)
@@ -154,80 +99,9 @@ namespace frcrobot_control
 		FRCRobotSimInterface::write(time, period);
 		for (auto &d : devices_)
 		{
-			d->gazeboSimWrite(time, period, *read_tracer_);
+			d->gazeboSimWrite(time, period, *read_tracer_, e_stop_active_);
 		}
 #if 0
-		for (size_t i = 0; i < num_can_ctre_mcs_; i++)
-		{
-			if (sim_joints_ctre_mcs_[i] && can_ctre_mc_local_hardwares_[i])
-			{
-				auto &ts = talon_state_[i];
-				hardware_interface::TalonMode simulate_mode = ts.getTalonMode();
-				double position;
-				double velocity;
-				bool set_position = false;
-				bool set_velocity = false;
-				if (simulate_mode == hardware_interface::TalonMode_Position)
-				{
-					// Assume instant velocity
-					position = ts.getSetpoint();
-					set_position = true;
-					velocity = 0;
-					set_velocity = true;
-				}
-				else if (simulate_mode == hardware_interface::TalonMode_Velocity)
-				{
-					// Assume instant acceleration for now
-					set_position = false;
-					velocity = ts.getSetpoint();
-					set_velocity = true;
-				}
-				else if (simulate_mode == hardware_interface::TalonMode_MotionMagic)
-				{
-					position = ts.getPosition();
-					set_position = true;
-					velocity = ts.getSpeed();
-					set_velocity = true;
-				}
-				else if (simulate_mode == hardware_interface::TalonMode_Disabled)
-				{
-					set_position = false;
-					velocity = 0;
-					set_velocity = true;
-				}
-				else if (simulate_mode == hardware_interface::TalonMode_PercentOutput)
-				{
-					position = ts.getPosition();
-					set_position = true;
-					velocity = ts.getSpeed();
-					set_velocity = true;
-				}
-#if 0
-				ROS_INFO_STREAM("talon " << can_ctre_mc_names_[i] <<
-						" setpoint=" << ts.getSetpoint() <<
-						" pos=" << position <<
-						" set_position=" << set_position <<
-						" velocity=" << velocity <<
-						" set_velocity=" << set_velocity <<
-						" e_stop_active_=" << e_stop_active_);
-#endif
-				if (set_position)
-				{
-					sim_joints_ctre_mcs_[i]->SetPosition(0, position, true);
-				}
-				if (set_velocity)
-				{
-					// if (physics_type_.compare("ode") == 0)
-					//{
-					//		sim_joints_ctre_mcs_[i]->SetParam("vel", 0, e_stop_active_ ? 0 : velocity);
-					// }
-					// else
-					{
-						sim_joints_ctre_mcs_[i]->SetVelocity(0, e_stop_active_ ? 0 : velocity);
-					}
-				}
-			}
-		}
 		for (size_t i = 0; i < num_solenoids_; i++)
 		{
 			if (sim_joints_solenoids_[i] && solenoid_local_hardwares_[i])
