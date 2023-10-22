@@ -152,8 +152,6 @@ add_library(frc_robot_interface STATIC
 	src/rumble_devices.cpp
 	src/solenoid_device.cpp
 	src/solenoid_devices.cpp
-	src/talonfxpro_device.cpp
-	src/talonfxpro_devices.cpp
 	src/talon_orchestra_device.cpp
 	src/talon_orchestra_devices.cpp
 )
@@ -176,6 +174,7 @@ set (FRCROBOT_HW_MAIN_SRCS
     src/joystick_hw_device.cpp
 	src/match_data_hw_device.cpp
 	src/sparkmax_hw_device.cpp
+	src/talonfxpro_devices_hw.cpp
 )
 
 set (ALLWPILIB ../../../allwpilib)
@@ -457,7 +456,9 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		src/joystick_sim_device.cpp
 		src/match_data_sim_device.cpp
 		src/sim_ctre_v5_motor_controller.cpp
+		src/sim_talonfxpro_device.cpp
 		src/sparkmax_sim_device.cpp
+		src/talonfxpro_devices_sim.cpp
 	)
 
 	target_link_libraries(frcrobot_sim_main
@@ -497,7 +498,9 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		src/joystick_sim_device.cpp
 		src/match_data_sim_device.cpp
 		src/sim_ctre_v5_motor_controller.cpp
+		src/sim_talonfxpro_device.cpp
 		src/sparkmax_sim_device.cpp
+		src/talonfxpro_devices_sim.cpp
 	)
 
 	target_link_libraries(frcrobot_gazebosim

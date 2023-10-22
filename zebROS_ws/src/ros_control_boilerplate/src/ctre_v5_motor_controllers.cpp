@@ -178,6 +178,7 @@ bool CTREV5MotorControllers<SIM>::gazeboSimInit(ros::NodeHandle /*nh*/, boost::s
     }
     return true;
 }
+
 template <bool SIM>
 void CTREV5MotorControllers<SIM>::gazeboSimRead(const ros::Time & /*time*/, const ros::Duration & /*period*/, Tracer & tracer)
 {
@@ -190,6 +191,7 @@ void CTREV5MotorControllers<SIM>::gazeboSimRead(const ros::Time & /*time*/, cons
         }
     }
 }
+
 template <bool SIM>
 void CTREV5MotorControllers<SIM>::gazeboSimWrite(const ros::Time & /*time*/, const ros::Duration & /*period*/, Tracer & tracer, const bool e_stop_active_)
 {

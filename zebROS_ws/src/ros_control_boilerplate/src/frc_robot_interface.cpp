@@ -174,7 +174,7 @@ bool FRCRobotInterface<SIM>::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*r
     devices_.emplace_back(std::make_unique<RumbleDevices>(root_nh));
     devices_.emplace_back(std::make_unique<SolenoidDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<SparkMaxDevices<SIM>>(root_nh));
-	devices_.emplace_back(std::make_unique<TalonFXProDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<TalonFXProDevices<SIM>>(root_nh));
 	devices_.emplace_back(std::make_unique<TalonOrchestraDevices<SIM>>(root_nh));
 
 	// Create controller interfaces for all the types created above
@@ -197,12 +197,12 @@ bool FRCRobotInterface<SIM>::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*r
 	};
 	append_device_map. template operator()<CANCoderDevices>(); // C++ 20 templated lamba call syntax is dumb if there's no function parameter to deduce the types from
 	append_device_map. template operator()<Pigeon2Devices>();  // and apparently even dumber if they're in a templated member function
-	append_device_map. template operator()<TalonFXProDevices>();
+	append_device_map. template operator()<TalonFXProDevices<SIM>>();
 	devices_.emplace_back(std::make_unique<LatencyCompensationGroups>(root_nh, ctrev6_devices));
 
 	// Orchestra needs a set of previously created TalonFXs to use as instruments
 	const auto orchestra_devices = getDevicesOfType<TalonOrchestraDevices<SIM>>(devices_);
-    const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices>(devices_);
+    const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices<SIM>>(devices_);
 	if (talonfxpro_devices && orchestra_devices)
 	{
 		std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs;

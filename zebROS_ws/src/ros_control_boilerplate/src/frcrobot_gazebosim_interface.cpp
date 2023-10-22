@@ -85,6 +85,17 @@ namespace frcrobot_control
 		return true;
 	}
 
+	// Called at the start of each gazebo update callback
+	// Use this to 
+	//  - explicitiy call the base FRCRobotWimInterface read()
+	//    method. Since this code takes the place of the 
+	//    main loop in the other sim code, if we don't call
+	//    ::read here, it won't get called ... and none of the
+	//    device states will ever get updated
+	//  - read current position and velocity from gazebo, update
+	//    the CTRE motor control sim with those sensor updates
+	//  - get the voltage from the CTRE motor sim, use it to calculate
+	//    a torque value to apply to each simulated motor in gazebo
 	void FRCRobotGazeboSimInterface::readSim(ros::Time time, ros::Duration period)
 	{
 		FRCRobotSimInterface::read(time, period);
@@ -94,6 +105,12 @@ namespace frcrobot_control
 		}
 	}
 
+	// Called at the end of each gazebo update, after all the controllers'
+	// update methods are run
+	// Use this to 
+	// - explicitly call the base class write code, which will copy from
+	//   each device's command buffer into the simulated harware for that device
+	// And I think that's it.  The gazebo updates should happen in readSim, above.
 	void FRCRobotGazeboSimInterface::writeSim(ros::Time time, ros::Duration period)
 	{
 		FRCRobotSimInterface::write(time, period);
