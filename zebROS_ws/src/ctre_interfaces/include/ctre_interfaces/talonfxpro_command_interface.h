@@ -397,7 +397,7 @@ private :
 	bool   stator_current_limit_enable_{false};
 	double supply_current_limit_{0.};
 	bool   supply_current_limit_enable_{false};
-	mutable bool current_limit_changed_{false};
+	mutable bool current_limit_changed_{true};
 
 	double supply_voltage_time_constant_{0.};
 	double peak_forward_voltage_{16.};
