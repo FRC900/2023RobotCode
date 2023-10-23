@@ -130,4 +130,12 @@ void FRCRobotSimInterface::write(const ros::Time& time, const ros::Duration& per
 	FRCRobotInterface::write(time, period);
 }
 
+bool FRCRobotSimInterface::gazeboSimInit(ros::NodeHandle model_nh, boost::shared_ptr<gazebo::physics::Model> parent_model)
+{
+	for (auto &d : devices_)
+	{
+		d->gazeboSimInit(model_nh, parent_model);
+	}
+}
+
 }  // namespace

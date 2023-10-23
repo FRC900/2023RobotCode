@@ -11,14 +11,9 @@ namespace frcrobot_control
 											 std::vector<transmission_interface::TransmissionInfo> transmissions)
 	{
 		ros::NodeHandle not_used;
-		FRCRobotSimInterface::init(model_nh, not_used);
+		frcrobot_sim_interface_.init(model_nh, not_used);
 		e_stop_active_ = false;
 		last_e_stop_active_ = false;
-
-		for (auto &d : devices_)
-		{
-			d->gazeboSimInit(model_nh, parent_model);
-		}
 
 #if 0
 
@@ -80,7 +75,9 @@ namespace frcrobot_control
 			ROS_WARN_STREAM_NAMED("frcrobot_gazebosim_interface", "No physics type found.");
 		}
 
-		ROS_INFO("FRCRobotGazeboSim Ready.");
+		registerInterfaceManager(&frcrobot_sim_interface_);
+
+		ROS_INFO_STREAM("FRCRobotGazeboSim Ready on " << model_nh.getNamespace());
 
 		return true;
 	}
@@ -98,11 +95,13 @@ namespace frcrobot_control
 	//    a torque value to apply to each simulated motor in gazebo
 	void FRCRobotGazeboSimInterface::readSim(ros::Time time, ros::Duration period)
 	{
-		FRCRobotSimInterface::read(time, period);
+		frcrobot_sim_interface_.read(time, period);
+		#if 0 // this might not be needed if we can cram everything into read()
 		for (auto &d : devices_)
 		{
 			d->gazeboSimRead(time, period, *read_tracer_);
 		}
+		#endif
 	}
 
 	// Called at the end of each gazebo update, after all the controllers'
@@ -113,12 +112,12 @@ namespace frcrobot_control
 	// And I think that's it.  The gazebo updates should happen in readSim, above.
 	void FRCRobotGazeboSimInterface::writeSim(ros::Time time, ros::Duration period)
 	{
-		FRCRobotSimInterface::write(time, period);
+		frcrobot_sim_interface_.write(time, period);
+#if 0
 		for (auto &d : devices_)
 		{
 			d->gazeboSimWrite(time, period, *read_tracer_, e_stop_active_);
 		}
-#if 0
 		for (size_t i = 0; i < num_solenoids_; i++)
 		{
 			if (sim_joints_solenoids_[i] && solenoid_local_hardwares_[i])

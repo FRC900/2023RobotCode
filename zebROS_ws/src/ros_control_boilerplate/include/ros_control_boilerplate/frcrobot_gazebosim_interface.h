@@ -44,14 +44,14 @@
 namespace frcrobot_control
 {
 /// \brief Hardware interface for a robot
-class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim, ros_control_boilerplate::FRCRobotSimInterface
+class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim
 {
 	public:
 		/**
 		 * \brief Constructor
 		 * \param nh - Node handle for topics.
 		 */
-		FRCRobotGazeboSimInterface() {};
+		FRCRobotGazeboSimInterface() {}
 		FRCRobotGazeboSimInterface(const FRCRobotGazeboSimInterface &) = delete;
 		FRCRobotGazeboSimInterface(const FRCRobotGazeboSimInterface &&) noexcept = delete;
 		virtual ~FRCRobotGazeboSimInterface() = default;
@@ -101,10 +101,7 @@ class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim, ros_co
 		virtual void eStopActive(const bool active) {}
 
 	private:
-		std::vector<gazebo::physics::JointPtr> sim_joints_ctre_mcs_;
-		std::vector<gazebo::physics::JointPtr> sim_joints_talonfxpros_;
-		std::vector<gazebo::physics::JointPtr> sim_joints_solenoids_;
-		std::vector<gazebo::physics::JointPtr> sim_joints_double_solenoids_;
+		ros_control_boilerplate::FRCRobotSimInterface frcrobot_sim_interface_;
 		std::string physics_type_;
 		// e_stop_active_ is true if the emergency stop is active.
 		bool e_stop_active_;
