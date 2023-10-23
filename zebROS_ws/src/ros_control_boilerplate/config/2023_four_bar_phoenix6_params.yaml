@@ -54,8 +54,8 @@ four_bar_controller_2023:
     #motion_magic_acceleration: 8.0
     #motion_magic_jerk: 20.0
     motion_magic_velocity: 8.0
-    motion_magic_acceleration: 30.0
-    motion_s_curve_strength: 100.0 # Maps to v6 motion magic jerk value
+    motion_magic_acceleration: 50.0
+    motion_s_curve_strength: 200.0 # Maps to v6 motion magic jerk value
 
     # How quickly the four bar moves down when zeroing itself
     four_bar_zeroing_percent_output: -0.10
