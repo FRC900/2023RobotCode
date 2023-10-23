@@ -15,8 +15,8 @@ elevator_controller_2023:
     four_bar_diagonal_bar_length: 0.243
     four_bar_intake_length: 0.22
 
-    arb_feed_forward_low: 0.40 #0.37
-    arb_feed_forward_high: 0.38 #0.4
+    arb_feed_forward_low: 0.37
+    arb_feed_forward_high: 0.40
 
     arb_feed_forward_angle: 0.0 #0.01
     straight_up_angle: 0.52
