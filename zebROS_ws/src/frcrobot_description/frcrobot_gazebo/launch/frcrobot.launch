@@ -6,17 +6,7 @@
     <arg name="world_name" value="$(find frcrobot_gazebo)/worlds/frcrobot.world"/>
     <!-- more default parameters can be changed here -->
   </include>
-<!--
-  <param name="field_description" command="$(find xacro)/xacro $(find field_description)/urdf/field2019_textured.urdf" />
-  <node name="spawn_field_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.001 -param field_description -urdf -model field" />
--->
-<!--
-  <param name="props_description" command="$(find xacro)/xacro $(find field_description)/urdf/field_props_2019.urdf" />
-  <node name="props_state_publisher" pkg="robot_state_publisher" type="state_publisher" >
-    <remap from="robot_description" to="props_description" />
-  </node>
-  <node name="spawn_props_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.0 -param props_description -urdf -model props" />
--->
+
   <!-- Add a few params which tells gazebo which sim interfaces to load
 	   and, in each of the namespaces of those interfaces, their types
 	-->
@@ -24,9 +14,7 @@
   <!-- process the xacro file into a urdf, load the text of that urdf into a ros 
 	   string parameter. This is used by gazebo to build its robot model
 	-->
-  <arg name="model" default="$(find turret_2023)/urdf/frcrobot.xacro"/>
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
-
+  <param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/urdf/swerve_base.urdf" />
   <!-- TODO : Update me for 2023 robot-->
   <group ns="frcrobot_jetson">
 	  <!-- publishes transforms between the various ROS joints
@@ -46,7 +34,7 @@
     <rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_rio.yaml" command="load"/>
   </group>
 
-  <node name="spawn_robot_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.5 -param robot_description -urdf -model robot" />
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-z 0.2 -param robot_description -urdf -model robot" />
 
   <group ns="frcrobot_jetson">
     <node name="controller_spawner_jetson" pkg="controller_manager" type="controller_manager" respawn="false"
