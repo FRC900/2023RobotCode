@@ -138,3 +138,6 @@ namespace frcrobot_control
 #endif
 	}
 } // namespace
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(frcrobot_control::FRCRobotGazeboSimInterface, gazebo_ros_control::RobotHWSim)

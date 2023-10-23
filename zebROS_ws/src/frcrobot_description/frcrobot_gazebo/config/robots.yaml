@@ -6,6 +6,6 @@ robot_hardware:
 # In each namespace, add a type: of the gazebosim
 # controller to load
 frcrobot_jetson:
-    type: frcrobot_control/FRCRobotGazeboSim
+    type: frcrobot_control/FRCRobotGazeboSimInterface
 frcrobot_rio:
-    type: frcrobot_control/FRCRobotGazeboSim
+    type: frcrobot_control/FRCRobotGazeboSimInterface

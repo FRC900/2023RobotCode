@@ -51,10 +51,10 @@ class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim, ros_co
 		 * \brief Constructor
 		 * \param nh - Node handle for topics.
 		 */
-		FRCRobotGazeboSimInterface();
+		FRCRobotGazeboSimInterface() {};
 		FRCRobotGazeboSimInterface(const FRCRobotGazeboSimInterface &) = delete;
 		FRCRobotGazeboSimInterface(const FRCRobotGazeboSimInterface &&) noexcept = delete;
-		virtual ~FRCRobotGazeboSimInterface();
+		virtual ~FRCRobotGazeboSimInterface() = default;
 
 		FRCRobotGazeboSimInterface& operator=(const FRCRobotGazeboSimInterface &) = delete;
 		FRCRobotGazeboSimInterface& operator=(const FRCRobotGazeboSimInterface &&) noexcept = delete;

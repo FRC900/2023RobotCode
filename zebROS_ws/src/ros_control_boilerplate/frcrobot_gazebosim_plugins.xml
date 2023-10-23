@@ -1,7 +1,7 @@
 +<library path="lib/libfrcrobot_gazebosim">
 	<class
-		name="frcrobot_control/FRCRobotGazeboSim"
-		type="frcrobot_control::FRCRobotGazeboSim"
+		name="frcrobot_control/FRCRobotGazeboSimInterface"
+		type="frcrobot_control::FRCRobotGazeboSimInterface"
 		base_class_type="gazebo_ros_control::RobotHWSim">
 		<description>
 			Simulation interface for FRC robots
