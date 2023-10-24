@@ -395,7 +395,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="right_front_angle_wheel" type="continuous">
+<joint name="elevator_leader" type="continuous">
 <origin xyz="0.066293999999999908557 -0.0079375000000000972555 0.019843750000000076605" rpy="-1.570796326794896558 1.2358944559116720185 3.141592653589793116" />
 <parent link="fixed_stage_4" />
 <child link="first_stage_4" />
@@ -425,4 +425,14 @@
     </plugin>
 </gazebo>
 
+<transmission name="test_motor">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="elevator_leader">
+    <hardwareInterface>EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="elevator_leader">
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+
+</transmission>
 </robot>
