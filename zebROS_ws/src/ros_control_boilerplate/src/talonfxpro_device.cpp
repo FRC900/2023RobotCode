@@ -1380,8 +1380,8 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
         // Our units are radians/ sec (sec^2, sec^3), CTRE's are turns / sec
         config_->MotionMagic.MotionMagicCruiseVelocity = units::turns_per_second_t{units::radians_per_second_t{motion_magic_cruise_velocity}}.value();
         config_->MotionMagic.MotionMagicAcceleration = units::turns_per_second_squared_t{units::radians_per_second_squared_t{motion_magic_acceleration}}.value();
-        config_->MotionMagic.MotionMagicJerk = motion_magic_jerk / (2.0 * M_PI); // units does't have cubed?
-        if (safeCall(talonfxpro_->GetConfigurator().Apply(config_->MotionMagic), "GetConfigurator().Apply(config_->MotionMagic)"))
+        config_->MotionMagic.MotionMagicJerk = units::turns_per_second_cubed_t{units::radians_per_second_cubed_t{motion_magic_jerk}}.value();
+        if (safeCall(talonfxpro_->GetConfigurator().Apply(config_->MotionMagic), "GetConfigurator().Apply(config.MotionMagic)"))
         {
             ROS_INFO_STREAM("Updated TalonFXPro id " << getId() << " = " << getName() << " MotionMagic " << config_->MotionMagic);
             state_->setMotionMagicCruiseVelocity(motion_magic_cruise_velocity);
@@ -1707,7 +1707,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                   ctre::phoenix6::controls::DynamicMotionMagicDutyCycle(units::radian_t{control_position},
                                                                                         units::radians_per_second_t{control_velocity},
                                                                                         units::radians_per_second_squared_t{control_acceleration},
-                                                                                        units::dimensionless::scalar_t{control_jerk},
+                                                                                        units::radians_per_second_cubed_t{control_jerk},
                                                                                         control_enable_foc,
                                                                                         control_feedforward,
                                                                                         control_slot,
@@ -1723,7 +1723,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                   ctre::phoenix6::controls::DynamicMotionMagicVoltage(units::radian_t{control_position},
                                                                                       units::radians_per_second_t{control_velocity},
                                                                                       units::radians_per_second_squared_t{control_acceleration},
-                                                                                      units::dimensionless::scalar_t{control_jerk},
+                                                                                      units::radians_per_second_cubed_t{control_jerk},
                                                                                       control_enable_foc,
                                                                                       units::voltage::volt_t{control_feedforward},
                                                                                       control_slot,
@@ -1739,7 +1739,7 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                                   ctre::phoenix6::controls::DynamicMotionMagicTorqueCurrentFOC(units::radian_t{control_position},
                                                                                                units::radians_per_second_t{control_velocity},
                                                                                                units::radians_per_second_squared_t{control_acceleration},
-                                                                                               units::dimensionless::scalar_t{control_jerk},
+                                                                                               units::radians_per_second_cubed_t{control_jerk},
                                                                                                units::ampere_t{control_feedforward},
                                                                                                control_slot,
                                                                                                control_override_brake_dur_neutral)),
