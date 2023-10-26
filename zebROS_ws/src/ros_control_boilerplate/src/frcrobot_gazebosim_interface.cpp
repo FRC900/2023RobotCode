@@ -12,6 +12,10 @@ namespace frcrobot_control
 	{
 		ros::NodeHandle not_used;
 		frcrobot_sim_interface_.init(model_nh, not_used);
+		if (!frcrobot_sim_interface_.gazeboSimInit(model_nh, parent_model))
+		{
+			return false;
+		}
 		e_stop_active_ = false;
 		last_e_stop_active_ = false;
 

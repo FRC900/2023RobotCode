@@ -16,6 +16,14 @@ SimTalonFXProDevice::SimTalonFXProDevice(const std::string &name_space,
 
 void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration &period)
 {
+    if (gazebo_joint_)
+    {
+        const double position = gazebo_joint_->Position(0);
+        const double velocity = gazebo_joint_->GetVelocity(0);
+        ROS_INFO_STREAM("Gazebo : p = " << position << " v = " << velocity);
+
+        // get motor voltage
+    }
     auto &sim_state = talonfxpro_->GetSimState();
     // Note - since all of these are setting raw rotor positions but setpoints
     // are relative to mechanism positions, need to multiply the values written
