@@ -3,9 +3,15 @@
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include <ros/ros.h>
 #include <talon_state_msgs/TalonFXProState.h>
+#include <talon_state_msgs/LatencyCompensationState.h>
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <sensor_msgs/Imu.h>
 #include <utility>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <angles/angles.h>
+#include <optional>
 
 template <size_t WHEELCOUNT>
 class ROSSwerveKinematics
@@ -31,14 +37,26 @@ class ROSSwerveKinematics
         double wheel_radius = 0.050; // meters
         double encoder_to_rotations = 0.148148148; // 1/6.75
 
-        // Subscriber for talon states
-        ros::Subscriber talon_state_sub;
+        // Subscriber for latency compensation states
+        ros::Subscriber latency_compensation_state_sub;
+
+        // IMU subscriber to get initial zeroed angle
+        ros::Subscriber zeroed_imu_sub;
+
+        std::optional<double> initial_zeroed_imu_angle = std::nullopt;
+
+        std::optional<double> initial_imu_angle = std::nullopt;
+
+        // IMU publisher
+        ros::Publisher imu_pub;
 
         // Get the state of a module
-        frc::SwerveModuleState getState(size_t module_index, const talon_state_msgs::TalonFXProState::ConstPtr &latest_talon_states)
+        frc::SwerveModuleState getState(size_t module_index, const talon_state_msgs::LatencyCompensationState::ConstPtr &latest_states)
         {
             // get the index of the speed and steering talons
             size_t steer_index, speed_index = 0;
+
+            auto group = latest_states->latency_compensation_groups[0];
 
             if (auto index = index_map.find(steering_names[module_index]); index != index_map.end())
             {
@@ -46,9 +64,9 @@ class ROSSwerveKinematics
             }
             else
             {
-                for (size_t i = 0; i < latest_talon_states->name.size(); i++)
+                for (size_t i = 0; i < group.name.size(); i++)
                 {
-                    if (latest_talon_states->name[i] == steering_names[module_index])
+                    if (group.name[i] == steering_names[module_index])
                     {
                         index_map[steering_names[module_index]] = i;
                         steer_index = i;
@@ -62,9 +80,9 @@ class ROSSwerveKinematics
             }
             else
             {
-                for (size_t i = 0; i < latest_talon_states->name.size(); i++)
+                for (size_t i = 0; i < group.name.size(); i++)
                 {
-                    if (latest_talon_states->name[i] == speed_names[module_index])
+                    if (group.name[i] == speed_names[module_index])
                     {
                         index_map[speed_names[module_index]] = i;
                         speed_index = i;
@@ -73,8 +91,8 @@ class ROSSwerveKinematics
             }
 
             // calculate angle and velocity
-            double angle = angles::normalize_angle(latest_talon_states->position[steer_index] - offsets[module_index]);
-            double velocity = latest_talon_states->velocity[speed_index] * wheel_radius * encoder_to_rotations;
+            double angle = angles::normalize_angle(group.value[steer_index] - offsets[module_index]);
+            double velocity = group.slope[speed_index] * wheel_radius * encoder_to_rotations;
 
             // return calculated state in WPILib format
             return frc::SwerveModuleState{units::meters_per_second_t(velocity), frc::Rotation2d(units::radian_t(angle))};
@@ -94,7 +112,7 @@ class ROSSwerveKinematics
                                           0, 0, 0, 0, 0, 1.0};
 
         // Publish latest twist from talon states
-        void publish_twist(const ros::Time &t, const talon_state_msgs::TalonFXProState::ConstPtr &latest_talon_states)
+        void publish_twist(const ros::Time &t, const talon_state_msgs::LatencyCompensationState::ConstPtr &latest_states)
         {
 
             // entire function runs in <15000ns = <15us = extremely fast
@@ -102,7 +120,7 @@ class ROSSwerveKinematics
             // get states for each module
             for (size_t i = 0; i < WHEELCOUNT; i++)
             {
-                states[i] = getState(i, latest_talon_states);
+                states[i] = getState(i, latest_states);
                 double v = states[i].speed.value();
                 double theta = states[i].angle.Radians().value();
             }
@@ -111,7 +129,7 @@ class ROSSwerveKinematics
             // very fast, only ~833ns
             frc::ChassisSpeeds speeds = m_kinematics.ToChassisSpeeds(states);
 
-            twist_msg.header.stamp = t;
+            twist_msg.header.stamp = latest_states->latency_compensation_groups[0].stamp[0]; // close enough i guess
             // x = y and y = -x in the talon swerve drive controller, so copying that here
             // and it seems to work
             twist_msg.twist.twist.linear.x = speeds.vy.value();
@@ -124,9 +142,61 @@ class ROSSwerveKinematics
             //ROS_INFO_STREAM(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
         }
 
-        // talon state callback
-        void talon_state_callback(const talon_state_msgs::TalonFXProState::ConstPtr &msg)
+        void publish_imu(const talon_state_msgs::LatencyCompensationState::ConstPtr &latest_states) {
+            auto group = latest_states->latency_compensation_groups[0];
+
+            size_t pigeon_index = index_map["pigeon2"];
+            
+            for (size_t i = 0; i < group.name.size(); i++)
+            {
+                if (group.name[i] == "pigeon2")
+                {
+                    index_map["pigeon2"] = i;
+                    pigeon_index = index_map["pigeon2"];
+                }
+            }
+
+            if (initial_imu_angle == std::nullopt) {
+                initial_imu_angle = group.value[pigeon_index];
+            }
+
+            if (initial_imu_angle != std::nullopt && initial_zeroed_imu_angle != std::nullopt) {
+
+                sensor_msgs::Imu msg;
+                msg.header.frame_id = "pigeon2_frame";
+                msg.header.stamp = group.stamp[pigeon_index];
+
+                tf2::Quaternion q;
+                q.setRPY(0, 0, group.value[pigeon_index] + (initial_zeroed_imu_angle.value() - initial_imu_angle.value()));
+
+                msg.orientation.x = q.x();
+                msg.orientation.y = q.y();
+                msg.orientation.z = q.z();
+                msg.orientation.w = q.w();
+
+                imu_pub.publish(msg);
+
+            }
+        }
+
+        double getYaw(const geometry_msgs::Quaternion &o) {
+            tf2::Quaternion q;
+            tf2::fromMsg(o, q);
+            tf2::Matrix3x3 m(q);
+            double r, p, y;
+            m.getRPY(r, p, y);
+            return y;
+        }
+
+        void imu_callback(const sensor_msgs::Imu::ConstPtr &msg) {
+            if (initial_zeroed_imu_angle == std::nullopt) {
+                initial_zeroed_imu_angle = getYaw(msg->orientation);
+            }
+        }
+
+        void callback(const talon_state_msgs::LatencyCompensationState::ConstPtr &msg)
         {
+            publish_imu(msg);
             // Call function to calculate and publish twist
             publish_twist(msg->header.stamp, msg);
         }
@@ -307,10 +377,14 @@ class ROSSwerveKinematics
             }
 
             // subscribe to talon states
-            talon_state_sub = nh.subscribe<talon_state_msgs::TalonFXProState>("/frcrobot_jetson/talonfxpro_states", 100, &ROSSwerveKinematics::talon_state_callback, this);
+            latency_compensation_state_sub = nh.subscribe<talon_state_msgs::LatencyCompensationState>("/frcrobot_jetson/latency_compensation_states", 100, &ROSSwerveKinematics::callback, this);
 
             // create publisher to publish twist
             twist_pub = nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("/frcrobot_jetson/swerve_drive_odom/twist", 100); // sure copilot great topic name
+            
+            zeroed_imu_sub = nh.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 100, &ROSSwerveKinematics::imu_callback, this);
+
+            imu_pub = nh.advertise<sensor_msgs::Imu>("/imu/bagged_imu", 100);
 
             twist_msg.twist.covariance = covariance_matrix;
             twist_msg.header.frame_id = "base_link";

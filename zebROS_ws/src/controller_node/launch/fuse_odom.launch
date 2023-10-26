@@ -10,7 +10,7 @@
 	<include file="$(find wpilib_swerve_odom)/launch/odom.launch"/>
 	<node pkg="tf2_ros" type="static_transform_publisher" name="link_zedodomtoodom" args="0 0 0 0 0 0 1 zed_objdet_odom odom" />
 	<node name="override_covariance_imu" pkg="controller_node" type="override_covariance.py" output="screen">
-		<param name="topic" value="/imu/zeroed_imu"/>
+		<param name="topic" value="/imu/bagged_imu"/>
 		<param name="type" value="Imu"/>
 		<param name="standard_deviation/x_rotation" value="0.0001"/>
 		<param name="standard_deviation/y_rotation" value="0.0001"/>
@@ -97,12 +97,12 @@
 		<!-- imu0 (IMU attached to Jetson via USB): 
 			 roll, pitch, yaw, x-acc, y-acc, z-acc -->
 		<!-- probably won't use roll or pitch but no harm fusing them -->
-		<param name="imu0" value="/imu/zeroed_imu_overridden" />
+		<param name="imu0" value="/imu/bagged_imu_overridden" />
 		<rosparam param="imu0_config"> [false, false, false,
                                         true, true, true,
                                         false, false, false,
                                         false, false, false,
-                                        true, true, true]
+                                        false, false, false]
         </rosparam>
 		<param name="imu0_differential" value="false"/>
 		<param name="imu0_relative"     value="false" />
