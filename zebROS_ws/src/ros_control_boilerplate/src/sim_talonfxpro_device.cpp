@@ -20,10 +20,13 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     {
         const double position = gazebo_joint_->Position(0);
         const double velocity = gazebo_joint_->GetVelocity(0);
-        ROS_INFO_STREAM("Gazebo : p = " << position << " v = " << velocity);
-
-        // get motor voltage
+        // get motor voltage, us as input to motor model to get torque out
+        const double motor_voltage = state_->getMotorVoltage();
+        ROS_INFO_STREAM("Gazebo : p = " << position << " v = " << velocity << " voltage = " << motor_voltage);
+        
+        // Call gazebo_joint_->SetForce() with the torque calc'd from the motor model
     }
+
     auto &sim_state = talonfxpro_->GetSimState();
     // Note - since all of these are setting raw rotor positions but setpoints
     // are relative to mechanism positions, need to multiply the values written
