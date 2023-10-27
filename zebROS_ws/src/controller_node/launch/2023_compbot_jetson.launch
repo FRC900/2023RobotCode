@@ -54,6 +54,7 @@
 			 pigeon2_imu_state_controller
 			 pigeon2_state_controller
 			 latency_compensation_state_controller
+			 swerve_drive_state_controller
 			 robot_code_ready_controller" />
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />

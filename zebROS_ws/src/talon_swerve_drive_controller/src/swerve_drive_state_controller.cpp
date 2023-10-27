@@ -122,7 +122,7 @@ public:
 		}
 
 		// realtime publisher
-		realtime_pub_ = std::make_unique<realtime_tools::RealtimePublisher<nav_msgs::Odometry>>(root_nh, "odom", 2);
+		realtime_pub_ = std::make_unique<realtime_tools::RealtimePublisher<nav_msgs::Odometry>>(controller_nh, "odom", 2);
 
 		auto &m = realtime_pub_->msg_;
 
@@ -148,11 +148,12 @@ public:
 			std::string steering_name = steering_names[i];
 			std::string speed_name = speed_names[i];
 
+			// Get latency compensated steering joint position
+			wheel_states_vector(i*2, 0) = latency_compensation_state_->getLatencyCompensatedValue(steering_name, ts) - offsets[i];
+
 			double value, slope;
-			latency_compensation_state_->getEntry(steering_name, ts, value, slope);
-
-			wheel_states_vector(i*2, 0) = value - offsets[i];
-
+			
+			// The timestamped slope is probably close enough for speed joint velocity
 			latency_compensation_state_->getEntry(speed_name, ts, value, slope);
 
 			wheel_states_vector(i*2 + 1, 0) = slope;
@@ -168,7 +169,7 @@ public:
 			if (realtime_pub_->trylock())
 			{
 				auto &odom = realtime_pub_->msg_;
-				odom.header.stamp = ts;
+				odom.header.stamp = time;
 				odom.header.frame_id = "base_link";
 				// just doing twist for now
 				odom.twist.twist.linear.x = chassis_speeds(0);

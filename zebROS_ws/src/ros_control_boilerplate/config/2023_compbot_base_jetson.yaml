@@ -7,7 +7,7 @@ generic_hw_control_loop:
   cancoder_read_hz: 100
   #some processes have lower frequencies than the main control loop
   ctre_mc_read_hz: 100
-  talonfxpro_read_hz: 100
+  talonfxpro_read_hz: 250
   pigeon2_read_hz: 250
   pcm_read_hz: 20
   pdh_read_hz: 20
@@ -153,3 +153,34 @@ candle_controller:
 latency_compensation_state_controller:
   type: latency_compensation_state_controller/LatencyCompensationStateController
   publish_rate: 250
+
+swerve_drive_state_controller:
+    type: talon_swerve_drive_controller/SwerveDriveStateController
+
+    publish_rate: 250
+
+    # These joint names must match the joint names declared for the latency compensation group
+    speed: ['fl_drive', 'fr_drive', 'bl_drive', 'br_drive']
+    steering: ['fl_angle', 'fr_angle', 'bl_angle', 'br_angle']
+
+    wheel_radius: 0.050 # m
+    cmd_vel_timout: 0.5
+    max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
+
+    # TODO : move this into sensor_to_mechanism_ratio for Falcons
+    ratio_encoder_to_rotations: 0.148148148 # Test me, will show up in odom results
+
+    wheel_coords: [[-0.250825, 0.250825], [0.250825, 0.250825], [-0.250825, -0.250825], [0.250825, -0.250825]]
+    
+    # don't think this is needed but we'll see
+    latency_compensation:
+        joint: latency_compensation
+
+    bl_angle:
+        offset: 7.53
+    br_angle:
+        offset: 9.041
+    fl_angle:
+        offset: 6.000
+    fr_angle:
+        offset: 12.9
