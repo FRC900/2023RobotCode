@@ -104,9 +104,9 @@ class ROSSwerveKinematics
         geometry_msgs::TwistWithCovarianceStamped twist_msg;
 
         wpi::array<frc::SwerveModuleState, WHEELCOUNT> states{wpi::empty_array};
-        boost::array<double, 36> covariance_matrix{0.00001, 0, 0, 0, 0, 0,
-                                          0, 0.00001, 0, 0, 0, 0,
-                                          0, 0, 0.00001, 0, 0, 0,
+        boost::array<double, 36> covariance_matrix{0.001, 0, 0, 0, 0, 0,
+                                          0, 0.001, 0, 0, 0, 0,
+                                          0, 0, 0.001, 0, 0, 0,
                                           0, 0, 0, 1.0, 0, 0,
                                           0, 0, 0, 0, 1.0, 0,
                                           0, 0, 0, 0, 0, 1.0};
@@ -147,6 +147,12 @@ class ROSSwerveKinematics
 
             size_t pigeon_index = index_map["pigeon2"];
             
+            // if (auto index = index_map.find("pigeon2"); index != index_map.end())
+            // {
+            //     pigeon_index = index->second;
+            // }
+            // else
+            // {
             for (size_t i = 0; i < group.name.size(); i++)
             {
                 if (group.name[i] == "pigeon2")
@@ -155,6 +161,7 @@ class ROSSwerveKinematics
                     pigeon_index = index_map["pigeon2"];
                 }
             }
+            // }
 
             if (initial_imu_angle == std::nullopt) {
                 initial_imu_angle = group.value[pigeon_index];

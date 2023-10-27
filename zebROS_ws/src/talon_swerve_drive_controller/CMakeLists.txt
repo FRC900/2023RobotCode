@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
     tf
     trajectory_msgs
     urdf
+    periodic_interval_counter
 )
 
 find_package(Eigen3 REQUIRED)
@@ -55,6 +56,7 @@ include_directories(
 
 add_library(${PROJECT_NAME} 
 	src/swerve_drive_controller.cpp 
+  src/swerve_drive_state_controller.cpp
 	#src/odometry.cpp 
 	#src/speed_limiter.cpp
 	src/900Math.cpp
