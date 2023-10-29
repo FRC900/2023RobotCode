@@ -18,10 +18,16 @@ private:
 	double publish_rate_;
 	size_t num_hw_joints_;
 
-	std::array<std::string, WHEELCOUNT> speed_names;
-	std::array<std::string, WHEELCOUNT> steering_names;
+	std::string latency_compensation_group_;
+	size_t latency_compensation_group_index_;
 
-	std::array<double, WHEELCOUNT> offsets;
+	std::array<std::string, WHEELCOUNT> speed_names_;
+	std::array<std::string, WHEELCOUNT> steering_names_;
+
+	std::array<double, WHEELCOUNT> offsets_;
+
+	double wheel_radius_ = 0.050; // meters
+	double encoder_to_rotations_ = 0.148148148; // 1/6.75
 
 	Eigen::Matrix<double, WHEELCOUNT * 2, 3> inverse_kinematics_matrix_; // Desired chassis speeds -> swerve module states
 	Eigen::Matrix<double, 3, WHEELCOUNT * 2> forward_kinematics_matrix_; // Moore-Penrose pseudoinverse of the inverse kinematics matrix
@@ -31,10 +37,18 @@ public:
 			  ros::NodeHandle &root_nh,
 			  ros::NodeHandle &controller_nh)
 	{
+		// get name of our latency compensation joint
+		if (!controller_nh.getParam("latency_compensation_group", latency_compensation_group_))
+		{
+			ROS_ERROR("Parameter 'latency_compensation_group' not set in swerve drive state controller");
+			return false;
+		}
+
 		// get all joint names from the hardware interface
 		const std::vector<std::string> &joint_names = hw->getNames();
-		if (joint_names.size() != 1) {
-			ROS_ERROR("Swerve drive state controller: *one* latency compensation joint is required");
+		latency_compensation_group_index_ = std::find(joint_names.begin(), joint_names.end(), latency_compensation_group_) - joint_names.begin();
+		if (latency_compensation_group_index_ >= joint_names.size()) {
+			ROS_ERROR_STREAM("Latency compensation group " << latency_compensation_group_ << " not found in swerve drive state controller");
 			return false;
 		}
 
@@ -52,8 +66,8 @@ public:
 		interval_counter_ = std::make_unique<PeriodicIntervalCounter>(publish_rate_);
 
         // Get joint names from the parameter server
-        if (!getWheelNames(controller_nh, "speed", speed_names) or
-            !getWheelNames(controller_nh, "steering", steering_names))
+        if (!getWheelNames(controller_nh, "speed", speed_names_) or
+            !getWheelNames(controller_nh, "steering", steering_names_))
         {
             return false;
         }
@@ -109,16 +123,28 @@ public:
 
 		for (size_t i = 0; i < WHEELCOUNT; i++)
 		{
-			ros::NodeHandle nh(controller_nh, steering_names[i]);
-			if (!nh.getParam("offset", offsets[i]))
+			ros::NodeHandle nh(controller_nh, steering_names_[i]);
+			if (!nh.getParam("offset", offsets_[i]))
 			{
-				ROS_ERROR_STREAM("Can not read offset for " << steering_names[i]);
+				ROS_ERROR_STREAM("Can not read offset for " << steering_names_[i]);
 				return false;
 			}
 		}
-		for (const auto o : offsets)
+		for (const auto o : offsets_)
 		{
 			ROS_INFO_STREAM("\t SWERVE: offset = " << o);
+		}
+
+		// get wheel radius and conversion factor
+		if (!controller_nh.getParam("wheel_radius", wheel_radius_))
+		{
+			ROS_ERROR("Parameter 'wheel_radius' not set in swerve drive state controller");
+			return false;
+		}
+		if (!controller_nh.getParam("ratio_encoder_to_rotations", encoder_to_rotations_))
+		{
+			ROS_ERROR("Parameter 'ratio_encoder_to_rotations' not set in swerve drive state controller");
+			return false;
 		}
 
 		// realtime publisher
@@ -127,7 +153,7 @@ public:
 		auto &m = realtime_pub_->msg_;
 
 		// get joints and allocate message
-		latency_compensation_state_ = hw->getHandle(joint_names[0]);
+		latency_compensation_state_ = hw->getHandle(joint_names[latency_compensation_group_index_]);
 
 		return true;
 	}
@@ -145,18 +171,18 @@ public:
 		ros::Time ts;
 
 		for (size_t i = 0; i < WHEELCOUNT; i++) {
-			std::string steering_name = steering_names[i];
-			std::string speed_name = speed_names[i];
+			std::string steering_name = steering_names_[i];
+			std::string speed_name = speed_names_[i];
 
 			// Get latency compensated steering joint position
-			wheel_states_vector(i*2, 0) = latency_compensation_state_->getLatencyCompensatedValue(steering_name, ts) - offsets[i];
+			wheel_states_vector(i*2, 0) = latency_compensation_state_->getLatencyCompensatedValue(steering_name, ts) - offsets_[i];
 
 			double value, slope;
 			
 			// The timestamped slope is probably close enough for speed joint velocity
 			latency_compensation_state_->getEntry(speed_name, ts, value, slope);
 
-			wheel_states_vector(i*2 + 1, 0) = slope;
+			wheel_states_vector(i*2 + 1, 0) = slope * wheel_radius_ * encoder_to_rotations_;
 		}
 
 		Eigen::Matrix<double, 3, 1> chassis_speeds = forward_kinematics_matrix_ * wheel_states_vector; // least-squares solution

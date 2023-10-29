@@ -231,7 +231,7 @@ void LatencyCompensationGroup::read_thread()
     while (ros::ok())
     {
         tracer.start("WaitForAll");
-        auto status = ctre::phoenix6::BaseStatusSignal::WaitForAll(units::time::second_t{0.01}, signals_);
+        auto status = ctre::phoenix6::BaseStatusSignal::WaitForAll(units::time::second_t{0.1}, signals_);
         tracer.start_unique("Update state");
         if (status.IsOK())
         {
