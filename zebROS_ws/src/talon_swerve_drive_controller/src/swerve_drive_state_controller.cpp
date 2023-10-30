@@ -173,16 +173,17 @@ public:
 		for (size_t i = 0; i < WHEELCOUNT; i++) {
 			std::string steering_name = steering_names_[i];
 			std::string speed_name = speed_names_[i];
+			
+			double angle = latency_compensation_state_->getLatencyCompensatedValue(steering_name, ts) - offsets_[i];
 
-			// Get latency compensated steering joint position
-			wheel_states_vector(i*2, 0) = latency_compensation_state_->getLatencyCompensatedValue(steering_name, ts) - offsets_[i];
-
-			double value, slope;
+			double value, velocity;
 			
 			// The timestamped slope is probably close enough for speed joint velocity
-			latency_compensation_state_->getEntry(speed_name, ts, value, slope);
+			latency_compensation_state_->getEntry(speed_name, ts, value, velocity);
 
-			wheel_states_vector(i*2 + 1, 0) = slope * wheel_radius_ * encoder_to_rotations_;
+			wheel_states_vector(i*2, 0) = velocity * cos(angle);
+			wheel_states_vector(i*2 + 1, 0) = velocity * sin(angle);
+
 		}
 
 		Eigen::Matrix<double, 3, 1> chassis_speeds = forward_kinematics_matrix_ * wheel_states_vector; // least-squares solution
