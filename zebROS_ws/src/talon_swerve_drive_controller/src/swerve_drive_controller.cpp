@@ -982,7 +982,7 @@ std::array<Eigen::Vector2d, WHEELCOUNT> speeds_angles_;
 
 // Attempt to limit speed of wheels which are pointing further from
 // their target angle. Should help to reduce the robot being pulled
-// off course coming out of parking config or when maki
+// off course coming out of parking config or when making quick direction changes
 bool use_cos_scaling_{false};
 
 ros::Subscriber sub_command_; // subscriber for drive base commands
