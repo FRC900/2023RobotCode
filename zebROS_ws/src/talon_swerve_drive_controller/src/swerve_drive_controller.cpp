@@ -42,6 +42,7 @@
 #include <controller_interface/controller.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <periodic_interval_counter/periodic_interval_counter.h>
 #include <realtime_tools/realtime_buffer.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <std_srvs/Empty.h>
@@ -55,6 +56,7 @@
 
 #include "talon_swerve_drive_controller_msgs/SetXY.h"
 #include <talon_swerve_drive_controller/Swerve.h>
+#include "talon_swerve_drive_controller/get_wheel_names.h"
 
 namespace talon_swerve_drive_controller
 {
@@ -76,8 +78,8 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	// Get joint names from the parameter server
 	std::array<std::string, WHEELCOUNT> speed_names;
 	std::array<std::string, WHEELCOUNT> steering_names;
-	if (!getWheelNames(controller_nh, "speed", speed_names) or
-		!getWheelNames(controller_nh, "steering", steering_names))
+	if (!getWheelNames(controller_nh, name_, "speed", speed_names) ||
+		!getWheelNames(controller_nh, name_, "steering", steering_names))
 	{
 		return false;
 	}
@@ -96,9 +98,6 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 							   "WHEELCOUNT (" << WHEELCOUNT << ").");
 		return false;
 	}
-
-	// Publish limited velocity:
-	controller_nh.param("publish_cmd", publish_cmd_, publish_cmd_);
 
 	// TODO : see if model_, driveRatios, units can be local instead of member vars
 	// If either parameter is not available, we need to look up the value in the URDF
@@ -277,7 +276,10 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	}
 
 	sub_command_ = controller_nh.subscribe("cmd_vel", 1, &TalonSwerveDriveController::cmdVelCallback, this);
-	if (publish_cmd_)
+	// Publish limited velocity:
+	bool publish_cmd;
+	controller_nh.param("publish_cmd", publish_cmd, true);
+	if (publish_cmd)
 	{
 	  cmd_vel_pub_ = std::make_unique<realtime_tools::RealtimePublisher<geometry_msgs::TwistStamped>>(controller_nh, "cmd_vel_out", 2);
 	}
@@ -289,14 +291,12 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	change_center_of_rotation_serv_ = controller_nh.advertiseService("change_center_of_rotation", &TalonSwerveDriveController::changeCenterOfRotationService, this);
 	set_neutral_mode_serv_ = controller_nh.advertiseService("set_neutral_mode", &TalonSwerveDriveController::setNeturalModeService, this);
 
-	double odom_pub_freq;
-	controller_nh.param("odometry_publishing_frequency", odom_pub_freq, DEF_ODOM_PUB_FREQ);
+	controller_nh.param("odometry_publishing_frequency", odom_pub_freq_, DEF_ODOM_PUB_FREQ);
 
-	comp_odom_ = odom_pub_freq > 0;
+	comp_odom_ = odom_pub_freq_ > 0;
 	//ROS_WARN("COMPUTING ODOM");
 	if (comp_odom_)
 	{
-		odom_pub_period_ = ros::Duration(1 / odom_pub_freq);
 		controller_nh.param("publish_odometry_to_base_transform", pub_odom_to_base_,
 							pub_odom_to_base_);
 
@@ -397,8 +397,8 @@ void starting(const ros::Time &time)
 	// Register starting time used to keep fixed rate
 	if (comp_odom_)
 	{
-		last_odom_pub_time_ = time;
-		last_odom_tf_pub_time_ = time;
+		odom_pub_interval_counter_ = std::make_unique<PeriodicIntervalCounter>(odom_pub_freq_);
+		odom_tf_pub_interval_counter_ = std::make_unique<PeriodicIntervalCounter>(odom_pub_freq_);
 	}
 	//odometry_.init(time);
 }
@@ -423,7 +423,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 		steer_angles[k] = steering_joints_[k].getPosition();
 	}
 
-	if (comp_odom_) compOdometry(time, 1.0 / period.toSec(), steer_angles);
+	if (comp_odom_) compOdometry(time, period, steer_angles);
 
 	Commands curr_cmd = *(command_.readFromRT());
 	const double dt = (time - curr_cmd.stamp).toSec();
@@ -492,7 +492,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 				}
 			}
 		}
-		if (publish_cmd_ && cmd_vel_pub_->trylock())
+		if (cmd_vel_pub_ && cmd_vel_pub_->trylock())
 		{
 			cmd_vel_pub_->msg_.header.stamp = time;
 			cmd_vel_pub_->msg_.twist.linear.x = 0;
@@ -530,22 +530,12 @@ void update(const ros::Time &time, const ros::Duration &period)
 			if (!percent_out_drive_mode)
 			{
 				speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_Velocity);
+				speed_joints_[i].setCommand(speeds_angles_[i][0]);
 
 				// Add static feed forward in direction of current velocity
-				if(fabs(speeds_angles_[i][0]) > 1e-5)
-				{
-					speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_ArbitraryFeedForward);
-					speed_joints_[i].setDemand1Value(copysign(f_s_, speeds_angles_[i][0]));
-					last_wheel_sign_[i] = copysign(1., speeds_angles_[i][0]);
-				}
-				else
-				{
-					ROS_WARN_STREAM("============Swerve drive controller, probably never here but if you see this.....");
-					speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
-					speed_joints_[i].setDemand1Value(0);
-				}
-
-				speed_joints_[i].setCommand(speeds_angles_[i][0]);
+				speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_ArbitraryFeedForward);
+				speed_joints_[i].setDemand1Value(copysign(f_s_, speeds_angles_[i][0]));
+				last_wheel_sign_[i] = copysign(1., speeds_angles_[i][0]);
 			}
 			else
 			{
@@ -577,7 +567,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 		speed_joints_[i].setNeutralMode(neutral_mode_);
 	}
 
-	if (publish_cmd_ && cmd_vel_pub_->trylock())
+	if (cmd_vel_pub_ && cmd_vel_pub_->trylock())
 	{
 		cmd_vel_pub_->msg_.header.stamp = time;
 		cmd_vel_pub_->msg_.twist.linear.x = curr_cmd.lin[0];
@@ -601,7 +591,7 @@ double angle_midpoint(double start_angle, double end_angle) const
 	return angles::normalize_angle(start_angle + deltaAngle / 2.0);
 }
 
-void compOdometry(const ros::Time &time, const double inv_delta_t, const std::array<double, WHEELCOUNT> &steer_angles)
+void compOdometry(const ros::Time &time, const ros::Duration &period, const std::array<double, WHEELCOUNT> &steer_angles)
 {
 	if (reset_odom_.exchange(false))
 	{
@@ -691,44 +681,60 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 	bool orientation_comped = false;
 
 	// tf
-	if (pub_odom_to_base_ && time - last_odom_tf_pub_time_ >= odom_pub_period_ &&
-		odom_tf_pub_.trylock())
+	if (pub_odom_to_base_ &&
+		odom_tf_pub_interval_counter_ &&
+		odom_tf_pub_interval_counter_->update(period))
 	{
-		orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
-		orientation_comped = true;
+		if (odom_tf_pub_.trylock())
+		{
+			orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
+			orientation_comped = true;
 
-		geometry_msgs::TransformStamped &odom_tf_trans =
-			odom_tf_pub_.msg_.transforms[0];
-		odom_tf_trans.header.stamp = time;
-		odom_tf_trans.transform.translation.x = odom_y; // TODO terrible hacky
-		odom_tf_trans.transform.translation.y = -odom_x; // TODO terrible hacky
-		odom_tf_trans.transform.rotation = orientation;
-		// ROS_INFO_STREAM(odom_x);
-		odom_tf_pub_.unlockAndPublish();
-		last_odom_tf_pub_time_ += odom_pub_period_;
+			geometry_msgs::TransformStamped &odom_tf_trans =
+				odom_tf_pub_.msg_.transforms[0];
+			odom_tf_trans.header.stamp = time;
+			odom_tf_trans.transform.translation.x = odom_y;	 // TODO terrible hacky
+			odom_tf_trans.transform.translation.y = -odom_x; // TODO terrible hacky
+			odom_tf_trans.transform.rotation = orientation;
+			// ROS_INFO_STREAM(odom_x);
+			odom_tf_pub_.unlockAndPublish();
+		}
+		else
+		{
+			odom_tf_pub_interval_counter_->force_publish();
+		}
 	}
 
 	// odom
-	if (time - last_odom_pub_time_ >= odom_pub_period_ && odom_pub_.trylock())
+	if (odom_pub_interval_counter_ &&
+		odom_pub_interval_counter_->update(period))
 	{
-		if (!orientation_comped)
-			orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
+		if (odom_pub_.trylock())
+		{
+			if (!orientation_comped)
+			{
+				orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
+			}
 
-		odom_pub_.msg_.header.stamp = time;
-		odom_pub_.msg_.pose.pose.position.x = odom_y; //TODO terrible hacky
-		odom_pub_.msg_.pose.pose.position.y = - odom_x; //TODO terrible hacky
-		odom_pub_.msg_.pose.pose.orientation = orientation;
+			odom_pub_.msg_.header.stamp = time;
+			odom_pub_.msg_.pose.pose.position.x = odom_y;  // TODO terrible hacky
+			odom_pub_.msg_.pose.pose.position.y = -odom_x; // TODO terrible hacky
+			odom_pub_.msg_.pose.pose.orientation = orientation;
 
-		odom_pub_.msg_.twist.twist.linear.x =
-			odom_rigid_transf_.translation().x() * inv_delta_t;
-		odom_pub_.msg_.twist.twist.linear.y =
-			odom_rigid_transf_.translation().y() * inv_delta_t;
-		odom_pub_.msg_.twist.twist.angular.z =
-			atan2(odom_rigid_transf_(1, 0), odom_rigid_transf_(0, 0)) * inv_delta_t;
+			const double inv_delta_t = 1.0 / period.toSec();
+			odom_pub_.msg_.twist.twist.linear.x =
+				odom_rigid_transf_.translation().x() * inv_delta_t;
+			odom_pub_.msg_.twist.twist.linear.y =
+				odom_rigid_transf_.translation().y() * inv_delta_t;
+			odom_pub_.msg_.twist.twist.angular.z =
+				atan2(odom_rigid_transf_(1, 0), odom_rigid_transf_(0, 0)) * inv_delta_t;
 
-		odom_pub_.unlockAndPublish();
-
-		last_odom_pub_time_ += odom_pub_period_;
+			odom_pub_.unlockAndPublish();
+		}
+		else
+		{
+			odom_pub_interval_counter_->force_publish();
+		}
 	}
 }
 
@@ -940,73 +946,10 @@ bool percentOutDriveModeService(std_srvs::SetBool::Request &req, std_srvs::SetBo
 	}
 }
 
-bool getWheelNames(ros::NodeHandle &controller_nh,
-		const std::string &wheel_param,
-		std::array<std::string, WHEELCOUNT> &wheel_names)
-{
-	XmlRpc::XmlRpcValue wheel_list;
-	if (!controller_nh.getParam(wheel_param, wheel_list))
-	{
-		ROS_ERROR_STREAM_NAMED(name_,
-							   "Couldn't retrieve wheel param '" << wheel_param << "'.");
-		return false;
-	}
 
-	if (wheel_list.getType() == XmlRpc::XmlRpcValue::TypeArray)
-	{
-		if (wheel_list.size() == 0)
-		{
-			ROS_ERROR_STREAM_NAMED(name_,
-								   "Wheel param '" << wheel_param << "' is an empty list");
-			return false;
-		}
-		if (wheel_list.size() != WHEELCOUNT)
-		{
-			ROS_ERROR_STREAM_NAMED(name_,
-								   "Wheel param size (" << wheel_list.size() <<
-								   " != WHEELCOUNT (" << WHEELCOUNT <<")." );
-			return false;
-		}
+std::string name_; // Controller name, for debugging
 
-		for (int i = 0; i < wheel_list.size(); ++i)
-		{
-			if (wheel_list[i].getType() != XmlRpc::XmlRpcValue::TypeString)
-			{
-				ROS_ERROR_STREAM_NAMED(name_,
-									   "Wheel param '" << wheel_param << "' #" << i <<
-									   " isn't a string.");
-				return false;
-			}
-		}
-
-		for (int i = 0; i < wheel_list.size(); ++i)
-		{
-			wheel_names[i] = static_cast<std::string>(wheel_list[i]);
-		}
-	}
-	else
-	{
-		ROS_ERROR_STREAM_NAMED(name_,
-							   "Wheel param '" << wheel_param <<
-							   "' is neither a list of strings nor a string.");
-		return false;
-	}
-
-	return true;
-}
-
-bool comp_odom_;
-Eigen::Matrix2Xd wheel_pos_;
-Eigen::Vector2d neg_wheel_centroid_;
-std::array<double, WHEELCOUNT> last_wheel_rot_;	    // used for odom calcs
-std::array<double, WHEELCOUNT> last_wheel_angle_;	//
-std::array<double, WHEELCOUNT> last_wheel_sign_;
-
-std::atomic<hardware_interface::NeutralMode> neutral_mode_ = hardware_interface::NeutralMode::NeutralMode_Coast;
-
-std::string name_;
-
-std::unique_ptr<swerve<WHEELCOUNT>> swerveC_;
+std::unique_ptr<swerve<WHEELCOUNT>> swerveC_; // Swerve math calculations object
 
 /// Hardware handles:
 //  Select type based onm the controller interface type
@@ -1021,45 +964,62 @@ struct Commands
 	double ang;
 	ros::Time stamp;
 
-	Commands() : lin(
+	Commands()
+		: lin{0.0, 0.0}
+	    , ang{0.0}
+		, stamp{}
 	{
-		0.0, 0.0
-	}), ang(0.0), stamp(0.0) {}
+	}
 };
 
 realtime_tools::RealtimeBuffer<Commands> command_;
 
-std::atomic<bool> dont_set_angle_mode_{false}; // used to lock wheels into place
-std::atomic<bool> percent_out_drive_mode_{false}; // run drive wheels in open-loop mode
-std::atomic<bool> park_when_stopped_{false};
 double brake_last_{ros::Time::now().toSec()};
 double time_before_brake_{0};
 double parking_config_time_delay_{0.1};
 double drive_speed_time_delay_{0.1};
 std::array<Eigen::Vector2d, WHEELCOUNT> speeds_angles_;
 
-ros::Subscriber sub_command_;
+// Attempt to limit speed of wheels which are pointing further from
+// their target angle. Should help to reduce the robot being pulled
+// off course coming out of parking config or when maki
+bool use_cos_scaling_{false};
 
-ros::ServiceServer change_center_of_rotation_serv_;
-ros::ServiceServer set_neutral_mode_serv_;
+ros::Subscriber sub_command_; // subscriber for drive base commands
 
-realtime_tools::RealtimeBuffer<Eigen::Vector2d> center_of_rotation_;
-
-ros::ServiceServer brake_serv_;
-ros::ServiceServer dont_set_angle_mode_serv_;
-ros::ServiceServer percent_out_drive_mode_serv_;
-ros::ServiceServer park_serv_;
-
-ros::ServiceServer reset_odom_serv_;
-std::atomic<bool> reset_odom_{false};
-
-/// Publish executed commands
+/// Optionally publish executed commands on an output topic
 std::unique_ptr<realtime_tools::RealtimePublisher<geometry_msgs::TwistStamped>> cmd_vel_pub_;
 
+// Used to change coords of center of robot rotation. By default this is set to
+// 0,0 (the center of the drive base), but it can be set to anywhere to allow
+// pure rotation commands to rotate the robot around any point in the ground plane.
+ros::ServiceServer change_center_of_rotation_serv_;
+realtime_tools::RealtimeBuffer<Eigen::Vector2d> center_of_rotation_;
+
+// Used to force the robot to stop
+ros::ServiceServer brake_serv_;
+
+// If set, angle motors will not be given a setpoint. Used for debugging
+ros::ServiceServer dont_set_angle_mode_serv_;
+std::atomic<bool> dont_set_angle_mode_{false};	  // used to lock wheels into place
+
+// If set, the robot will lock the angle motors into tank mode and drive
+// the speed motors using the cmd_vel linear x as a % out value rather than
+// a speed in m/s.  Used for determining static feed forward values during bring-up
+ros::ServiceServer percent_out_drive_mode_serv_;
+std::atomic<bool> percent_out_drive_mode_{false}; // run drive wheels in open-loop mode
+
+// Switch between brake and coast mode for speed wheels when stopping the robot
+ros::ServiceServer set_neutral_mode_serv_;
+std::atomic<hardware_interface::NeutralMode> neutral_mode_ = hardware_interface::NeutralMode::NeutralMode_Coast;
+
+// Used to toggle parking mode when stopped
+ros::ServiceServer park_serv_;
+std::atomic<bool> park_when_stopped_{false};      // toggle parking mode when stopped
+
+// Various constants used for drive calcs
 swerveVar::driveModel model_;
-
 swerveVar::ratios driveRatios_;
-
 swerveVar::encoderUnits units_;
 
 // Feed forward terms
@@ -1067,20 +1027,15 @@ double f_s_{0};
 double stopping_ff_{0};
 double f_a_{0};
 double f_v_{0};
+
+std::array<double, WHEELCOUNT> last_wheel_sign_;
+
 /// Timeout to consider cmd_vel commands old:
+// If no command more recent than this has been seen, stop the robot
 double cmd_vel_timeout_{0.5};
 
 /// Whether to allow multiple publishers on cmd_vel topic or not:
 bool allow_multiple_cmd_vel_publishers_{true};
-
-/// Whether to publish odometry to tf or not:
-//bool enable_odom_tf_;
-
-/// Number of wheel joints:
-size_t wheel_joints_size_{0};
-
-/// Publish limited velocity:
-bool publish_cmd_{true};
 
 static constexpr double DEF_ODOM_PUB_FREQ{100.};
 inline static const std::string DEF_ODOM_FRAME{"odom"};
@@ -1093,21 +1048,24 @@ static constexpr double DEF_SD{0.01};
 std::array<Eigen::Vector2d, WHEELCOUNT> wheel_coords_;
 
 bool pub_odom_to_base_{false};       // Publish the odometry to base frame transform
-ros::Duration odom_pub_period_;      // Odometry publishing period
+double odom_pub_freq_{-1};			 // odom publishing frequency
 Eigen::Affine2d init_odom_to_base_;  // Initial odometry to base frame transform
 Eigen::Affine2d odom_to_base_;       // Odometry to base frame transform
 Eigen::Affine2d odom_rigid_transf_;
 
-realtime_tools::RealtimePublisher<nav_msgs::Odometry> odom_pub_;
-tf2_ros::TransformBroadcaster odom_tf_;
-realtime_tools::RealtimePublisher<tf::tfMessage> odom_tf_pub_;
-ros::Time last_odom_pub_time_;
-ros::Time last_odom_tf_pub_time_;
+bool comp_odom_;
+Eigen::Matrix2Xd wheel_pos_;
+Eigen::Vector2d neg_wheel_centroid_;
+std::array<double, WHEELCOUNT> last_wheel_rot_;	    // used for odom calcs
+std::array<double, WHEELCOUNT> last_wheel_angle_;	//
 
-// Attempt to limit speed of wheels which are pointing further from
-// their target angle. Should help to reduce the robot being pulled
-// off course coming out of parking config or when maki
-bool use_cos_scaling_{false};
+realtime_tools::RealtimePublisher<nav_msgs::Odometry> odom_pub_;
+realtime_tools::RealtimePublisher<tf::tfMessage> odom_tf_pub_;
+std::unique_ptr<PeriodicIntervalCounter> odom_tf_pub_interval_counter_;
+std::unique_ptr<PeriodicIntervalCounter> odom_pub_interval_counter_;
+
+ros::ServiceServer reset_odom_serv_;
+std::atomic<bool> reset_odom_{false};
 
 }; // class definition
 
