@@ -384,6 +384,10 @@ void starting(const ros::Time &time)
 	for (size_t k = 0; k < WHEELCOUNT; k++)
 	{
 		steer_angles[k] = steering_joints_[k].getPosition();
+		last_wheel_angle_[k] = swerveC_->getWheelAngle(k, steer_angles[k]);
+		last_wheel_sign_[k] = 1.0;
+		speeds_angles_[k][0] = 0;
+		speeds_angles_[k][1] = steer_angles[k];
 	}
 	brake(steer_angles, time, true);
 	// Assume we braked infinitely long ago - this will keep the
@@ -590,11 +594,8 @@ private:
 
 double angle_midpoint(double start_angle, double end_angle) const
 {
-	double deltaAngle = end_angle - start_angle;
-	while (deltaAngle < -M_PI)
-		deltaAngle += 2.0 * M_PI;
-	while (deltaAngle > M_PI)
-		deltaAngle -= 2.0 * M_PI;
+	//ROS_INFO_STREAM(__PRETTY_FUNCTION__ << " start_angle = " << start_angle << " end_angle = " << end_angle);
+	const double deltaAngle = end_angle - start_angle;
 	// TODO - this angle is just going to have cos and sin called on it,
 	// might not need to be normalized?
 	return angles::normalize_angle(start_angle + deltaAngle / 2.0);
@@ -691,7 +692,7 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 
 	// tf
 	if (pub_odom_to_base_ && time - last_odom_tf_pub_time_ >= odom_pub_period_ &&
-			odom_tf_pub_.trylock())
+		odom_tf_pub_.trylock())
 	{
 		orientation = tf::createQuaternionMsgFromYaw(odom_yaw);
 		orientation_comped = true;
@@ -700,7 +701,7 @@ void compOdometry(const ros::Time &time, const double inv_delta_t, const std::ar
 			odom_tf_pub_.msg_.transforms[0];
 		odom_tf_trans.header.stamp = time;
 		odom_tf_trans.transform.translation.x = odom_y; // TODO terrible hacky
-		odom_tf_trans.transform.translation.y = -odom_y; // TODO terrible hacky
+		odom_tf_trans.transform.translation.y = -odom_x; // TODO terrible hacky
 		odom_tf_trans.transform.rotation = orientation;
 		// ROS_INFO_STREAM(odom_x);
 		odom_tf_pub_.unlockAndPublish();
@@ -744,7 +745,9 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 		speed_joints_[i].setDemand1Value(0);
 		speed_joints_[i].setNeutralMode(hardware_interface::NeutralMode::NeutralMode_Brake);
 		if (!dont_set_angle_mode && (park_when_stopped_ || force_parking_mode))
+		{
 			steering_joints_[i].setCommand(park_angles[i]);
+		}
 	}
 	// Reset the timer which delays drive wheel velocity a bit after
 	// the robot's been stopped

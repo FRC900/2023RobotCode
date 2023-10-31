@@ -244,11 +244,18 @@ void wpi::json::json_value::destroy(wpi::detail::value_t) noexcept
 	ROS_ERROR("Called wpi::json::json_value::destroy(wpi::detal::value_t) on unsupported platform");
 }
 
+#include "wpi/json.h"
 wpi::detail::type_error wpi::detail::type_error::create(int,std::string_view , std::string_view )
 {
 	ROS_ERROR("Called static wpi::detail::type_error::create(int, std::string_view, std::string_view) const on unsupported platform");
+	return wpi::detail::type_error(0, "");
 }
 
+wpi::detail::exception::exception(int id_, std::string_view what_arg)
+    : id(id_)
+	, m(std::string{what_arg})
+{
+}
 
 #include <FRC_NetworkCommunication/FRCComm.h>
 

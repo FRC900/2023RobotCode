@@ -166,12 +166,12 @@ bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_
 
 	// Create devices which have different code for HW vs. Sim
 	// (sim interface has a similar block, but using Sim vs HW devices)
-	devices_.emplace_back(std::make_shared<HWAS726xDevices>(root_nh));
-	devices_.emplace_back(std::make_shared<HWCANifierDevices>(root_nh));
-	devices_.emplace_back(std::make_shared<HWJoystickDevices>(root_nh));
-	devices_.emplace_back(std::make_shared<HWMatchDataDevices>(root_nh));
-	devices_.emplace_back(std::make_shared<HWSparkMaxDevices>(root_nh));
-	devices_.emplace_back(std::make_shared<HWTalonOrchestraDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<HWAS726xDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<HWCANifierDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<HWJoystickDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<HWMatchDataDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<HWSparkMaxDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<HWTalonOrchestraDevices>(root_nh));
 
 	// Orchestra needs a set of previously created TalonFXs to use as instruments
 	const auto orchestra_devices = getDevicesOfType<HWTalonOrchestraDevices>(devices_);
@@ -206,10 +206,10 @@ void FRCRobotHWInterface::read(const ros::Time& time, const ros::Duration& perio
 }
 
 template <class T>
-static bool read_control_word(const std::vector<std::shared_ptr<Devices>> &devices_, HAL_ControlWord &cw)
+static bool read_control_word(const std::vector<std::unique_ptr<Devices>> &devices, HAL_ControlWord &cw)
 {
-	const auto devices = getDevicesOfType<T>(devices_);
-	return devices && devices->getControlWord(cw);
+	const auto d = getDevicesOfType<T>(devices);
+	return d && d->getControlWord(cw);
 }
 
 //#define DEBUG_WRITE

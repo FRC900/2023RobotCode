@@ -31,7 +31,6 @@ Pigeon2Device::Pigeon2Device(const std::string &name_space,
     , read_state_mutex_{nullptr}
     , read_thread_{nullptr}
 {
-    // TODO : old code had a check for duplicate use of DIO channels? Needed?
     ROS_INFO_STREAM_NAMED("frc_robot_interface",
                         "Loading joint " << joint_index << "=" << joint_name <<
                         (local_update_ ? " local" : " remote") << " update, " <<
@@ -40,10 +39,8 @@ Pigeon2Device::Pigeon2Device(const std::string &name_space,
 
     if (local_hardware_)
     {
-    ROS_INFO_STREAM(__PRETTY_FUNCTION__ << " : " << __LINE__ << " id = " << can_id << " can_bus = " << can_bus);
         pigeon2_ = std::make_unique<ctre::phoenix6::hardware::core::CorePigeon2>(can_id, can_bus);
         setParentDevice(pigeon2_.get());
-    ROS_INFO_STREAM(__PRETTY_FUNCTION__ << " : " << __LINE__);
         read_thread_state_ = std::make_unique<hardware_interface::pigeon2::Pigeon2HWState>(can_id);
         read_state_mutex_ = std::make_unique<std::mutex>();
         read_thread_ = std::make_unique<std::thread>(&Pigeon2Device::read_thread, this,
@@ -116,9 +113,13 @@ void Pigeon2Device::registerInterfaces(hardware_interface::pigeon2::Pigeon2State
 // Create a subscriber reading simulated yaw values
 void Pigeon2Device::simInit(ros::NodeHandle nh, size_t joint_index)
 {
-    std::stringstream s;
-    s << "imu_" << joint_index << "_in";
-    sim_sub_ = nh.subscribe<nav_msgs::Odometry>(s.str(), 1, &Pigeon2Device::imuOdomCallback, this);
+    if (local_hardware_)
+    {
+        std::stringstream s;
+        s << "imu_" << joint_index << "_in";
+        sim_sub_ = nh.subscribe<nav_msgs::Odometry>(s.str(), 1, &Pigeon2Device::imuOdomCallback, this);
+        pigeon2_->GetSimState().SetSupplyVoltage(units::volt_t{12.5});
+    }
 }
 
 void Pigeon2Device::imuOdomCallback(const nav_msgs::OdometryConstPtr &msg)

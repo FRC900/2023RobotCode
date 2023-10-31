@@ -78,7 +78,7 @@ private:
     void read_thread(std::unique_ptr<Tracer> tracer,
                      const double poll_frequency);
 
-    std::atomic<double> sim_yaw_{0};
+    std::atomic<double> sim_yaw_{0.};
     ros::Subscriber sim_sub_;
     void imuOdomCallback(const nav_msgs::OdometryConstPtr &msg);
 };

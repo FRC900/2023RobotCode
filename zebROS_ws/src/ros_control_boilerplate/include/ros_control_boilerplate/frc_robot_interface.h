@@ -68,7 +68,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		FRCRobotInterface(ros::NodeHandle &nh, urdf::Model *urdf_model = NULL);
 		FRCRobotInterface(const FRCRobotInterface &) = delete;
 		FRCRobotInterface(const FRCRobotInterface &&) noexcept = delete;
-		virtual ~FRCRobotInterface() = default;
+		virtual ~FRCRobotInterface();
 		FRCRobotInterface& operator=(const FRCRobotInterface &) = delete;
 		FRCRobotInterface& operator=(const FRCRobotInterface &&) noexcept = delete;
 
@@ -122,7 +122,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		Tracer read_tracer_;
 		Tracer write_tracer_;
 
-		std::vector<std::shared_ptr<Devices>> devices_;
+		std::vector<std::unique_ptr<Devices>> devices_;
 };  // class
 
 }  // namespace

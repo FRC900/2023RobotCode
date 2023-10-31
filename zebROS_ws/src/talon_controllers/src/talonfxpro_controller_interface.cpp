@@ -657,7 +657,7 @@ bool TalonFXProControllerInterface::initWithNode(hardware_interface::talonfxpro:
     follower_talons_.resize(n.size() - 1);
     for (size_t i = 1; i < n.size(); i++)
     {
-        ROS_INFO_STREAM("i = " << i << "n[i] = " << n[i].getNamespace());
+        ROS_INFO_STREAM("follower n[" << i << "] = " << n[i].getNamespace());
         if (!init(tci, n[i], follower_talons_[i-1], true))
         {
             return false;
@@ -2140,7 +2140,7 @@ void TalonFXProControllerInterface::setControlMode(const hardware_interface::tal
             talon_->setControlPosition(0);
             talon_->setControlVelocity(0);
             talon_->setControlAcceleration(0);
-            ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << " : Invalid control mode : NeutralOut / CoastOut / StaticBrake");
+            //ROS_ERROR_STREAM(__PRETTY_FUNCTION__ << " : Invalid control mode : NeutralOut / CoastOut / StaticBrake");
             break;
         case hardware_interface::talonfxpro::TalonMode::Disabled:
             return;

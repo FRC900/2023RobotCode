@@ -67,14 +67,14 @@ private:
 };
 
 template<class T>
-T* getDevicesOfType(const std::vector<std::shared_ptr<Devices>> &device_list)
+T* getDevicesOfType(const std::vector<std::unique_ptr<Devices>> &device_list)
 {
     for (auto &d: device_list)
     {
-        auto di = std::dynamic_pointer_cast<T>(d);
+        auto di = dynamic_cast<T*>(d.get());
         if (di)
         {
-            return di.get();
+            return di;
         }
     }
     return nullptr;
