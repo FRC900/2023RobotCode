@@ -244,7 +244,6 @@ void wpi::json::json_value::destroy(wpi::detail::value_t) noexcept
 	ROS_ERROR("Called wpi::json::json_value::destroy(wpi::detal::value_t) on unsupported platform");
 }
 
-#include "wpi/json.h"
 wpi::detail::type_error wpi::detail::type_error::create(int,std::string_view , std::string_view )
 {
 	ROS_ERROR("Called static wpi::detail::type_error::create(int, std::string_view, std::string_view) const on unsupported platform");
