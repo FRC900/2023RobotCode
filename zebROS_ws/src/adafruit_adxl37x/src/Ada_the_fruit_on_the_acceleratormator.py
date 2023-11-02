@@ -24,20 +24,23 @@ rospy.init_node("vroom", anonymous=True)
 import time
 import board
 import adafruit_adxl37x
+from adafruit_adxl34x import DataRate
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 global accelerometer
 accelerometer = adafruit_adxl37x.ADXL375(i2c)
+accelerometer.data_rate  = DataRate.RATE_800_HZ
 
-r = rospy.Rate(10)
+r = rospy.Rate(800)
 
 
 while not rospy.is_shutdown():
     message=Imu()
     message.header.stamp = rospy.get_rostime()
-    message.linear_acceleration.x = accelerometer.acceleration[0]
-    message.linear_acceleration.y = accelerometer.acceleration[1]
-    message.linear_acceleration.z = accelerometer.acceleration[2]
+    x,y,z = accelerometer.acceleration
+    message.linear_acceleration.x = x
+    message.linear_acceleration.y = y
+    message.linear_acceleration.z = z
     pub.publish(message)
     r.sleep()
 
