@@ -282,18 +282,17 @@ static bool convertMagnetHealth(const ctre::phoenix6::signals::MagnetHealthValue
 {
     switch (input.value)
     {
-    using enum hardware_interface::cancoder::MagnetHealth;
     case ctre::phoenix6::signals::MagnetHealthValue::Magnet_Invalid:
-        output = Invalid;
+        output = hardware_interface::cancoder::MagnetHealth::Invalid;
         break;
     case ctre::phoenix6::signals::MagnetHealthValue::Magnet_Red:
-        output = Red;
+        output = hardware_interface::cancoder::MagnetHealth::Red;
         break;
     case ctre::phoenix6::signals::MagnetHealthValue::Magnet_Orange:
-        output = Orange;
+        output = hardware_interface::cancoder::MagnetHealth::Orange;
         break;
     case ctre::phoenix6::signals::MagnetHealthValue::Magnet_Green:
-        output = Green;
+        output = hardware_interface::cancoder::MagnetHealth::Green;
         break;
     default:
         ROS_ERROR("Invalid input in convertCANCoderMagnetFieldStrength");
