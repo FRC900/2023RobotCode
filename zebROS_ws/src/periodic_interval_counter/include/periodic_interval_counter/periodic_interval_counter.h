@@ -11,7 +11,7 @@ class PeriodicIntervalCounter
 {
 public:
     // Create a counter which updates at the requested frequency
-    PeriodicIntervalCounter(const double frequency)
+    explicit PeriodicIntervalCounter(const double frequency)
         : desired_period_{ros::Duration{1. / frequency}}
     {
         // Crash early if the frequency passed in is invalid

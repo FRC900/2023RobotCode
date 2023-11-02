@@ -1,8 +1,7 @@
-//#include <ros/ros.h>
 #include <talon_swerve_drive_controller/900Math.h>
 #include <talon_swerve_drive_controller/Swerve.h>
 
-#include <ros/console.h>
+//#include <ros/console.h>
 
 template <size_t WHEELCOUNT>
 swerve<WHEELCOUNT>::swerve(const std::array<Eigen::Vector2d, WHEELCOUNT> &wheelCoordinates,
@@ -85,7 +84,7 @@ std::array<double, WHEELCOUNT> swerve<WHEELCOUNT>::parkingAngles(const std::arra
 // Apply encoder offset and steering ratio to calculate desired
 // measured wheel angle from a wheel angle setpoint
 template<size_t WHEELCOUNT>
-double swerve<WHEELCOUNT>::getWheelAngle(int index, double pos) const
+double swerve<WHEELCOUNT>::getWheelAngle(size_t index, double pos) const
 {
 	return (pos - offsets_[index]) * units_.steeringGet;
 }

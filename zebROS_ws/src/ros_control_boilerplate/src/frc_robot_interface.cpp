@@ -210,7 +210,7 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 		}
 	}
 
-	for (auto &d: devices_)
+	for (const auto &d: devices_)
 	{
 		d->read(time, period, read_tracer_);
 	}
@@ -219,16 +219,12 @@ void FRCRobotInterface::read(const ros::Time &time, const ros::Duration &period)
 
 void FRCRobotInterface::write(const ros::Time& time, const ros::Duration& period)
 {
-	for (auto &d: devices_)
+	for (const auto &d: devices_)
 	{
 		d->write(time, period, write_tracer_);
 	}
 
 	write_tracer_.report(60);
-}
-
-void FRCRobotInterface::reset()
-{
 }
 
 bool FRCRobotInterface::prepareSwitch(const std::list<hardware_interface::ControllerInfo> &/*start_list*/,

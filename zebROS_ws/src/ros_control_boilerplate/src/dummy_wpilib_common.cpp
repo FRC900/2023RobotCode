@@ -213,9 +213,7 @@ NetworkTable::NetworkTable(NT_Inst /*inst*/, std::string_view /*path*/, NetworkT
 {
 }
 
-NetworkTable::~NetworkTable()
-{
-}
+NetworkTable::~NetworkTable() = default;
 
 }
 

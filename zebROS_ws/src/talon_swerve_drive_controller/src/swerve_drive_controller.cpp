@@ -240,8 +240,8 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 	  return false;
 	}
 
-	// Regardless of how we got the separation and radius, use them
 	*/
+	// Regardless of how we got the separation and radius, use them
 	// to set the odometry parameters
 	//setOdomPubFields(root_nh, controller_nh);
 
@@ -300,15 +300,21 @@ bool init(COMMAND_INTERFACE_TYPE *hw,
 		controller_nh.param("publish_odometry_to_base_transform", pub_odom_to_base_,
 							pub_odom_to_base_);
 
-		double init_x, init_y, init_yaw;
+		double init_x;
+		double init_y;
+		double init_yaw;
 		controller_nh.param("initial_x", init_x, DEF_INIT_X);
 		controller_nh.param("initial_y", init_y, DEF_INIT_Y);
 		controller_nh.param("initial_yaw", init_yaw, DEF_INIT_YAW);
-		double x_sd, y_sd, yaw_sd;
+		double x_sd;
+		double y_sd;
+		double yaw_sd;
 		controller_nh.param("x_sd", x_sd, DEF_SD);
 		controller_nh.param("y_sd", y_sd, DEF_SD);
 		controller_nh.param("yaw_sd", yaw_sd, DEF_SD);
-		double x_speed_sd, y_speed_sd, yaw_speed_sd;
+		double x_speed_sd;
+		double y_speed_sd;
+		double yaw_speed_sd;
 		controller_nh.param("x_speed_sd", x_speed_sd, DEF_SD);
 		controller_nh.param("y_speed_sd", y_speed_sd, DEF_SD);
 		controller_nh.param("yaw_speed_sd", yaw_speed_sd, DEF_SD);
@@ -960,16 +966,11 @@ std::array<CONTROLLER_INTERFACE_TYPE, WHEELCOUNT> steering_joints_;
 /// Velocity command related:
 struct Commands
 {
-	Eigen::Vector2d lin;
-	double ang;
+	Eigen::Vector2d lin{0.,0.};
+	double ang{0.};
 	ros::Time stamp;
 
-	Commands()
-		: lin{0.0, 0.0}
-	    , ang{0.0}
-		, stamp{}
-	{
-	}
+	Commands() = default;
 };
 
 realtime_tools::RealtimeBuffer<Commands> command_;

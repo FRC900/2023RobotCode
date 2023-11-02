@@ -183,11 +183,11 @@ bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_
 		orchestra_devices->setTalonFXData(talonfxs);
 	}
 
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		d->hwInit(root_nh);
 	}
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		registerInterfaceManager(d->registerInterface());
 	}
@@ -198,7 +198,7 @@ bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_
 
 void FRCRobotHWInterface::read(const ros::Time& time, const ros::Duration& period)
 {
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		d->hwRead(time, period, read_tracer_);
 	}
@@ -225,8 +225,7 @@ void FRCRobotHWInterface::write(const ros::Time& time, const ros::Duration& peri
 	// For the Rio, the HALSIM_SetControlWord() call does nothing, since in
 	// that case the real frc::DriverStation code is used which is actually
 	// hooked up directly to the real driver station.
-	HAL_ControlWord cw;
-	if (read_control_word<HWMatchDataDevices>(devices_, cw))
+	if (HAL_ControlWord cw; read_control_word<HWMatchDataDevices>(devices_, cw))
 	{
 		HALSIM_SetControlWord(cw);
 
@@ -236,7 +235,7 @@ void FRCRobotHWInterface::write(const ros::Time& time, const ros::Duration& peri
 		Devices::setEnabled(cw.enabled);
 	}
 
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		d->hwWrite(time, period, write_tracer_);
 	}

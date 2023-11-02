@@ -6,7 +6,7 @@
 #include <ros/node_handle.h>
 
 template <size_t WHEELCOUNT>
-bool getWheelNames(ros::NodeHandle &controller_nh,
+bool getWheelNames(const ros::NodeHandle &controller_nh,
                    const std::string &controller_name,
                    const std::string &wheel_param,
                    std::array<std::string, WHEELCOUNT> &wheel_names)

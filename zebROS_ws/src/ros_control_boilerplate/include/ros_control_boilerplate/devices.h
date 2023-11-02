@@ -42,12 +42,12 @@ public:
     virtual void write(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
 
     // Read and write functions which add additional sim features
-    virtual void simInit(ros::NodeHandle /*nh*/) {}
+    virtual void simInit(ros::NodeHandle &/*nh*/) {}
     virtual void simRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
     virtual void simWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
 
     // Read and write functions which add additional hardware-only features
-    virtual void hwInit(ros::NodeHandle /*nh*/) {}
+    virtual void hwInit(ros::NodeHandle &/*nh*/) {}
     virtual void hwRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
     virtual void hwWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& /*tracer*/) {}
 

@@ -92,14 +92,14 @@ bool FRCRobotSimInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot
 		orchestra_devices->setTalonFXData(talonfxs);
 	}
 
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		d->simInit(root_nh);
 	}
 	// Need to do this here rather than in the base class so
 	// registerInterface isn't called twice for devices
 	// created in the base init().
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		registerInterfaceManager(d->registerInterface());
 	}
@@ -121,7 +121,7 @@ void FRCRobotSimInterface::read(const ros::Time &time, const ros::Duration &peri
 	read_tracer_.start_unique("HAL_SimPeriodicBefore");
 	HAL_SimPeriodicBefore();
 
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		d->simRead(time, period, read_tracer_);
 	}
@@ -135,8 +135,7 @@ void FRCRobotSimInterface::read(const ros::Time &time, const ros::Duration &peri
 template <class T>
 static bool read_device_enabled(const std::vector<std::unique_ptr<Devices>> &devices, bool &val)
 {
-	const auto d = getDevicesOfType<T>(devices);
-	if (d)
+	if (const auto d = getDevicesOfType<T>(devices))
 	{
 		const auto isEnabled = d->isEnabled();
 		if (isEnabled)
@@ -152,13 +151,12 @@ void FRCRobotSimInterface::write(const ros::Time& time, const ros::Duration& per
 {
 	// Was the robot enabled last time write was run?
 	write_tracer_.start_unique("read robot enabled");
-	bool robot_enabled = false;
-	if (read_device_enabled<SimMatchDataDevices>(devices_, robot_enabled))
+	if (bool robot_enabled = false; read_device_enabled<SimMatchDataDevices>(devices_, robot_enabled))
 	{
 		Devices::setEnabled(robot_enabled);
 	}
 
-	for (auto &d: devices_)
+	for (const auto &d: devices_)
 	{
 		d->simWrite(time, period, write_tracer_);
 	}
