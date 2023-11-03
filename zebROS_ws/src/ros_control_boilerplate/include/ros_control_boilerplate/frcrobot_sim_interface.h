@@ -73,7 +73,7 @@ class FRCRobotSimInterface : public ros_control_boilerplate::FRCRobotInterface<t
 		/** \brief Write the command to the robot hardware. */
 		void write(const ros::Time& time, const ros::Duration& period) override;
 
-		bool gazeboSimInit(ros::NodeHandle model_nh, boost::shared_ptr<gazebo::physics::Model> parent_model);
+		bool gazeboSimInit(const ros::NodeHandle &model_nh, boost::shared_ptr<gazebo::physics::Model> parent_model);
 };  // class
 
 }  // namespace

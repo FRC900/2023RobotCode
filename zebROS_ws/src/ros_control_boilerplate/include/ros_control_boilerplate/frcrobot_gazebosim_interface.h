@@ -51,10 +51,10 @@ class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim
 		 * \brief Constructor
 		 * \param nh - Node handle for topics.
 		 */
-		FRCRobotGazeboSimInterface() {}
+		FRCRobotGazeboSimInterface() = default;
 		FRCRobotGazeboSimInterface(const FRCRobotGazeboSimInterface &) = delete;
 		FRCRobotGazeboSimInterface(const FRCRobotGazeboSimInterface &&) noexcept = delete;
-		virtual ~FRCRobotGazeboSimInterface() = default;
+		~FRCRobotGazeboSimInterface() override = default;
 
 		FRCRobotGazeboSimInterface& operator=(const FRCRobotGazeboSimInterface &) = delete;
 		FRCRobotGazeboSimInterface& operator=(const FRCRobotGazeboSimInterface &&) noexcept = delete;
@@ -70,7 +70,7 @@ class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim
 		/// \param transmissions  Transmissions.
 		///
 		/// \return  \c true if the simulated robot hardware is initialized successfully, \c false if not.
-		virtual bool initSim(
+		bool initSim(
 			const std::string &robot_namespace,
 			ros::NodeHandle model_nh,
 			gazebo::physics::ModelPtr parent_model,
@@ -83,7 +83,7 @@ class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim
 		///
 		/// \param time  Simulation time.
 		/// \param period  Time since the last simulation step.
-		virtual void readSim(ros::Time time, ros::Duration period) override;
+		void readSim(ros::Time time, ros::Duration period) override;
 
 		/// \brief Write commands to the simulated robot hardware
 		///
@@ -91,14 +91,14 @@ class FRCRobotGazeboSimInterface : public gazebo_ros_control::RobotHWSim
 		///
 		/// \param time  Simulation time.
 		/// \param period  Time since the last simulation step.
-		virtual void writeSim(ros::Time time, ros::Duration period) override;
+		void writeSim(ros::Time time, ros::Duration period) override;
 
 		/// \brief Set the emergency stop state
 		///
 		/// Set the simulated robot's emergency stop state. The default implementation of this function does nothing.
 		///
 		/// \param active  \c true if the emergency stop is active, \c false if not.
-		virtual void eStopActive(const bool active) {}
+		void eStopActive(const bool active) override {}
 
 	private:
 		ros_control_boilerplate::FRCRobotSimInterface frcrobot_sim_interface_;

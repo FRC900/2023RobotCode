@@ -164,7 +164,7 @@ void CTREV5MotorControllers<SIM>::simRead(const ros::Time &time, const ros::Dura
 }
 
 template <bool SIM>
-bool CTREV5MotorControllers<SIM>::gazeboSimInit(ros::NodeHandle /*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model)
+bool CTREV5MotorControllers<SIM>::gazeboSimInit(const ros::NodeHandle &/*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model)
 {
     if constexpr (SIM)
     {

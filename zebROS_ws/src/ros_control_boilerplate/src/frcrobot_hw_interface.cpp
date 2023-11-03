@@ -160,7 +160,7 @@ bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_
 	}
 
 	// Handle any init specifically needed for hardware
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		d->hwInit(root_nh);
 	}

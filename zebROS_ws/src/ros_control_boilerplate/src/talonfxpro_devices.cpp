@@ -114,7 +114,7 @@ void TalonFXProDevices<SIM>::simRead(const ros::Time& time, const ros::Duration&
 
 template <bool SIM>
 bool TalonFXProDevices<SIM>::setlimit(ros_control_boilerplate::set_limit_switch::Request &req,
-                                 ros_control_boilerplate::set_limit_switch::Response & /*res*/)
+                                      ros_control_boilerplate::set_limit_switch::Response & /*res*/)
 {
     if constexpr (SIM)
     {
@@ -132,7 +132,7 @@ bool TalonFXProDevices<SIM>::setlimit(ros_control_boilerplate::set_limit_switch:
 
 template <bool SIM>
 bool TalonFXProDevices<SIM>::setcurrent(ros_control_boilerplate::set_current::Request &req,
-                                   ros_control_boilerplate::set_current::Response & /*res*/)
+                                        ros_control_boilerplate::set_current::Response & /*res*/)
 {
     if constexpr (SIM)
     {
@@ -162,7 +162,7 @@ void TalonFXProDevices<SIM>::appendDeviceMap(std::multimap<std::string, ctre::ph
 }
 
 template <bool SIM>
-bool TalonFXProDevices<SIM>::gazeboSimInit(ros::NodeHandle /*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model)
+bool TalonFXProDevices<SIM>::gazeboSimInit(const ros::NodeHandle &/*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model)
 {
     if constexpr (SIM)
     {

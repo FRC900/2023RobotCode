@@ -38,7 +38,7 @@ public:
     void simInit(ros::NodeHandle &nh) override;
     void simRead(const ros::Time& time, const ros::Duration& period, Tracer &tracer) override;
 
-    bool gazeboSimInit(ros::NodeHandle /*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model) override;
+    bool gazeboSimInit(const ros::NodeHandle& /*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model) override;
     void gazeboSimRead(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& tracer) override;
     void gazeboSimWrite(const ros::Time& /*time*/, const ros::Duration& /*period*/, Tracer& tracer, const bool e_stop_active) override;
 

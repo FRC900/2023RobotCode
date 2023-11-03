@@ -39,7 +39,7 @@ public:
     // simRead hooks up to CTRE simulation code and updates motor state each control cycle
     void simRead(const ros::Time &time, const ros::Duration &period, Tracer &tracer) override;
 
-    bool gazeboSimInit(ros::NodeHandle /*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model) override;
+    bool gazeboSimInit(const ros::NodeHandle &/*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model) override;
 
     void appendDeviceMap(std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> &device_map) const;
 

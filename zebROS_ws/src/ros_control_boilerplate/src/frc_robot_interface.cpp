@@ -178,7 +178,7 @@ bool FRCRobotInterface<SIM>::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*r
 	devices_.emplace_back(std::make_unique<TalonOrchestraDevices<SIM>>(root_nh));
 
 	// Create controller interfaces for all the types created above
-	for (auto &d : devices_)
+	for (const auto &d : devices_)
 	{
 		registerInterfaceManager(d->registerInterface());
 	}
