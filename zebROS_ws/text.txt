@@ -1,0 +1,139 @@
+[INFO] [1690757672.547418]: Min confidence of 0.2 loaded from config
+[INFO] [1690757672.548371]: Image topic of /zed_objdetect/left/image_rect_color loaded from config
+[[[47 23 35]
+  [44 20 32]
+  [45 19 31]
+  ...
+  [51 53 54]
+  [55 53 54]
+  [55 53 54]]
+
+ [[43 19 31]
+  [42 18 30]
+  [42 19 28]
+  ...
+  [49 53 54]
+  [51 53 54]
+  [51 53 54]]
+
+ [[40 19 28]
+  [40 19 28]
+  [40 20 27]
+  ...
+  [46 55 54]
+  [45 54 53]
+  [45 54 53]]
+
+ ...
+
+ [[62 66 74]
+  [65 69 77]
+  [69 70 79]
+  ...
+  [46 36 33]
+  [42 33 33]
+  [41 32 32]]
+
+ [[69 68 77]
+  [71 70 79]
+  [72 71 80]
+  ...
+  [48 39 34]
+  [44 39 34]
+  [43 38 33]]
+
+ [[70 69 78]
+  [72 71 80]
+  [74 71 80]
+  ...
+  [51 45 37]
+  [45 44 35]
+  [44 43 34]]]
+<class 'numpy.uint8'>
+[[[114 114 114]
+  [114 114 114]
+  [114 114 114]
+  ...
+  [114 114 114]
+  [114 114 114]
+  [114 114 114]]
+
+ [[114 114 114]
+  [114 114 114]
+  [114 114 114]
+  ...
+  [114 114 114]
+  [114 114 114]
+  [114 114 114]]
+
+ [[114 114 114]
+  [114 114 114]
+  [114 114 114]
+  ...
+  [114 114 114]
+  [114 114 114]
+  [114 114 114]]
+
+ ...
+
+ [[114 114 114]
+  [114 114 114]
+  [114 114 114]
+  ...
+  [114 114 114]
+  [114 114 114]
+  [114 114 114]]
+
+ [[114 114 114]
+  [114 114 114]
+  [114 114 114]
+  ...
+  [114 114 114]
+  [114 114 114]
+  [114 114 114]]
+
+ [[114 114 114]
+  [114 114 114]
+  [114 114 114]
+  ...
+  [114 114 114]
+  [114 114 114]
+  [114 114 114]]]
+(640, 640, 3)
+... logging to /home/ubuntu/.ros/log/0add01c6-2f2c-11ee-90d2-3c58c2ba909b/roslaunch-dino-desktop-67615.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/ubuntu/.2023RobotCode.readonly/zebROS_ws/src/tf_object_detection/launch/yoloyolo.launch
+[1mstarted roslaunch server http://10.32.4.111:42213/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.16.0
+ * /tf_object_detection/image_topic: /zed_objdetect/le...
+ * /tf_object_detection/min_confidence: 0.2
+
+NODES
+  /tf_object_detection/
+    simple_static_img_pub (tf_object_detection/simple_static_img_pub.py)
+    tf_object_detection (tf_object_detection/fastYOLO.py)
+
+auto-starting new master
+[1mprocess[master]: started with pid [67637][0m
+[1mROS_MASTER_URI=http://localhost:5802[0m
+]2;/home/ubuntu/.2023RobotCode.readonly/zebROS_ws/src/tf_object_detection/launch/yoloyolo.launch http://localhost:5802
+[1msetting /run_id to 0add01c6-2f2c-11ee-90d2-3c58c2ba909b[0m
+[1mprocess[rosout-1]: started with pid [67661][0m
+started core service [/rosout]
+[1mprocess[tf_object_detection/tf_object_detection-2]: started with pid [67664][0m
+[1mprocess[tf_object_detection/simple_static_img_pub-3]: started with pid [67669][0m
+[tf_object_detection/simple_static_img_pub-3] killing on exit
+[tf_object_detection/tf_object_detection-2] killing on exit
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

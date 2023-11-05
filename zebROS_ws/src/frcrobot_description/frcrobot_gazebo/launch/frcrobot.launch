@@ -15,7 +15,7 @@
   <!-- process the xacro file into a urdf, load the text of that urdf into a ros 
 	   string parameter. This is used by gazebo to build its robot model
 	-->
-  <param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/urdf/swerve_base.urdf" />
+  <param name="robot_description" command="$(find xacro)/xacro $(find frcrobot_description)/urdf/robot_2023.urdf" />
   <!-- TODO : Update me for 2023 robot-->
   <group ns="frcrobot_jetson">
 	  <!-- publishes transforms between the various ROS joints
@@ -25,7 +25,7 @@
 
     <rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson.yaml" command="load"/>
     <rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive_phoenix6.yaml" command="load"/>
-    <rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_offsets.yaml" command="load"/>
+    <rosparam file="$(find ros_control_boilerplate)/config/sim_offsets.yaml" command="load"/>
     <rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_phoenix6_params.yaml" command="load"/>
     <rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_jetson.yaml" command="load"/>
     <rosparam file="$(find ros_control_boilerplate)/config/2023_gazebo_test.yaml" command="load"/>

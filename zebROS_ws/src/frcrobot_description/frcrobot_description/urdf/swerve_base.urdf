@@ -351,7 +351,7 @@
 </inertial>
 </link>
 
-<link name="first_stage_4">
+<link name="fr_angle">
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
@@ -374,7 +374,7 @@
 </inertial>
 </link>
 
-<link name="second_stage_4">
+<link name="fr_drive">
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
@@ -397,7 +397,7 @@
 </inertial>
 </link>
 
-<joint name="fr_drive" type="continuous">
+<joint name="fr_drive_joint" type="continuous">
 <origin xyz="-0.014718639782432263452 -0.014718639782432541008 0.041331500000000041817" rpy="-1.5707963267948994446 0.53105430610586668028 2.3561944901923461693" />
 <parent link="first_stage_4" />
 <child link="second_stage_4" />
@@ -407,7 +407,7 @@
 <dynamics damping="0.0" friction="1.0"/>
 </joint>
 
-<joint name="fr_angle" type="continuous">
+<joint name="fr_angle_joint" type="continuous">
 <origin xyz="0.066293999999999908557 -0.0079375000000000972555 0.019843750000000076605" rpy="-1.570796326794896558 1.2358944559116720185 3.141592653589793116" />
 <parent link="fixed_stage_4" />
 <child link="first_stage_4" />

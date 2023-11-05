@@ -68,10 +68,11 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         units::angular_velocity::radians_per_second_t setpoint{invert * state_->getControlVelocity() * state_->getSensorToMechanismRatio()};
         sim_state.SetRotorVelocity(setpoint);
         units::radian_t delta_position{invert * state_->getControlVelocity() * period.toSec() * state_->getSensorToMechanismRatio()};
-        sim_state.AddRotorPosition(delta_position);
+        sim_state.AddRotorPosition(delta_position); // VERY IMPORTANT SO CTRE SIM KNOWS MOTORS MOVE
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
-        gazebo_joint_->SetPosition(0, state_->getRotorPosition());
+        //gazebo_joint_->SetPosition(0, state_->getRotorPosition());
         gazebo_joint_->SetForce(0, sim_state.GetTorqueCurrent().value() * 0.0192);
+        gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
         ROS_ERROR_STREAM_THROTTLE(1, "IN VELOCITY MODE current " << sim_state.GetTorqueCurrent().value() << " " << state_->getRotorPosition());
         break;
     }
