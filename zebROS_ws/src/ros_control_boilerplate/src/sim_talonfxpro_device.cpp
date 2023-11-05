@@ -22,8 +22,9 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         const double velocity = gazebo_joint_->GetVelocity(0);
         // get motor voltage, us as input to motor model to get torque out
         const double motor_voltage = state_->getMotorVoltage();
-        ROS_INFO_STREAM("Gazebo : p = " << position << " v = " << velocity << " voltage = " << motor_voltage);
-        
+        ROS_INFO_STREAM_THROTTLE(2, "Gazebo : " << " Joint Name " << "p =" << position << " v = " << velocity << " voltage = " << motor_voltage);
+        gazebo_joint_->SetPosition(0, counter);
+        counter++;
         // Call gazebo_joint_->SetForce() with the torque calc'd from the motor model
     }
 
@@ -50,6 +51,7 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         sim_state.SetRawRotorPosition(setpoint);
         sim_state.SetRotorVelocity(units::angular_velocity::turns_per_second_t{0});
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
+        ROS_ERROR_STREAM("IN POSITION MODE");
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::VelocityDutyCycle:
@@ -62,10 +64,20 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         units::radian_t delta_position{invert * state_->getVelocity() * period.toSec() * state_->getSensorToMechanismRatio()};
         sim_state.AddRotorPosition(delta_position);
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
+        ROS_ERROR_STREAM("IN VELOCITY MODE");
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::MotionMagicDutyCycle:
-    case hardware_interface::talonfxpro::TalonMode::MotionMagicVoltage:
+    case hardware_interface::talonfxpro::TalonMode::MotionMagicVoltage: 
+    {
+        units::angular_velocity::radians_per_second_t setpoint{3.14};
+        sim_state.SetRotorVelocity(setpoint);
+        units::radian_t rotation = units::radian_t{0.2}; 
+        sim_state.AddRotorPosition(rotation);
+        sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
+        ROS_WARN_STREAM_THROTTLE(1, "Motion Magic modes not supported in simulation");
+        break;
+    }
     case hardware_interface::talonfxpro::TalonMode::MotionMagicTorqueCurrentFOC:
     // TODO : test the modes below when/if we actually use them
     case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle:
@@ -82,6 +94,7 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         sim_state.SetRawRotorPosition(target_position);
         sim_state.SetRotorVelocity(target_velocity);
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
+        ROS_ERROR_STREAM("IN MOTION MAGIC MODE");
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::Follower:

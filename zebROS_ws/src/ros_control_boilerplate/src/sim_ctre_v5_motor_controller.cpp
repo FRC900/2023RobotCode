@@ -132,6 +132,7 @@ void SimCTREV5MotorController::updateSimValues(const ros::Time &/*time*/, const 
     }
     else if (mode == hardware_interface::TalonMode_MotionMagic)
     {
+        
         // TODO : maybe apply this to velocity and position PID modes above,
         // waiting on a motor where we actually need this function to test with
         const double invert = state_->getInvert() ? -1.0 : 1.0;

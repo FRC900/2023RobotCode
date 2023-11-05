@@ -1,5 +1,27 @@
 
-<robot name="onshape">
+<robot name="frcrobot">
+
+
+<transmission name="test_motor">
+<type>talon_controllers/TalonFXProControllerInterface</type>
+<joint name="fl_angle">
+    <hardwareInterface>TalonFXProControllerInterface</hardwareInterface>
+</joint>
+<actuator name="motor2">
+    <hardwareInterface>TalonFXProControllerInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<gazebo>
+  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <robotNamespace>/frcrobot</robotNamespace>
+     <robotSimType>frcrobot_control/FRCRobotGazeboSim</robotSimType>  
+    <!-- <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> -->
+    
+  </plugin>
+</gazebo>
+
+
 <link name="base_link"></link>
 <joint name="base_link_to_base" type="fixed">
 <parent link="base_link"/>
@@ -98,7 +120,7 @@
 </inertial>
 </link>
 
-<joint name="fl_drive" type="continuous">
+<joint name="left_front_drive_wheel" type="continuous">
 <origin xyz="-0.014718639782432818564 -0.014718639782432485497 0.041331499999999611605" rpy="1.5707963267948974462 0.3547103969677229407 -0.78539816339744616958" />
 <parent link="first_stage" />
 <child link="second_stage" />
@@ -107,7 +129,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="fl_angle" type="continuous">
+<joint name="left_front_angle_wheel" type="continuous">
 <origin xyz="0.066674999999999984279 0.0075565000000000354108 -0.019843749999999937828" rpy="-1.5707963267948954478 -0.0013042609915997001487 -9.0564346581562362991e-16" />
 <parent link="fixed_stage" />
 <child link="first_stage" />
@@ -194,7 +216,7 @@
 </inertial>
 </link>
 
-<joint name="bl_drive" type="continuous">
+<joint name="left_back_drive_wheel" type="continuous">
 <origin xyz="-0.014718639782431541807 -0.014718639782432388352 0.041331500000000201411" rpy="1.5707963267948981123 -0.10233292597333981666 -0.78539816339744639162" />
 <parent link="first_stage_2" />
 <child link="second_stage_2" />
@@ -203,7 +225,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="bl_angle" type="continuous">
+<joint name="left_back_angle_wheel" type="continuous">
 <origin xyz="0.06667500000000003979 0.007556500000000021533 -0.019843749999999965583" rpy="1.570796326794896558 0.74446276911887487859 3.141592653589793116" />
 <parent link="fixed_stage_2" />
 <child link="first_stage_2" />
@@ -290,7 +312,7 @@
 </inertial>
 </link>
 
-<joint name="br_drive" type="continuous">
+<joint name="right_back_drive_wheel" type="continuous">
 <origin xyz="-0.013550659703940370893 -0.013550659703939815781 0.041331499999998508321" rpy="-1.5707963267948952257 -0.38629807207531591251 2.3561944901923501661" />
 <parent link="first_stage_3" />
 <child link="second_stage_3" />
@@ -299,7 +321,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="br_angle" type="continuous">
+<joint name="right_back_angle_wheel" type="continuous">
 <origin xyz="-0.066293999999999908557 0.0079375000000000278666 -0.019843749999999937828" rpy="1.570796326794896558 -1.3713290209023065724 3.1415926535897726879" />
 <parent link="fixed_stage_3" />
 <child link="first_stage_3" />
@@ -386,7 +408,7 @@
 </inertial>
 </link>
 
-<joint name="fr_drive" type="continuous">
+<joint name="right_front_drive_wheel" type="continuous">
 <origin xyz="-0.014718639782432263452 -0.014718639782432541008 0.041331500000000041817" rpy="-1.5707963267948994446 0.53105430610586668028 2.3561944901923461693" />
 <parent link="first_stage_4" />
 <child link="second_stage_4" />
@@ -395,7 +417,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="fr_angle" type="continuous">
+<joint name="right_front_angle_wheel" type="continuous">
 <origin xyz="0.066293999999999908557 -0.0079375000000000972555 0.019843750000000076605" rpy="-1.570796326794896558 1.2358944559116720185 3.141592653589793116" />
 <parent link="fixed_stage_4" />
 <child link="first_stage_4" />
@@ -414,25 +436,4 @@
 </joint>
 
 
-<transmission name="trans_elevator_leader">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="bl_angle">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="bl_angle_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-</transmission>
-
-<gazebo>
-    <plugin name="gazebo_frcrobot_plugin" filename="libgazebo_frcrobot_control.so">
-        <!-- Look here for the "robot_names" array. Each entry
-             in the array is the name[space] of a sim interface 
-             to load into gazebo
-        -->
-        <robotNamespace>/</robotNamespace>
-        <robotParam>robot_description</robotParam>
-    </plugin>
-</gazebo>
 </robot>

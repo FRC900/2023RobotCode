@@ -166,7 +166,7 @@ swerve_angle_phoenix6_controller:
     remote_feedback_device_id0: 13
     #neutral_deadband: 0.01
     close_loop_values:
-        - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
+        - {kP: 8000, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
     invert: clockwise_positive
     neutral_deadband: 0.01
     motion_magic_cruise_velocity: 5.0

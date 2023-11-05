@@ -34,6 +34,7 @@ public:
     bool gazeboInit(boost::shared_ptr<gazebo::physics::Model> parent_model);
 private:
     boost::shared_ptr<gazebo::physics::Joint> gazebo_joint_;
+    int counter = 0;
 };
 
 #endif
