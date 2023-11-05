@@ -3,6 +3,17 @@
   <world name="default">
     <include>
       <uri>model://ground_plane</uri>
+      <mu>100.0</mu>
+      <mu1>100.0</mu1>
+      <mu2>100.0</mu2>
+      <surface>
+        <friction>
+          <ode>
+            <mu>100.0</mu>
+            <mu2>100.0</mu2>
+          </ode>
+        </friction>
+      </surface>
     </include>
     <include>
       <uri>model://sun</uri>

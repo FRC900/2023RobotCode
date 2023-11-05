@@ -104,7 +104,9 @@
 <child link="second_stage" />
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
-<joint_properties friction="0.0"/>
+<joint_properties friction="1.0"/>
+<dynamics damping="0.0" friction="1.0"/>
+
 </joint>
 
 <joint name="fl_angle" type="continuous">
@@ -114,6 +116,7 @@
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
 <joint_properties friction="0.0"/>
+
 </joint>
 
 <joint name="XX1_center" type="fixed">
@@ -200,7 +203,9 @@
 <child link="second_stage_2" />
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
-<joint_properties friction="0.0"/>
+<joint_properties friction="1.0"/>
+<dynamics damping="0.0" friction="1.0"/>
+
 </joint>
 
 <joint name="bl_angle" type="continuous">
@@ -210,6 +215,8 @@
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
 <joint_properties friction="0.0"/>
+<dynamics damping="0.0" friction="1.0"/>
+
 </joint>
 
 <joint name="XX2_center" type="fixed">
@@ -239,7 +246,7 @@
 </collision>
 <inertial>
 <origin xyz="-0.092585482507193381241 -0.0073158875686334893379 0.0065682039240540137509" rpy="0 0 0"/>
-<mass value="2.1102377118679851442" />
+<mass value="2.1102377118679851442" /> 
 <inertia ixx="0.0072293168828333597559" ixy="0.00048364111011172023803"  ixz="-0.0025793419797913606437" iyy="0.010711313332956684877" iyz="-0.00053724169913203073928" izz="0.0072740667010466825496" />
 </inertial>
 </link>
@@ -296,7 +303,9 @@
 <child link="second_stage_3" />
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
-<joint_properties friction="0.0"/>
+<joint_properties friction="1.0"/>
+<dynamics damping="0.0" friction="1.0"/>
+
 </joint>
 
 <joint name="br_angle" type="continuous">
@@ -306,6 +315,8 @@
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
 <joint_properties friction="0.0"/>
+<dynamics damping="0.0" friction="1.0"/>
+
 </joint>
 
 <joint name="XX3_center" type="fixed">
@@ -392,7 +403,8 @@
 <child link="second_stage_4" />
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
-<joint_properties friction="0.0"/>
+<joint_properties friction="1.0"/>
+<dynamics damping="0.0" friction="1.0"/>
 </joint>
 
 <joint name="fr_angle" type="continuous">
@@ -402,6 +414,7 @@
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
 <joint_properties friction="0.0"/>
+<dynamics damping="0.0" friction="1.0"/>
 </joint>
 
 <joint name="XX4_center" type="fixed">
