@@ -24,7 +24,7 @@
 <inertial>
 <origin xyz="-0.0019273005368478318775 0.078247840542276278497 0.34320438456409596562" rpy="0 0 0"/>
 <mass value="7.7787891582795776202" />
-<inertia ixx="0.75435902139317201343" ixy="0.002243375292267710177"  ixz="-0.00049147704102887900847" iyy="0.67128335978412745355" iyz="0.14317933741828411942" izz="0.44400916093339543034" />
+<inertia ixx="0.75435902139317201343" ixy="0.002243375292267710177"  ixz="-0.00049147704102887900847" iyy="0.67128335978412745355" iyz="5.04317933741828411942" izz="0.44400916093339543034" />
 </inertial>
 </link>
 
@@ -46,7 +46,7 @@
 </collision>
 <inertial>
 <origin xyz="0.093086953924054055554 -0.0076968875686334982736 0.0064477325071934793455" rpy="0 0 0"/>
-<mass value="2.110237711867984256" />
+<mass value="10.00237711867984256" />
 <inertia ixx="0.0072740667010466816822" ixy="-0.0005372416991320313898"  ixz="0.00257934197979136021" iyy="0.010711313332956691816" iyz="-0.0004836411101117216475" izz="0.0072293168828333562864" />
 </inertial>
 </link>
@@ -103,8 +103,8 @@
 <child link="br_drive_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="br_angle" type="continuous">
@@ -113,8 +113,8 @@
 <child link="br_angle_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="XX1_center" type="fixed">
@@ -123,8 +123,8 @@
 <child link="br_fixed_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <link name="fr_fixed_link">
@@ -145,7 +145,7 @@
 </collision>
 <inertial>
 <origin xyz="0.093086953924054000042 -0.0076968875686333785777 0.0064477325071934646003" rpy="0 0 0"/>
-<mass value="2.1102377118679851442" />
+<mass value="10.002377118679851442" />
 <inertia ixx="0.0072740667010466894885" ixy="-0.00053724169913203756975"  ixz="0.0025793419797913480669" iyy="0.01071131333295669355" iyz="-0.00048364111011172636377" izz="0.0072293168828333571538" />
 </inertial>
 </link>
@@ -202,8 +202,8 @@
 <child link="fr_drive_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="fr_angle" type="continuous">
@@ -212,8 +212,8 @@
 <child link="fr_angle_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="XX2_center" type="fixed">
@@ -222,8 +222,8 @@
 <child link="fr_fixed_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <link name="fl_fixed_link">
@@ -244,7 +244,7 @@
 </collision>
 <inertial>
 <origin xyz="-0.09258548250719345063 -0.0073158875686334902053 0.0065682039240540154856" rpy="0 0 0"/>
-<mass value="2.1102377118679847001" />
+<mass value="10.002377118679847001" />
 <inertia ixx="0.0072293168828333580211" ixy="0.00048364111011172018382"  ixz="-0.0025793419797913619447" iyy="0.010711313332956684877" iyz="-0.0005372416991320308477" izz="0.0072740667010466799475" />
 </inertial>
 </link>
@@ -301,8 +301,8 @@
 <child link="fl_drive_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="fl_angle" type="continuous">
@@ -311,8 +311,8 @@
 <child link="fl_angle_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="XX3_center" type="fixed">
@@ -321,8 +321,8 @@
 <child link="fl_fixed_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <link name="bl_fixed_link">
@@ -343,7 +343,7 @@
 </collision>
 <inertial>
 <origin xyz="0.092705953924053910442 0.0073158875686334650518 -0.0064477325071934064871" rpy="0 0 0"/>
-<mass value="2.1102377118679847001" />
+<mass value="10.002377118679847001" />
 <inertia ixx="0.0072740667010466782127" ixy="0.00053724169913202889613"  ixz="-0.0025793419797913610773" iyy="0.010711313332956676203" iyz="-0.00048364111011171996698" izz="0.0072293168828333554191" />
 </inertial>
 </link>
@@ -400,8 +400,8 @@
 <child link="bl_drive_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="bl_angle" type="continuous">
@@ -410,8 +410,8 @@
 <child link="bl_angle_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 <joint name="XX4_center" type="fixed">
@@ -420,8 +420,8 @@
 <child link="bl_fixed_link" />
 <axis xyz="0 0 1"/>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+<dynamics friction="5.0"/>
+<joint_properties friction="5.0"/>
 </joint>
 
 

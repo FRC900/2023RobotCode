@@ -64,16 +64,40 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     case hardware_interface::talonfxpro::TalonMode::VelocityVoltage:
     case hardware_interface::talonfxpro::TalonMode::VelocityTorqueCurrentFOC:
     {
+         /*
+          * Using the 971-style first order system model. V = I * R + Kv * w
+          * torque = Kt * I
+          * torque = 0.0192 * (V - (Kv * w)) / R
+          */
         const double invert = state_->getInvert() == hardware_interface::talonfxpro::Inverted::Clockwise_Positive ? -1.0 : 1.0;
         units::angular_velocity::radians_per_second_t setpoint{invert * state_->getControlVelocity() * state_->getSensorToMechanismRatio()};
         sim_state.SetRotorVelocity(setpoint);
         units::radian_t delta_position{invert * state_->getControlVelocity() * period.toSec() * state_->getSensorToMechanismRatio()};
         sim_state.AddRotorPosition(delta_position); // VERY IMPORTANT SO CTRE SIM KNOWS MOTORS MOVE
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
+        
+        constexpr double kT = 0.0192; // Nm/A
+        double kV = 509.2; // convert from rpm/V to rad/s/V
+        kV *= 2.0 * M_PI / 60.0;
+        constexpr double R = 0.039; // ohms, resistance of motor
+        constexpr double gear_ratio = 1.0 / 6.75;
+        /*
+        T=kt * (V - kv*ω) / R
+        */
+
+        double torque_current = ((sim_state.GetMotorVoltage().value() - (kV * state_->getControlVelocity() * gear_ratio))) / R;
+
+        double torque = kT * torque_current;
+        torque = 4.69 / 2;
+        
+        // (Nm / A) * (V - (rad/s/V * rad/s)) / (ohms) = Nm
+
         // gazebo_joint_->SetPosition(0, state_->getRotorPosition());
-        gazebo_joint_->SetForce(0, invert * 5.0/*sim_state.GetTorqueCurrent().value() * 0.0192*/);
-        gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
-        ROS_ERROR_STREAM_THROTTLE(1, "IN VELOCITY MODE current " << sim_state.GetTorqueCurrent().value() << " " << state_->getRotorPosition());
+        gazebo_joint_->SetForce(0, torque * 6.75);
+        // gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
+        ROS_ERROR_STREAM_THROTTLE(1, "IN VELOCITY MODE " << torque << " " << sim_state.GetMotorVoltage().value() << " " << state_->getControlVelocity() << " " << state_->getSensorToMechanismRatio());
+        // -3, -169, 1
+        // -3, 169, 1 
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::MotionMagicDutyCycle:
