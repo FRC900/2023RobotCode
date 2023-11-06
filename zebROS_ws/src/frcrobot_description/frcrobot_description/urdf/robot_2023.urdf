@@ -103,10 +103,12 @@
 <parent link="br_angle_link" />
 <child link="br_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="0.0"/>
-<joint_properties friction="0.0"/>
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="br_angle" type="continuous">
@@ -118,6 +120,8 @@
 <joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="XX1_center" type="fixed">
@@ -125,8 +129,12 @@
 <parent link="central_chassis" />
 <child link="br_fixed_link" />
 <axis xyz="0 0 1">
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <link name="fr_fixed_link">
@@ -204,10 +212,12 @@
 <parent link="fr_angle_link" />
 <child link="fr_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="0.0"/>
-<joint_properties friction="0.0"/>
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="fr_angle" type="continuous">
@@ -219,6 +229,8 @@
 <joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="XX2_center" type="fixed">
@@ -226,8 +238,12 @@
 <parent link="central_chassis" />
 <child link="fr_fixed_link" />
 <axis xyz="0 0 1">
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <link name="fl_fixed_link">
@@ -305,10 +321,12 @@
 <parent link="fl_angle_link" />
 <child link="fl_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="0.0"/>
-<joint_properties friction="0.0"/>
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="fl_angle" type="continuous">
@@ -327,8 +345,12 @@
 <parent link="central_chassis" />
 <child link="fl_fixed_link" />
 <axis xyz="0 0 1">
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <link name="bl_fixed_link">
@@ -406,10 +428,12 @@
 <parent link="bl_angle_link" />
 <child link="bl_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="0.0"/>
-<joint_properties friction="0.0"/>
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="bl_angle" type="continuous">
@@ -421,6 +445,8 @@
 <joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 <joint name="XX4_center" type="fixed">
@@ -428,8 +454,12 @@
 <parent link="central_chassis" />
 <child link="bl_fixed_link" />
 <axis xyz="0 0 1">
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </axis>
 <limit effort="1000.0" velocity="200.0" />
+<dynamics friction="1.0"/>
+<joint_properties friction="1.0"/>
 </joint>
 
 
