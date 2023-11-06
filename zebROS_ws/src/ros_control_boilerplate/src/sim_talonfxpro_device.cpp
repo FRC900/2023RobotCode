@@ -34,9 +34,10 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     // to the raw positions/velocities by the sensor to mechanism ratio
     // TODO - maybe also rotor to sensor ratio?
 
+    gazebo_joint_->SetPosition(0, state_->getRotorPosition()); // always set position
+
     switch (state_->getControlMode())
     {
-        gazebo_joint_->SetPosition(0, state_->getRotorPosition()); // always set position
     case hardware_interface::talonfxpro::TalonMode::DutyCycleOut:
         // NEED TO FILL IN FOR SWERVE
         
@@ -97,7 +98,7 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         // gazebo_joint_->SetPosition(0, state_->getRotorPosition());
         gazebo_joint_->SetForce(0, torque);
         // gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
-        ROS_ERROR_STREAM_THROTTLE(1, "IN VELOCITY MODE " << torque << " " << sim_state.GetMotorVoltage().value() << " " << state_->getControlVelocity() << " " << state_->getSensorToMechanismRatio());
+        ROS_ERROR_STREAM_THROTTLE_NAMED(1, std::to_string(state_->getCANID()), "IN VELOCITY MODE " << torque << " " << sim_state.GetMotorVoltage().value() << " " << state_->getControlVelocity() << " " << state_->getSensorToMechanismRatio());
         // -3, -169, 1
         // -3, 169, 1 
         break;

@@ -89,7 +89,6 @@
 <geometry>
 <mesh filename="package://frcrobot_description/meshes/br_drive_link_collision.stl"/>
 </geometry>
-<contact_coefficients><mu>0.50</mu></contact_coefficients>
 </collision>
 <inertial>
 <origin xyz="-0.00029420716981483558457 -0.00021027415246383440381 -0.027662187922789759076" rpy="0 0 0"/>
@@ -98,17 +97,33 @@
 </inertial>
 </link>
 
+<!-- WHY THE HECK IS THIS OF ALL THINGS HOW YOU SET FRICTION COEFFICIENTS -->
+<gazebo reference="br_drive_link">
+<mu1>100.0</mu1>
+<mu2>100.0</mu2>
+</gazebo>
+<gazebo reference="bl_drive_link">
+<mu1>100.0</mu1>
+<mu2>100.0</mu2>
+</gazebo>
+<gazebo reference="fr_drive_link">
+<mu1>100.0</mu1>
+<mu2>100.0</mu2>
+</gazebo>
+<gazebo reference="fl_drive_link">
+<mu1>100.0</mu1>
+<mu2>100.0</mu2>
+</gazebo>
+
 <joint name="br_drive" type="continuous">
 <origin xyz="-0.014718639782432376209 -0.014718639782432596519 0.041331500000000014061" rpy="1.5707963267948990005 0.56629976412908578087 -0.78539816339744417117" />
 <parent link="br_angle_link" />
 <child link="br_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="br_angle" type="continuous">
@@ -116,12 +131,10 @@
 <parent link="br_fixed_link" />
 <child link="br_angle_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="XX1_center" type="fixed">
@@ -129,12 +142,10 @@
 <parent link="central_chassis" />
 <child link="br_fixed_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <link name="fr_fixed_link">
@@ -198,7 +209,7 @@
 <geometry>
 <mesh filename="package://frcrobot_description/meshes/fr_drive_link_collision.stl"/>
 </geometry>
-<contact_coefficients><mu>0.50</mu></contact_coefficients>
+<surface><friction><ode><mu>2.00</mu></ode></friction></surface>
 </collision>
 <inertial>
 <origin xyz="-0.00029420716981492513967 -0.00021027415246412960496 -0.027662187922789748667" rpy="0 0 0"/>
@@ -212,12 +223,10 @@
 <parent link="fr_angle_link" />
 <child link="fr_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="fr_angle" type="continuous">
@@ -225,12 +234,10 @@
 <parent link="fr_fixed_link" />
 <child link="fr_angle_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="XX2_center" type="fixed">
@@ -238,12 +245,10 @@
 <parent link="central_chassis" />
 <child link="fr_fixed_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <link name="fl_fixed_link">
@@ -307,7 +312,7 @@
 <geometry>
 <mesh filename="package://frcrobot_description/meshes/fl_drive_link_collision.stl"/>
 </geometry>
-<contact_coefficients><mu>0.50</mu></contact_coefficients>
+<surface><friction><mu>2.00</mu><mu2>2.00</mu2><ode><mu>2.00</mu><mu2>2.00</mu2></ode></friction></surface>
 </collision>
 <inertial>
 <origin xyz="-0.00029420716981484848658 -0.00021027415246388197318 -0.027662187922789682748" rpy="0 0 0"/>
@@ -321,12 +326,10 @@
 <parent link="fl_angle_link" />
 <child link="fl_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="fl_angle" type="continuous">
@@ -334,8 +337,7 @@
 <parent link="fl_fixed_link" />
 <child link="fl_angle_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
 </joint>
@@ -345,12 +347,10 @@
 <parent link="central_chassis" />
 <child link="fl_fixed_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <link name="bl_fixed_link">
@@ -414,7 +414,7 @@
 <geometry>
 <mesh filename="package://frcrobot_description/meshes/bl_drive_link_collision.stl"/>
 </geometry>
-<contact_coefficients><mu>0.50</mu></contact_coefficients>
+<surface><friction><ode><mu>2.00</mu></ode></friction></surface>
 </collision>
 <inertial>
 <origin xyz="-0.00029420716981488285579 -0.00021027415246391238505 -0.027662187922789738259" rpy="0 0 0"/>
@@ -428,12 +428,10 @@
 <parent link="bl_angle_link" />
 <child link="bl_drive_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="bl_angle" type="continuous">
@@ -441,12 +439,10 @@
 <parent link="bl_fixed_link" />
 <child link="bl_angle_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 <joint name="XX4_center" type="fixed">
@@ -454,12 +450,10 @@
 <parent link="central_chassis" />
 <child link="bl_fixed_link" />
 <axis xyz="0 0 1">
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </axis>
 <limit effort="1000.0" velocity="200.0" />
-<dynamics friction="1.0"/>
-<joint_properties friction="1.0"/>
+
 </joint>
 
 

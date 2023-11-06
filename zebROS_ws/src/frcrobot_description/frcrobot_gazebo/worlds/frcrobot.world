@@ -17,10 +17,15 @@
             </plane>
           </geometry>
           <surface>
+            <contact>
+              <ode>
+                <min_depth>0.1</min_depth>
+              </ode>
+            </contact>
             <friction>
               <ode>
-                <mu>1</mu>
-                <mu2>1</mu2>
+                <mu>1000000</mu>
+                <mu2>1000000</mu2>
               </ode>
             </friction>
           </surface>
