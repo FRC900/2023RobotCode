@@ -36,6 +36,7 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
 
     switch (state_->getControlMode())
     {
+        gazebo_joint_->SetPosition(0, state_->getRotorPosition()); // always set position
     case hardware_interface::talonfxpro::TalonMode::DutyCycleOut:
         // NEED TO FILL IN FOR SWERVE
         
@@ -79,21 +80,22 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         constexpr double kT = 0.0192; // Nm/A
         double kV = 509.2; // convert from rpm/V to rad/s/V
         kV *= 2.0 * M_PI / 60.0;
+        kV = 1.0 / kV; // convert from (rad/s)/V to V/(rad/s)
         constexpr double R = 0.039; // ohms, resistance of motor
         constexpr double gear_ratio = 1.0 / 6.75;
         /*
         T=kt * (V - kv*ω) / R
         */
 
-        double torque_current = ((sim_state.GetMotorVoltage().value() - (kV * state_->getControlVelocity() * gear_ratio))) / R;
+        double torque_current = (((invert * sim_state.GetMotorVoltage().value()) - (kV * state_->getControlVelocity() * gear_ratio))) / R;
 
-        double torque = kT * torque_current;
-        torque = 4.69 / 2;
+        //         idk  vvvv
+        double torque = -1.0 * kT * torque_current;
         
         // (Nm / A) * (V - (rad/s/V * rad/s)) / (ohms) = Nm
 
         // gazebo_joint_->SetPosition(0, state_->getRotorPosition());
-        gazebo_joint_->SetForce(0, torque * 6.75);
+        gazebo_joint_->SetForce(0, torque);
         // gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
         ROS_ERROR_STREAM_THROTTLE(1, "IN VELOCITY MODE " << torque << " " << sim_state.GetMotorVoltage().value() << " " << state_->getControlVelocity() << " " << state_->getSensorToMechanismRatio());
         // -3, -169, 1

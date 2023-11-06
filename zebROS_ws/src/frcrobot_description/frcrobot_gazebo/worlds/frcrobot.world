@@ -3,6 +3,7 @@
 <sdf version="1.4">
   <world name="default">
     <physics type="ode">
+      <real_time_update_rate>100</real_time_update_rate>
       <max_step_size>0.01</max_step_size>
     </physics>
     <model name="ground_plane">
@@ -18,8 +19,8 @@
           <surface>
             <friction>
               <ode>
-                <mu>100</mu>
-                <mu2>100</mu2>
+                <mu>1</mu>
+                <mu2>1</mu2>
               </ode>
             </friction>
           </surface>
