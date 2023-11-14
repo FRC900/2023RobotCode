@@ -1,0 +1,12 @@
+#request
+int64 a
+int64 b
+int8 ADD=0
+int8 SUB=1
+int8 MUL=2
+int8 DIV=3 
+int8 operation
+
+---
+#response
+int64 calculate 

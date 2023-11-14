@@ -2,3 +2,6 @@ uint8 num_stripes
 bool has_horn
 geometry_msgs/Pose location
 string name
+bool attribute_wing
+string attribute_eye_color
+string attribute_horn_color
