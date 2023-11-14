@@ -1,0 +1,7 @@
+#request
+int64 a
+int64 b
+string operation
+---
+#response
+float64 calculation

@@ -53,14 +53,15 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   ZebraData.msg
+  TwoInts.msg
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  add2ints.srv
+  calcInts.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -70,10 +71,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   geometry_msgs#   sensor_msgs#   std_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
