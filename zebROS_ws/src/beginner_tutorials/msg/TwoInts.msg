@@ -1,2 +1,7 @@
+#request
 int64 a
 int64 b
+
+---
+#response
+int64 sum
