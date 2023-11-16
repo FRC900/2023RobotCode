@@ -34,7 +34,10 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     // to the raw positions/velocities by the sensor to mechanism ratio
     // TODO - maybe also rotor to sensor ratio?
 
-    gazebo_joint_->SetPosition(0, state_->getRotorPosition()); // always set position
+    if (gazebo_joint_)
+    {
+        gazebo_joint_->SetPosition(0, state_->getRotorPosition()); // always set position
+    }
 
     switch (state_->getControlMode())
     {
@@ -58,7 +61,10 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         sim_state.SetRawRotorPosition(setpoint);
         sim_state.SetRotorVelocity(units::angular_velocity::turns_per_second_t{0});
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
+        if (gazebo_joint_)
+        {
         gazebo_joint_->SetPosition(0, state_->getRotorPosition());
+        }
         ROS_ERROR_STREAM("IN POSITION MODE");
         break;
     }
@@ -78,27 +84,30 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         sim_state.AddRotorPosition(delta_position); // VERY IMPORTANT SO CTRE SIM KNOWS MOTORS MOVE
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
         
-        constexpr double kT = 0.0192; // Nm/A
-        double kV = 509.2; // convert from rpm/V to rad/s/V
-        kV *= 2.0 * M_PI / 60.0;
-        kV = 1.0 / kV; // convert from (rad/s)/V to V/(rad/s)
-        constexpr double R = 0.039; // ohms, resistance of motor
-        constexpr double gear_ratio = 1.0 / 6.75;
-        /*
-        T=kt * (V - kv*ω) / R
-        */
+        if (gazebo_joint_)
+        {
+            constexpr double kT = 0.0192; // Nm/A
+            double kV = 509.2;            // convert from rpm/V to rad/s/V
+            kV *= 2.0 * M_PI / 60.0;
+            kV = 1.0 / kV;              // convert from (rad/s)/V to V/(rad/s)
+            constexpr double R = 0.039; // ohms, resistance of motor
+            constexpr double gear_ratio = 1.0 / 6.75;
+            /*
+            T=kt * (V - kv*ω) / R
+            */
 
-        double torque_current = (((invert * sim_state.GetMotorVoltage().value()) - (kV * state_->getControlVelocity() * gear_ratio))) / R;
+            double torque_current = (((invert * sim_state.GetMotorVoltage().value()) - (kV * state_->getControlVelocity() * gear_ratio))) / R;
 
-        //         idk  vvvv
-        double torque = -1.0 * kT * torque_current;
-        
-        // (Nm / A) * (V - (rad/s/V * rad/s)) / (ohms) = Nm
+            //         idk  vvvv
+            double torque = -1.0 * kT * torque_current;
 
-        // gazebo_joint_->SetPosition(0, state_->getRotorPosition());
-        gazebo_joint_->SetForce(0, torque);
-        // gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
-        ROS_ERROR_STREAM_THROTTLE_NAMED(1, std::to_string(state_->getCANID()), "IN VELOCITY MODE " << torque << " " << sim_state.GetMotorVoltage().value() << " " << state_->getControlVelocity() << " " << state_->getSensorToMechanismRatio());
+            // (Nm / A) * (V - (rad/s/V * rad/s)) / (ohms) = Nm
+
+            // gazebo_joint_->SetPosition(0, state_->getRotorPosition());
+            gazebo_joint_->SetForce(0, torque);
+            // gazebo_joint_->SetVelocity(0, state_->getControlVelocity());
+            ROS_ERROR_STREAM_THROTTLE_NAMED(1, std::to_string(state_->getCANID()), "IN VELOCITY MODE " << torque << " " << sim_state.GetMotorVoltage().value() << " " << state_->getControlVelocity() << " " << state_->getSensorToMechanismRatio());
+        }
         // -3, -169, 1
         // -3, 169, 1 
         break;
@@ -111,8 +120,11 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         sim_state.SetRawRotorPosition(position);
         sim_state.SetRotorVelocity(velocity);
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
-        gazebo_joint_->SetPosition(0, state_->getRotorPosition());
-        ROS_WARN_STREAM_THROTTLE(1, "Motion Magic torque current " << sim_state.GetTorqueCurrent().value() << " " << state_->getRotorPosition());
+        if (gazebo_joint_)
+        {
+            gazebo_joint_->SetPosition(0, state_->getRotorPosition());
+            ROS_WARN_STREAM_THROTTLE(1, "Motion Magic torque current " << sim_state.GetTorqueCurrent().value() << " " << state_->getRotorPosition());
+        }
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::MotionMagicTorqueCurrentFOC:
