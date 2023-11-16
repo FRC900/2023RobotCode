@@ -130,9 +130,11 @@ FRCRobotHWInterface::FRCRobotHWInterface()
 
 bool FRCRobotHWInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh)
 {
+	FRCRobotInterface::readParams(root_nh, robot_hw_nh);
 	if (!run_hal_robot_)
 	{
 		errorQueue = std::make_unique<ErrorQueue>();
+		ROS_ERROR_STREAM("errorQueue = " << (unsigned long)errorQueue.get());
 		// This is for non Rio-based robots.  Call init for the wpilib HAL code we've "borrowed" before using them
 		hal::init::InitializeCANAPI();
 		hal::init::InitializeCTREPCM();

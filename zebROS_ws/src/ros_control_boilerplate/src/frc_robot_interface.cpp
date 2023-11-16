@@ -88,16 +88,21 @@ FRCRobotInterface<SIM>::FRCRobotInterface(void)
 template <bool SIM>
 FRCRobotInterface<SIM>::~FRCRobotInterface() = default;
 
+
+template <bool SIM>
+void FRCRobotInterface<SIM>::readParams(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_hw_nh*/)
+{
+	ros::NodeHandle rpnh(root_nh, "hardware_interface"); // TODO(davetcoleman): change the namespace to "frc_robot_interface" aka name_
+	run_hal_robot_ = rpnh.param<bool>("run_hal_robot", run_hal_robot_);
+	can_interface_ = rpnh.param<std::string>("can_interface", can_interface_);
+}
+
 template <bool SIM>
 bool FRCRobotInterface<SIM>::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_hw_nh*/)
 {
 	read_tracer_ = std::make_unique<Tracer>("FRCRobotInterface " + root_nh.getNamespace() + "::read()");
 	write_tracer_ = std::make_unique<Tracer>("FRCRobotInterface " + root_nh.getNamespace() + "::write()");
 
-	// Load rosparams
-	ros::NodeHandle rpnh(root_nh, "hardware_interface"); // TODO(davetcoleman): change the namespace to "frc_robot_interface" aka name_
-	run_hal_robot_ = rpnh.param<bool>("run_hal_robot", run_hal_robot_);
-	can_interface_ = rpnh.param<std::string>("can_interface", can_interface_);
 #ifdef __linux__
 #if 0
 	struct sched_param schedParam{};

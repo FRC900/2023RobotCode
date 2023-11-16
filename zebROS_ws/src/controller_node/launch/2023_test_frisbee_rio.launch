@@ -31,7 +31,9 @@
 										robot_code_ready_controller" />
 
 		<!-- Run rqt driver station for sim-->
+		<!--
 		<node name="driversim" pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" output="screen"/>
+		-->
 
 
 <!--

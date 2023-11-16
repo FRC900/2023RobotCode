@@ -63,7 +63,7 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
         if (gazebo_joint_)
         {
-        gazebo_joint_->SetPosition(0, state_->getRotorPosition());
+            gazebo_joint_->SetPosition(0, state_->getRotorPosition());
         }
         ROS_ERROR_STREAM("IN POSITION MODE");
         break;

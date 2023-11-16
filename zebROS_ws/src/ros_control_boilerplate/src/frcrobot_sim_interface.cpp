@@ -56,6 +56,8 @@ FRCRobotSimInterface::~FRCRobotSimInterface() = default;
 
 bool FRCRobotSimInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh)
 {
+	ROS_INFO_STREAM("root_nh.getNamespace() = " << root_nh.getNamespace());
+	FRCRobotInterface::readParams(root_nh, robot_hw_nh);
 	// Do base class init. This loads common interface info
 	// used by both the real and sim interfaces
 	ROS_WARN_STREAM(__PRETTY_FUNCTION__ << " line: " << __LINE__);
