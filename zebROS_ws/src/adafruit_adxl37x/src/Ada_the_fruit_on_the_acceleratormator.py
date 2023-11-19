@@ -31,6 +31,23 @@ global accelerometer
 accelerometer = adafruit_adxl37x.ADXL375(i2c)
 accelerometer.data_rate  = DataRate.RATE_800_HZ
 
+
+
+
+
+
+_REG_DATA_FORMAT: int = const(0x31)
+_REG_INT_ENABLE: int = const(0x2E)
+_INT_ACT: int = const(0b00010000)
+
+#so this maybe?
+active_interrupts = accelerometer._read_register_unpacked(_REG_INT_ENABLE) 
+accelerometer._write_resgiter_byte(_REG_INT_ENABLE, 0x0) #disables interrupts, so that we can write new things to registers without messing other things up?
+accelerometer._write_register_byte(_REG_DATA_FORMAT, 0b00001011) #0b00001011 comes from the adafruit arduino library linked by ty which supposedly fixes the bits at _reg_data_format for 25+ g
+accelerometer._write_register_byte(_REG_INT_ENABLE, _INT_ACT) #inactive interrupt
+active_interrupts |= _INT_ACT
+accelerometer._write_register_byte(_REG_INT_ENABLE, active_interrupts)
+
 r = rospy.Rate(800)
 
 
