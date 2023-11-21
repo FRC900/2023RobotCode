@@ -80,7 +80,7 @@ class FRCRobotInterface : public hardware_interface::RobotHW
 		/** \brief Write the command to the robot hardware. */
 		void write(const ros::Time& time, const ros::Duration& period) override;
 
-		void readParams(ros::NodeHandle &root_nh, ros::NodeHandle & /*robot_hw_nh*/);
+		virtual void readParams(const ros::NodeHandle &root_nh, const ros::NodeHandle & /*robot_hw_nh*/);
 
 		//******
 		/**

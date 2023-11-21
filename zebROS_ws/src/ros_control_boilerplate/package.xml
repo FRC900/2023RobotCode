@@ -33,7 +33,7 @@
   <depend>std_msgs</depend>
   <depend>trajectory_msgs</depend>
   <depend>urdf</depend>
-  <depend>gazebo_ros_control</depend>
+  <depend>gazebo_frcrobot_control</depend>
   <depend>pluginlib</depend>
 
   <export>

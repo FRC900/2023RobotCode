@@ -2,7 +2,7 @@
 #include "ctre/phoenix6/unmanaged/Unmanaged.hpp"
 
 #include "ros_control_boilerplate/talonfxpro_devices.h"
-#include "ros_control_boilerplate/talonfxpro_device.h"
+#include "ros_control_boilerplate/sim_talonfxpro_device.h"
 #include "ros_control_boilerplate/read_config_utils.h"
 #include "ctre_interfaces/talonfxpro_command_interface.h"
 

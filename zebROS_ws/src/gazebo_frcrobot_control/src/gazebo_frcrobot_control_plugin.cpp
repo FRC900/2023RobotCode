@@ -39,6 +39,7 @@
    using pluginlib
 */
 
+#include <optional>
 #include <gazebo_frcrobot_control/gazebo_frcrobot_control_plugin.h>
 #include <urdf/model.h>
 #include <chrono>
@@ -261,18 +262,20 @@ void GazeboFRCRobotControlPlugin::Update()
   gazebo::common::Time gz_time_now = parent_model_->GetWorld()->GetSimTime();
 #endif
   ros::Time sim_time_ros(gz_time_now.sec, gz_time_now.nsec);
+  // TODO : use periodic iterval counter
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   robot_hw_sims_[0]->eStopActive(e_stop_active_);
 
   // Check if we should update the controllers
-  if(sim_period >= control_period_) {
+  if (sim_period >= control_period_)
+  {
     // Store this simulation time
     last_update_sim_time_ros_ = sim_time_ros;
 
     // Update the robot simulation with the state of the gazebo model
-	for (auto &r : robot_hw_sims_)
-		r->readSim(sim_time_ros, sim_period);
+    for (const auto &r : robot_hw_sims_)
+      r->readSim(sim_time_ros, sim_period);
 
     // Compute the controller commands
     bool reset_ctrlrs;
@@ -293,14 +296,15 @@ void GazeboFRCRobotControlPlugin::Update()
         reset_ctrlrs = false;
       }
     }
-	for (auto &c : controller_managers_)
-		c->update(sim_time_ros, sim_period, reset_ctrlrs);
+    for (const auto &c : controller_managers_)
+      c->update(sim_time_ros, sim_period, reset_ctrlrs);
   }
 
-  // Update the gazebo model with the result of the controller
-  // computation
-  for (auto &r : robot_hw_sims_)
-	  r->writeSim(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
+  // Update the gazebo model with the result of the controller computation
+  // TODO : should this be run each Update, or only inside the previous
+  //        if () block checking if enough time has elapsed
+  for (const auto &r : robot_hw_sims_)
+    r->writeSim(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
   last_write_sim_time_ros_ = sim_time_ros;
 }
 

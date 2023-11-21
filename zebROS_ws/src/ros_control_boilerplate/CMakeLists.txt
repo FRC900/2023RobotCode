@@ -31,8 +31,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   trajectory_msgs
   urdf
+  gazebo_frcrobot_control
   gazebo_dev
-  gazebo_ros_control
   pluginlib
 )
 ign_import_target(UUID)
@@ -123,7 +123,6 @@ add_library(frc_robot_interface STATIC
 	src/digital_output_devices.cpp
 	src/double_solenoid_device.cpp
 	src/double_solenoid_devices.cpp
-	src/frc_robot_interface.cpp
 	src/generic_hw_control_loop.cpp
 	src/get_conversion_factor.cpp
 	src/latency_compensation_group.cpp
@@ -166,6 +165,7 @@ add_dependencies(frc_robot_interface
 # for - x86 has access to much less real hardware than the Jetson, so
 # some files which make sense for one case don't for the other
 set (FRCROBOT_HW_MAIN_SRCS 
+	src/frc_robot_interface_hw.cpp
 	src/as726x_hw_device.cpp
 	src/ctre_v5_motor_controller_hw_device.cpp
 	src/error_queue.cpp
@@ -174,7 +174,7 @@ set (FRCROBOT_HW_MAIN_SRCS
     src/joystick_hw_device.cpp
 	src/match_data_hw_device.cpp
 	src/sparkmax_hw_device.cpp
-	src/talonfxpro_devices_hw.cpp
+	src/talonfxpro_hw_devices.cpp
 )
 
 set (ALLWPILIB ../../../allwpilib)
@@ -447,6 +447,7 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 
 	add_executable(frcrobot_sim_main 
 		src/frcrobot_sim_main.cpp
+		src/frc_robot_interface_sim.cpp
 		src/as726x_sim_device.cpp
 		src/ctre_v5_motor_controller_sim_device.cpp
 		src/frcrobot_sim_interface.cpp
@@ -458,7 +459,7 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		src/sim_ctre_v5_motor_controller.cpp
 		src/sim_talonfxpro_device.cpp
 		src/sparkmax_sim_device.cpp
-		src/talonfxpro_devices_sim.cpp
+		src/talonfxpro_sim_devices.cpp
 	)
 
 	target_link_libraries(frcrobot_sim_main
@@ -489,6 +490,7 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 
 	add_library(frcrobot_gazebosim
 		src/frcrobot_gazebosim_interface.cpp
+		src/frc_robot_interface_sim.cpp
 		src/as726x_sim_device.cpp
 		src/ctre_v5_motor_controller_sim_device.cpp
 		src/frcrobot_sim_interface.cpp
@@ -500,7 +502,7 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
 		src/sim_ctre_v5_motor_controller.cpp
 		src/sim_talonfxpro_device.cpp
 		src/sparkmax_sim_device.cpp
-		src/talonfxpro_devices_sim.cpp
+		src/talonfxpro_sim_devices.cpp
 	)
 
 	target_link_libraries(frcrobot_gazebosim

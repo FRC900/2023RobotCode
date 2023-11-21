@@ -40,6 +40,7 @@
 		   Modified to allow multiple RobotHWSim instaces, each with their own controller manager
 */
 
+#include <optional>
 // ROS
 #include <ros/ros.h>
 #include <pluginlib/class_loader.h>
@@ -51,7 +52,7 @@
 #include <gazebo/common/common.hh>
 
 // ros_control
-#include <gazebo_ros_control/robot_hw_sim.h>
+#include <gazebo_frcrobot_control/robot_hw_sim.h>
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
 
@@ -63,16 +64,20 @@ class GazeboFRCRobotControlPlugin : public gazebo::ModelPlugin
 public:
 
   GazeboFRCRobotControlPlugin();
-  virtual ~GazeboFRCRobotControlPlugin();
+  GazeboFRCRobotControlPlugin(const GazeboFRCRobotControlPlugin &) = delete;
+  GazeboFRCRobotControlPlugin(const GazeboFRCRobotControlPlugin &&) noexcept = delete;
+  GazeboFRCRobotControlPlugin &operator=(const GazeboFRCRobotControlPlugin &) = delete;
+  GazeboFRCRobotControlPlugin &operator=(const GazeboFRCRobotControlPlugin &&) noexcept = delete;
+  ~GazeboFRCRobotControlPlugin() override;
 
   // Overloaded Gazebo entry point
-  virtual void Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf);
+  void Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf) override;
 
   // Called by the world update start event
   void Update();
 
   // Called on world reset
-  virtual void Reset();
+  void Reset() override;
 
   // Get the URDF XML from the parameter server
   std::string getURDF(std::string param_name) const;
@@ -115,7 +120,8 @@ protected:
   ros::Time last_write_sim_time_ros_;
 
   // e_stop_active_ is true if the emergency stop is active.
-  bool e_stop_active_, last_e_stop_active_;
+  bool e_stop_active_;
+  bool last_e_stop_active_;
   ros::Subscriber e_stop_sub_;  // Emergency stop subscriber
 
 };

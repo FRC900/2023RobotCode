@@ -90,7 +90,7 @@ FRCRobotInterface<SIM>::~FRCRobotInterface() = default;
 
 
 template <bool SIM>
-void FRCRobotInterface<SIM>::readParams(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_hw_nh*/)
+void FRCRobotInterface<SIM>::readParams(const ros::NodeHandle& root_nh, const ros::NodeHandle &/*robot_hw_nh*/)
 {
 	ros::NodeHandle rpnh(root_nh, "hardware_interface"); // TODO(davetcoleman): change the namespace to "frc_robot_interface" aka name_
 	run_hal_robot_ = rpnh.param<bool>("run_hal_robot", run_hal_robot_);
@@ -156,28 +156,28 @@ bool FRCRobotInterface<SIM>::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*r
 	// the SIM template param for this class
 	devices_.emplace_back(std::make_unique<AnalogInputDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<AS726xDevices<SIM>>(root_nh));
-    devices_.emplace_back(std::make_unique<CANCoderDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<CANdleDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<CANCoderDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<CANdleDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<CANifierDevices<SIM>>(root_nh));
-    devices_.emplace_back(std::make_unique<CTREV5MotorControllers<SIM>>(root_nh));
-    devices_.emplace_back(std::make_unique<DigitalInputDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<DigitalOutputDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<DoubleSolenoidDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<JoystickDevices<SIM>>(root_nh));
+	devices_.emplace_back(std::make_unique<CTREV5MotorControllers<SIM>>(root_nh));
+	devices_.emplace_back(std::make_unique<DigitalInputDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<DigitalOutputDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<DoubleSolenoidDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<JoystickDevices<SIM>>(root_nh));
 	devices_.emplace_back(std::make_unique<MatchDataDevices<SIM>>(root_nh));
 	devices_.emplace_back(std::make_unique<PCMDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<PDHDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<PDPDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<PHDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<Pigeon2Devices>(root_nh));
-    devices_.emplace_back(std::make_unique<PWMDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<PDHDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<PDPDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<PHDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<Pigeon2Devices>(root_nh));
+	devices_.emplace_back(std::make_unique<PWMDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<ReadyDevices>(root_nh));
 	if (run_hal_robot_)
 	{
 		devices_.emplace_back(std::make_unique<RobotControllerDevices>(root_nh));
 	}
-    devices_.emplace_back(std::make_unique<RumbleDevices>(root_nh));
-    devices_.emplace_back(std::make_unique<SolenoidDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<RumbleDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<SolenoidDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<SparkMaxDevices<SIM>>(root_nh));
 	devices_.emplace_back(std::make_unique<TalonFXProDevices<SIM>>(root_nh));
 	devices_.emplace_back(std::make_unique<TalonOrchestraDevices<SIM>>(root_nh));
@@ -200,14 +200,14 @@ bool FRCRobotInterface<SIM>::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*r
 			device_ptr->appendDeviceMap(ctrev6_devices);
 		}
 	};
-	append_device_map. template operator()<CANCoderDevices>(); // C++ 20 templated lamba call syntax is dumb if there's no function parameter to deduce the types from
-	append_device_map. template operator()<Pigeon2Devices>();  // and apparently even dumber if they're in a templated member function
-	append_device_map. template operator()<TalonFXProDevices<SIM>>();
+	append_device_map.template operator()<CANCoderDevices>(); // C++ 20 templated lamba call syntax is dumb if there's no function parameter to deduce the types from
+	append_device_map.template operator()<Pigeon2Devices>();  // and apparently even dumber if they're in a templated member function
+	append_device_map.template operator()<TalonFXProDevices<SIM>>();
 	devices_.emplace_back(std::make_unique<LatencyCompensationGroups>(root_nh, ctrev6_devices));
 
 	// Orchestra needs a set of previously created TalonFXs to use as instruments
 	const auto orchestra_devices = getDevicesOfType<TalonOrchestraDevices<SIM>>(devices_);
-    const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices<SIM>>(devices_);
+	const auto talonfxpro_devices = getDevicesOfType<TalonFXProDevices<SIM>>(devices_);
 	if (talonfxpro_devices && orchestra_devices)
 	{
 		std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> talonfxs;
@@ -264,8 +264,5 @@ bool FRCRobotInterface<SIM>::prepareSwitch(const std::list<hardware_interface::C
 {
 	return true;
 }
-
-template class FRCRobotInterface<false>;
-template class FRCRobotInterface<true>;
 
 }  // namespace

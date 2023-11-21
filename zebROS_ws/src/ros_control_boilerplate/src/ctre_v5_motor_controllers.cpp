@@ -2,7 +2,7 @@
 #include <hardware_interface/robot_hw.h> // for hardware_interface::InterfaceManager
 #include "ctre_interfaces/talon_command_interface.h"
 #include "ros_control_boilerplate/ctre_v5_motor_controllers.h"
-#include "ros_control_boilerplate/ctre_v5_motor_controller.h"
+#include "ros_control_boilerplate/sim_ctre_v5_motor_controller.h"
 #include "ros_control_boilerplate/read_config_utils.h"
 
 template <bool SIM>

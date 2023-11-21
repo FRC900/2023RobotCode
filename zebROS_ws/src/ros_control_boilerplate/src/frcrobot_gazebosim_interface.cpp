@@ -1,14 +1,12 @@
 #include "ros_control_boilerplate/frcrobot_gazebosim_interface.h"
 
-#include "ros_control_boilerplate/devices.h"
-
 namespace frcrobot_control
 {
 	bool FRCRobotGazeboSimInterface::initSim(const std::string &robot_namespace,
 											 ros::NodeHandle model_nh,
 											 gazebo::physics::ModelPtr parent_model,
 											 const urdf::Model *const urdf_model,
-											 std::vector<transmission_interface::TransmissionInfo> transmissions)
+											 const std::vector<transmission_interface::TransmissionInfo> &transmissions)
 	{
 		ros::NodeHandle not_used;
 		frcrobot_sim_interface_.init(model_nh, not_used);
@@ -142,5 +140,5 @@ namespace frcrobot_control
 	}
 } // namespace
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(frcrobot_control::FRCRobotGazeboSimInterface, gazebo_ros_control::RobotHWSim)

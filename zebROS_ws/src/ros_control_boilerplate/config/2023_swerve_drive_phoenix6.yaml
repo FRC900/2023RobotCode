@@ -27,8 +27,6 @@ swerve_drive_controller:
     f_a: 0.005
     f_v: 0.0379
 
-    # Inverts work for sim and will likely break reality
-
     # TODO : move this into sensor_to_mechanism_ratio for Falcons
     ratio_encoder_to_rotations: 0.148148148 # Test me, will show up in odom results
 
@@ -46,7 +44,6 @@ swerve_drive_controller:
     use_cos_scaling: True # scale motor speed by how close angle motors are to setpoints
     speed_joint_fl:
         joint: fl_drive
-        invert: clockwise_positive
         close_loop_values:
             - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #current_limit_continuous_amps: 15
@@ -61,7 +58,6 @@ swerve_drive_controller:
         #neutral_deadband: 0.01
     speed_joint_fr:
         joint: fr_drive
-        invert: counterclockwise_positive
         close_loop_values:
             - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #current_limit_continuous_amps: 15
@@ -76,7 +72,6 @@ swerve_drive_controller:
         #neutral_deadband: 0.01
     speed_joint_bl:
         joint: bl_drive
-        invert: clockwise_positive
         close_loop_values:
             - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #feedback_type: IntegratedSensor
@@ -92,7 +87,6 @@ swerve_drive_controller:
         #neutral_deadband: 0.01
     speed_joint_br:
         joint: br_drive
-        invert: counterclockwise_positive
         close_loop_values:
             - {kP: 1.00, kI: 0.0, kD: 0.0, kV: 0.125, kS: 0.0}
         #feedback_type: IntegratedSensor
@@ -172,7 +166,7 @@ swerve_angle_phoenix6_controller:
     remote_feedback_device_id0: 13
     #neutral_deadband: 0.01
     close_loop_values:
-        - {kP: 8000, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
+        - {kP: 80, kI: 0.000, kD: 0.0, kV: 2.85, kS: 0}
     invert: clockwise_positive
     neutral_deadband: 0.01
     motion_magic_cruise_velocity: 5.0

@@ -1,9 +1,9 @@
 #include "ros/node_handle.h"
-#include "gazebo_ros_control/robot_hw_sim.h"
 #include "ctre/phoenix6/core/CoreTalonFX.hpp"
 #include "ros_control_boilerplate/sim_talonfxpro_device.h"
 #include "ctre_interfaces/talonfxpro_state_interface.h"
-
+#include "gazebo/physics/Joint.hh"                          // for Joint
+#include "gazebo/physics/Model.hh"                          // for Model
 SimTalonFXProDevice::SimTalonFXProDevice(const std::string &name_space,
                                          const int joint_index,
                                          const std::string &joint_name,

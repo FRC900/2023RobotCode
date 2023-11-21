@@ -69,7 +69,7 @@ namespace gazebo_ros_control {
   {
   public:
 
-    virtual ~RobotHWSim() { }
+    virtual ~RobotHWSim() = default;
 
     /// \brief Initialize the simulated robot hardware
     ///
@@ -87,7 +87,7 @@ namespace gazebo_ros_control {
         ros::NodeHandle model_nh,
         gazebo::physics::ModelPtr parent_model,
         const urdf::Model *const urdf_model,
-        std::vector<transmission_interface::TransmissionInfo> transmissions) = 0;
+        const std::vector<transmission_interface::TransmissionInfo> &transmissions) = 0;
 
     /// \brief Read state data from the simulated robot hardware
     ///
@@ -114,7 +114,7 @@ namespace gazebo_ros_control {
 
   };
 
-  typedef boost::shared_ptr<RobotHWSim> RobotHWSimSharedPtr;
+  using RobotHWSimSharedPtr = boost::shared_ptr<RobotHWSim>;
 
 }
 

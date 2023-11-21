@@ -74,7 +74,7 @@
 #include <HALInitializer.h>
 #include <hal/DriverStation.h>
 
-#include "ros_control_boilerplate/talonfxpro_devices.h"
+#include "ros_control_boilerplate/devices.h"
 #include "ros_control_boilerplate/match_data_devices.h"
 
 extern "C" { void HALSIM_SetControlWord(HAL_ControlWord); }
