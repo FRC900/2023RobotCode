@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <group ns="publisher">
+        <rosparam file="$(find beginner_tutorials)/config/pub_params.yaml" command="load"/>
+        <node name="publisher_node" pkg="beginner_tutorials" type="publisher_with_params.py" output="screen"/>
+    </group>
+</launch>
