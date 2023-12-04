@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <group ns="run_insert_single_quote_here_run_add_two_ints_insert_single_quote_here">
+        <node name="run_add_two_ints_server" pkg="beginner_tutorials" type="add_two_ints_server.py" output="screen"/>
+        <node name="run_add_two_ints_client" pkg="beginner_tutorials" type="add_two_ints_client.py" output="screen"/>
+    </group>
+    
+</launch>
