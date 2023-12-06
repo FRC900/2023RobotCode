@@ -240,7 +240,7 @@ if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi")
 		${ALLWPILIB}/wpilibc/src/main/native/cpp/motorcontrol/MotorController.cpp
 		${ALLWPILIB}/wpimath/src/main/native/cpp/MathShared.cpp
 		${ALLWPILIB}/wpimath/src/main/native/cpp/filter/Debouncer.cpp
-		${ALLWPILIB}/wpimath/src/main/native/cpp/geometry/Rotation2d.cpp
+		#${ALLWPILIB}/wpimath/src/main/native/cpp/geometry/Rotation2d.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/fs.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/SafeThread.cpp
 		${ALLWPILIB}/wpiutil/src/main/native/cpp/StackTraceWrap.cpp

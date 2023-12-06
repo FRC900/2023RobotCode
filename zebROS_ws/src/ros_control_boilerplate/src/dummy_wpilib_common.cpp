@@ -216,6 +216,7 @@ NetworkTable::~NetworkTable() = default;
 
 }
 
+#if 0
 #include "wpi/json.h"
 const char *wpi::json::type_name() const noexcept
 {
@@ -252,6 +253,7 @@ wpi::detail::exception::exception(int id_, std::string_view what_arg)
 	, m(std::string{what_arg})
 {
 }
+#endif
 
 #include <FRC_NetworkCommunication/FRCComm.h>
 
