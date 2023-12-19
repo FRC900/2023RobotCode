@@ -406,9 +406,9 @@ void Pigeon2Device::read_thread(std::unique_ptr<Tracer> tracer,
     MAKE_SIGNAL(accum_gyro_y, pigeon2_->GetAccumGyroY())
     MAKE_SIGNAL(accum_gyro_z, pigeon2_->GetAccumGyroZ())
 
-    MAKE_SIGNAL(angular_velocity_x, pigeon2_->GetAngularVelocityX())
-    MAKE_SIGNAL(angular_velocity_y, pigeon2_->GetAngularVelocityY())
-    MAKE_SIGNAL(angular_velocity_z, pigeon2_->GetAngularVelocityZ())
+    MAKE_SIGNAL(angular_velocity_x, pigeon2_->GetAngularVelocityXWorld())
+    MAKE_SIGNAL(angular_velocity_y, pigeon2_->GetAngularVelocityYWorld())
+    MAKE_SIGNAL(angular_velocity_z, pigeon2_->GetAngularVelocityZWorld())
 
     MAKE_SIGNAL(acceleration_x, pigeon2_->GetAccelerationX())
     MAKE_SIGNAL(acceleration_y, pigeon2_->GetAccelerationY())
@@ -485,9 +485,9 @@ void Pigeon2Device::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(accum_gyro_y, pigeon2_->GetAccumGyroY())
         SAFE_READ(accum_gyro_z, pigeon2_->GetAccumGyroZ())
 
-        SAFE_READ(angular_velocity_x, pigeon2_->GetAngularVelocityX())
-        SAFE_READ(angular_velocity_y, pigeon2_->GetAngularVelocityY())
-        SAFE_READ(angular_velocity_z, pigeon2_->GetAngularVelocityZ())
+        SAFE_READ(angular_velocity_x, pigeon2_->GetAngularVelocityXWorld())
+        SAFE_READ(angular_velocity_y, pigeon2_->GetAngularVelocityYWorld())
+        SAFE_READ(angular_velocity_z, pigeon2_->GetAngularVelocityZWorld())
 
         SAFE_READ(acceleration_x, pigeon2_->GetAccelerationX())
         SAFE_READ(acceleration_y, pigeon2_->GetAccelerationY())

@@ -1732,6 +1732,50 @@ void TalonFXProDevice::write(const ros::Time & /*time*/,
                     success = false;
                 }
                 break;
+            case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoDutyCycle:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::MotionMagicExpoDutyCycle(units::radian_t{control_position},
+                                                                                     control_enable_foc,
+                                                                                     control_feedforward,
+                                                                                     control_slot,
+                                                                                     control_override_brake_dur_neutral,
+                                                                                     control_limit_forward_motion,
+                                                                                     control_limit_reverse_motion)),
+                              "setControl(MotionMagicExpoDutyCycle)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoVoltage:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::MotionMagicExpoVoltage(units::radian_t{control_position},
+                                                                                   control_enable_foc,
+                                                                                   units::voltage::volt_t{control_feedforward},
+                                                                                   control_slot,
+                                                                                   control_override_brake_dur_neutral,
+                                                                                   control_limit_forward_motion,
+                                                                                   control_limit_reverse_motion)),
+                              "setControl(MotionMagicExpoVoltage)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
+            case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoTorqueCurrentFOC:
+                if (!safeCall(talonfxpro_->SetControl(
+                                  ctre::phoenix6::controls::MotionMagicExpoTorqueCurrentFOC(units::radian_t{control_position},
+                                                                                            units::ampere_t{control_feedforward},
+                                                                                            control_slot,
+                                                                                            control_override_brake_dur_neutral,
+                                                                                            control_limit_forward_motion,
+                                                                                            control_limit_reverse_motion)),
+                              "setControl(MotionMagicExpoTorqueCurrentFOC)"))
+                {
+                    command_->resetControl();
+                    success = false;
+                }
+                break;
             case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle:
                 if (!safeCall(talonfxpro_->SetControl(
                                   ctre::phoenix6::controls::MotionMagicVelocityDutyCycle(units::radians_per_second_t{control_velocity},
