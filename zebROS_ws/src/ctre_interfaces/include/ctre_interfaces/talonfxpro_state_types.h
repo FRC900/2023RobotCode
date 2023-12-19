@@ -41,6 +41,10 @@ enum class LimitSource
 {
 	Uninitialized,
 	LimitSwitchPin,
+	RemoteTalonFX,
+	RemoteCANifier,
+	RemoteCANcoder,
+	Disabled,
 	Last
 };
 

@@ -941,6 +941,27 @@ static bool convertLimitSource(const hardware_interface::talonfxpro::LimitSource
         out = ctre::phoenix6::signals::ForwardLimitSourceValue::LimitSwitchPin;
         return true;
     }
+    if (in == hardware_interface::talonfxpro::LimitSource::RemoteTalonFX)
+    {
+        out = ctre::phoenix6::signals::ForwardLimitSourceValue::RemoteTalonFX;
+        return true;
+    }
+    if (in == hardware_interface::talonfxpro::LimitSource::RemoteCANifier)
+    {
+        out = ctre::phoenix6::signals::ForwardLimitSourceValue::RemoteCANifier;
+        return true;
+    }
+    if (in == hardware_interface::talonfxpro::LimitSource::RemoteCANcoder)
+    {
+        out = ctre::phoenix6::signals::ForwardLimitSourceValue::RemoteCANcoder;
+        return true;
+    }
+    if (in == hardware_interface::talonfxpro::LimitSource::Disabled)
+    {
+        out = ctre::phoenix6::signals::ForwardLimitSourceValue::Disabled;
+        return true;
+    }
+    
     ROS_ERROR_STREAM("Invalid Limit Source value in TalonFXPro convertLimitSource : in = " << static_cast<int>(in));
     return false;
 }
@@ -953,6 +974,27 @@ static bool convertLimitSource(const hardware_interface::talonfxpro::LimitSource
         out = ctre::phoenix6::signals::ReverseLimitSourceValue::LimitSwitchPin;
         return true;
     }
+    if (in == hardware_interface::talonfxpro::LimitSource::RemoteTalonFX)
+    {
+        out = ctre::phoenix6::signals::ReverseLimitSourceValue::RemoteTalonFX;
+        return true;
+    }
+    if (in == hardware_interface::talonfxpro::LimitSource::RemoteCANifier)
+    {
+        out = ctre::phoenix6::signals::ReverseLimitSourceValue::RemoteCANifier;
+        return true;
+    }
+    if (in == hardware_interface::talonfxpro::LimitSource::RemoteCANcoder)
+    {
+        out = ctre::phoenix6::signals::ReverseLimitSourceValue::RemoteCANcoder;
+        return true;
+    }
+    if (in == hardware_interface::talonfxpro::LimitSource::Disabled)
+    {
+        out = ctre::phoenix6::signals::ReverseLimitSourceValue::Disabled;
+        return true;
+    }
+    
     ROS_ERROR_STREAM("Invalid Limit Source value in TalonFXPro convertLimitSource : in = " << static_cast<int>(in));
     return false;
 }

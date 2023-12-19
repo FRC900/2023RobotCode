@@ -103,6 +103,27 @@ bool stringToLimitType(const std::string &str,
     return true;
 }
 
+bool stringToLimitSource(const std::string &str,
+                       hardware_interface::talonfxpro::LimitSource &limit_source)
+{
+    if (str == "LimitSwitchPin")
+        limit_source = hardware_interface::talonfxpro::LimitSource::LimitSwitchPin;
+    else if (str == "RemoteTalonFX")
+        limit_source = hardware_interface::talonfxpro::LimitSource::RemoteTalonFX;
+    else if (str == "RemoteCANifier")
+        limit_source = hardware_interface::talonfxpro::LimitSource::RemoteCANifier;
+    else if (str == "RemoteCANcoder")
+        limit_source = hardware_interface::talonfxpro::LimitSource::RemoteCANcoder;
+    else if (str == "Disabled")
+        limit_source = hardware_interface::talonfxpro::LimitSource::Disabled;
+    else
+    {
+        ROS_ERROR_STREAM("Invalid limit switch type: " << str << ", expecting LimitSwitchPin, RemoteTalonFX, RemoteCANifier, RemoteCANcoder, or Disabled");
+        return false;
+    }
+    return true;
+}
+
 TalonFXProCIParams& TalonFXProCIParams::operator=(const TalonFXProCIParams &other)
 {
     if (this != &other)
@@ -524,6 +545,15 @@ bool TalonFXProCIParams::readLimitSwitches(const ros::NodeHandle &n)
     readIntoScalar(n, "forward_limit_autoset_position_value", forward_limit_autoset_position_value_);
     readIntoScalar(n, "forward_limit_enable", forward_limit_enable_);
     readIntoScalar(n, "forward_limit_remote_sensor_id_", forward_limit_remote_sensor_id_);
+    if (n.getParam("forward_limit_switch_source", str))
+    {
+        hardware_interface::talonfxpro::LimitSource forward_limit_source;
+        if (!stringToLimitSource(str, forward_limit_source))
+        {
+            return false;
+        }
+        forward_limit_source_ = forward_limit_source;
+    }
 
 #ifdef TALONCI_BACKWARDS_COMPATIBILITY
     if (n.getParam("limit_switch_local_reverse_normal", str))
@@ -549,6 +579,15 @@ bool TalonFXProCIParams::readLimitSwitches(const ros::NodeHandle &n)
     readIntoScalar(n, "reverse_limit_autoset_position_value", reverse_limit_autoset_position_value_);
     readIntoScalar(n, "reverse_limit_enable", reverse_limit_enable_);
     readIntoScalar(n, "reverse_limit_remote_sensor_id_", reverse_limit_remote_sensor_id_);
+    if (n.getParam("reverse_limit_switch_source", str))
+    {
+        hardware_interface::talonfxpro::LimitSource reverse_limit_source;
+        if (!stringToLimitSource(str, reverse_limit_source))
+        {
+            return false;
+        }
+        reverse_limit_source_ = reverse_limit_source;
+    }
 
     return true;
 }

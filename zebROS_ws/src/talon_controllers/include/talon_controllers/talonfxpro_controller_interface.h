@@ -527,6 +527,10 @@ protected:
     };
     static inline const std::map<std::string, int> limit_source_enum_map_ {
         {"LimitSwitchPin", static_cast<int>(hardware_interface::talonfxpro::LimitSource::LimitSwitchPin)},
+        {"RemoteTalonFX", static_cast<int>(hardware_interface::talonfxpro::LimitSource::RemoteTalonFX)},
+        {"RemoteCANifier", static_cast<int>(hardware_interface::talonfxpro::LimitSource::RemoteCANifier)},
+        {"RemoteCANcoder", static_cast<int>(hardware_interface::talonfxpro::LimitSource::RemoteCANcoder)},
+        {"Disabled", static_cast<int>(hardware_interface::talonfxpro::LimitSource::Disabled)}
     };
 };
 
