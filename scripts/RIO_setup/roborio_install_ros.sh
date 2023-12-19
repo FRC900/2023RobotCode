@@ -63,7 +63,7 @@ ssh -p 22 admin@$1 'rm -rf ~/.cache'
 scp -P 22 /home/ubuntu/roscore_roborio.tar.bz2 admin@$1:.
 ssh -p 22 admin@$1 'cd / && tar -xjf ~/roscore_roborio.tar.bz2'
 ssh -p 22 admin@$1 'rm ~/roscore_roborio.tar.bz2'
-ssh -p 22 admin@$1 'rsync -arv /opt/ros/noetic/lib/python3.10/site-packages/. /opt/ros/noetic/local/lib/python3.10/dist-packages'
+ssh -p 22 admin@$1 'rsync -arv /opt/ros/noetic/lib/python3.10/site-packages/. /opt/ros/noetic/lib/python3.10/dist-packages'
 ssh -p 22 admin@$1 'rm -rf /opt/ros/noetic/lib/python3.10/site-packages'
 
 cd /home/ubuntu/wpilib/2024/roborio/arm-nilrt-linux-gnueabi/sysroot/usr/local/lib
@@ -97,7 +97,7 @@ ssh -p 22 admin@$1 'ln -s /usr/include /include'
 # Create workspace. Do a build in the empty workspace to set
 # up various scripts for later use. TODO : See if this is needed?
 ssh -p 22 admin@$1 'mkdir -p 2023RobotCode/zebROS_ws/src'
-ssh -p 22 admin@$1 'source /opt/ros/noetic/setup.bash && cd 2023RobotCode/zebROS_ws && PYTHONPATH=/opt/ros/noetic/local/lib/python3.10/dist-packages catkin_make_isolated --install'
+ssh -p 22 admin@$1 'source /opt/ros/noetic/setup.bash && cd 2023RobotCode/zebROS_ws && PYTHONPATH=/opt/ros/noetic/lib/python3.10/dist-packages catkin_make_isolated --install'
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 ##################-----------------------------#################

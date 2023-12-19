@@ -291,6 +291,7 @@ if (NOT "${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi")
 			${ALLWPILIB}/wpilibc/src/main/native/cpp/DigitalInput.cpp
 			${ALLWPILIB}/wpilibc/src/main/native/cpp/DigitalOutput.cpp
 			${ALLWPILIB}/wpilibc/src/main/native/cpp/I2C.cpp
+			${ALLWPILIB}/wpilibc/src/main/native/cpp/Notifier.cpp
 			${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/ConvertUTF.cpp
 			${ALLWPILIB}/wpiutil/src/main/native/thirdparty/llvm/cpp/llvm/ConvertUTFWrapper.cpp
 		)
