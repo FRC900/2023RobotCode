@@ -218,7 +218,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(version_bugfix, talonfxpro_->GetVersionBugfix())
         SAFE_READ(version_build, talonfxpro_->GetVersionBuild())
 
-        SAFE_READ(motor_voltage, talonfxpro_->GetMotorVoltage())
+        //SAFE_READ(motor_voltage, talonfxpro_->GetMotorVoltage())
 
         SAFE_READ(forward_limit, talonfxpro_->GetForwardLimit())
         SAFE_READ(reverse_limit, talonfxpro_->GetReverseLimit())
@@ -245,7 +245,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
         SAFE_READ(rotor_position, talonfxpro_->GetRotorPosition())
         SAFE_READ(velocity, talonfxpro_->GetVelocity())
         SAFE_READ(position, talonfxpro_->GetPosition())
-        SAFE_READ(acceleration, talonfxpro_->GetAcceleration())
+        //SAFE_READ(acceleration, talonfxpro_->GetAcceleration())
         SAFE_READ(device_enable, talonfxpro_->GetDeviceEnable())
         SAFE_READ(motion_magic_is_running, talonfxpro_->GetMotionMagicIsRunning())
 
@@ -505,7 +505,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setVersionBugfix(*version_bugfix);
             read_thread_state_->setVersionBuild(*version_build);
 
-            read_thread_state_->setMotorVoltage(motor_voltage->value());
+            //read_thread_state_->setMotorVoltage(motor_voltage->value());
 
             read_thread_state_->setForwardLimit(*forward_limit == ctre::phoenix6::signals::ForwardLimitValue::ClosedToGround);
             read_thread_state_->setReverseLimit(*reverse_limit == ctre::phoenix6::signals::ReverseLimitValue::ClosedToGround);
@@ -524,7 +524,7 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             read_thread_state_->setRotorPosition(units::radian_t{*rotor_position}.value());
             read_thread_state_->setVelocity(units::radians_per_second_t{*velocity}.value());
             read_thread_state_->setPosition(units::radian_t{*position}.value());
-            read_thread_state_->setAcceleration(units::radians_per_second_squared_t{*acceleration}.value());
+            //read_thread_state_->setAcceleration(units::radians_per_second_squared_t{*acceleration}.value());
 
             read_thread_state_->setDeviceEnable(*device_enable == ctre::phoenix6::signals::DeviceEnableValue::Enabled);
             read_thread_state_->setMotionMagicIsRunning(*motion_magic_is_running == ctre::phoenix6::signals::MotionMagicIsRunningValue::Enabled);

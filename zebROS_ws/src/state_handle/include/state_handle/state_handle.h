@@ -2,6 +2,7 @@
 
 #include <hardware_interface/hardware_interface.h>
 #include <string>
+#include <iostream>
 
 // Handle - used by each controller to get, by name of the
 // corresponding joint, an interface with which to get state
@@ -17,7 +18,7 @@ class StateHandle
 		{}
 
 		// Initialize the base TalonStateHandle with pointers
-		// from the state data object.
+		//awd from the state data object.
 		StateHandle(const std::string &name, T *state) :
 			name_(name),
 			state_(state)
@@ -45,6 +46,9 @@ class StateHandle
 		// dozens of getFoo() one-line methods
 		T *operator->() const
 		{
+			//ROS_WARN_STREAM("StateHandle::operator->() called for joint " << name_);
+			//ROS_WARN_STREAM("StateHandle::operator->() returning state_ pointer " << state_);
+			//std::cout << "joint " << name_ << " state_ pointer " << state_ << std::endl;
 			assert(state_);
 			return state_;
 		}
