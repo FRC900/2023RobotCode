@@ -41,7 +41,7 @@ hardware_interface:
 
        # Add 2023 solenoids/digital inputs
        
-       - {name: pdh, type: pdh, module: 1}
+       #- {name: pdh, type: pdh, module: 1}
 
        - {name: joystick0, type: joystick, id: 0, local: true}
        - {name: button_box, type: joystick, id: 1, local: true}

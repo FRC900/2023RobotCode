@@ -62,8 +62,10 @@ ssh -p 22 admin@$1 'rm -rf ~/.cache'
 # Copy over ROS tar.bz2 file, extract to / on the Rio
 scp -P 22 /home/ubuntu/roscore_roborio.tar.bz2 admin@$1:.
 ssh -p 22 admin@$1 'cd / && tar -xjf ~/roscore_roborio.tar.bz2'
+ssh -p 22 admin@$1 'find /opt/ros/noetic --name __pycache__ | xargs rm -rf'
 ssh -p 22 admin@$1 'rm ~/roscore_roborio.tar.bz2'
-ssh -p 22 admin@$1 'rsync -arv /opt/ros/noetic/lib/python3.10/site-packages/. /opt/ros/noetic/lib/python3.10/dist-packages'
+ssh -p 22 admin@$1 'mkdir -p /opt/ros/noetic/local/lib/python3.10/dist-packages'
+ssh -p 22 admin@$1 'rsync -arv /opt/ros/noetic/lib/python3.10/site-packages/. /opt/ros/noetic/local/lib/python3.10/dist-packages'
 ssh -p 22 admin@$1 'rm -rf /opt/ros/noetic/lib/python3.10/site-packages'
 
 cd /home/ubuntu/wpilib/2024/roborio/arm-nilrt-linux-gnueabi/sysroot/usr/local/lib
