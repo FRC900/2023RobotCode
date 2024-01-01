@@ -51,6 +51,7 @@
 #include "ros_control_boilerplate/analog_input_devices.h"
 #include "ros_control_boilerplate/cancoder_devices.h"
 #include "ros_control_boilerplate/candle_devices.h"
+#include "ros_control_boilerplate/can_bus_status_devices.h"
 #include "ros_control_boilerplate/ctre_v5_motor_controllers.h"
 #include "ros_control_boilerplate/digital_input_devices.h"
 #include "ros_control_boilerplate/digital_output_devices.h"
@@ -150,6 +151,7 @@ bool FRCRobotInterface::init(ros::NodeHandle& root_nh, ros::NodeHandle &/*robot_
 	devices_.emplace_back(std::make_unique<AnalogInputDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<CANCoderDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<CANdleDevices>(root_nh));
+	devices_.emplace_back(std::make_unique<CANBusStatusDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<CTREV5MotorControllers>(root_nh));
 	devices_.emplace_back(std::make_unique<DigitalInputDevices>(root_nh));
 	devices_.emplace_back(std::make_unique<DigitalOutputDevices>(root_nh));

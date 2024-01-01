@@ -81,6 +81,8 @@ add_library(frc_robot_interface STATIC
 	src/cancoder_devices.cpp
 	src/canifier_device.cpp
 	src/canifier_devices.cpp
+	src/can_bus_status_device.cpp
+	src/can_bus_status_devices.cpp
     src/ctre_v5_device.cpp
     src/ctre_v5_motor_controller.cpp
 	src/ctre_v5_motor_controllers.cpp

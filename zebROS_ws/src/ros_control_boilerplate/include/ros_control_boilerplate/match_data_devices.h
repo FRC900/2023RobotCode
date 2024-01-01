@@ -19,7 +19,6 @@ struct HAL_ControlWord;
 template <class DEVICE_TYPE>
 class MatchDataDevices : public Devices
 {
-
 public:
     explicit MatchDataDevices(ros::NodeHandle &root_nh);
     MatchDataDevices(const MatchDataDevices &) = delete;

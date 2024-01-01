@@ -19,6 +19,7 @@ generic_hw_control_loop:
   match_data_read_hz: 2
   robot_controller_read_hz: 20
   as726x_read_hz: 7
+  can_bus_status_read_hz: 5
 
   talon_config_count_limit: 10
 
@@ -47,6 +48,7 @@ hardware_interface:
        - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
 
        #- {name: babys_first_orchestra, type: orchestra, id: 1}
+       - {name: CANivore, type: can_bus_status}
 
        - {name: robot_code_ready_jetson, local: true, type: ready}
        - {name: robot_code_ready_rio, local: false, type: ready} # Probably not really needed?
@@ -131,6 +133,11 @@ pigeon2_imu_state_controller:
 candle_controller:
     type: candle_controller/CANdleController
     name: candle1
+
+can_bus_status_state_controller:
+    type: can_bus_status_state_controller/CANBusStatusStateController
+    name: CANivore
+    publish_rate: 5
 
 talonfxpro_controller:
     type: talonfxpro_controllers/TalonFXProDutyCycleOutController

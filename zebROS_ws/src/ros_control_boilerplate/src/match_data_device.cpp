@@ -137,12 +137,12 @@ std::optional<bool> MatchDataDevice::isEnabled(void) const
 
 bool MatchDataDevice::getControlWord(HAL_ControlWord &cw) const
 {
-        cw.enabled = state_->isEnabled();
-        cw.autonomous = state_->isAutonomous();
-        cw.test = state_->isTest();
-        cw.eStop = state_->isEStopped();
-        cw.fmsAttached = state_->isFMSAttached();
-        cw.dsAttached = state_->isDSAttached();
-        cw.control_reserved = 0;
-        return true;
+    cw.enabled = state_->isEnabled();
+    cw.autonomous = state_->isAutonomous();
+    cw.test = state_->isTest();
+    cw.eStop = state_->isEStopped();
+    cw.fmsAttached = state_->isFMSAttached();
+    cw.dsAttached = state_->isDSAttached();
+    cw.control_reserved = 0;
+    return true;
 }
