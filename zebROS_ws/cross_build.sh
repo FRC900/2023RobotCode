@@ -26,6 +26,7 @@ catkin config --profile cross -x _isolated --install --skiplist \
 	controllers_2020 \
 	controllers_2020_msgs \
 	cuda_apriltag_ros \
+	deeptag_ros \
 	demo_tf_node \
 	diff_drive_controller \
 	effort_controllers \

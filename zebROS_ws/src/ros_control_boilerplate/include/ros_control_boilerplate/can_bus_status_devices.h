@@ -1,5 +1,5 @@
 #ifndef CAN_BUS_STATUS_DEVICES_INC__
-#define CAN_BUS_STATUS_DEVICES_INC__
+#define CAN_BUS_STATUS_DEVICES__
 
 #include "ros_control_boilerplate/devices.h"
 
@@ -26,7 +26,7 @@ public:
 
 private:
     std::vector<std::unique_ptr<CANBusStatusDevice>> devices_;
-    std::shared_ptr<hardware_interface::can_bus_status::CANBusStatusStateInterface> state_interface_;
+    std::unique_ptr<hardware_interface::can_bus_status::CANBusStatusStateInterface> state_interface_;
     hardware_interface::InterfaceManager interface_manager_;
 };
 

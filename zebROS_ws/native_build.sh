@@ -49,6 +49,7 @@ catkin config --skiplist \
 	controllers_2019_msgs \
 	controllers_2020 \
 	controllers_2020_msgs \
+	deeptag_ros \
 	diff_drive_controller \
 	effort_controllers \
 	force_torque_sensor_controller \

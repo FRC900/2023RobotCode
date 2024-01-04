@@ -5,7 +5,7 @@
 #include "ros_control_boilerplate/can_bus_status_devices.h"
 
 CANBusStatusDevices::CANBusStatusDevices(ros::NodeHandle &root_nh)
-    : state_interface_{std::make_shared<hardware_interface::can_bus_status::CANBusStatusStateInterface>()}
+    : state_interface_{std::make_unique<hardware_interface::can_bus_status::CANBusStatusStateInterface>()}
 {
  	ros::NodeHandle param_nh(root_nh, "generic_hw_control_loop"); // TODO : this shouldn't be hard-coded?
     double read_hz{5};
@@ -49,11 +49,8 @@ hardware_interface::InterfaceManager *CANBusStatusDevices::registerInterface()
 void CANBusStatusDevices::read(const ros::Time& time, const ros::Duration& period, Tracer &tracer)
 {
     tracer.start_unique("CAN bus status");
-    if (isReady())
+    for (const auto &d : devices_)
     {
-        for (const auto &d : devices_)
-        {
-            d->read(time, period);
-        }
+        d->read(time, period);
     }
 }
