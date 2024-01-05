@@ -14,7 +14,7 @@
 #include "deeptag_ros/warp_perspective_points.h"  // for warpPerspectivePts
 
 #define DEBUG
-#include "debug.h"
+#include "deeptag_ros/debug.h"
 
 template <class MARKER_DICT, size_t GRID_SIZE>
 STagDecoder<MARKER_DICT, GRID_SIZE>::STagDecoder(const MARKER_DICT &markerDict, const cv::Mat &cameraMatrix, const cv::Mat &distCoeffs, Timings &timing)
@@ -344,7 +344,7 @@ void STagDecoder<MARKER_DICT, GRID_SIZE>::fillEmptyIds(std::array<PointsAndIDs, 
     }
 }
 
-#include "marker_dict.h"
+#include "deeptag_ros/marker_dict.h"
 template class STagDecoder<ArucoMarkerDict<4>, 4>;
 template class STagDecoder<ArucoMarkerDict<5>, 5>;
 template class STagDecoder<ArucoMarkerDict<6>, 6>;

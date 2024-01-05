@@ -823,7 +823,7 @@ Int8EntropyCalibrator2::~Int8EntropyCalibrator2() {
 };
 
 
-#include "detection_engine.h"
+#include "deeptag_ros/detection_engine.h"
 template class Engine<DetectionEngineCalibrator>;
-#include "decoder_engine.h"
+#include "deeptag_ros/decoder_engine.h"
 template class Engine<DecoderEngineCalibrator>;

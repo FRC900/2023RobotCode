@@ -42,7 +42,6 @@ find_package(CUDA REQUIRED)
 find_package(OpenCV REQUIRED)
 find_library(LIBNVTOOLSEXT nvToolsExt PATHS ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -144,6 +143,8 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${CUDA_INCLUDE_DIRS}
+  ${TensorRT_INCLUDE_DIRS}
 )
 
 add_library(tensorrt_cpp_api STATIC
@@ -196,6 +197,7 @@ set_property(TARGET tensorrt_cpp_api PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 add_executable(run_inference_benchmark src/main.cpp)
 target_link_libraries(run_inference_benchmark PUBLIC tensorrt_cpp_api)
 set_target_properties(run_inference_benchmark PROPERTIES CUDA_ARCHITECTURES "86")
+set_property(TARGET run_inference_benchmark PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 # add_executable(softmax_test src/softmax_test.cpp)
 # target_link_libraries(softmax_test PUBLIC tensorrt_cpp_api)

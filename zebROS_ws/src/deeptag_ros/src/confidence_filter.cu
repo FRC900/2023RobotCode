@@ -1,3 +1,4 @@
+#include <iostream>
 #include "deeptag_ros/stage1_grid.h"
 #include "deeptag_ros/confidence_filter.h"
 #include "deeptag_ros/cuCompactor.cuh"
@@ -106,7 +107,7 @@ __device__ bool Stage2Predicate::operator()(const float *f, const int index, con
     return max(f[index], f[index + length]) > m_confidence;
 }
 
-#include "grid_prior_value.h"
+#include "deeptag_ros/grid_prior_value.h"
 template class ConfidenceFilter<Stage1Grid<1>, const tcb::span<const GridPriorValue> &, Stage1Predicate>;
 template class ConfidenceFilter<Stage1Grid<4>, const tcb::span<const GridPriorValue> &, Stage1Predicate>;
 template class ConfidenceFilter<Stage1Grid<5>, const tcb::span<const GridPriorValue> &, Stage1Predicate>;
@@ -114,5 +115,5 @@ template class ConfidenceFilter<Stage1Grid<9>, const tcb::span<const GridPriorVa
 template class ConfidenceFilter<Stage1Grid<10>, const tcb::span<const GridPriorValue> &, Stage1Predicate>;
 template class ConfidenceFilter<SSDTagKeypoint, const tcb::span<const SSDBoxCenterForm> &, Stage1Predicate>;
 
-#include "stage2_keypoint.h"
+#include "deeptag_ros/stage2_keypoint.h"
 template class ConfidenceFilter<Stage2Keypoint, const tcb::span<const GridPriorValue> &, Stage2Predicate>;

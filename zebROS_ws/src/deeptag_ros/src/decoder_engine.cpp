@@ -1,19 +1,19 @@
-#include "decoder_engine.h"
-#include <cuda_runtime.h>                // for cudaFreeHost, cudaMallocHost
-#include <opencv2/core/hal/interface.h>  // for CV_64FC1
-#include <algorithm>                     // for min
-#include <iostream>                      // for operator<<, endl, basic_ostream
-#include <opencv2/calib3d.hpp>           // for findHomography
-#include <opencv2/core/cvstd.inl.hpp>    // for operator<<
-#include <opencv2/core/mat.inl.hpp>      // for Mat::at, _InputArray::_Input...
-#include <opencv2/highgui.hpp>           // for imshow, waitKey
-#include "deeptag_ros/cuda_utils.h"                  // for cudaSafeCall
-#include "deeptag_ros/gpu_image_wrapper.h"           // for GpuImageWrapper
-#include "deeptag_ros/image_format.h"                // for imageFormat
-#include "deeptag_ros/span.hpp"                      // for span
-#include "vector_types.h"                // for float2
+#include "deeptag_ros/decoder_engine.h"
+#include <cuda_runtime.h>                  // for cudaFreeHost, cudaMallocHost
+#include <opencv2/core/hal/interface.h>    // for CV_64FC1
+#include <algorithm>                       // for min
+#include <iostream>                        // for operator<<, endl, basic_ostream
+#include <opencv2/calib3d.hpp>             // for findHomography
+#include <opencv2/core/cvstd.inl.hpp>      // for operator<<
+#include <opencv2/core/mat.inl.hpp>        // for Mat::at, _InputArray::_Input...
+#include <opencv2/highgui.hpp>             // for imshow, waitKey
+#include "deeptag_ros/cuda_utils.h"        // for cudaSafeCall
+#include "deeptag_ros/gpu_image_wrapper.h" // for GpuImageWrapper
+#include "deeptag_ros/image_format.h"      // for imageFormat
+#include "deeptag_ros/span.hpp"            // for span
+#include "vector_types.h"                  // for float2
 
-//#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
 static void showDebugImage(cv::Mat &hR, cv::Mat &hG, cv::Mat &hB, const std::string &windowName)
 {

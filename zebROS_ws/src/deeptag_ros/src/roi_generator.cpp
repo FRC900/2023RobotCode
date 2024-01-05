@@ -14,7 +14,7 @@
 #include "deeptag_ros/warp_perspective_points.h"
 
 #undef DEBUG
-#include "debug.h"
+#include "deeptag_ros/debug.h"
 
 static double2 operator+(const double2 &op1, const double2 &op2)
 {

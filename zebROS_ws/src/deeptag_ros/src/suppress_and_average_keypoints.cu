@@ -161,12 +161,12 @@ const tcb::span<const OUTPUT> SuppressAndAverageKeypoints<INPUT, OUTPUT>::getOut
     return tcb::span<const OUTPUT>(m_hOutput, *m_hOutputLengthPtr);
 }
 
-#include "stage1_grid.h"
-#include "ssd_tag_keypoint.h"
-#include "stage1_grid_group.h"
-#include "stage1_ssd_group.h"
-#include "stage2_keypoint.h"
-#include "stage2_keypoint_group.h"
+#include "deeptag_ros/stage1_grid.h"
+#include "deeptag_ros/ssd_tag_keypoint.h"
+#include "deeptag_ros/stage1_grid_group.h"
+#include "deeptag_ros/stage1_ssd_group.h"
+#include "deeptag_ros/stage2_keypoint.h"
+#include "deeptag_ros/stage2_keypoint_group.h"
 template class SuppressAndAverageKeypoints<Stage1Grid<1>, Stage1GridGroup<1>>;
 template class SuppressAndAverageKeypoints<Stage1Grid<4>, Stage1GridGroup<4>>;
 template class SuppressAndAverageKeypoints<Stage1Grid<5>, Stage1GridGroup<5>>;

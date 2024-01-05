@@ -413,7 +413,7 @@ int STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getSSDGrouperSigma(void) const
     return m_ssdGrouperSigma;
 }
 
-#include "detection_engine.h"
+#include "deeptag_ros/detection_engine.h"
 template class STagDetector<0, true>;
 
 template class STagDetector<4, false>;
