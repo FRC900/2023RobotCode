@@ -134,8 +134,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 			current_time.toSec());
 
 	ROS_INFO_STREAM("drive to coordinates: " << index << " (" << final_x << ", " << final_y << ", " << final_orientation << ")");
-	// We're not outputting infor about velocity just because I don't know how we would want that formatted. We definitely should though
-	// TODO: Output velocity information
+	ROS_INFO_STREAM("drive to velocity: " << index << " (" << final_x_velocity << ", " << final_y_velocity << ", " << final_velocity_orientation << ")")
 
 	// This is strictly for the debugging ROS_INFO below
 	double now_x;
@@ -190,7 +189,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 	}
 
 	ROS_INFO_STREAM("now coordinates: " << now_index << " (" << now_x << ", " << now_y << ", " << now_orientation << ")");
-	// Again, no info yet for reason stated above
+	ROS_INFO_STREAM("now velocity: " << now_index << " (" << now_x_velocity << ", " << now_y_velocity << ", " << now_velocity_orientation << ")");
 
 	// Convert back to quaternion
 	tf2::Quaternion q_final_tf = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_orientation));
