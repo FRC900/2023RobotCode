@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 include ("../cmake_modules/CMakeOpt.cmake")
 
 # Only add gazebo to list of required packages on x86 and mac? builds
-if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2023-linux-gnueabi") OR
+if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi") OR
 	     ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "arm-linux-gnueabihf") OR
 		 ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "aarch64-linux-gnu") )) 
 find_package(catkin REQUIRED COMPONENTS
