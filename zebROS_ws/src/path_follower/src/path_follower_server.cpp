@@ -30,7 +30,7 @@ class PathAction
 
 		ros::Publisher orientation_command_pub_;
 
-		std::map<std::string, AlignActionAxisState> axis_states_;
+		std::map<std::string, AlignActionAxisStatePositionVelocity> axis_states_;
 		ros::Publisher combine_cmd_vel_pub_;
 
 		ros::Publisher robot_relative_yaw_pub_;
@@ -229,7 +229,7 @@ class PathAction
 		bool addAxis(const AlignActionAxisConfig &axis_config)
 		{
 			axis_states_.emplace(std::make_pair(axis_config.name_,
-												AlignActionAxisState(nh_,
+												AlignActionAxisStatePositionVelocity(nh_,
 														axis_config.enable_pub_topic_,
 														axis_config.command_pub_topic_,
 														axis_config.state_pub_topic_)));
@@ -303,9 +303,9 @@ class PathAction
 			}
 			ROS_INFO_STREAM("========End path follower logs ==========");
 			ros::Rate r(ros_rate_);
-			double final_distace = 0;
+			double final_distance = 0;
 			// send path to initialize path follower
-			if (!path_follower_.loadPath(goal->path, final_distace))
+			if (!path_follower_.loadPath(goal->path, final_distance)) // FIXME: add velocity
 			{
 				ROS_ERROR_STREAM("Failed to load path");
 				preempted = true;
@@ -314,7 +314,7 @@ class PathAction
 			int current_index = 0;
 
 			std_msgs::Bool enable_msg;
-			std_msgs::Float64 command_msg;
+			std_msgs::Float64 command_msg; // FIXME: add velocity
 			auto x_axis_it = axis_states_.find("x");
 			auto &x_axis = x_axis_it->second;
 			auto y_axis_it = axis_states_.find("y");
@@ -337,7 +337,7 @@ class PathAction
 					<< " " << odom_.pose.pose.position.y
 					<< " " << path_follower_.getYaw(odom_.pose.pose.orientation));	// PID controllers.
 
-				geometry_msgs::Pose next_waypoint = path_follower_.run(distance_travelled, current_index);
+				geometry_msgs::Pose next_waypoint = path_follower_.run(distance_travelled, current_index); // FIXME: add velocity
 
 				int current_waypoint = waypointsIdx[current_index];
 				feedback.current_waypoint = current_waypoint;
@@ -367,11 +367,12 @@ class PathAction
 				// waypoint coordinate to each of the PID controllers
 				// And also make sure they continue to be enabled
 				x_axis.setEnable(true);
-				x_axis.setCommand(next_waypoint.position.x);
+				x_axis.setCommand(next_waypoint.position.x); // FIXME: add velocity
 
 				y_axis.setEnable(true);
-				y_axis.setCommand(next_waypoint.position.y);
+				y_axis.setCommand(next_waypoint.position.y); // FIXME: add velocity
 
+				// FIXME: add velocity
 				command_msg.data = path_follower_.getYaw(next_waypoint.orientation) - initial_pose_yaw + initial_field_relative_yaw;
 				if (std::isfinite(command_msg.data))
 				{
