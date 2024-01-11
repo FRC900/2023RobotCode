@@ -314,7 +314,7 @@ class PathAction
 			int current_index = 0;
 
 			std_msgs::Bool enable_msg;
-			std_msgs::Float64 command_msg; // FIXME: add velocity
+			std_msgs::Float64 command_msg; 
 			auto x_axis_it = axis_states_.find("x");
 			auto &x_axis = x_axis_it->second;
 			auto y_axis_it = axis_states_.find("y");
@@ -326,7 +326,7 @@ class PathAction
 
 			while (ros::ok() && !preempted && !timed_out && !succeeded)
 			{
-				path_follower_msgs::PathFeedback feedback;
+				path_follower_msgs::PathFeedback feedback; // FIXME: Add velocity (probably?)
 				// Spin once to get the most up to date odom and yaw info
 				ros::spinOnce();
 
@@ -337,7 +337,7 @@ class PathAction
 					<< " " << odom_.pose.pose.position.y
 					<< " " << path_follower_.getYaw(odom_.pose.pose.orientation));	// PID controllers.
 
-				geometry_msgs::Pose next_waypoint = path_follower_.run(distance_travelled, current_index); // FIXME: add velocity
+				std::optional<PositionVelocity> next_waypoint = path_follower_.run(distance_travelled, current_index); 
 
 				int current_waypoint = waypointsIdx[current_index];
 				feedback.current_waypoint = current_waypoint;
@@ -372,9 +372,8 @@ class PathAction
 				y_axis.setEnable(true);
 				y_axis.setCommand(next_waypoint.position.y); // FIXME: add velocity
 
-				// FIXME: add velocity
 				command_msg.data = path_follower_.getYaw(next_waypoint.orientation) - initial_pose_yaw + initial_field_relative_yaw;
-				if (std::isfinite(command_msg.data))
+				if (std::isfinite(command_msg.data)) 
 				{
 					orientation_command_pub_.publish(command_msg);
 					ROS_INFO_STREAM("Orientation: " << command_msg.data);
