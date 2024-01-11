@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   ddynamic_reconfigure
   nav_msgs
   path_follower_msgs
+  pid_velocity_msg
   roscpp
   std_msgs
   tf2
