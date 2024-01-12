@@ -1,8 +1,8 @@
 # ros_control_boilerplate Settings -----------------------
 # Settings for ros_control control loop
 generic_hw_control_loop:
-  loop_hz: 100
-  cycle_time_error_threshold: 0.01
+  loop_hz: 250
+  cycle_time_error_threshold: 0.004
   canifier_read_hz: 100
   cancoder_read_hz: 100
   #some processes have lower frequencies than the main control loop
@@ -161,7 +161,7 @@ swerve_drive_state_controller:
     speed: ['fl_drive', 'fr_drive', 'bl_drive', 'br_drive']
     steering: ['fl_angle', 'fr_angle', 'bl_angle', 'br_angle']
 
-    wheel_radius: 0.050 # m
+    wheel_radius: 0.048 # m
     cmd_vel_timout: 0.5
     max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
 
@@ -171,13 +171,13 @@ swerve_drive_state_controller:
     wheel_coords: [[-0.22225, 0.19685], [0.22225, 0.19685], [-0.22225, -0.19685], [0.22225, -0.19685]]
 
     bl_angle:
-        offset: -1.14282
+        offset: 1.99418
     br_angle:
-        offset: -0.0751651
+        offset: -3.03268
     fl_angle:
-        offset: 2.15984
+        offset: -0.98635
     fr_angle:
-        offset: -0.159534
+        offset: 2.98052
 
 latency_compensation_state_controller:
     type: latency_compensation_state_controller/LatencyCompensationStateController

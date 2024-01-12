@@ -6,11 +6,12 @@ swerve_drive_controller:
     speed: ['fl_drive', 'fr_drive', 'bl_drive', 'br_drive']
     steering: ['fl_angle', 'fr_angle', 'bl_angle', 'br_angle']
     publish_cmd: True
+    odometry_publishing_frequency: 250.0
     publish_odometry_to_base_transform: True
     pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
     twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
 
-    wheel_radius: 0.050 # m
+    wheel_radius: 0.048 # m
     cmd_vel_timout: 0.5
     max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
 
