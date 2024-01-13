@@ -425,5 +425,6 @@
 		/frcrobot_jetson/talonfxpro_configs
 		/frcrobot_jetson/swerve_drive_state_controller/odom
 		/vroom
+		/wpilib_odom/odom
 		"/>
 </launch>
