@@ -35,7 +35,6 @@ class TalonFXProController:
 	public controller_interface::Controller<hardware_interface::talonfxpro::TalonFXProCommandInterface>
 {
 	public:
-
 		TalonFXProController() =default;
         TalonFXProController(const TalonFXProController &) = delete;
         TalonFXProController(TalonFXProController &&) noexcept = delete;
