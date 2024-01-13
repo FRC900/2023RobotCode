@@ -9,7 +9,7 @@
     command="$(find xacro)/xacro '$(find minifrcrobot_description)/urdf/robot.urdf'" />
   
   <!-- hopefully only does 1 controller manager -->
-  <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager"
+  <node name="$(anon ros_control_controller_manager)" pkg="controller_manager" type="controller_manager"
     respawn="false"
     output="screen" args="spawn minifrc_moveit_controller" />
 </launch>
