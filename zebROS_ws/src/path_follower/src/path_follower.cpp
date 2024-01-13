@@ -5,7 +5,7 @@
 #include "path_follower/path_follower.h"
 #include "ros/ros.h"
 
-bool PathFollower::loadPath(const nav_msgs::Path &path, const nav_msgs::Path &velocites, double &final_distace)
+bool PathFollower::loadPath(const nav_msgs::Path &path, const nav_msgs::Path &velocities, double &final_distace)
 {
 	path_ = path;
 	velocities_ = velocities;
@@ -81,7 +81,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 	const ros::Time current_time = ros::Time::now() - start_time_offset_ + ros::Duration(path_.poses[0].header.stamp.toSec());
 
 	const size_t last_index = num_waypoints_ - 1;
-	double final_x, final_y, final_x_velocity, final_y_velocity, final_orientation, final_velocity_orientation;
+	double final_x, final_y, final_x_velocity, final_y_velocity, final_orientation, final_velocities_orientation;
 
 	// Find point in path closest to odometry reading
 	ROS_INFO_STREAM("num_waypoints = " << num_waypoints_);
@@ -127,14 +127,14 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 			getYaw(path_.poses[index].pose.orientation),
 			current_time.toSec());
 	
-	final_velocity_orientation = interpolate(velocities_.poses[index - 1].header.stamp.toSec(),
+	final_velocities_orientation = interpolate(velocities_.poses[index - 1].header.stamp.toSec(),
 			velocities_.poses[index].header.stamp.toSec(),
 			getYaw(velocities_.poses[index - 1].pose.orientation),
 			getYaw(velocities_.poses[index].pose.orientation),
 			current_time.toSec());
 
 	ROS_INFO_STREAM("drive to coordinates: " << index << " (" << final_x << ", " << final_y << ", " << final_orientation << ")");
-	ROS_INFO_STREAM("drive to velocity: " << index << " (" << final_x_velocity << ", " << final_y_velocity << ", " << final_velocity_orientation << ")")
+	ROS_INFO_STREAM("drive to velocity: " << index << " (" << final_x_velocity << ", " << final_y_velocity << ", " << final_velocities_orientation << ")");
 
 	// This is strictly for the debugging ROS_INFO below
 	double now_x;
@@ -142,7 +142,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 	double now_x_velocity;
 	double now_y_velocity;
 	double now_orientation;
-	double now_velocity_orientation;
+	double now_velocities_orientation;
 	if (now_index > 0)
 	{
 		now_x = interpolate(path_.poses[now_index - 1].header.stamp.toSec(),
@@ -155,15 +155,15 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 				path_.poses[now_index - 1].pose.position.y,
 				path_.poses[now_index].pose.position.y,
 				current_time.toSec());
-		now_x_velocity = interpolate(velocity_.poses[now_index - 1].header.stamp.toSec(),
-				velocity_.poses[now_index].header.stamp.toSec(),
-				velocity_.poses[now_index - 1].pose.position.x,
-				velocity_.poses[now_index].pose.position.x,
+		now_x_velocity = interpolate(velocities_.poses[now_index - 1].header.stamp.toSec(),
+				velocities_.poses[now_index].header.stamp.toSec(),
+				velocities_.poses[now_index - 1].pose.position.x,
+				velocities_.poses[now_index].pose.position.x,
 				current_time.toSec());
-		now_y_velocity = interpolate(velocity_.poses[now_index - 1].header.stamp.toSec(),
-				velocity_.poses[now_index].header.stamp.toSec(),
-				velocity_.poses[now_index - 1].pose.position.y,
-				velocity_.poses[now_index].pose.position.y,
+		now_y_velocity = interpolate(velocities_.poses[now_index - 1].header.stamp.toSec(),
+				velocities_.poses[now_index].header.stamp.toSec(),
+				velocities_.poses[now_index - 1].pose.position.y,
+				velocities_.poses[now_index].pose.position.y,
 				current_time.toSec());	
 
 		now_orientation = interpolate(path_.poses[now_index - 1].header.stamp.toSec(),
@@ -172,30 +172,30 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 				getYaw(path_.poses[now_index].pose.orientation),
 				current_time.toSec());
 
-		now_velocity_orientation = interpolate(velocity_.poses[now_index - 1].header.stamp.toSec(),
-				velocity_.poses[now_index].header.stamp.toSec(),
-				getYaw(velocity_.poses[now_index - 1].pose.orientation),
-				getYaw(velocity_.poses[now_index].pose.orientation),
+		now_velocities_orientation = interpolate(velocities_.poses[now_index - 1].header.stamp.toSec(),
+				velocities_.poses[now_index].header.stamp.toSec(),
+				getYaw(velocities_.poses[now_index - 1].pose.orientation),
+				getYaw(velocities_.poses[now_index].pose.orientation),
 				current_time.toSec());
 	}
 	else
 	{
 		now_x = path_.poses[0].pose.position.x;
 		now_y = path_.poses[0].pose.position.y;
-		now_x_velocity = velocity_.poses[0].pose.position.x;
-		now_y_velocity = velocity_.poses[0].pose.position.y;
+		now_x_velocity = velocities_.poses[0].pose.position.x;
+		now_y_velocity = velocities_.poses[0].pose.position.y;
 		now_orientation = getYaw(path_.poses[0].pose.orientation);
-		now_velocity_orientation = getYaw(velocity_.poses[0].pose.orientation);
+		now_velocities_orientation = getYaw(velocities_.poses[0].pose.orientation);
 	}
 
 	ROS_INFO_STREAM("now coordinates: " << now_index << " (" << now_x << ", " << now_y << ", " << now_orientation << ")");
-	ROS_INFO_STREAM("now velocity: " << now_index << " (" << now_x_velocity << ", " << now_y_velocity << ", " << now_velocity_orientation << ")");
+	ROS_INFO_STREAM("now velocity: " << now_index << " (" << now_x_velocity << ", " << now_y_velocity << ", " << now_velocities_orientation << ")");
 
 	// Convert back to quaternion
 	tf2::Quaternion q_final_tf = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_orientation));
 	geometry_msgs::Quaternion q_final = tf2::toMsg(q_final_tf);
 
-	tf2::Quaternion q_final_tf_velocity = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_velocity_orientation));
+	tf2::Quaternion q_final_tf_velocity = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_velocities_orientation));
 	geometry_msgs::Quaternion q_final_velocity = tf2::toMsg(q_final_tf_velocity);
 
 	// Return Pose of target position
@@ -205,7 +205,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 	target_pos.position.z = 0;
 	target_pos.orientation = q_final;
 
-	geometry_msgs::Pose target_velocity;
+	geometry_msgs::Vector3 target_velocity;
 	target_pos.position.x = final_x_velocity;
 	target_pos.position.y = final_y_velocity;
 	target_pos.position.z = 0;

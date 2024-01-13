@@ -60,13 +60,13 @@ class AlignActionAxisState {
 			state_pub_.publish(state_msg);
 		}
 
-	private:
+	protected:
 		ros::Publisher enable_pub_;
 		ros::Publisher command_pub_;
 		ros::Publisher state_pub_;
-}
+};
 
-class AlignActionAxisStatePosition : AlignActionAxisState {
+class AlignActionAxisStatePosition : public AlignActionAxisState {
 	public:
 		AlignActionAxisStatePosition(ros::NodeHandle &nh,
 							const std::string &enable_pub_topic,
@@ -92,10 +92,10 @@ class AlignActionAxisStatePosition : AlignActionAxisState {
 			command_msg.data = command;
 			command_pub_.publish(command_msg);
 		}
-}
+};
 
 // These messages are sent as (position, velocity)
-class AlignActionAxisStatePositionVelocity : AlignActionAxisState {
+class AlignActionAxisStatePositionVelocity : public AlignActionAxisState {
 	public:
 		AlignActionAxisStatePositionVelocity(ros::NodeHandle &nh,
 							const std::string &enable_pub_topic,
@@ -126,6 +126,6 @@ class AlignActionAxisStatePositionVelocity : AlignActionAxisState {
 			command_msg.velocity = velocity_command;
 			command_pub_.publish(command_msg);
 		}
-}
+};
 
 #endif

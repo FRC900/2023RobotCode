@@ -108,10 +108,12 @@ class AutoNode {
 		actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action> align_and_place_ac_;
 
 		// path follower and feedback
-		std::map<std::string, nav_msgs::Path> premade_paths_;
+		std::map<std::string, nav_msgs::Path> premade_position_paths_;
+		std::map<std::string, nav_msgs::Path> premade_velocity_paths_;
 		// Inital waypoints used to make the paths, when passed into the path follower allows for more persise control
 		// Can use for things like "start intake after X waypoint or X percent through"
-		std::map<std::string, nav_msgs::Path> premade_waypoints_;
+		std::map<std::string, nav_msgs::Path> premade_position_waypoints_;
+		std::map<std::string, nav_msgs::Path> premade_velocity_waypoints_;
 		// Stores the waypoint that each section of the generated path corresponds to
 		std::map<std::string, std::vector<int>> waypointsIdxs_;
 		int old_waypoint_ = 0;
@@ -278,12 +280,12 @@ class AutoNode {
 		enable_teleop_ = msg->data;
 	}
 
-
 	bool dynamic_path_storage(behavior_actions::DynamicPath::Request &req, behavior_actions::DynamicPath::Response &/*res*/)
 	{
 		ROS_INFO_STREAM("auto_node : addding " << req.path_name << " to premade_paths");
-		premade_paths_[req.path_name] = req.dynamic_path;
-		
+		premade_position_paths_[req.path_name] = req.dynamic_position_path;
+		premade_velocity_paths_[req.path_name] = req.dynamic_velocity_path;
+
 		return true;
 	}
 
@@ -516,7 +518,7 @@ class AutoNode {
 		for (size_t j = 0; j < auto_steps_.size(); j++) {
 			XmlRpc::XmlRpcValue action_data;
 			// If the path was already retrieved, continue
-			if (premade_paths_.find(auto_steps_[j]) != premade_paths_.end()) {
+			if (premade_position_paths_.find(auto_steps_[j]) != premade_position_paths_.end()) {
 				continue;
 			}
 			// If the auto step doesn't exist as a yaml definition, continue
@@ -580,8 +582,10 @@ class AutoNode {
 					waypointsIdx.push_back(point[7]);
 				}
 
-				premade_paths_[auto_steps_[j]] = path_msg;
-				premade_waypoints_[auto_steps_[j]] = nav_msgs::Path();
+				premade_position_paths_[auto_steps_[j]] = path_msg;
+				premade_velocity_paths_[auto_steps_[j]] = path_msg;
+				premade_position_waypoints_[auto_steps_[j]] = nav_msgs::Path();
+				premade_velocity_waypoints_[auto_steps_[j]] = nav_msgs::Path();
 				waypointsIdxs_[auto_steps_[j]] = waypointsIdx;
 				continue;
 			}
@@ -679,8 +683,10 @@ class AutoNode {
 				ROS_ERROR_STREAM("Can't call spline gen service in path_follower_server");
 				return false;
 			}
-			premade_paths_[auto_steps_[j]] = spline_gen_srv.response.path;
-			premade_waypoints_[auto_steps_[j]] = spline_gen_srv.response.waypoints;
+			premade_position_paths_[auto_steps_[j]] = spline_gen_srv.response.path;
+			premade_position_waypoints_[auto_steps_[j]] = spline_gen_srv.response.position_waypoints;
+			premade_velocity_paths_[auto_steps_[j]] = spline_gen_srv.response.path_velocity;
+			premade_velocity_waypoints_[auto_steps_[j]] = spline_gen_srv.response.velocity_waypoints;
 			waypointsIdxs_[auto_steps_[j]] = spline_gen_srv.response.waypointsIdx;
 		}
 		return true;
@@ -728,7 +734,8 @@ class AutoNode {
 	bool resetMaps(std_srvs::Empty::Request &/*req*/,
 				std_srvs::Empty::Response &/*res*/) {
 
-		premade_paths_.clear();
+		premade_position_paths_.clear();
+		premade_velocity_paths_.clear();
 		ROS_INFO_STREAM("premade paths were cleared");
 		return true;
 	}
@@ -1072,11 +1079,13 @@ class AutoNode {
 		while(iteration_value > 0)
 		{
 			path_follower_msgs::PathGoal goal;
-			if (premade_paths_.find(auto_step) == premade_paths_.end()) {
+			if (premade_position_paths_.find(auto_step) == premade_position_paths_.end()) {
 				shutdownNode(ERROR, "Can't find premade path " + auto_step);
 			}
-			goal.path = premade_paths_[auto_step];
-			goal.waypoints = premade_waypoints_[auto_step];
+			goal.position_path = premade_position_paths_[auto_step];
+			goal.position_waypoints = premade_position_waypoints_[auto_step];
+			goal.velocity_path = premade_velocity_paths_[auto_step];
+			goal.velocity_waypoints = premade_velocity_waypoints_[auto_step];
 			goal.waypointsIdx = waypointsIdxs_[auto_step];
 
 			int last_waypoint = -1;
@@ -1285,8 +1294,8 @@ class AutoNode {
 			}
 		}
 		return 0;
-		}
-	};
+	}
+};
 
 
 
