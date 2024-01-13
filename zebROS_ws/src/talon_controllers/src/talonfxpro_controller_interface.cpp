@@ -127,7 +127,7 @@ bool stringToLimitSource(const std::string &str,
     return true;
 }
 
-TalonFXProCIParams::TalonFXProCIParams(TalonFXProCIParams &&other) { 
+TalonFXProCIParams::TalonFXProCIParams(TalonFXProCIParams &&other) noexcept { 
     for (size_t i = 0; i < hardware_interface::talonfxpro::TALON_PIDF_SLOTS; i++)
     {
         kP_[i].exchange(other.kP_[i]);

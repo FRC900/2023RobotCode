@@ -64,8 +64,7 @@ public:
     ~TalonFXProCIParams() = default;
 
     TalonFXProCIParams& operator=(const TalonFXProCIParams &other);
-    TalonFXProCIParams(TalonFXProCIParams &&other) noexcept 
-
+    TalonFXProCIParams(TalonFXProCIParams &&other) noexcept;
 
     bool readJointName(const ros::NodeHandle &n);
     bool readCloseLoopParams(const ros::NodeHandle &n);
