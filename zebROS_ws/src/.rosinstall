@@ -17,34 +17,6 @@
     uri: https://github.com/FRC900/ddynamic_reconfigure
     version: getcurrentvalue_callback
 - git:
-    local-name: geometric_shapes
-    uri: https://github.com/ros-planning/geometric_shapes.git
-    version: noetic-devel
-- git:
-    local-name: moveit
-    uri: https://github.com/ros-planning/moveit.git
-    version: master
-- git:
-    local-name: moveit_msgs
-    uri: https://github.com/ros-planning/moveit_msgs.git
-    version: master
-- git:
-    local-name: moveit_resources
-    uri: https://github.com/ros-planning/moveit_resources.git
-    version: master
-- git:
-    local-name: moveit_tutorials
-    uri: https://github.com/ros-planning/moveit_tutorials.git
-    version: master
-- git:
-    local-name: moveit_visual_tools
-    uri: https://github.com/ros-planning/moveit_visual_tools.git
-    version: master
-- git:
-    local-name: panda_moveit_config
-    uri: https://github.com/ros-planning/panda_moveit_config.git
-    version: noetic-devel
-- git:
     local-name: pid
     uri: https://github.com/FRC900/pid.git
     version: feed_forward
@@ -55,18 +27,10 @@
 - git:
     local-name: ros_controllers
     uri: https://github.com/FRC900/ros_controllers.git
-    version: zebros-devel
+    version: talon_joint_trajectory_controller
 - git:
     local-name: rosserial
     uri: https://github.com/FRC900/FRC900-rosserial
-    version: noetic-devel
-- git:
-    local-name: rviz_visual_tools
-    uri: https://github.com/PickNikRobotics/rviz_visual_tools
-    version: master
-- git:
-    local-name: srdfdom
-    uri: https://github.com/ros-planning/srdfdom
     version: noetic-devel
 - git:
     local-name: stage_ros
@@ -85,33 +49,3 @@
 - git:
     local-name: zed-ros-wrapper
     uri: https://github.com/FRC900/zed-ros-wrapper.git
-- git:
-    local-name: object_recognition_msgs
-    uri: https://github.com/wg-perception/object_recognition_msgs
-- git:
-    local-name: eigen_stl_containers
-    uri: https://github.com/ros/eigen_stl_containers
-- git:
-    local-name: random_numbers
-    uri: https://github.com/ros-planning/random_numbers
-- git:
-    local-name: graph_msgs
-    uri: https://github.com/PickNikRobotics/graph_msgs
-- git:
-    local-name: octomap_msgs
-    uri: https://github.com/OctoMap/octomap_msgs
-- git:
-    local-name: ruckig
-    uri: https://github.com/pantor/ruckig
-- git:
-    local-name: pybind11_catkin
-    uri: https://github.com/wxmerkt/pybind11_catkin
-- git:
-    local-name: ompl
-    uri: https://github.com/ompl/ompl
-- git:
-    local-name: warehouse_ros
-    uri: https://github.com/ros-planning/warehouse_ros
-- git:
-    local-name: eigenpy
-    uri: https://github.com/stack-of-tasks/eigenpy
