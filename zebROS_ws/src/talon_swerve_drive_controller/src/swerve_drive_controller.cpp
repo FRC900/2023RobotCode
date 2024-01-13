@@ -693,21 +693,30 @@ void compOdometry(const ros::Time &time, const ros::Duration &period, const std:
 
 	const Eigen::Matrix2d h = wheel_pos_ * new_wheel_pos;
 	const Eigen::JacobiSVD<Eigen::Matrix2d> svd(h, Eigen::ComputeFullU | Eigen::ComputeFullV);
-	Eigen::Matrix2d rot = svd.matrixV() * svd.matrixU().transpose();
-	if (rot.determinant() < 0)
-		rot.col(1) *= -1;
+	Eigen::Matrix2d old_rot = svd.matrixV() * svd.matrixU().transpose();
+	if (old_rot.determinant() < 0)
+		old_rot.col(1) *= -1;
+
+	// Find difference between last IMU yaw and current IMU yaw
+	double yaw = latency_compensation_state_->getLatencyCompensatedValue("pigeon2", time);
+	if (initial_yaw_ == 0) {
+		initial_yaw_ = yaw;
+	}
+	const double delta_yaw = yaw - initial_yaw_;
+
+	// Set rotation matrix to the rotation measured using the IMU
+	Eigen::Matrix2d rot;
+	rot << cos(delta_yaw), -sin(delta_yaw),
+		   sin(delta_yaw), cos(delta_yaw);
+
+	// Set last IMU yaw to current IMU yaw
+	initial_yaw_ = yaw;
 
 	odom_rigid_transf_.matrix().block(0, 0, 2, 2) = rot;
 	odom_rigid_transf_.translation() = rot * neg_wheel_centroid_ + new_wheel_centroid.transpose();
+
 	// add motion for this timestep to the overall odom_to_base transform
 	odom_to_base_ = odom_to_base_ * odom_rigid_transf_;
-
-	double yaw = latency_compensation_state_->getLatencyCompensatedValue("pigeon2", time);
-	double offset_yaw = yaw - initial_yaw_;
-
-	// update yaw based on IMU??
-	odom_to_base_(1, 0) = sin(offset_yaw);
-	odom_to_base_(0, 0) = cos(offset_yaw);
 
 	const double odom_x = odom_to_base_.translation().x();
 	const double odom_y = odom_to_base_.translation().y();
@@ -1031,7 +1040,7 @@ std::array<Eigen::Vector2d, WHEELCOUNT> speeds_angles_;
 
 ros::Subscriber sub_imu_;
 
-double initial_yaw_;
+double initial_yaw_ = 0;
 
 // Attempt to limit speed of wheels which are pointing further from
 // their target angle. Should help to reduce the robot being pulled
