@@ -175,6 +175,7 @@ void moveDirection(int x, int y, int z) {
 	cmd_vel.angular.y = 0.0;
 	cmd_vel.angular.z = 0.0;
 
+	robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), false);
 	JoystickRobotVel.publish(cmd_vel);
 }
 
@@ -187,6 +188,7 @@ void sendDirection() {
 	cmd_vel.angular.y = 0.0;
 	cmd_vel.angular.z = 0.0;
 
+	robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), false);
 	JoystickRobotVel.publish(cmd_vel);
 }
 
