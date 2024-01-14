@@ -40,7 +40,6 @@
 		   Modified to allow multiple RobotHWSim instaces, each with their own controller manager
 */
 
-#include <optional>
 // ROS
 #include <ros/ros.h>
 #include <pluginlib/class_loader.h>
