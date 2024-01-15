@@ -8,6 +8,7 @@
 #include "sensor_msgs/JointState.h"
 #endif
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Float64.h"
 #include <string>
 #include <cmath>
 
@@ -92,6 +93,7 @@ ros::ServiceClient SwerveOdomZeroSrv;
 ros::ServiceClient FourbarRezeroSrv;
 
 ros::Publisher auto_mode_select_pub;
+ros::Publisher intake_test_pub;
 
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
@@ -986,9 +988,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
-					behavior_actions::Intaking2023Goal goal;
-					goal.piece = goal.VERTICAL_CONE;
-					intaking_ac->sendGoal(goal);
+					std_msgs::Float64 msg;
+					msg.data = 6.0; // hopefully volts
+					ROS_INFO_STREAM("Starting 9000 intake at 50percent !=======");
+					intake_test_pub.publish(msg);
 				}
 
 				joystick1_right_trigger_pressed = true;
@@ -997,7 +1000,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_right_trigger_pressed)
 				{
-					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					std_msgs::Float64 msg;
+					msg.data = 0.0;
+					ROS_INFO_STREAM("Stopping 9000 intake!=======");
+					intake_test_pub.publish(msg);
 				}
 
 				joystick1_right_trigger_pressed = false;
@@ -1394,6 +1400,7 @@ int main(int argc, char **argv)
 	ros::ServiceServer robot_orient_service = n.advertiseService("robot_orient", orientCallback);
 
 	auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
+	intake_test_pub = n.advertise<std_msgs::Float64>("/frcrobot_jetson/frisbee_voltage_controller/command", 1, true);
 
 	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
 	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);

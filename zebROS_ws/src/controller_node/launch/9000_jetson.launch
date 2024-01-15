@@ -36,8 +36,7 @@
 			 talonfxpro_config_controller
 			 latency_compensation_state_controller
 			 pigeon2_state_controller
-			 orchestra_controller
-			 orchestra_state_controller
+			 intake_voltage_controller
 			 pigeon2_imu_state_controller
 			 swerve_drive_controller
 			 swerve_drive_state_controller
@@ -46,6 +45,8 @@
 			 swerve_angle_phoenix6_controller
 			 talon_state_controller_jetson
 			 talon_config_controller
+			 orchestra_controller
+			 orchestra_state_controller
 			-->
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />
@@ -73,7 +74,7 @@
 	<!-- TODO split teleop into driving and buttons so we can reuse driving? -->
 	<include file="$(find controller_node)/launch/teleop.launch">
 		<arg name="year" value="2023" />
-	</include>
+	</include>P
 
 	<include file="$(find controller_node)/launch/hold_position.launch"/>
 	<include file="$(find controller_node)/launch/path_follower.launch"/>
