@@ -4,7 +4,7 @@
   <arg name="detector_type" default="Mit"/>
   <arg name="start_time" default="0.0"/>
   <arg name="duration" default="-1.0"/>
-  <arg name="images_are_compressed" default="true"/>
+  <arg name="images_are_compressed" default="false"/>
   <arg name="use_approximate_sync" default="false"/>
   <arg name="annotate_images" default="true"/>
   <!-- for list of valid tag families, see apriltag_detector.h
@@ -16,10 +16,10 @@
   <node pkg="tagslam" type="sync_and_detect_node" name="sync_and_detect"
     output="$(arg output)" clear_params="True">
     <rosparam param="image_topics">
-      ["/pg_17274483/image_raw/compressed"]
+      ["/zed_objdetect/left/image_rect_color"]
     </rosparam>
     <rosparam param="image_output_topics">
-      ["/annotated_images/compressed"]
+      ["/annotated_images/raw"]
     </rosparam>
     <rosparam param="tag_topics"> ["/detector/tags"]</rosparam>
     <!-- To pass through odometry messages, add them like so:
