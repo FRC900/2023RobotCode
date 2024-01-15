@@ -500,7 +500,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 			// the drive base is currently configured.
 			for (size_t i = 0; i < WHEELCOUNT; ++i)
 			{
-				ROS_INFO_STREAM("PARKING CONFIG TIME DELAY stopping wheels!!!!!!!!!!!!!!!!======================================");
+				// ROS_INFO_STREAM("PARKING CONFIG TIME DELAY stopping wheels!!!!!!!!!!!!!!!!======================================");
 				speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_PercentOutput);
 				speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
 				speed_joints_[i].setDemand1Value(0);
@@ -572,7 +572,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 			}
 			else
 			{
-				ROS_INFO_STREAM("Percent out drive mode stopping wheels!!!!!!!!!!!!!!!!======================================");
+				// ROS_INFO_STREAM("Percent out drive mode stopping wheels!!!!!!!!!!!!!!!!======================================");
 				// Debugging mode - used for robot characterization by sweeping
 				// from 0-100% output and measuring response
 				speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_PercentOutput);
@@ -590,7 +590,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 		// position?
 		for (size_t i = 0; i < WHEELCOUNT; ++i)
 		{
-			ROS_INFO_STREAM("Coming out of parking stopping wheels!!!!!!!!!!!!!!!!======================================");
+			// ROS_INFO_STREAM("Coming out of parking stopping wheels!!!!!!!!!!!!!!!!======================================");
 			speed_joints_[i].setCommand(0);
 			speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_PercentOutput);
 			speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
@@ -797,7 +797,7 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 	const std::array<double, WHEELCOUNT> park_angles = swerveC_->parkingAngles(steer_angles);
 	for (size_t i = 0; i < WHEELCOUNT; ++i)
 	{
-		ROS_INFO_STREAM("Braking wheels!!!!!!!!!!!!!!!!======================================");
+		// ROS_INFO_STREAM("Braking wheels!!!!!!!!!!!!!!!!======================================");
 		speed_joints_[i].setMode(hardware_interface::TalonMode::TalonMode_PercentOutput);
 		speed_joints_[i].setCommand(0.0);
 		speed_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
