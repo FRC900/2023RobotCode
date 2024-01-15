@@ -139,18 +139,6 @@ TalonFXProCIParams::TalonFXProCIParams(TalonFXProCIParams &&other) noexcept {
         kG_[i].exchange(other.kG_[i]);
         gravity_type_[i].exchange(other.gravity_type_[i]);
     }
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kP_{0.0, 0.0, 0.0};
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kI_{0.0, 0.0, 0.0};
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kD_{0.0, 0.0, 0.0};
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kS_{0.0, 0.0, 0.0};
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kV_{0.0, 0.0, 0.0};
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kA_{0.0, 0.0, 0.0};
-    std::array<std::atomic<double>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> kG_{0.0, 0.0, 0.0};
-    std::array<std::atomic<hardware_interface::talonfxpro::GravityType>, hardware_interface::talonfxpro::TALON_PIDF_SLOTS> gravity_type_{
-        hardware_interface::talonfxpro::GravityType::Elevator_Static,
-        hardware_interface::talonfxpro::GravityType::Elevator_Static,
-        hardware_interface::talonfxpro::GravityType::Elevator_Static,
-        };
 
     invert_.exchange(other.invert_);
     neutral_mode_.exchange(other.neutral_mode_);
