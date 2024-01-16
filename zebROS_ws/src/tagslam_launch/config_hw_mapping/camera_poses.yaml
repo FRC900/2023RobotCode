@@ -1,4 +1,4 @@
-cam_sim0:
+cam0:
   pose:
     position:
       x: 0
