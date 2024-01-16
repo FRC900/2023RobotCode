@@ -82,3 +82,20 @@ objdet_target ( pose [ 11.220196 4.105148 1.3208 180 ] fiducial_return 113 color
 objdet_target ( pose [ 5.320792 4.105148 1.3208 0 ] fiducial_return 114 color "blue")
 objdet_target ( pose [ 4.641342 4.49834 1.3208 120 ] fiducial_return 115 color "blue")
 objdet_target ( pose [ 4.641342 3.713226 1.3208 240 ] fiducial_return 116 color "blue")
+
+# notes:
+
+# blue wing
+objdet_target ( pose [ 2.882 4.112 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 2.882 5.560 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 2.882 7.008 1.0000 0 ] fiducial_return 1 color "orange")
+# center (chicken)
+objdet_target ( pose [ 8.256 0.759 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 8.256 2.436 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 8.256 4.112 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 8.256 5.788 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 8.256 7.465 1.0000 0 ] fiducial_return 1 color "orange")
+# red wing
+objdet_target ( pose [ 13.631 4.112 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 13.631 5.560 1.0000 0 ] fiducial_return 1 color "orange")
+objdet_target ( pose [ 13.631 7.008 1.0000 0 ] fiducial_return 1 color "orange")
