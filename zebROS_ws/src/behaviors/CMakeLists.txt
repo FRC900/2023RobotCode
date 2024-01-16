@@ -235,11 +235,9 @@ target_link_libraries(2022_ejecting_server_node ${catkin_LIBRARIES})
 add_dependencies(2022_ejecting_server_node ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif()
 
-if (0)
 add_executable(game_piece_path_server src/game_piece_path_gen.cpp)
 target_link_libraries(game_piece_path_server ${catkin_LIBRARIES})
 add_dependencies(game_piece_path_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-endif()
 
 # 2020 actionlib servers
 if (0)

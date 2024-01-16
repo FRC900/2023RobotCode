@@ -9,6 +9,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 
+// https://github.com/FRC900/2020Offseason/pull/53
+
 using Point = std::array<double, 3>;
 
 // Create service clients
@@ -97,6 +99,7 @@ double pointToLineSegmentDistance(const Line &l,
 	const std::array<double, 2> v{l.x1, l.y1};
 	const std::array<double, 2> w{l.x2, l.y2};
 	const auto l2 = distSquared(v, w);
+	// https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 	if (l2 == static_cast<double>(0.0))
 	{
 		return sqrt(distSquared(px, py, v));   // v == w case, distance to single point
