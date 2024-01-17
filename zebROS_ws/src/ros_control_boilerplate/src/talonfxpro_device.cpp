@@ -448,7 +448,6 @@ void TalonFXProDevice::read_thread(std::unique_ptr<Tracer> tracer,
             (*control_mode == ctre::phoenix6::signals::ControlModeValue::PositionVoltageFOC) ||
             (*control_mode == ctre::phoenix6::signals::ControlModeValue::VelocityVoltageFOC) ||
             (*control_mode == ctre::phoenix6::signals::ControlModeValue::MotionMagicVoltageFOC) ||
-            (*control_mode == ctre::phoenix6::signals::ControlModeValue::MotionMagicExpoVoltageFOC) ||
             (*control_mode == ctre::phoenix6::signals::ControlModeValue::VelocityTorqueCurrentFOC) ||
             (*control_mode == ctre::phoenix6::signals::ControlModeValue::MotionMagicTorqueCurrentFOC) ||
             (*control_mode == ctre::phoenix6::signals::ControlModeValue::MotionMagicVelocityDutyCycle) ||
