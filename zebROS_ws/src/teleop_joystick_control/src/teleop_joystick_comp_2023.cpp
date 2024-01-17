@@ -774,9 +774,10 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				JoystickRobotVel.publish(cmd_vel);
 				sendRobotZero = true;
 			}
-			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
+			// 0.002 is slightly more than the 0.001 we set for coast mode
+			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (fabs(cmd_vel.angular.z) >= 0.002))
 			{
-				//ROS_INFO_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
+				ROS_WARN_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z << " " << original_angular_z);
 				JoystickRobotVel.publish(cmd_vel);
 				sendRobotZero = false;
 				no_driver_input = false;

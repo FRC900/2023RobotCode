@@ -14,8 +14,7 @@
     <param name="family" type="int" value="0"/> <!-- 0, 0 Corresponds to MIT detector, 36h11 tags -->
     <param name="type"   type="int" value="0"/>
     <param name="black_border" type="int" value="$(arg black_border)"/>
-    <param name="image_transport" value="compressed"/>
-    <remap from="~image/compressed" to="$(arg camera_name)/$(arg image_topic)"/> <!-- check this -->
+    <param name="image_transport" value="raw"/>
+    <!-- <remap from="image" to="$(arg camera_name)/$(arg image_topic)"/> --> <!-- check this -->
   </node>
 </launch>
-
