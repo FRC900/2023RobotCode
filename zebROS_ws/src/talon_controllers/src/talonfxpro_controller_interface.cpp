@@ -1139,7 +1139,7 @@ bool TalonFXProControllerInterface::init(hardware_interface::talonfxpro::TalonFX
                                                         [this](const int differential_sensor_source_int) { this->setDifferentialSensorSource(static_cast<hardware_interface::talonfxpro::DifferentialSensorSource>(differential_sensor_source_int), false);},
                                                         "Differential sensor source", 
                                                         std::map<std::string, int>{
-                                                            {"Diabled", static_cast<int>(hardware_interface::talonfxpro::DifferentialSensorSource::Disabled)},
+                                                            {"Disabled", static_cast<int>(hardware_interface::talonfxpro::DifferentialSensorSource::Disabled)},
                                                             {"RemoteTalonFX_Diff", static_cast<int>(hardware_interface::talonfxpro::DifferentialSensorSource::RemoteTalonFX_Diff)},
                                                             {"RemotePigeon2_Yaw", static_cast<int>(hardware_interface::talonfxpro::DifferentialSensorSource::RemotePigeon2_Yaw)},
                                                             {"RemotePigeon2_Pitch", static_cast<int>(hardware_interface::talonfxpro::DifferentialSensorSource::RemotePigeon2_Pitch)},
@@ -1657,6 +1657,9 @@ void TalonFXProControllerInterface::setControlMode(const hardware_interface::tal
         case hardware_interface::talonfxpro::TalonMode::MotionMagicDutyCycle:
         case hardware_interface::talonfxpro::TalonMode::MotionMagicVoltage:
         case hardware_interface::talonfxpro::TalonMode::MotionMagicTorqueCurrentFOC:
+        case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoDutyCycle:
+        case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoVoltage:
+        case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoTorqueCurrentFOC:
             talon_->setControlOutput(0);
             talon_->setControlPosition(command);
             talon_->setControlVelocity(0);
