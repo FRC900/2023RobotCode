@@ -279,7 +279,6 @@ bool init(hardware_interface::RobotHW *hw,
 	}
 
 	sub_command_ = controller_nh.subscribe("cmd_vel", 1, &TalonSwerveDriveController::cmdVelCallback, this);
-	sub_imu_ = controller_nh.subscribe("/imu/zeroed_imu", 1, &TalonSwerveDriveController::imuCallback, this);
 	// Publish limited velocity:
 	bool publish_cmd;
 	controller_nh.param("publish_cmd", publish_cmd, true);
@@ -813,20 +812,6 @@ void brake(const std::array<double, WHEELCOUNT> &steer_angles, const ros::Time &
 	brake_last_ = time.toSec();
 }
 
-double getYaw(const geometry_msgs::Quaternion &o) {
-    tf2::Quaternion q;
-    tf2::fromMsg(o, q);
-    tf2::Matrix3x3 m(q);
-    double r, p, y;
-    m.getRPY(r, p, y);
-    return y;
-}
-
-void imuCallback(const sensor_msgs::ImuConstPtr &imu)
-{
-	// yaw_ = getYaw(imu->orientation);
-}
-
 void cmdVelCallback(const geometry_msgs::Twist &command)
 {
 	if (this->isRunning())
@@ -1041,8 +1026,6 @@ double time_before_brake_{0};
 double parking_config_time_delay_{0.1};
 double drive_speed_time_delay_{0.1};
 std::array<Eigen::Vector2d, WHEELCOUNT> speeds_angles_;
-
-ros::Subscriber sub_imu_;
 
 double initial_yaw_ = 0;
 
