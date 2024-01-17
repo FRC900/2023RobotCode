@@ -487,7 +487,7 @@ void update(const ros::Time &time, const ros::Duration &period)
 			// to init or starting or something
 			steering_joints_[i].setDemand1Type(hardware_interface::DemandType::DemandType_Neutral);
 			steering_joints_[i].setDemand1Value(0);
-			}
+		}
 		speed_joints_[i].setPIDFSlot(0);
 	}
 
