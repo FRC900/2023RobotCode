@@ -127,7 +127,7 @@
 	<!-- <include file="$(find behaviors)/launch/2023_align_to_grid.launch">
 	</include> -->
 
-	<include file="$(find behaviors)/launch/align_to_object.launch">
+	<include file="$(find behaviors)/launch/drive_to_object.launch">
 	</include>
 
 	<node name="fake_odom_publisher" pkg="behaviors" type="publish_fake_odom.py"/>

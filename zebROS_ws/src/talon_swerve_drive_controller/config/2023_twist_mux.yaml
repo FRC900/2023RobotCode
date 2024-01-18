@@ -42,7 +42,8 @@ topics:
 -
   name    : align_cmd_vel
   topic   : /align/cmd_vel
-  timeout : 0.2
-  priority: 129
+  timeout : 0.05
+  priority: 180 # so this kind of has to be higher than teleop, otherwise there is a delay when the driver
+  # releases the joystick and this node waits for the teleop timeout to expire to yield control
 
 locks: []

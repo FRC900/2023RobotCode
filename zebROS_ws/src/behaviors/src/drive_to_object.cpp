@@ -133,7 +133,7 @@ bool operator>(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs)
     return distance(lhs) > distance(rhs);
 }
 
-class AlignToObjectActionServer
+class DriveToObjectActionServer
 {
 protected:
 
@@ -177,26 +177,26 @@ protected:
 
 public:
 
-  AlignToObjectActionServer(std::string name) :
-    as_(nh_, name, boost::bind(&AlignToObjectActionServer::executeCB, this, _1), false),
+  DriveToObjectActionServer(std::string name) :
+    as_(nh_, name, boost::bind(&DriveToObjectActionServer::executeCB, this, _1), false),
     action_name_(name),
-    sub_(nh_.subscribe<field_obj::Detection>("/tf_object_detection/object_detection_world", 1, &AlignToObjectActionServer::callback, this)),
+    sub_(nh_.subscribe<field_obj::Detection>("/tf_object_detection/object_detection_world", 1, &DriveToObjectActionServer::callback, this)),
     ac_hold_position_("/hold_position/hold_position_server", true),
     tf_listener_(tf_buffer_),
     orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1)),
-    control_effort_sub_(nh_.subscribe<std_msgs::Float64>("/teleop/orient_strafing/control_effort", 1, &AlignToObjectActionServer::controlEffortCB, this)),
-    cmd_vel_sub_(nh_.subscribe<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, &AlignToObjectActionServer::cmdVelCb, this))
+    control_effort_sub_(nh_.subscribe<std_msgs::Float64>("/teleop/orient_strafing/control_effort", 1, &DriveToObjectActionServer::controlEffortCB, this)),
+    cmd_vel_sub_(nh_.subscribe<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, &DriveToObjectActionServer::cmdVelCb, this))
   {
     const std::map<std::string, std::string> service_connection_header{ {"tcp_nodelay", "1"} };
 
-    imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 1, &AlignToObjectActionServer::imuCb, this);
+    imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 1, &DriveToObjectActionServer::imuCb, this);
     cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/align/cmd_vel", 1, false);
     x_effort_sub_ = nh_.subscribe<std_msgs::Float64>("x_position_pid/x_command", 1, [&](const std_msgs::Float64ConstPtr &msg) {x_eff_ = msg->data;});
 
     AlignActionAxisConfig x_axis("x", "x_position_pid/pid_enable", "x_position_pid/x_cmd_pub", "x_position_pid/x_state_pub", "x_position_pid/pid_debug", "x_timeout_param", "x_error_threshold_param");
     if (!addAxis(x_axis))
     {
-      ROS_ERROR_STREAM("Error adding x_axis to align_to_object.");
+      ROS_ERROR_STREAM("Error adding x_axis to drive_to_object.");
       return ;
     }
 
@@ -217,7 +217,7 @@ public:
     as_.start();
   }
 
-  ~AlignToObjectActionServer(void)
+  ~DriveToObjectActionServer(void)
   {
   }
 
@@ -324,7 +324,7 @@ public:
         ros::spinOnce(); // grab latest callback data
         if (as_.isPreemptRequested() || !ros::ok())
         {
-            ROS_ERROR_STREAM("align_to_object : Preempted");
+            ROS_ERROR_STREAM("drive_to_object : Preempted");
             as_.setPreempted();
             x_axis.setEnable(false);
             return;
@@ -332,7 +332,7 @@ public:
 
         closestObject_ = findClosestObject(latest_, goal->id);
         if (closestObject_ == std::nullopt) {
-            ROS_ERROR_STREAM("align_to_object : Could not find object for this frame! :(");
+            ROS_ERROR_STREAM("drive_to_object : Could not find object for this frame! :(");
             missed_frames++;
             if (missed_frames >= missed_frames_before_exit_) {
               ROS_ERROR_STREAM("Missed more than " << missed_frames_before_exit_ << " frames! Aborting");
@@ -407,9 +407,9 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "align_to_object");
+  ros::init(argc, argv, "drive_to_object");
 
-  AlignToObjectActionServer alignToObject("align_to_object");
+  DriveToObjectActionServer alignToObject("drive_to_object");
   ros::spin();
 
   return 0;
