@@ -3,11 +3,11 @@ topics:
   name    : combine orient strafing
   topic   : /teleop/orient_strafing/swerve_drive_controller/cmd_vel
   timeout : 0.2
-  priority: 200
+  priority: 200 # is there a reason that this has higher priority than teleop?
 -
   name    : teleop joystick comp
   topic   : /teleop/swerve_drive_controller/cmd_vel
-  timeout : 0.2
+  timeout : 0.05
   priority: 175
 -
   name    : placing_cmd_vel
@@ -43,7 +43,6 @@ topics:
   name    : align_cmd_vel
   topic   : /align/cmd_vel
   timeout : 0.2
-  priority: 180 # so this kind of has to be higher than teleop, otherwise there is a delay when the driver
-  # releases the joystick and this node waits for the teleop timeout to expire to yield control
+  priority: 129
 
 locks: []
