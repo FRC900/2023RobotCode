@@ -2,7 +2,7 @@
 <launch>
     <group ns="align_to_object">
 
-        <node name="align_to_object" pkg="behaviors" type="drive_to_object_node" output="screen"/>
+        <node name="align_to_object" pkg="behaviors" type="align_to_object_node" output="screen"/>
 
         <node name="x_position_pid" pkg="pid" type="controller" >
             <param name="node_name" value="x_position_pid" />

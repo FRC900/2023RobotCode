@@ -1,4 +1,3 @@
-
 // This node autonomously targets and drives to a configurable distance away from an object detected using vision.
 // It continuously checks where the object is to update its target.
 #include "ros/ros.h"
@@ -17,6 +16,7 @@
 #include "std_msgs/Bool.h"
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/Twist.h"
+#include "geometry_msgs/TwistStamped.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "tf2_ros/transform_listener.h"
 #include <std_srvs/Empty.h>
@@ -157,6 +157,7 @@ protected:
 
   double valid_frames_config_{4};
   double missed_frames_before_exit_{20};
+  double velocity_ramp_time_{0.5}; // time to transition from current command velocity to full PID control
 
   std::map<std::string, AlignActionAxisState> axis_states_;
 
@@ -171,6 +172,9 @@ protected:
   ros::Publisher orientation_command_pub_;
   ros::Subscriber control_effort_sub_;
 
+  ros::Subscriber cmd_vel_sub_;
+  geometry_msgs::TwistStamped latest_cmd_vel_;
+
 public:
 
   AlignToObjectActionServer(std::string name) :
@@ -180,7 +184,8 @@ public:
     ac_hold_position_("/hold_position/hold_position_server", true),
     tf_listener_(tf_buffer_),
     orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1)),
-    control_effort_sub_(nh_.subscribe<std_msgs::Float64>("/teleop/orient_strafing/control_effort", 1, &AlignToObjectActionServer::controlEffortCB, this))
+    control_effort_sub_(nh_.subscribe<std_msgs::Float64>("/teleop/orient_strafing/control_effort", 1, &AlignToObjectActionServer::controlEffortCB, this)),
+    cmd_vel_sub_(nh_.subscribe<geometry_msgs::TwistStamped>("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, &AlignToObjectActionServer::cmdVelCb, this))
   {
     const std::map<std::string, std::string> service_connection_header{ {"tcp_nodelay", "1"} };
 
@@ -191,18 +196,33 @@ public:
     AlignActionAxisConfig x_axis("x", "x_position_pid/pid_enable", "x_position_pid/x_cmd_pub", "x_position_pid/x_state_pub", "x_position_pid/pid_debug", "x_timeout_param", "x_error_threshold_param");
     if (!addAxis(x_axis))
     {
-      ROS_ERROR_STREAM("Error adding x_axis to drive_to_object.");
+      ROS_ERROR_STREAM("Error adding x_axis to align_to_object.");
       return ;
     }
 
     nh_.getParam("min_valid_frames", valid_frames_config_);
+    nh_.getParam("velocity_ramp_time", velocity_ramp_time_);
     nh_.getParam("missed_frames_allowed", missed_frames_before_exit_);
+
+    // geometry_msgs::Twist t1;
+    // t1.linear.x = 1.0;
+    // geometry_msgs::Twist t2;
+    // t2.linear.x = -0.1;
+    // t2.linear.y = 1.0;
+
+    // std::vector<std::pair<geometry_msgs::Twist, double>> pairs = {{t1, 0.8}, {t2, 0.2}};
+
+    // ROS_INFO_STREAM(weightedAverageCmdVel(pairs));
 
     as_.start();
   }
 
   ~AlignToObjectActionServer(void)
   {
+  }
+
+  void cmdVelCb(const geometry_msgs::TwistStampedConstPtr &msg) {
+    latest_cmd_vel_ = *msg;
   }
 
   void controlEffortCB(const std_msgs::Float64ConstPtr& msg) {
@@ -243,6 +263,26 @@ public:
     return closestObject;
   }
 
+  geometry_msgs::Twist weightedAverageCmdVel(const std::vector<std::pair<geometry_msgs::Twist, double>> &entries) {
+    // takes a vector of <cmd_vel, weight> pairs and computes their weighted average
+    // weights must all add to one
+    std::vector<geometry_msgs::Twist> weightedTwists;
+    std::transform(entries.begin(), entries.end(), std::back_inserter(weightedTwists), [](std::pair<geometry_msgs::Twist, double> entry){
+      geometry_msgs::Twist t = entry.first;
+      t.linear.x *= entry.second;
+      t.linear.y *= entry.second;
+      t.angular.z *= entry.second;
+      return t;
+    });
+    geometry_msgs::Twist finalTwist;
+    std::for_each(weightedTwists.begin(), weightedTwists.end(), [&](geometry_msgs::Twist t){
+      finalTwist.linear.x += t.linear.x;
+      finalTwist.linear.y += t.linear.y;
+      finalTwist.angular.z += t.angular.z;
+    });
+    return finalTwist;
+  }
+
   void executeCB(const behavior_actions::DriveToObjectGoalConstPtr &goal)
   {
     // just to make sure to go through the loop once
@@ -276,11 +316,15 @@ public:
     orientation_command_pub_.publish(msg);
     uint8_t valid_frames = 0;
 
+    geometry_msgs::Twist initial_cmd_vel = latest_cmd_vel_.twist;
+    ROS_INFO_STREAM("Initial cmd vel is " << initial_cmd_vel);
+    ros::Time start = ros::Time::now();
+
     while (abs(x_error_) > goal->tolerance || valid_frames < valid_frames_config_) {
         ros::spinOnce(); // grab latest callback data
         if (as_.isPreemptRequested() || !ros::ok())
         {
-            ROS_ERROR_STREAM("drive_to_object : Preempted");
+            ROS_ERROR_STREAM("align_to_object : Preempted");
             as_.setPreempted();
             x_axis.setEnable(false);
             return;
@@ -288,7 +332,7 @@ public:
 
         closestObject_ = findClosestObject(latest_, goal->id);
         if (closestObject_ == std::nullopt) {
-            ROS_ERROR_STREAM("drive_to_object : Could not find object for this frame! :(");
+            ROS_ERROR_STREAM("align_to_object : Could not find object for this frame! :(");
             missed_frames++;
             if (missed_frames >= missed_frames_before_exit_) {
               ROS_ERROR_STREAM("Missed more than " << missed_frames_before_exit_ << " frames! Aborting");
@@ -313,7 +357,6 @@ public:
         point.point = closestObject.location;
         point.header = latest_.header;
         geometry_msgs::PointStamped point_out;
-        ROS_INFO_STREAM("Latest header before base_link = " << latest_.header);
         // no need for x to be field relative so get the x value before the transform to map
         tf_buffer_.transform(point, point_out, "base_link", ros::Duration(0.1));
         objectLocation.x = point_out.point.x;
@@ -326,19 +369,26 @@ public:
         x_error_ = fabs(goal->distance_away - objectLocation.x);
         angle_error_ = fabs(atan2(closestObject.location.y, closestObject.location.x));
 
-        ROS_INFO_STREAM("x tag = " << objectLocation.x << ", commanded x = " << goal->distance_away << ", effort = " << x_eff_);
-
         // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
         // could try to do the math, but i'm not sure how we'd calculate that.
         // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)
         // seems like the correct way to do it is just based on how far we've turned since the last vision update:
 
-        geometry_msgs::Twist t;
+        geometry_msgs::Twist pid_twist;
         // t.linear.x = x_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::cos(orient_effort_);
         // t.linear.y = y_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::sin(orient_effort_);
-        t.linear.x = x_eff_ * cos(field_relative_object_angle - latest_yaw_);
-				t.linear.y = x_eff_ * sin(field_relative_object_angle - latest_yaw_);
-        t.angular.z = orient_effort_;
+        pid_twist.linear.x = x_eff_ * cos(field_relative_object_angle - latest_yaw_);
+				pid_twist.linear.y = x_eff_ * sin(field_relative_object_angle - latest_yaw_);
+        pid_twist.angular.z = orient_effort_;
+
+        double timeDelta = (ros::Time::now() - start).toSec();
+        double initialVelocityInfluence = timeDelta > velocity_ramp_time_ ? 0.0 : ((velocity_ramp_time_ - timeDelta) / velocity_ramp_time_);
+
+        std::vector<std::pair<geometry_msgs::Twist, double>> pairs;
+        pairs.push_back({pid_twist, 1.0 - initialVelocityInfluence});
+        pairs.push_back({initial_cmd_vel, initialVelocityInfluence});
+        geometry_msgs::Twist t = weightedAverageCmdVel(pairs);
+
         cmd_vel_pub_.publish(t);
         feedback_.x_error = x_error_;
         feedback_.angle_error = angle_error_;
@@ -347,7 +397,6 @@ public:
         }
         as_.publishFeedback(feedback_);
         r.sleep();
-        ROS_INFO_STREAM("error = " << x_error_);
     }
     x_axis.setEnable(false);
     result_.success = true;
@@ -358,9 +407,9 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "align_to_grid_closed_loop");
+  ros::init(argc, argv, "align_to_object");
 
-  AlignToObjectActionServer alignToGrid("align_to_grid_closed_loop");
+  AlignToObjectActionServer alignToObject("align_to_object");
   ros::spin();
 
   return 0;
