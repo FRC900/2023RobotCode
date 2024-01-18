@@ -23,7 +23,7 @@ rplidar_ros
 sick_tim
 stage_ros
 steered_wheel_base_controller
-tagslam*
+tagslam*/
 !tagslam_launch
 teleop_twist_joy
 teraranger
