@@ -9,5 +9,5 @@ cam0:
   resolution: [1280, 720]
   rostopic: /annotated_images/raw
   tagtopic: /detector/tags
-  rig_body: rig
+  rig_body: frc_robot
 

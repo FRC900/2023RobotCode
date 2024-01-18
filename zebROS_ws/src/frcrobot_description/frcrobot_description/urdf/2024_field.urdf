@@ -1,0 +1,22 @@
+
+<robot name="field">
+    
+    <link name="base_link"></link>
+    <joint name="base_link_to_base" type="fixed">
+    <parent link="base_link"/>
+    <child link="central_chassis" />
+    <origin rpy="0.0 0 0" xyz="0 0 0"/>
+    </joint>
+    <link name="central_chassis">
+    <visual>
+    <origin xyz="8.2594196 4.1119552 0" rpy="0 -0 3.1415" />
+    <geometry>
+    <mesh filename="package://frcrobot_description/meshes/Crescendo_Field.stl"/>
+    </geometry>
+    <material name="central_chassis_material">
+    <color rgba="0.59658581071440286436 0.62025664106601541281 0.63761838421033945057 1.0"/>
+    </material>
+    </visual>
+    </link>
+</robot>
+    
