@@ -153,7 +153,6 @@ protected:
   double orient_effort_{0};
 
   double x_error_{0};
-  double y_error_{0};
   double angle_error_{0};
 
   double valid_frames_config_{4};
@@ -188,19 +187,12 @@ public:
     imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 1, &AlignToObjectActionServer::imuCb, this);
     cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/align/cmd_vel", 1, false);
     x_effort_sub_ = nh_.subscribe<std_msgs::Float64>("x_position_pid/x_command", 1, [&](const std_msgs::Float64ConstPtr &msg) {x_eff_ = msg->data;});
-    y_effort_sub_ = nh_.subscribe<std_msgs::Float64>("y_position_pid/y_command", 1, [&](const std_msgs::Float64ConstPtr &msg) {y_eff_ = msg->data;});
 
     AlignActionAxisConfig x_axis("x", "x_position_pid/pid_enable", "x_position_pid/x_cmd_pub", "x_position_pid/x_state_pub", "x_position_pid/pid_debug", "x_timeout_param", "x_error_threshold_param");
-	  AlignActionAxisConfig y_axis("y", "y_position_pid/pid_enable", "y_position_pid/y_cmd_pub", "y_position_pid/y_state_pub", "y_position_pid/pid_debug", "y_timeout_param", "y_error_threshold_param");
     if (!addAxis(x_axis))
     {
       ROS_ERROR_STREAM("Error adding x_axis to drive_to_object.");
       return ;
-    }
-    if (!addAxis(y_axis))
-    {
-      ROS_ERROR_STREAM("Error adding y_axis to drive_to_object.");
-      return;
     }
 
     nh_.getParam("min_valid_frames", valid_frames_config_);
@@ -255,17 +247,13 @@ public:
   {
     // just to make sure to go through the loop once
     x_error_ = 100;
-    y_error_ = 100;
     angle_error_ = 100;
-    ros::Rate r = ros::Rate(30);
+    ros::Rate r = ros::Rate(250);
     ROS_INFO_STREAM("Execute callback");
     auto x_axis_it = axis_states_.find("x");
     auto &x_axis = x_axis_it->second;
-    auto y_axis_it = axis_states_.find("y");
-    auto &y_axis = y_axis_it->second;
 
     x_axis.setEnable(true);
-    y_axis.setEnable(true);
     std::optional<field_obj::Object> closestObject_ = findClosestObject(latest_, goal->id);
     field_obj::Object closestObject;
     if (closestObject_ == std::nullopt) {
@@ -278,27 +266,23 @@ public:
       closestObject = closestObject_.value();
     }
 
-    geometry_msgs::Point offset; // should be goal->distance_away m from object in direction of robot
-    // and this is when we get there, so that just means distance_away in the x direction
-    offset.x = goal->distance_away;
-    offset.y = 0;
+    double field_relative_object_angle = latest_yaw_ + atan2(closestObject.location.y, closestObject.location.x);
 
-    geometry_msgs::Point objectLocation = offset; // just to start
+    geometry_msgs::Point objectLocation;
 
     int missed_frames = 0;
     std_msgs::Float64 msg;
-    msg.data = latest_yaw_ + atan2(closestObject.location.y, closestObject.location.x);
+    msg.data = field_relative_object_angle;
     orientation_command_pub_.publish(msg);
     uint8_t valid_frames = 0;
 
-    while (hypot(x_error_, y_error_) > goal->tolerance || valid_frames < valid_frames_config_) {
+    while (abs(x_error_) > goal->tolerance || valid_frames < valid_frames_config_) {
         ros::spinOnce(); // grab latest callback data
         if (as_.isPreemptRequested() || !ros::ok())
         {
             ROS_ERROR_STREAM("drive_to_object : Preempted");
             as_.setPreempted();
             x_axis.setEnable(false);
-            y_axis.setEnable(false);
             return;
         }
 
@@ -309,7 +293,6 @@ public:
             if (missed_frames >= missed_frames_before_exit_) {
               ROS_ERROR_STREAM("Missed more than " << missed_frames_before_exit_ << " frames! Aborting");
               x_axis.setEnable(false);
-              y_axis.setEnable(false);
               as_.setPreempted();
               return;
             }
@@ -319,11 +302,11 @@ public:
         else {
           closestObject = closestObject_.value();
           x_axis.setEnable(true);
-          y_axis.setEnable(true);
           missed_frames = 0;
         }
+        field_relative_object_angle = latest_yaw_ + atan2(closestObject.location.y, closestObject.location.x);
 
-        msg.data = latest_yaw_ + atan2(closestObject.location.y, closestObject.location.x);
+        msg.data = field_relative_object_angle;
         orientation_command_pub_.publish(msg);
 
         geometry_msgs::PointStamped point;
@@ -336,39 +319,37 @@ public:
         objectLocation.x = point_out.point.x;
         objectLocation.y = point_out.point.y;
 
-        ROS_INFO_STREAM("Offset y = " << offset.y);
-
         x_axis.setState(-objectLocation.x);
-        y_axis.setState(-objectLocation.y);
 
-        x_axis.setCommand(-offset.x);
-        y_axis.setCommand(-offset.y);
+        x_axis.setCommand(-goal->distance_away);
 
-        ROS_INFO_STREAM("Y axis state = " << objectLocation.y << " command = " << offset.y << ", effort = " << y_eff_); 
-
-        x_error_ = fabs(offset.x - objectLocation.x);
-        y_error_ = fabs(offset.y - objectLocation.y);
+        x_error_ = fabs(goal->distance_away - objectLocation.x);
         angle_error_ = fabs(atan2(closestObject.location.y, closestObject.location.x));
 
-        ROS_INFO_STREAM("x tag = " << objectLocation.x << ", commanded x = " << offset.x << ", effort = " << x_eff_);
+        ROS_INFO_STREAM("x tag = " << objectLocation.x << ", commanded x = " << goal->distance_away << ", effort = " << x_eff_);
+
+        // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
+        // could try to do the math, but i'm not sure how we'd calculate that.
+        // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)
+        // seems like the correct way to do it is just based on how far we've turned since the last vision update:
+
         geometry_msgs::Twist t;
-        t.linear.x = x_eff_;
-        t.linear.y = y_eff_;
+        // t.linear.x = x_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::cos(orient_effort_);
+        // t.linear.y = y_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::sin(orient_effort_);
+        t.linear.x = x_eff_ * cos(field_relative_object_angle - latest_yaw_);
+				t.linear.y = x_eff_ * sin(field_relative_object_angle - latest_yaw_);
         t.angular.z = orient_effort_;
         cmd_vel_pub_.publish(t);
         feedback_.x_error = x_error_;
-        feedback_.y_error = y_error_;
         feedback_.angle_error = angle_error_;
-        if (hypot(x_error_, y_error_) <= goal->tolerance && angle_error_ <= goal->tolerance) {
+        if (abs(x_error_) <= goal->tolerance && angle_error_ <= goal->tolerance) {
           valid_frames++;
         }
         as_.publishFeedback(feedback_);
         r.sleep();
-        ROS_INFO_STREAM("offset = " << offset.x << " " << offset.y << " " << offset.z);
-        ROS_INFO_STREAM("error = " << x_error_ << ", " << y_error_ << " = " << hypot(x_error_, y_error_));
+        ROS_INFO_STREAM("error = " << x_error_);
     }
     x_axis.setEnable(false);
-    y_axis.setEnable(false);
     result_.success = true;
     as_.setSucceeded(result_);
   }
