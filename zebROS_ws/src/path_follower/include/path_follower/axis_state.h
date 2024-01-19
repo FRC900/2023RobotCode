@@ -35,14 +35,14 @@ class AlignActionAxisConfig
 		std::string error_threshold_param_;
 };
 
-class AlignActionAxisState {
+template <typename T> class AlignActionAxisState {
 	public:
 		AlignActionAxisState(ros::NodeHandle &nh,
 							 const std::string &enable_pub_topic,
 							 const std::string &command_pub_topic,
 							 const std::string &state_pub_topic)
 			: enable_pub_(nh.advertise<std_msgs::Bool>(enable_pub_topic, 1, true))
-			, command_pub_(nh.advertise<std_msgs::Float64>(command_pub_topic, 1, true))
+			, command_pub_(nh.advertise<T>(command_pub_topic, 1, true))
 			, state_pub_(nh.advertise<std_msgs::Float64>(state_pub_topic, 1, true))
 		{}
 		
@@ -66,7 +66,7 @@ class AlignActionAxisState {
 		ros::Publisher state_pub_;
 };
 
-class AlignActionAxisStatePosition : public AlignActionAxisState {
+class AlignActionAxisStatePosition : public AlignActionAxisState<std_msgs::Float64> {
 	public:
 		AlignActionAxisStatePosition(ros::NodeHandle &nh,
 							const std::string &enable_pub_topic,
@@ -95,7 +95,7 @@ class AlignActionAxisStatePosition : public AlignActionAxisState {
 };
 
 // These messages are sent as (position, velocity)
-class AlignActionAxisStatePositionVelocity : public AlignActionAxisState {
+class AlignActionAxisStatePositionVelocity : public AlignActionAxisState<pid_velocity_msg::PIDVelocity> {
 	public:
 		AlignActionAxisStatePositionVelocity(ros::NodeHandle &nh,
 							const std::string &enable_pub_topic,

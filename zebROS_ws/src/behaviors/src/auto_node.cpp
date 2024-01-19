@@ -557,9 +557,13 @@ class AutoNode {
 				tfs.transform.translation.x = path[0][1];
 				tfs.transform.translation.y = path[0][2];
 
-				nav_msgs::Path path_msg;
-				path_msg.header.frame_id = "base_link";
-				path_msg.header.stamp = ros::Time(0);
+				nav_msgs::Path pos_path_msg;
+				pos_path_msg.header.frame_id = "base_link";
+				pos_path_msg.header.stamp = ros::Time(0);
+
+				nav_msgs::Path vel_path_msg;
+				vel_path_msg.header.frame_id = "base_link";
+				vel_path_msg.header.stamp = ros::Time(0);
 				nav_msgs::Path waypoints;
 				std::vector<int> waypointsIdx;
 
@@ -577,13 +581,26 @@ class AutoNode {
 					pose.header.stamp = ros::Time(point[0]);
 					pose.header.seq = i;
 					pose.header.frame_id = "base_link";
-					path_msg.poses.push_back(pose);
+					pos_path_msg.poses.push_back(pose);
+
+					geometry_msgs::PoseStamped vel_pose;
+					vel_pose.header.frame_id = "path";
+					vel_pose.pose.position.x = point[5];
+					vel_pose.pose.position.y = point[6];
+					tf2::Quaternion velQ;
+					velQ.setRPY(0, 0, point[4]);
+					vel_pose.pose.orientation = tf2::toMsg(velQ);
+					vel_pose.header.stamp = ros::Time(point[0]);
+					vel_pose.header.seq = i;
+					vel_pose.header.frame_id = "base_link";
+					vel_path_msg.poses.push_back(vel_pose);
+
 					i += 1;
 					waypointsIdx.push_back(point[7]);
 				}
 
-				premade_position_paths_[auto_steps_[j]] = path_msg;
-				premade_velocity_paths_[auto_steps_[j]] = path_msg;
+				premade_position_paths_[auto_steps_[j]] = pos_path_msg;
+				premade_velocity_paths_[auto_steps_[j]] = vel_path_msg;
 				premade_position_waypoints_[auto_steps_[j]] = nav_msgs::Path();
 				premade_velocity_waypoints_[auto_steps_[j]] = nav_msgs::Path();
 				waypointsIdxs_[auto_steps_[j]] = waypointsIdx;

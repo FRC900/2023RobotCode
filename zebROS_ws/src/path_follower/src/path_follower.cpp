@@ -206,10 +206,10 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 	target_pos.orientation = q_final;
 
 	geometry_msgs::Vector3 target_velocity;
-	target_pos.position.x = final_x_velocity;
-	target_pos.position.y = final_y_velocity;
-	target_pos.position.z = 0;
-	target_pos.orientation = q_final_velocity;
+	target_velocity.x = final_x_velocity;
+	target_velocity.y = final_y_velocity;
+	target_velocity.z = 0;
+	// TODO incorporate angular velocity somehow
 
 	PositionVelocity target;
 	target.position = target_pos;
