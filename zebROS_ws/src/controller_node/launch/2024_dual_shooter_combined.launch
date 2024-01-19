@@ -12,7 +12,7 @@
 	<arg name="record" default="false"/>
 
     <!-- Jetson Nodes -->
-    <include file="$(find controller_node)/launch/2024_single_motor_jetson.launch" pass_all_args="true"/>
+    <include file="$(find controller_node)/launch/2024_dual_shooter_jetson.launch" pass_all_args="true"/>
 
 <!--
 	<include file="$(find controller_node)/launch/joysticks_sim.launch" if="$(eval arg('hw_or_sim')=='sim')">
@@ -29,6 +29,6 @@
 		<machine name="roboRIO" address="10.9.0.2" env-loader="/home/admin/2023RobotCode/zebROS_ws/ROSJetsonMaster.sh" user="admin" password="admin" default="true" timeout="30"/>
 	</group>
 
-    <include file="$(find controller_node)/launch/2024_single_motor_rio.launch" pass_all_args="true"/>
+    <include file="$(find controller_node)/launch/2024_dual_shooter_rio.launch" pass_all_args="true"/>
 
 </launch>
