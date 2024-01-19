@@ -93,8 +93,8 @@ void publish_prediction(const ros::TimerEvent &event)
     prediction.pose.position.y,
     0.0);
 
-  const double tmp = pos.getX() + pos.getY() + pos.getZ() + q.getX() + q.getY() + q.getZ() + q.getW();
-  if (std::isfinite(tmp))
+  if (const double tmp = pos.getX() + pos.getY() + pos.getZ() + q.getX() + q.getY() + q.getZ() + q.getW();
+      std::isfinite(tmp))
   {
     geometry_msgs::PoseStamped odom_to_map;
     try {
@@ -133,9 +133,9 @@ void publish_prediction(const ros::TimerEvent &event)
   if(pub_debug.getNumSubscribers() > 0){
     pf_localization::PFDebug debug;
 
-    const auto part = pf->get_particles();
-    for (const Particle& p : part) {
-      debug.poses.push_back(toPose(p));
+    const auto particles = pf->get_particles();
+    for (const Particle& particle : particles) {
+      debug.poses.push_back(toPose(particle));
     }
 
     const auto beacons = pf->get_beacons_seen();
