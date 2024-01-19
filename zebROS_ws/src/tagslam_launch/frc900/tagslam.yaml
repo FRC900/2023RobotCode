@@ -3,11 +3,11 @@ tagslam_parameters:
 #                 slow (use iSAM2, but test for error and use full if error is large)
 #                 fast (iSAM2 only, no test for error)
 # default: slow
-  optimizer_mode: slow
+  optimizer_mode: fast
 # minimum angle [in degrees] between optical axis and tag surface
   minimum_viewing_angle: 15.0
 # minimum tag area in pixels^2. Any tags smaller than that are ignored
-  minimum_tag_area: 1000
+  minimum_tag_area: 500
 # number of incremental updates before running
 # a full graph optimization (default: 50)
   max_num_incremental_opt: 50
@@ -24,13 +24,18 @@ tagslam_parameters:
 # identical (hardware synced), set this option to true, and
 # tagslam tries to line them up as well as possible. Expect larger errors
 # because the data is not truly synchronous.
-  use_approximate_sync: false
+  use_approximate_sync: true
 body_defaults:
   position_noise: 0.05
   rotation_noise: 0.01
-default_body: blue_corner
+# website says this is good when all tags are already known for state estimation and gives speed 
+#amnesia: true
+amnesia: true
+# no default body because all unknown tags should be ignored
+
+default_body: zebracorn_labs
 bodies:
- - blue_corner:
+ - zebracorn_labs:
      is_static: true
      default_tag_size: 0.1651
      pose:
@@ -51,21 +56,18 @@ bodies:
          y: 1.0e-05
          z: 1.0e-05
      type: simple
-     
      tags:
-     - id: 7
+     - id: 8
        size: 0.1651
        pose:
          position:
-           x: 0.0
-           y: 0.0
-           z: 0.0
+           x: 0
+           y: 0
+           z: 0
          rotation:
-         # 90 deg x 90 deg y, use random website here to get magic numbers
-         # https://www.andre-gaschler.com/rotationconverter/
-           x: 0.0
-           y: 0.0 
-           z: 0.0 
+           x: 0
+           y: 0
+           z: 0
          position_noise:
            x: 0.0001
            y: 0.0001
@@ -74,29 +76,40 @@ bodies:
            x: 1.0e-05
            y: 1.0e-05
            z: 1.0e-05
-     #tags:
-     #- id: 7
-     #  size: 0.1651
-     #  pose:
-     #    position:
-     #      x: -0.0381
-     #      y: 5.547868
-     #      z: 1.451102
-     #    rotation:
-     #    # 90 deg x 90 deg y, use random website here to get magic numbers
-     #    # https://www.andre-gaschler.com/rotationconverter/
-     #      x: 1.2089893
-     #      y: 1.2089893 
-     #      z: 1.208027 
-     #    position_noise:
-     #      x: 0.0001
-     #      y: 0.0001
-     #      z: 0.0001
-     #    rotation_noise:
-     #      x: 1.0e-05
-     #      y: 1.0e-05
-     #      z: 1.0e-05
- - rig:
+     - id: 7
+       size: 0.16510000
+       pose:
+         position:
+           x: 0.31395100
+           y: 0.13186655
+           z: 0.12659808
+         rotation:
+           x: 1.31579013
+           y: 0.00736856
+           z: 0.02162207
+         position_noise:
+           x: 0.00019602
+           y: 0.00034696
+           z: 0.00052992
+         rotation_noise:
+           x: 0.00195558
+           y: 0.00175538
+           z: 0.00095689
+ - frc_robot:
      is_static: false
      type: simple
-     #odom_frame_id: body_rig
+     odom_topic: "/frcrobot_jetson/swerve_drive_controller/odom"
+     odom_frame_id: base_link
+     # assumed odom noise in meters(!): the larger this parameter, the less you rely on odom
+     odom_translation_noise: 0.01
+     # assomed odom noise in radians(!)
+     odom_rotation_noise: 0.01
+     T_body_odom:
+       position:
+         x:  0
+         y:  0
+         z:  0
+       rotation:
+         x:  0
+         y:  0
+         z:  0

@@ -33,48 +33,119 @@ amnesia: true
 # no default body because all unknown tags should be ignored 
 #default_body: grasp_lab
 bodies:
- - grasp_lab:
+ - blue_corner:
+     type: simple
      is_static: true
-     default_tag_size: 0.1651
+     default_tag_size: 0.1648
      pose:
        position:
-         x: 0
-         y: 0
-         z: 0
+         x: 0.00000000
+         y: -0.00000000
+         z: -0.00000000
        rotation:
-         x: 0
-         y: 0
-         z: 0
+         x: -0.00000000
+         y: 0.00000000
+         z: -0.00000000
        position_noise:
-         x: 0.0001
-         y: 0.0001
-         z: 0.0001
+         x: 0.00010000
+         y: 0.00010000
+         z: 0.00010000
        rotation_noise:
-         x: 1.0e-05
-         y: 1.0e-05
-         z: 1.0e-05
-     type: simple
+         x: 0.00001000
+         y: 0.00001000
+         z: 0.00001000
      tags:
-     - id: 1
-       size: 0.1651
-       pose:
-         position:
-           x: 0
-           y: 0
-           z: 0
-         rotation:
-           x: 0
-           y: 0
-           z: 0
-         position_noise:
-           x: 0.0001
-           y: 0.0001
-           z: 0.0001
-         rotation_noise:
-           x: 1.0e-05
-           y: 1.0e-05
-           z: 1.0e-05
+       - id: 7
+         size: 0.16510000
+         pose:
+           position:
+             x: -0.00000000
+             y: -0.00000000
+             z: -0.00000000
+           rotation:
+             x: 0.00000000
+             y: 0.00000000
+             z: 0.00000000
+           position_noise:
+             x: 0.00010000
+             y: 0.00010000
+             z: 0.00010000
+           rotation_noise:
+             x: 0.00001000
+             y: 0.00001000
+             z: 0.00001000
+       - id: 8
+         size: 0.16510000
+         pose:
+           position:
+             x: -0.32016907
+             y: 0.00150454
+             z: -0.00301840
+           rotation:
+             x: 0.03674076
+             y: 0.00264013
+             z: -0.00329814
+           position_noise:
+             x: 0.00018960
+             y: 0.00023414
+             z: 0.00057875
+           rotation_noise:
+             x: 0.00214959
+             y: 0.00230726
+             z: 0.00074212
+     #tags:
+     #  - id: 7
+     #    size: 0.16510000
+     #    pose:
+     #      position:
+     #        x: -0.03810000
+     #        y: 5.54786800
+     #        z: 1.45110200
+     #      rotation:
+     #        x: 1.20898930
+     #        y: 1.20898930
+     #        z: 1.20802700
+     #      position_noise:
+     #        x: 0.00010000
+     #        y: 0.00010000
+     #        z: 0.00010000
+     #      rotation_noise:
+     #        x: 0.00001000
+     #        y: 0.00001000
+     #        z: 0.00001000
+     #  - id: 8
+     #    size: 0.16510000
+     #    pose:
+     #      position:
+     #        x: -0.04137336
+     #        y: 5.22770273
+     #        z: 1.45286149
+     #      rotation:
+     #        x: 1.23231605
+     #        y: 1.23948808
+     #        z: 1.18994008
+     #      position_noise:
+     #        x: 0.00018957
+     #        y: 0.00023421
+     #        z: 0.00057866
+     #      rotation_noise:
+     #        x: 0.00214883
+     #        y: 0.00230651
+     #        z: 0.00074216
  - frc_robot:
-     is_static: false
-     type: simple
-     #odom_frame_id: body_rig
+    is_static: false
+    type: simple
+    odom_frame_id: base_link
+    odom_topic: "/frcrobot_jetson/swerve_drive_controller/odom"
+    odom_acceleration: 1.0
+    odom_angular_acceleration: 1.0
+    # not particularly sure why this would need to be non zero
+    T_body_odom:
+      position:
+        x:  0.0
+        y:  0.0
+        z:  0.0
+      rotation:
+        x:  0.0
+        y:  0.0
+        z:  0.0
