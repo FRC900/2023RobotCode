@@ -25,7 +25,8 @@ hardware_interface:
    run_hal_robot: false
    can_interface: can0
    joints:
-       - {name: frisbee_joint, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
+       - {name: left_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
+       - {name: right_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
        - {name: robot_code_ready_rio, local: false, type: ready}
        - {name: robot_code_ready_jetson, local: true, type: ready}
 
@@ -78,9 +79,27 @@ frisbee_voltage_controller:
     joint: frisbee_joint
     dynamic_reconfigure: True
 
-frisbee_voltage_velocity_controller:
+left_shooter_voltage_velocity_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
-   joint: frisbee_joint
+   joint: left_shooter_joint
+   #invert: clockwise_positive
+   close_loop_values:
+      - {kP: 0.00, kI: 0.0, kD: 0.0, kV: 0.000, kS: 0.0}
+   #current_limit_continuous_amps: 15
+   #current_limit_peak_amps: 25
+   #current_limit_peak_msec: 50
+   #current_limit_enable: True
+   peak_reverse_voltage: 0
+   voltage_closed_loop_ramp_period: 0.10
+   dynamic_reconfigure: True
+   neutral_mode: Coast
+   forward_limit_enable: False
+   reverse_limit_enable: False
+   #neutral_deadband: 0.01
+
+right_shooter_voltage_velocity_controller:
+   type: talonfxpro_controllers/TalonFXProVelocityVoltageController
+   joint: right_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
       - {kP: 0.00, kI: 0.0, kD: 0.0, kV: 0.000, kS: 0.0}
