@@ -5,6 +5,8 @@
 #include "path_follower/path_follower.h"
 #include "ros/ros.h"
 
+// #define DEBUG
+
 bool PathFollower::loadPath(const nav_msgs::Path &path, const nav_msgs::Path &velocities, double &final_distace)
 {
 	path_ = path;
@@ -82,10 +84,10 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 
 	const size_t last_index = num_waypoints_ - 1;
 	double final_x, final_y, final_x_velocity, final_y_velocity, final_orientation, final_velocities_orientation;
-
+#ifdef DEBUG
 	// Find point in path closest to odometry reading
 	ROS_INFO_STREAM("num_waypoints = " << num_waypoints_);
-
+#endif
 
 	size_t index = 0; // index of point after current time
 	size_t now_index = 0;
@@ -132,10 +134,10 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 			getYaw(velocities_.poses[index - 1].pose.orientation),
 			getYaw(velocities_.poses[index].pose.orientation),
 			current_time.toSec());
-
+#ifdef DEBUG
 	ROS_INFO_STREAM("drive to coordinates: " << index << " (" << final_x << ", " << final_y << ", " << final_orientation << ")");
 	ROS_INFO_STREAM("drive to velocity: " << index << " (" << final_x_velocity << ", " << final_y_velocity << ", " << final_velocities_orientation << ")");
-
+#endif
 	// This is strictly for the debugging ROS_INFO below
 	double now_x;
 	double now_y;
@@ -187,10 +189,10 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 		now_orientation = getYaw(path_.poses[0].pose.orientation);
 		now_velocities_orientation = getYaw(velocities_.poses[0].pose.orientation);
 	}
-
+#ifdef DEBUG
 	ROS_INFO_STREAM("now coordinates: " << now_index << " (" << now_x << ", " << now_y << ", " << now_orientation << ")");
 	ROS_INFO_STREAM("now velocity: " << now_index << " (" << now_x_velocity << ", " << now_y_velocity << ", " << now_velocities_orientation << ")");
-
+#endif
 	// Convert back to quaternion
 	tf2::Quaternion q_final_tf = tf2::Quaternion(tf2Scalar(0), tf2Scalar(0), tf2Scalar(final_orientation));
 	geometry_msgs::Quaternion q_final = tf2::toMsg(q_final_tf);
@@ -218,7 +220,8 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 	// Should actually return total distance now
 	total_distance_travelled = vec_path_length_[now_index - 1];
 	current_index = now_index - 1;
+#ifdef DEBUG
 	ROS_INFO_STREAM("Successfully returned target position and orientation");
-
+#endif
 	return target;
 }
