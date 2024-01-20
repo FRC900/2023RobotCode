@@ -340,6 +340,14 @@ class PathAction
 				std::optional<PositionVelocity> next_waypoint_opt = path_follower_.run(distance_travelled, current_index); 
 				PositionVelocity next_waypoint = *next_waypoint_opt;
 
+				// The velocity needs to be transformed from path-relative to odom-relative to be fed into publish_pid_cmd_vel,
+				// which just makes it robot-relative again. /shrug
+				double rotate_angle = initial_pose_yaw;
+				double odom_relative_x_velocity = next_waypoint.velocity.x * cos(rotate_angle) - next_waypoint.velocity.y * sin(rotate_angle);
+				double odom_relative_y_velocity = next_waypoint.velocity.x * sin(rotate_angle) + next_waypoint.velocity.y * cos(rotate_angle);
+				next_waypoint.velocity.x = odom_relative_x_velocity;
+				next_waypoint.velocity.y = odom_relative_y_velocity;
+
 				int current_waypoint = waypointsIdx[current_index];
 				feedback.current_waypoint = current_waypoint;
 
