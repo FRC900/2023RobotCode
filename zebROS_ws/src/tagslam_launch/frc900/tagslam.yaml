@@ -57,44 +57,45 @@ bodies:
          z: 1.0e-05
      type: simple
      tags:
-     - id: 8
-       size: 0.1651
-       pose:
-         position:
-           x: 0
-           y: 0
-           z: 0
-         rotation:
-           x: 0
-           y: 0
-           z: 0
-         position_noise:
-           x: 0.0001
-           y: 0.0001
-           z: 0.0001
-         rotation_noise:
-           x: 1.0e-05
-           y: 1.0e-05
-           z: 1.0e-05
-     - id: 7
-       size: 0.16510000
-       pose:
-         position:
-           x: 0.31395100
-           y: 0.13186655
-           z: 0.12659808
-         rotation:
-           x: 1.31579013
-           y: 0.00736856
-           z: 0.02162207
-         position_noise:
-           x: 0.00019602
-           y: 0.00034696
-           z: 0.00052992
-         rotation_noise:
-           x: 0.00195558
-           y: 0.00175538
-           z: 0.00095689
+       - id: 7
+         size: 0.16510000
+         pose:
+           position:
+             x: -0.00000000
+             y: 0.00000000
+             z: 0.00000000
+           rotation:
+             x: -0.00000000
+             y: 0.00000000
+             z: -0.00000000
+           position_noise:
+             x: 0.00010000
+             y: 0.00010000
+             z: 0.00010000
+           rotation_noise:
+             x: 0.00001000
+             y: 0.00001000
+             z: 0.00001000
+       - id: 8
+         size: 0.16510000
+         pose:
+           position:
+             x: -0.57117050
+             y: -0.00043071
+             z: -0.00223276
+           rotation:
+             x: -0.02301959
+             y: 0.00825671
+             z: 0.00831454
+           position_noise:
+             x: 0.00039090
+             y: 0.00056235
+             z: 0.00124781
+           rotation_noise:
+             x: 0.00226788
+             y: 0.00236850
+             z: 0.00094510
+
  - frc_robot:
      is_static: false
      type: simple

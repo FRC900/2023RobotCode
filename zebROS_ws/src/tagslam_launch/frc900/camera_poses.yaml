@@ -6,11 +6,14 @@ cam0:
       y: -0.1640
       z:  0.8204
     rotation:
-     # hopefully the flat camera
-      x: 2.4406494
-      y: -2.4406494 
-      z: 2.3214771
-      
+      # hopefully the flat camera
+      x: 1.21
+      y: 1.21
+      z: 1.21
+      #x: 2.4406494
+      #y: -2.4406494 
+      #z: 2.3214771
+      #
       # old (rotated values)
       #x:  2.529753
       #y: -2.529753

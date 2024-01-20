@@ -8,5 +8,5 @@ cam0:
   distortion_coeffs: [0.0, 0.0, 0.0, 0.0, 0.000000]
   resolution: [1280, 720]
   rostopic: /annotated_images/raw
-  tagtopic: /detector/tags
+  tagtopic: /apriltag_detection/tags
   rig_body: frc_robot
