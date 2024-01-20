@@ -84,7 +84,7 @@ left_shooter_voltage_velocity_controller:
    joint: left_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.00, kI: 0.0, kD: 0.0, kV: 0.000, kS: 0.0}
+      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.12, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
@@ -100,9 +100,9 @@ left_shooter_voltage_velocity_controller:
 right_shooter_voltage_velocity_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
    joint: right_shooter_joint
-   #invert: clockwise_positive
+   invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.00, kI: 0.0, kD: 0.0, kV: 0.000, kS: 0.0}
+      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.12, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50

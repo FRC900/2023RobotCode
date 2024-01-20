@@ -9,6 +9,7 @@
 	<arg name="launch_prefix" default="" />
 
 	<group ns="frcrobot_rio">
+		<rosparam file="$(find ros_control_boilerplate)/config/2023_frisbee_testing_rio.yaml" command="load"/>
 
 		<!-- Load controller settings -->
 		<rosparam file="$(find ros_control_boilerplate)/config/robot_code_ready_controller_rio.yaml" command="load"/>
