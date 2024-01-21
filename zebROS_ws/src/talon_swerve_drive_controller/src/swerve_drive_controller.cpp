@@ -66,9 +66,9 @@
 namespace talon_swerve_drive_controller
 {
 
-template <size_t WHEELCOUNT, typename COMMAND_INTERFACE_TYPE>
+template <size_t WHEELCOUNT>
 class TalonSwerveDriveController
-	: public controller_interface::MultiInterfaceController<COMMAND_INTERFACE_TYPE, hardware_interface::latency_compensation::CTRELatencyCompensationStateInterface>
+	: public controller_interface::MultiInterfaceController<hardware_interface::talonfxpro::TalonFXProCommandInterface, hardware_interface::latency_compensation::CTRELatencyCompensationStateInterface>
 {
 public:
 
@@ -273,12 +273,12 @@ bool init(hardware_interface::RobotHW *hw,
 							  << " and steering motors with joint name: " << steering_names_[i]);
 
 		ros::NodeHandle l_nh(controller_nh, speed_names_[i]);
-		if (!speed_joints_[i].initWithNode(hw->get<COMMAND_INTERFACE_TYPE>(), nullptr, l_nh))
+		if (!speed_joints_[i].initWithNode(hw->get<hardware_interface::talonfxpro::TalonFXProCommandInterface>(), nullptr, l_nh))
 		{
 			return false;
 		}
 		ros::NodeHandle r_nh(controller_nh, steering_names_[i]);
-		if (!steering_joints_[i].initWithNode(hw->get<COMMAND_INTERFACE_TYPE>(), nullptr, r_nh))
+		if (!steering_joints_[i].initWithNode(hw->get<hardware_interface::talonfxpro::TalonFXProCommandInterface>(), nullptr, r_nh))
 		{
 			return false;
 		}
@@ -1010,10 +1010,8 @@ std::string name_; // Controller name, for debugging
 std::unique_ptr<swerve<WHEELCOUNT>> swerveC_; // Swerve math calculations object
 
 /// Hardware handles:
-//  Select type based onm the controller interface type
-using CONTROLLER_INTERFACE_TYPE = typename std::conditional_t<std::is_same_v<COMMAND_INTERFACE_TYPE, hardware_interface::TalonCommandInterface>, talon_controllers::TalonControllerInterface, talonfxpro_controllers::TalonFXProControllerInterface>;
-std::array<CONTROLLER_INTERFACE_TYPE, WHEELCOUNT> speed_joints_;
-std::array<CONTROLLER_INTERFACE_TYPE, WHEELCOUNT> steering_joints_;
+std::array<talonfxpro_controllers::TalonFXProControllerInterface, WHEELCOUNT> speed_joints_;
+std::array<talonfxpro_controllers::TalonFXProControllerInterface, WHEELCOUNT> steering_joints_;
 
 /// Velocity command related:
 struct Commands
@@ -1129,16 +1127,8 @@ std::array<std::string, WHEELCOUNT> steering_names_;
 
 }; // class definition
 
-
-// The PLUGINLIB_EXPORT_CLASS() call below can't handle classes with more than 1 template arg, su 
-// use partial specialization here to remove one of them for the 4-wheel definition
-template <typename COMMAND_INTERFACE_TYPE>
-class TalonSwerveDriveController4 : public TalonSwerveDriveController<4, COMMAND_INTERFACE_TYPE>
-{
-};
-
 } // namespace talon_swerve_drive_controller
 
 #include <pluginlib/class_list_macros.h>
-template class talon_swerve_drive_controller::TalonSwerveDriveController4<hardware_interface::talonfxpro::TalonFXProCommandInterface>;
-PLUGINLIB_EXPORT_CLASS(talon_swerve_drive_controller::TalonSwerveDriveController4<hardware_interface::talonfxpro::TalonFXProCommandInterface>, controller_interface::ControllerBase)
+template class talon_swerve_drive_controller::TalonSwerveDriveController<4>;
+PLUGINLIB_EXPORT_CLASS(talon_swerve_drive_controller::TalonSwerveDriveController<4>, controller_interface::ControllerBase)
