@@ -8,8 +8,8 @@ cam0:
     rotation:
       # hopefully the flat camera
       x: 1.21
-      y: 1.21
-      z: 1.21
+      y: -1.21
+      z: -1.21
       #x: 2.4406494
       #y: -2.4406494 
       #z: 2.3214771

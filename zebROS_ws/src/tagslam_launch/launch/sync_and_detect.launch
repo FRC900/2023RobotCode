@@ -22,10 +22,9 @@
       ["/annotated_images/raw"]
     </rosparam>
     <rosparam param="tag_topics"> ["/detector/tags"]</rosparam>
-    <!-- To pass through odometry messages, add them like so:
+   <!--   To pass through odometry messages, add them like so:-->
 	<rosparam param="odometry_topics"> ["/vio/odom"]</rosparam>
-    -->
-    <param name="bag_file" value="$(arg bag)"/>
+      <param name="bag_file" value="$(arg bag)"/>
     <param name="detector_type" value="$(arg detector_type)"/>
     <param name="tag_family" value="$(arg tag_family)"/>
     <param name="black_border_width" value="1"/>
