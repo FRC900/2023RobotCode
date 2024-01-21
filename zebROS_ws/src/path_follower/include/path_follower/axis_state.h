@@ -44,7 +44,11 @@ template <typename T> class AlignActionAxisState {
 			: enable_pub_(nh.advertise<std_msgs::Bool>(enable_pub_topic, 1, true))
 			, command_pub_(nh.advertise<T>(command_pub_topic, 1, true))
 			, state_pub_(nh.advertise<std_msgs::Float64>(state_pub_topic, 1, true))
-		{}
+		{
+			std_msgs::Bool bool_msg;
+			bool_msg.data = false;
+			enable_pub_.publish(bool_msg);
+		}
 		
 		void setEnable(bool enable_state)
 		{
@@ -76,9 +80,6 @@ class AlignActionAxisStatePosition : public AlignActionAxisState<std_msgs::Float
 		{
 			// Set defaults for PID node topics to prevent
 			// spam of "Waiting for first setpoint message."
-			std_msgs::Bool bool_msg;
-			bool_msg.data = false;
-			enable_pub_.publish(bool_msg);
 
 			std_msgs::Float64 float64_msg;
 			float64_msg.data = 0.0;
@@ -105,9 +106,6 @@ class AlignActionAxisStatePositionVelocity : public AlignActionAxisState<pid_vel
 		{
 			// Set defaults for PID node topics to prevent
 			// spam of "Waiting for first setpoint message."
-			std_msgs::Bool bool_msg;
-			bool_msg.data = false;
-			enable_pub_.publish(bool_msg);
 
 			pid_velocity_msg::PIDVelocity position_velocity_msg;
 			position_velocity_msg.position = 0.0;

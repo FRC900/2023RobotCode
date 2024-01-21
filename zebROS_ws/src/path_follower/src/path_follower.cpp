@@ -137,7 +137,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 #ifdef DEBUG
 	ROS_INFO_STREAM("drive to coordinates: " << index << " (" << final_x << ", " << final_y << ", " << final_orientation << ")");
 	ROS_INFO_STREAM("drive to velocity: " << index << " (" << final_x_velocity << ", " << final_y_velocity << ", " << final_velocities_orientation << ")");
-#endif
+
 	// This is strictly for the debugging ROS_INFO below
 	double now_x;
 	double now_y;
@@ -189,7 +189,7 @@ std::optional<PositionVelocity> PathFollower::run(double &total_distance_travell
 		now_orientation = getYaw(path_.poses[0].pose.orientation);
 		now_velocities_orientation = getYaw(velocities_.poses[0].pose.orientation);
 	}
-#ifdef DEBUG
+
 	ROS_INFO_STREAM("now coordinates: " << now_index << " (" << now_x << ", " << now_y << ", " << now_orientation << ")");
 	ROS_INFO_STREAM("now velocity: " << now_index << " (" << now_x_velocity << ", " << now_y_velocity << ", " << now_velocities_orientation << ")");
 #endif
