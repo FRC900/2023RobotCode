@@ -5,7 +5,7 @@
   <arg name="start_time" default="0.0"/>
   <arg name="duration" default="-1.0"/>
   <arg name="images_are_compressed" default="false"/>
-  <arg name="use_approximate_sync" default="false"/>
+  <arg name="use_approximate_sync" default="true"/>
   <arg name="annotate_images" default="true"/>
   <!-- for list of valid tag families, see apriltag_detector.h
        0 = 36h11
@@ -23,7 +23,7 @@
     </rosparam>
     <rosparam param="tag_topics"> ["/detector/tags"]</rosparam>
    <!--   To pass through odometry messages, add them like so:-->
-	<rosparam param="odometry_topics"> ["/vio/odom"]</rosparam>
+	<rosparam param="odometry_topics"> ["/frcrobot_jetson/swerve_drive_controller/odom"]</rosparam>
       <param name="bag_file" value="$(arg bag)"/>
     <param name="detector_type" value="$(arg detector_type)"/>
     <param name="tag_family" value="$(arg tag_family)"/>

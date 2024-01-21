@@ -62,12 +62,12 @@ bodies:
          pose:
            position:
              x: -0.00000000
-             y: 0.00000000
-             z: 0.00000000
+             y: -0.00000000
+             z: 1.45000000
            rotation:
-             x: -0.00000000
-             y: 0.00000000
-             z: -0.00000000
+             x: 1.21000000
+             y: -1.21000000
+             z: -1.21000000
            position_noise:
              x: 0.00010000
              y: 0.00010000
@@ -80,31 +80,32 @@ bodies:
          size: 0.16510000
          pose:
            position:
-             x: -0.57117050
-             y: -0.00043071
-             z: -0.00223276
+             x: -0.00222574
+             y: 0.56714058
+             z: 1.44773409
            rotation:
-             x: -0.02301959
-             y: 0.00825671
-             z: 0.00831454
+             x: 1.19445512
+             y: -1.19270195
+             z: -1.20314737
            position_noise:
-             x: 0.00039090
-             y: 0.00056235
-             z: 0.00124781
+             x: 0.00065909
+             y: 0.00099125
+             z: 0.00201775
            rotation_noise:
-             x: 0.00226788
-             y: 0.00236850
-             z: 0.00094510
+             x: 0.00330934
+             y: 0.00340577
+             z: 0.00147969
 
  - frc_robot:
      is_static: false
      type: simple
      odom_topic: "/frcrobot_jetson/swerve_drive_controller/odom"
+     #odom_topic: "/frcrobot_jetson/swerve_drive_state_controller/odom"
      odom_frame_id: base_link
      # assumed odom noise in meters(!): the larger this parameter, the less you rely on odom
-     odom_translation_noise: 0.01
+     odom_translation_noise: 0.001
      # assomed odom noise in radians(!)
-     odom_rotation_noise: 0.01
+     odom_rotation_noise: 0.001
      T_body_odom:
        position:
          x:  0

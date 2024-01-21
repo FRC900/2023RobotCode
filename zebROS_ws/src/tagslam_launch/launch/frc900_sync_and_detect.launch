@@ -20,10 +20,10 @@
       ["/zed_objdetect/left/image_rect_color"]
     </rosparam>
     <rosparam param="image_output_topics">
-      ["/zed_objdetect/left/annotated_images/compressed"]
+      ["/apriltag_detection/tags"]
     </rosparam>
-    <rosparam param="tag_topics"> ["/detector/tags"]</rosparam>
-    <rosparam param="odometry_topics"> ["/frcrobot_jetson/swerve_drive_controller/odom"]</rosparam>
+    <rosparam param="tag_topics"> ["/detector/tags"]</rosparam> 
+    <rosparam param="odometry_topics"> ["/frcrobot_jetson/swerve_drive_state_controller/odom"]</rosparam>
     <param name="bag_file" value="$(arg bag)"/>
     <param name="detector_type" value="$(arg detector_type)"/>
     <param name="tag_family" value="$(arg tag_family)"/>

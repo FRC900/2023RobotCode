@@ -74,28 +74,7 @@ bodies:
            x: 1.0e-05
            y: 1.0e-05
            z: 1.0e-05
-     #tags:
-     #- id: 7
-     #  size: 0.1651
-     #  pose:
-     #    position:
-     #      x: -0.0381
-     #      y: 5.547868
-     #      z: 1.451102
-     #    rotation:
-     #    # 90 deg x 90 deg y, use random website here to get magic numbers
-     #    # https://www.andre-gaschler.com/rotationconverter/
-     #      x: 1.2089893
-     #      y: 1.2089893 
-     #      z: 1.208027 
-     #    position_noise:
-     #      x: 0.0001
-     #      y: 0.0001
-     #      z: 0.0001
-     #    rotation_noise:
-     #      x: 1.0e-05
-     #      y: 1.0e-05
-     #      z: 1.0e-05
+
  - rig:
      is_static: false
      type: simple
