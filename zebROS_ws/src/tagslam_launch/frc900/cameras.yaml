@@ -8,5 +8,6 @@ cam0:
   distortion_coeffs: [0.0, 0.0, 0.0, 0.0, 0.000000]
   resolution: [1280, 720]
   rostopic: /zed_objdetect/left/image_rect_color
-  tagtopic: /detector/tags
+  # fix me
+  tagtopic: /apriltag_detector/tags
   rig_body: frc_robot
