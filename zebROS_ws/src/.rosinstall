@@ -41,10 +41,6 @@
     uri: https://github.com/daniilidis-group/flex_sync.git
     version: master
 - git:
-    local-name: tagslam_test 
-    uri: https://github.com/berndpfrommer/tagslam_test.git
-    version: master 
-- git:
     local-name: apriltag 
     uri: https://github.com/versatran01/apriltag.git
     version: master 
