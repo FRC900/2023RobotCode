@@ -51,29 +51,31 @@ bodies:
          y: 1.0e-05
          z: 1.0e-05
      type: simple
-     
-     tags:
-     - id: 7
-       size: 0.1651
-       pose:
-         position:
-           x: 0.0
-           y: 0.0
-           z: 1.45
-         rotation:
          # 90 deg x 90 deg y, use random website here to get magic numbers
-         # https://www.andre-gaschler.com/rotationconverter/
-           x: 1.21
-           y: -1.21
-           z: -1.21 
-         position_noise:
-           x: 0.0001
-           y: 0.0001
-           z: 0.0001
-         rotation_noise:
-           x: 1.0e-05
-           y: 1.0e-05
-           z: 1.0e-05
+         # https://www.andre-gaschler.com/rotationconverter/x
+      - id: 7
+        size: 0.16510000
+        pose:
+          position:
+            x: -0.0127
+            y: 5.547868
+            z: 1.451102
+          rotation:
+            # tags facing backwards
+            #x: -1.21000000
+            #y: -1.21000000
+            #z: 1.21000000
+            x: 1.21
+            y: 1.21  
+            z: 1.21  
+          position_noise:
+            x: 0.00010000
+            y: 0.00010000
+            z: 0.00010000
+          rotation_noise:
+            x: 0.00001000
+            y: 0.00001000
+            z: 0.00001000
 
  - rig:
      is_static: false
