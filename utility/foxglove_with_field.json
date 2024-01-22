@@ -2,18 +2,19 @@
   "configById": {
     "3D!23u0r81": {
       "cameraState": {
-        "distance": 14.701837812465529,
         "perspective": true,
-        "phi": 70.56722147743204,
+        "distance": 23.327015599845545,
+        "phi": 75.22393789535064,
+        "thetaOffset": -111.78907177738948,
+        "targetOffset": [
+          -2.074320172720267,
+          2.677873095596574,
+          1.051640451641642e-17
+        ],
         "target": [
           0,
           0,
           0
-        ],
-        "targetOffset": [
-          -1.6782546328429242,
-          3.921655534772603,
-          -1.2852608414349196e-15
         ],
         "targetOrientation": [
           0,
@@ -21,12 +22,11 @@
           0,
           1
         ],
-        "thetaOffset": -121.10250461319545,
         "fovy": 45,
         "near": 0.5,
         "far": 5000
       },
-      "followMode": "follow-pose",
+      "followMode": "follow-none",
       "scene": {
         "enableStats": false
       },
@@ -44,10 +44,13 @@
           "cameraInfoTopic": "/zed_objdetect/left/camera_info"
         },
         "/zed_objdetect/point_cloud/cloud_registered": {
-          "visible": false,
+          "visible": true,
           "colorField": "rgb",
           "colorMode": "rgb",
-          "colorMap": "turbo"
+          "colorMap": "turbo",
+          "pointSize": 10,
+          "stixelsEnabled": false,
+          "pointShape": "square"
         }
       },
       "layers": {
@@ -58,7 +61,7 @@
           "instanceId": "c7310bf3-97e1-4f39-b965-082eb76a8d40",
           "layerId": "foxglove.Urdf",
           "sourceType": "url",
-          "url": "package://frcrobot_description/frcrobot_description/urdf/2024_field.urdf",
+          "url": "package://frcrobot_description/urdf/2024_field.urdf",
           "filePath": "package://frcrobot_description/frcrobot_description/urdf/2024_field.urdf",
           "parameter": "",
           "topic": "",
@@ -79,7 +82,7 @@
           "parameter": "/tags",
           "topic": "",
           "framePrefix": "",
-          "displayMode": "auto",
+          "displayMode": "visual",
           "fallbackColor": "#ffffff",
           "order": 2
         }
@@ -198,8 +201,8 @@
       "first": "Image!3mnp456",
       "second": "Image!1uk2v9s",
       "direction": "column",
-      "splitPercentage": 45.02415458937198
+      "splitPercentage": 33.30449826989619
     },
-    "splitPercentage": 49.049180327868854
+    "splitPercentage": 60.53258584442888
   }
 }
