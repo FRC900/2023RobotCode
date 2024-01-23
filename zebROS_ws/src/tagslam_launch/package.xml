@@ -12,7 +12,8 @@
   
   <depend>roscpp</depend>
   <depend>nodelet</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
   <depend>image_transport</depend>
   <depend>cv_bridge</depend>
   <depend>apriltag</depend>
