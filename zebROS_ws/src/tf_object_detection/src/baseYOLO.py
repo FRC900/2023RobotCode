@@ -12,7 +12,7 @@ from pathlib import Path
 import pytorch_pfn_extras as ppe
 from collections import namedtuple
 from onnx_to_tensorrt import onnx_to_tensorrt
-from config_frc2023 import OBJECT_CLASSES, COLORS
+from config_frc2024 import OBJECT_CLASSES, COLORS
 
 # working nearest neighbor
 '''
