@@ -131,6 +131,7 @@ class PathAction
 			catch (tf2::TransformException &ex) {
 				ROS_ERROR_STREAM("path_follower: no map to base link transform found! (!!)" << ex.what());
 			}
+			ROS_INFO_STREAM("Diff between tf and now " << ros::Time::now() - map_to_baselink_.header.stamp); 
 
 			const double final_pos_tol = (goal->final_pos_tol > 0) ? goal->final_pos_tol : final_pos_tol_;
 			const double final_rot_tol = (goal->final_rot_tol > 0) ? goal->final_rot_tol : final_rot_tol_;
@@ -205,12 +206,16 @@ class PathAction
 				ros::spinOnce();
 
 				try{
-					map_to_baselink_ = tf_buffer_.lookupTransform("base_link", map_frame_, ros::Time(0));
+					// THIS IS INTENTIONAL, we find 
+					map_to_baselink_ = tf_buffer_.lookupTransform( map_frame_, "base_link", ros::Time(0));
 				}
 				catch (tf2::TransformException &ex) {
 					ROS_ERROR_STREAM("path_follower: no map to base link transform found! (!!)" << ex.what());
 					continue;
 				}
+				// must be less than 0.01 100hz 
+				ROS_INFO_STREAM("Diff between tf and now " << ros::Time::now() - map_to_baselink_.header.stamp); 
+
 #ifdef DEBUG
 				// This gets the point closest to current time plus lookahead distance
 				// on the path. We use this to generate a target for the x,y,orientation
