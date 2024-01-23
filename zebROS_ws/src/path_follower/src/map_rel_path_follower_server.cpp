@@ -329,8 +329,8 @@ class PathAction
 			#ifdef DEBUG
 			ROS_INFO_STREAM("    final delta odom_ = " << map_to_baselink_.transform.translation.x - starting_tf.transform.translation.x
 					<< ", " << map_to_baselink_.transform.translation.y - starting_tf.transform.translation.y);
-			ROS_INFO_STREAM("    final delta pose_ = " << pose_.pose.position.x - starting_pose.pose.position.x
-					<< ", " << pose_.pose.position.y - starting_pose.pose.position.y);
+			// ROS_INFO_STREAM("    final delta pose_ = " << pose_.pose.position.x - starting_pose.pose.position.x
+			// 		<< ", " << pose_.pose.position.y - starting_pose.pose.position.y);
 			#endif
 
 			// Shut off publishing both combined x+y+rotation messages
