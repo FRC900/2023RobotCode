@@ -92,6 +92,7 @@ download: |
           "/home/ubuntu/tensorflow_workspace/2023Game/data/combined_88_test",
           "/home/ubuntu/tensorflow_workspace/2023Game/data/videos",
           "/home/ubuntu/tensorflow_workspace/2024Game/data/videos",
+          "/home/ubuntu/tensorflow_workspace/2024Game/data/testFiles",
   ]
 
   input_xmls = []

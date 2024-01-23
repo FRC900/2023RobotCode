@@ -1,8 +1,7 @@
+#!/usr/bin/env python3
 import argparse
 import cv2
 from ultralytics import YOLO
-
-WRITE_OUTPUT_VIDEO = False
 
 def main(args: argparse.Namespace) -> None:
     # Load the YOLOv8 model
