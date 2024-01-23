@@ -141,11 +141,7 @@ class PathAction
 			// effect of changing robot centric coordinates into odom-centric coordinates
 			// Since we're using odom-centric values to drive against, this simplifies a
 			// lot of the code later.
-			geometry_msgs::TransformStamped map_to_base_link_tf;
-			map_to_base_link_tf.transform.translation.x = map_to_baselink_.transform.translation.x;
-			map_to_base_link_tf.transform.translation.y = map_to_baselink_.transform.translation.y;
-			map_to_base_link_tf.transform.translation.z = 0.0;
-			map_to_base_link_tf.transform.rotation = map_to_baselink_.transform.rotation;
+
 			//ros::message_operations::Printer< ::geometry_msgs::TransformStamped_<std::allocator<void>> >::stream(std::cout, "", odom_to_base_link_tf);
 
 			const double initial_field_relative_yaw = path_follower_.getYaw(orientation_);
@@ -158,7 +154,7 @@ class PathAction
 			// see if we've reached the end point, so do it once here rather than each time through
 			// the loop
 			geometry_msgs::Pose final_pose_transformed = goal->position_path.poses.back().pose;
-			tf2::doTransform(final_pose_transformed, final_pose_transformed, map_to_base_link_tf);
+			// tf2::doTransform(final_pose_transformed, final_pose_transformed, map_to_base_link_tf);
 
 			const auto starting_tf = map_to_baselink_;
 
@@ -170,13 +166,13 @@ class PathAction
 				ROS_INFO_STREAM("Untransformed waypoint: X = " << goal->position_path.poses[i].pose.position.x << " Y = " << goal->position_path.poses[i].pose.position.y << " rotation = " << path_follower_.getYaw(goal->position_path.poses[i].pose.orientation));
 				geometry_msgs::Pose temp_pose = goal->position_path.poses[i].pose;
 				geometry_msgs::Pose new_pose;
-				tf2::doTransform(temp_pose, new_pose, map_to_base_link_tf);
-				tf2::Quaternion q;
-				tf2::fromMsg(map_to_base_link_tf.transform.rotation, q);
-				double r, p, y;
-				tf2::Matrix3x3(q).getRPY(r, p, y);
-				ROS_INFO_STREAM("Transforming by the transform x = " << map_to_base_link_tf.transform.translation.x << ", y = "  << map_to_base_link_tf.transform.translation.y << ", z = "  << map_to_base_link_tf.transform.translation.z << ", r = " << r << ", p = " << p << ", y = " << y);
-				ROS_INFO_STREAM("Transformed waypoint: X = " << new_pose.position.x << " Y = " << new_pose.position.y << " rotation = " << path_follower_.getYaw(new_pose.orientation));
+				// tf2::doTransform(temp_pose, new_pose, map_to_base_link_tf);
+				// tf2::Quaternion q;
+				// tf2::fromMsg(map_to_base_link_tf.transform.rotation, q);
+				// double r, p, y;
+				// tf2::Matrix3x3(q).getRPY(r, p, y);
+				// ROS_INFO_STREAM("Transforming by the transform x = " << map_to_base_link_tf.transform.translation.x << ", y = "  << map_to_base_link_tf.transform.translation.y << ", z = "  << map_to_base_link_tf.transform.translation.z << ", r = " << r << ", p = " << p << ", y = " << y);
+				// ROS_INFO_STREAM("Transformed waypoint: X = " << new_pose.position.x << " Y = " << new_pose.position.y << " rotation = " << path_follower_.getYaw(new_pose.orientation));
 			}
 			ROS_INFO_STREAM("========End path follower logs ==========");
 			ros::Rate r(ros_rate_);
@@ -226,14 +222,6 @@ class PathAction
 				std::optional<PositionVelocity> next_waypoint_opt = path_follower_.run(distance_travelled, current_index); 
 				PositionVelocity next_waypoint = *next_waypoint_opt;
 
-				// The velocity needs to be transformed from path-relative to odom-relative to be fed into publish_pid_cmd_vel,
-				// which just makes it robot-relative again. /shrug
-				double rotate_angle = initial_pose_yaw;
-				double map_relative_x_velocity = next_waypoint.velocity.x * cos(rotate_angle) - next_waypoint.velocity.y * sin(rotate_angle);
-				double map_relative_y_velocity = next_waypoint.velocity.x * sin(rotate_angle) + next_waypoint.velocity.y * cos(rotate_angle);
-				next_waypoint.velocity.x = map_relative_x_velocity;
-				next_waypoint.velocity.y = map_relative_y_velocity;
-
 				int current_waypoint = waypointsIdx[current_index];
 				feedback.current_waypoint = current_waypoint;
 
@@ -253,7 +241,7 @@ class PathAction
 #ifdef DEBUG
 				ROS_INFO_STREAM("Before transform: next_waypoint = (" << next_waypoint.position.position.x << ", " << next_waypoint.position.position.y << ", " << path_follower_.getYaw(next_waypoint.position.orientation) << ")");
 #endif
-				tf2::doTransform(next_waypoint.position, next_waypoint.position, map_to_base_link_tf);
+				// tf2::doTransform(next_waypoint.position, next_waypoint.position, map_to_base_link_tf);
 #ifdef DEBUG
 				ROS_INFO_STREAM("After transform: next_waypoint = (" << next_waypoint.position.position.x << ", " << next_waypoint.position.position.y << ", " << path_follower_.getYaw(next_waypoint.position.orientation) << ")");
 #endif
