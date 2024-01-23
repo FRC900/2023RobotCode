@@ -143,7 +143,7 @@ def iDivUp(a, b):
 class YOLO900:
 
 
-    def __init__(self, engine_path="FRC2023m.engine", device_str="cuda:0", use_timings=False, onnx_path="FRC2023m.onnx", regen_trt=True) -> None:
+    def __init__(self, engine_path="FRC2024m.engine", device_str="cuda:0", use_timings=False, onnx_path="FRC2024m.onnx", regen_trt=True) -> None:
         self.device = torch.device(device_str)
 
         # @TODO check if this will ever not be 0's
@@ -182,7 +182,7 @@ class YOLO900:
         tensorrt_path = Path(onnx_path).with_suffix(".engine")
         tensorrt_path = tensorrt_path.with_name(tensorrt_path.name)        
         print(f"Tensorrt path {tensorrt_path}")
-        calibration_path = tensorrt_path.with_name("calib_FRC2023m.bin")
+        calibration_path = tensorrt_path.with_name("calib_FRC2024m.bin")
 
         onnx_to_tensorrt(onnx_path,
                         tensorrt_path,
