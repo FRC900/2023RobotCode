@@ -1,7 +1,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <sensor_msgs/Imu.h>
 #include <iostream>
 #include <ros/ros.h>
@@ -49,7 +49,7 @@ std::string odom_frame_id = "odom";
 std::string map_frame_id = "map";
 std::string tagslam_baselink = "frc_robot";
 
-std::unique_ptr<tf2_ros::TransformBroadcaster> tfbr;
+std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tfbr;
 ros::Duration tf_tolerance = ros::Duration(0.1);
 tf2_ros::Buffer tf_buffer;
 geometry_msgs::TransformStamped map_odom_tf;
@@ -130,14 +130,14 @@ void updateMapOdomTf() {
 
 void timerCallback(const ros::TimerEvent &event) {
   map_odom_tf.header.stamp = ros::Time::now();
-  tfbr->sendTransform(map_odom_tf);
+  // tfbr->sendTransform(map_odom_tf);
   ROS_WARN_STREAM_THROTTLE(2, "Publishing map odom tf in timer");
 }
 
 bool service_cb(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*res*/) {
   updateMapOdomTf();
   tfbr->sendTransform(map_odom_tf);
-  ROS_WARN_STREAM("Publishing map odom tf in service");
+  ROS_WARN_STREAM("Publishing static map odom tf in service");
   return true;
 }
 
@@ -145,15 +145,15 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "map_to_odom_node");
   ros::NodeHandle nh_;
   tf2_ros::TransformListener tf_listener(tf_buffer);
-  static tf2_ros::StaticTransformBroadcaster static_broadcaster;
-
-  static_broadcaster.sendTransform(static_transformStamped);
-  map_odom_tf.transform.rotation.w = 1; 
-  tfbr = std::make_unique<tf2_ros::TransformBroadcaster>();
+  // static_broadcaster.sendTransform(static_transformStamped);
+  tfbr = std::make_unique<tf2_ros::StaticTransformBroadcaster>();
+  
   // write a timer that gets called at 25Hz
-  ros::Timer timer = nh_.createTimer(ros::Duration(0.1), timerCallback);
+  // ros::Timer timer = nh_.createTimer(ros::Duration(0.1), timerCallback);
   // write a service that takes in an empty message and publishes the tf
   ros::ServiceServer service = nh_.advertiseService("tagslam_pub_map_to_odom", service_cb);
+  updateMapOdomTf();
+  tfbr->sendTransform(map_odom_tf);
   ros::spin();
 
   return 0;
