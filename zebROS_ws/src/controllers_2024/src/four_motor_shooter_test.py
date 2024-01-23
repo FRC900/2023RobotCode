@@ -23,10 +23,14 @@ def percent_left_right_cb(msg):
 def radiansps_to_rpm(rps):
     return rps / (2. * pi) * 60.
 
+
+def rpm_to_radiansps(rpm):
+    return rpm * (2. * pi) / 60.
+
 # takes in speed in rad/s and percent from 0 to 1 
 def speed_cb(msg):
     global left_top_pub, right_top_pub, left_bottom_pub, right_bottom_pub, left_right_percent, top_bottom_percent
-    speed = msg.data
+    speed = rpm_to_radiansps(msg.data)
 
     left_right_delta = speed * left_right_percent
     top_bottom_delta = speed * top_bottom_percent
