@@ -38,13 +38,6 @@ hardware_interface:
 # encoder state used by the hw manager and publishes it as
 # a ROS topic.  This is generic ROS stuff, so we'll have
 # to figure out what to map e.g. effort to in the Talon world
-talon_state_controller_jetson:
-   type:         talon_state_controller/TalonStateController
-   publish_rate: 100
-talon_config_controller_jetson:
-   type:         talon_config_controller/TalonConfigController
-   publish_rate: 5
-
 talonfxpro_state_controller_jetson:
    type:         talonfxpro_state_controller/TalonFXProStateController
    publish_rate: 100
@@ -70,29 +63,19 @@ match_state_listener_controller:
     type:      state_listener_controller/MatchStateListenerController
     topic:     /frcrobot_rio/match_data
 
-
-frisbee_duty_cycle_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
-    joint: frisbee_joint
-    dynamic_reconfigure: True
-
-frisbee_voltage_controller:
-    type: talonfxpro_controllers/TalonFXProVoltageOutputController
-    joint: frisbee_joint
-    dynamic_reconfigure: True
-
 left_top_shooter_voltage_velocity_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
    joint: left_top_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
-      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.12, kS: 0.0}
+      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.06, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   voltage_closed_loop_ramp_period: 0.10
+   sensor_to_mechanism_ratio: 0.5
+   # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
@@ -103,13 +86,14 @@ right_top_shooter_voltage_velocity_controller:
    joint: right_top_shooter_joint
    invert: clockwise_positive
    close_loop_values:
-      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.12, kS: 0.0}
+      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.06, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   voltage_closed_loop_ramp_period: 0.10
+   sensor_to_mechanism_ratio: 0.5
+   # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
@@ -120,13 +104,14 @@ left_bottom_shooter_voltage_velocity_controller:
    joint: left_bottom_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
-      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.12, kS: 0.0}
+      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.06, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   voltage_closed_loop_ramp_period: 0.10
+   sensor_to_mechanism_ratio: 0.5
+   # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
@@ -137,13 +122,14 @@ right_bottom_shooter_voltage_velocity_controller:
    joint: right_bottom_shooter_joint
    invert: clockwise_positive
    close_loop_values:
-      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.12, kS: 0.0}
+      - {kP: 2.5, kI: 0.0, kD: 0.0, kV: 0.06, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   voltage_closed_loop_ramp_period: 0.10
+   sensor_to_mechanism_ratio: 0.5
+   # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
