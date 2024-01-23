@@ -126,10 +126,14 @@ class PathAction
 			ros::spinOnce();
 
 			try{
-				map_to_baselink_ = tf_buffer_.lookupTransform("base_link", map_frame_, ros::Time(0));
+				// This gives us the transform from a point in base_link to map.
+				// This is correct, although counterintuitive and we don't know why
+				// Because it feels like it should be the opposite, but breaks when we do what is "correct".
+				map_to_baselink_ = tf_buffer_.lookupTransform(map_frame_, "base_link", ros::Time(0));
 			}
 			catch (tf2::TransformException &ex) {
 				ROS_ERROR_STREAM("path_follower: no map to base link transform found! (!!)" << ex.what());
+				continue;
 			}
 			ROS_INFO_STREAM("Diff between tf and now " << ros::Time::now() - map_to_baselink_.header.stamp); 
 
@@ -206,8 +210,10 @@ class PathAction
 				ros::spinOnce();
 
 				try{
-					// THIS IS INTENTIONAL, we find 
-					map_to_baselink_ = tf_buffer_.lookupTransform( map_frame_, "base_link", ros::Time(0));
+					// This gives us the transform from a point in base_link to map.
+					// This is correct, although counterintuitive and we don't know why
+					// Because it feels like it should be the opposite, but breaks when we do what is "correct".
+					map_to_baselink_ = tf_buffer_.lookupTransform(map_frame_, "base_link", ros::Time(0));
 				}
 				catch (tf2::TransformException &ex) {
 					ROS_ERROR_STREAM("path_follower: no map to base link transform found! (!!)" << ex.what());
