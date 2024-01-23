@@ -188,7 +188,7 @@ class YOLO900:
                         tensorrt_path,
                         int8=True,
                         fp16=True,
-                        dataset_path='/home/ubuntu', # just give it a real path that  
+                        dataset_path='/home/ubuntu/', # just give it a real path to get past checks for existing before using the .calib file
                         calibration_file=calibration_path)
         
         
