@@ -114,6 +114,7 @@ void timerCallback(const ros::TimerEvent &event) {
 
       // Computed transform is odom->map, but need to invert
       // it to publish map->odom instead
+      // TODO, should zero Z right here
       tf2::Transform odom_to_map_tf;
       tf2::convert(odom_to_map.pose, odom_to_map_tf);
       tf2::convert(odom_to_map_tf.inverse(), transformStamped.transform);
