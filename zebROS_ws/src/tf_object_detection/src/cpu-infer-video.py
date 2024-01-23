@@ -16,7 +16,7 @@ def main(args: argparse.Namespace) -> None:
         _ = cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         print (frame.shape)
 
-        vid_writer = cv2.VideoWriter(args.save_path, cv2.VideoWriter_fourcc(*"FMP4"), 30., (frame.shape[1]/2, frame.shape[0]/2))
+        vid_writer = cv2.VideoWriter(args.save_path, cv2.VideoWriter_fourcc(*"FMP4"), 30., (frame.shape[1], frame.shape[0]))
 
     # Loop through the video frames
     while cap.isOpened():
