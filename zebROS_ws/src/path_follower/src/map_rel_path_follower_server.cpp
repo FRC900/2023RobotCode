@@ -220,7 +220,6 @@ class PathAction
 				}
 				// must be less than 0.01 100hz 
 				ROS_INFO_STREAM("Diff between tf and now " << ros::Time::now() - map_to_baselink_.header.stamp); 
-
 #ifdef DEBUG
 				// This gets the point closest to current time plus lookahead distance
 				// on the path. We use this to generate a target for the x,y,orientation
