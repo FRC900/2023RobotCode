@@ -93,11 +93,7 @@ download: |
           "/home/ubuntu/tensorflow_workspace/2023Game/data/combined_88_test",
           "/home/ubuntu/tensorflow_workspace/2023Game/data/videos",
           "/home/ubuntu/tensorflow_workspace/2024Game/data/videos",
-<<<<<<< HEAD
-          "/home/ubuntu/tensorflow_workspace/2024Game/data/FRC2024",
-=======
           "/home/ubuntu/tensorflow_workspace/2024Game/data/FRC2024"
->>>>>>> 39c55107 (update yaml and train script for 2024)
   ]
 
   input_xmls = []
