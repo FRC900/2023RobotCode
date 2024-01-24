@@ -25,7 +25,7 @@ def cb(msg):
     cv2.imshow("image", cv_img)
     cv2.waitKey(1)
 
-sub = rospy.Subscriber("/annotated_images/raw", Image, callback=cb)
+sub = rospy.Subscriber("/tf_object_detection/debug_image", Image, callback=cb)
 
 rospy.spin()
 

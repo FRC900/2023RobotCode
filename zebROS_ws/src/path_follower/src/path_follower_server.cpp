@@ -332,7 +332,6 @@ class PathAction
 				path_follower_msgs::PathFeedback feedback; // FIXME: Add velocity (probably?)
 				// Spin once to get the most up to date odom and yaw info
 				ros::spinOnce();
-				ROS_INFO_STREAM("Diff between tf and now " << ros::Time::now() - odom_.header.stamp); 
 #ifdef DEBUG
 				// This gets the point closest to current time plus lookahead distance
 				// on the path. We use this to generate a target for the x,y,orientation
