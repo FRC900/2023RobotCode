@@ -706,3 +706,58 @@ size_t HAL_GetComments(char* buffer, size_t size) {
 		*buffer = '\0';
 		return 0;
 }
+
+#include <frc/PWM.h>
+frc::PWM::PWM(int, bool)
+{
+	ROS_ERROR("Called PWM::PWM(int) on unsupported platform");
+}
+frc::PWM::~PWM()
+{
+	ROS_ERROR("Called PWM::~PWM() on unsupported platform");
+}  
+void frc::PWM::SetPulseTime(units::microsecond_t time)
+{
+	ROS_ERROR("Called PWM::SetPulseTime() on unsupported platform");
+}
+units::microsecond_t frc::PWM::GetPulseTime() const
+{
+	ROS_ERROR("Called PWM::GetPulseTime() on unsupported platform");
+}
+void frc::PWM::SetPosition(double)
+{
+	ROS_ERROR("Called PWM::SetPosition(double pos) on unsupported platform");
+}
+double frc::PWM::GetPosition() const
+{
+	ROS_ERROR("Called PWM::GetPosition() const on unsupported platform");
+	return std::numeric_limits<double>::max();
+}
+void frc::PWM::SetSpeed(double)
+{
+	ROS_ERROR("Called PWM::SetSpeed(double speed) on unsupported platform");
+}
+double frc::PWM::GetSpeed() const
+{
+	ROS_ERROR("Called PWM::GetSpeed() const on unsupported platform");
+	return std::numeric_limits<double>::max();
+}
+void frc::PWM::SetDisabled()
+{
+	ROS_ERROR("Called PWM::SetDisabled() on unsupported platform");
+}
+void frc::PWM::InitSendable(wpi::SendableBuilder&)
+{
+	ROS_ERROR("Called PWM::InitSendable(wpi::SendableBuilder& builder) on unsupported platform");
+}
+void frc::PWM::SetBounds(units::microsecond_t, units::microsecond_t,
+						 units::microsecond_t, units::microsecond_t,
+						 units::microsecond_t)
+{
+	ROS_ERROR("Called PWM::SetBounds()) on unsupported platform");
+}
+
+void frc::PWM::SetPeriodMultiplier(PeriodMultiplier)
+{
+	ROS_ERROR("Called PWM::SetPeriodMultipler()) on unsupported platform");
+}

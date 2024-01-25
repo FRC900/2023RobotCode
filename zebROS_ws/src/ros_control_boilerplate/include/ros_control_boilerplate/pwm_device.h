@@ -19,6 +19,12 @@ public:
     PWMDevice(const int joint_index,
               const std::string &joint_name,
               const int pwm_channel,
+              const double output_max,
+              const double deadband_max,
+              const double center,
+              const double output_min,
+              const double deadband_min,
+              const int period_multiplier,
               const bool invert,
               const bool local_hardware,
               const bool local_update);
