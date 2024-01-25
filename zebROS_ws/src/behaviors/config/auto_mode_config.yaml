@@ -28,8 +28,8 @@ auto_mode_5: [""]
 auto_mode_6: ["drive_out_community", "snap_0_before_intake"]
 
 auto_mode_7: ["map_rel_two_note_csv"]
-auto_mode_8: ["drive_2m_and_turn_csv"]
-auto_mode_9: ["map_rel_four_note1_csv", "relocalize", "map_rel_four_note2_csv", "relocalize", "map_rel_four_note3_csv", "relocalize", "map_rel_four_note4_csv", "relocalize", "map_rel_four_note5_csv", "relocalize"]
+auto_mode_8: ["map_rel_four_note1_csv", "map_rel_four_note2_csv", "map_rel_four_note3_csv"]
+auto_mode_9: ["relocalize", "map_rel_four_note1_csv", "relocalize", "map_rel_four_note2_csv", "relocalize", "map_rel_four_note3_csv", "relocalize"]
 
 auto_mode_10: ["GetCone_csv"]
 
