@@ -14,6 +14,7 @@
 #include <algorithm>
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "tf2_ros/transform_listener.h"
+#include "pid_velocity_msg/PIDVelocity.h"
 
 // #define DEBUG
 
@@ -63,7 +64,7 @@ class PathAction
 			, as_(nh_, name, boost::bind(&PathAction::executeCB, this, _1), false)
 			, action_name_(name)
 			, yaw_sub_(nh_.subscribe("/imu/zeroed_imu", 1, &PathAction::yawCallback, this, ros::TransportHints().tcpNoDelay()))
-			, orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1))
+			, orientation_command_pub_(nh_.advertise<pid_velocity_msg::PIDVelocity>("/teleop/velocity_orientation_command", 1))
 			, combine_cmd_vel_pub_(nh_.advertise<std_msgs::Bool>("path_follower_pid/pid_enable", 1, true))
 			, robot_relative_yaw_pub_(nh_.advertise<std_msgs::Float64>("robot_relative_yaw", 1, true))
 			, path_follower_(time_offset)
@@ -192,7 +193,7 @@ class PathAction
 			int current_index = 0;
 
 			std_msgs::Bool enable_msg;
-			std_msgs::Float64 command_msg; 
+			pid_velocity_msg::PIDVelocity command_msg; 
 			auto x_axis_it = axis_states_.find("x");
 			auto &x_axis = x_axis_it->second;
 			auto y_axis_it = axis_states_.find("y");
@@ -238,18 +239,19 @@ class PathAction
 				yaw_msg.data = orientation_state;
 				robot_relative_yaw_pub_.publish(yaw_msg);
 
-				command_msg.data = path_follower_.getYaw(goal->position_path.poses[0].pose.orientation);
-				if (std::isfinite(command_msg.data)) 
+				command_msg.position = path_follower_.getYaw(goal->position_path.poses[0].pose.orientation);
+				command_msg.velocity = path_follower_.getYaw(goal->velocity_path.poses[0].pose.orientation);
+				if (std::isfinite(command_msg.position)) 
 				{
 					orientation_command_pub_.publish(command_msg);
 					#ifdef DEBUG
-					ROS_INFO_STREAM("Orientation: " << command_msg.data);
+					ROS_INFO_STREAM("Orientation: " << command_msg.position << " at angular velocity " << command_msg.velocity);
 					#endif
 				}
 
 				if ((fabs(goal->position_path.poses[0].pose.position.x - map_to_baselink_.transform.translation.x) < final_pos_tol) &&
 					(fabs(goal->position_path.poses[0].pose.position.y - map_to_baselink_.transform.translation.y) < final_pos_tol) &&
-					(fabs(command_msg.data - orientation_state) < final_rot_tol))
+					(fabs(command_msg.position - orientation_state) < final_rot_tol))
 				{
 					ROS_INFO_STREAM("path_follower: successfully aligned to initial waypoint");
 					break;
@@ -318,17 +320,18 @@ class PathAction
 				// waypoint coordinate to each of the PID controllers
 				// And also make sure they continue to be enabled
 				x_axis.setEnable(true);
-				x_axis.setCommand(next_waypoint.position.position.x, next_waypoint.velocity.x); 
+				x_axis.setCommand(next_waypoint.position.position.x, next_waypoint.velocity.linear.x); 
 
 				y_axis.setEnable(true);
-				y_axis.setCommand(next_waypoint.position.position.y, next_waypoint.velocity.y); 
+				y_axis.setCommand(next_waypoint.position.position.y, next_waypoint.velocity.linear.y); 
 
-				command_msg.data = path_follower_.getYaw(next_waypoint.position.orientation) - initial_pose_yaw + initial_field_relative_yaw;
-				if (std::isfinite(command_msg.data)) 
+				command_msg.position = path_follower_.getYaw(next_waypoint.position.orientation) - initial_pose_yaw + initial_field_relative_yaw;
+				command_msg.velocity = next_waypoint.velocity.angular.z;
+				if (std::isfinite(command_msg.position)) 
 				{
 					orientation_command_pub_.publish(command_msg);
 					#ifdef DEBUG
-					ROS_INFO_STREAM("Orientation: " << command_msg.data);
+					ROS_INFO_STREAM("Orientation: " << command_msg.position << " at angular velocity " << command_msg.velocity);
 					#endif
 				}
 

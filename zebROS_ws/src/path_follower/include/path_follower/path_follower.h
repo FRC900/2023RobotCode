@@ -79,7 +79,7 @@ void doTransform(const nav_msgs::Odometry &t_in, nav_msgs::Odometry &t_out, cons
 
 struct PositionVelocity {
 	geometry_msgs::Pose position; // Rename this?
-	geometry_msgs::Vector3 velocity; // FIXME: Change this
+	geometry_msgs::Twist velocity;
 };
 
 class PathFollower
