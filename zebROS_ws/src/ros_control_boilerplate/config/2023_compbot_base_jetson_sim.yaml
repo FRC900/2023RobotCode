@@ -50,6 +50,9 @@ hardware_interface:
 
        - {name: intake, type: talonfxpro, can_bus: CANivore, can_id: 51, local: true}
        
+       - {name: note_conveyor, type: talonfxpro, can_bus: CANivore, can_id: 52, local: true}
+       - {name: note_diverter, type: talonfxpro, can_bus: CANivore, can_id: 53, local: true}
+
        - {name: pcm, type: pcm, pcm_id: 0}
        - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
 
@@ -188,3 +191,17 @@ pigeon2_imu_state_controller:
 candle_controller:
     type: candle_controller/CANdleController
     name: candle1
+
+note_conveyor_controller:
+    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    joint: note_conveyor
+    invert: counterclockwise_positive
+    dynamic_reconfigure: True
+    neutral_mode: Coast
+
+note_diverter_controller:
+    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    joint: note_diverter
+    invert: counterclockwise_positive
+    dynamic_reconfigure: True
+    neutral_mode: Coast

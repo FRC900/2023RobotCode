@@ -47,6 +47,9 @@ hardware_interface:
        - {name: four_bar, type: talonfxpro, can_bus: CANivore, can_id: 41, local: true}
 
        - {name: intake, type: talonfxpro, can_bus: CANivore, can_id: 51, local: true}
+
+       - {name: note_conveyor, type: talonfxpro, can_bus: CANivore, can_id: 52, local: true}
+       - {name: note_diverter, type: talonfxpro, can_bus: CANivore, can_id: 53, local: true}
        
        #- {name: pcm, type: pcm, pcm_id: 0}
        - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
@@ -221,3 +224,17 @@ swerve_drive_state_controller:
         offset: 6.000
     fr_angle:
         offset: 12.9
+
+note_conveyor_talonfxpro_controller:
+    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    joint: note_conveyor
+    invert: counterclockwise_positive
+    dynamic_reconfigure: True
+    neutral_mode: Coast
+
+note_diverter_talonfxpro_controller:
+    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    joint: note_diverter
+    invert: counterclockwise_positive
+    dynamic_reconfigure: True
+    neutral_mode: Coast
