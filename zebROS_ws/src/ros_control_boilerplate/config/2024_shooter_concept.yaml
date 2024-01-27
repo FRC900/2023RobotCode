@@ -25,8 +25,8 @@ hardware_interface:
    run_hal_robot: false
    can_interface: can0
    joints:
-       - {name: left_top_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
-       - {name: right_top_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
+       - {name: left_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
+       - {name: right_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
        - {name: robot_code_ready_rio, local: false, type: ready}
        - {name: robot_code_ready_jetson, local: true, type: ready}
 
@@ -61,9 +61,9 @@ match_state_listener_controller:
     type:      state_listener_controller/MatchStateListenerController
     topic:     /frcrobot_rio/match_data
 
-left_top_shooter_voltage_velocity_controller:
+left_shooter_voltage_velocity_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
-   joint: left_top_shooter_joint
+   joint: left_shooter_joint
    invert: clockwise_positive
    close_loop_values:
       - {kP: 0.2, kI: 0.0, kD: 0.0, kV: 0.0575, kS: 0.0}
@@ -79,9 +79,9 @@ left_top_shooter_voltage_velocity_controller:
    forward_limit_enable: False
    reverse_limit_enable: False
 
-right_top_shooter_voltage_velocity_controller:
+right_shooter_voltage_velocity_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
-   joint: right_top_shooter_joint
+   joint: right_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
       - {kP: 0.2, kI: 0.0, kD: 0.0, kV: 0.0575, kS: 0.0}
