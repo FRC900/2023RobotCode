@@ -308,7 +308,8 @@ bool genPath(behavior_actions::GamePiecePickup::Request &req, behavior_actions::
 	}
 	behavior_actions::DynamicPath dynamic_path_srv;
 	dynamic_path_srv.request.path_name = "game_piece_pickup_path";
-	dynamic_path_srv.request.dynamic_path = spline_gen_srv.response.path;
+	dynamic_path_srv.request.dynamic_position_path = spline_gen_srv.response.path;
+	// TODO maybe set velocity path too?
 	if (!dynamic_path_cli.call(dynamic_path_srv))
 	{
 		ROS_ERROR_STREAM("Can't call dynamic path service in game_piece_path_gen");
