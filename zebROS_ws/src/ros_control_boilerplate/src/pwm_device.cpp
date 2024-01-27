@@ -15,7 +15,8 @@ PWMDevice::PWMDevice(const int joint_index,
                      const int period_multiplier,
                      const bool invert,
                      const bool local_hardware,
-                     const bool local_update)
+                     const bool local_update,
+                     const bool print)
     : name_{joint_name}
     , pwm_channel_{pwm_channel}
     , invert_{invert}
@@ -23,6 +24,7 @@ PWMDevice::PWMDevice(const int joint_index,
     , local_update_{local_update}
     , pwm_{local_hardware ? std::make_unique<frc::PWM>(pwm_channel) : nullptr}
 {
+    ROS_INFO_STREAM("pwm setbounds : " << output_max << " " << deadband_max << " " << center << " " << deadband_min << " " << output_min);
     pwm_->SetBounds(units::microsecond_t{output_max},
                     units::microsecond_t{deadband_max},
                     units::microsecond_t{center},
@@ -45,11 +47,14 @@ PWMDevice::PWMDevice(const int joint_index,
     }
     pwm_->SetPeriodMultiplier(frc_period_multiplier);
     // TODO : old code had a check for duplicate use of PWM channels? Needed?
-    ROS_INFO_STREAM("Loading joint " << joint_index << "=" << name_ <<
-                    (local_update_ ? " local" : " remote") << " update, " <<
-                    (local_hardware_ ? "local" : "remote") << " hardware" <<
-                    " as PWM " << pwm_channel_ <<
-                    " invert " << invert_);
+    if (print)
+    {
+        ROS_INFO_STREAM("Loading joint " << joint_index << "=" << name_ <<
+                        (local_update_ ? " local" : " remote") << " update, " <<
+                        (local_hardware_ ? "local" : "remote") << " hardware" <<
+                        " as PWM " << pwm_channel_ <<
+                        " invert " << invert_);
+    }
 }
 
 PWMDevice::~PWMDevice() = default;
@@ -81,9 +86,14 @@ void PWMDevice::write(const ros::Time &/*time*/, const ros::Duration &/*period*/
     {
         if (local_hardware_)
         {
-            pwm_->SetSpeed(setpoint);
+            writeImpl(setpoint);
         }
         state_ = setpoint;
         ROS_INFO_STREAM("PWM " << name_ << " at channel" << pwm_channel_ << " set to " << state_);
     }
+}
+
+void PWMDevice::writeImpl(const double value)
+{
+    pwm_->SetSpeed(value);
 }

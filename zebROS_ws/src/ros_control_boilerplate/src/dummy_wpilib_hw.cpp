@@ -515,7 +515,12 @@ int32_t HAL_SendError(HAL_Bool /*isError*/, int32_t errorCode, HAL_Bool /*isLVCo
 			<< " = \"" <<  HAL_GetErrorMessage(errorCode)
 			<< "\" : details = \"" << details << "\"");
 
-	errorQueue->enqueue(errorCode, std::string(details));
+	// errorQueue will be null if we're running Rio hardware (non-sim) interface
+	// on a laptop. This is a really uncommon except for obscure debugging cases
+	if (errorQueue)
+	{
+		errorQueue->enqueue(errorCode, std::string(details));
+	}
 	return 0;
 }
 }
@@ -723,6 +728,7 @@ void frc::PWM::SetPulseTime(units::microsecond_t time)
 units::microsecond_t frc::PWM::GetPulseTime() const
 {
 	ROS_ERROR("Called PWM::GetPulseTime() on unsupported platform");
+	return units::microsecond_t{0};
 }
 void frc::PWM::SetPosition(double)
 {
