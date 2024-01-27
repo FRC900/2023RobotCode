@@ -153,7 +153,7 @@ class PathAction
 			const double initial_field_relative_yaw = path_follower_.getYaw(orientation_);
 			ROS_INFO_STREAM("==== initial_field_relative_yaw = " << initial_field_relative_yaw);
 
-			const double initial_pose_yaw = path_follower_.getYaw(map_to_baselink_.transform.rotation);
+			const double initial_pose_yaw = path_follower_.getYaw(orientation_);
 			ROS_INFO_STREAM("==== initial_pose_yaw = " << initial_pose_yaw);
 
 			// Transform the final point from robot to odom coordinates. Used each iteration to
@@ -167,7 +167,7 @@ class PathAction
 			//debug
 			ROS_INFO_STREAM(goal->position_path.poses[num_waypoints - 1].pose.position.x << ", " << goal->position_path.poses[num_waypoints - 1].pose.position.y << ", " << path_follower_.getYaw(goal->position_path.poses[num_waypoints - 1].pose.orientation));
 
-			ROS_INFO_STREAM("Current odom values X = " << map_to_baselink_.transform.translation.x << " Y = " << map_to_baselink_.transform.translation.y << " Rot " << path_follower_.getYaw(map_to_baselink_.transform.rotation)); 
+			ROS_INFO_STREAM("Current odom values X = " << map_to_baselink_.transform.translation.x << " Y = " << map_to_baselink_.transform.translation.y << " Rot " << path_follower_.getYaw(orientation_)); 
 			for (size_t i = 0; i < num_waypoints - 1; i++) {
 				ROS_INFO_STREAM("Untransformed waypoint: X = " << goal->position_path.poses[i].pose.position.x << " Y = " << goal->position_path.poses[i].pose.position.y << " rotation = " << path_follower_.getYaw(goal->position_path.poses[i].pose.orientation));
 				geometry_msgs::Pose temp_pose = goal->position_path.poses[i].pose;
@@ -181,15 +181,9 @@ class PathAction
 				// ROS_INFO_STREAM("Transformed waypoint: X = " << new_pose.position.x << " Y = " << new_pose.position.y << " rotation = " << path_follower_.getYaw(new_pose.orientation));
 			}
 			ROS_INFO_STREAM("========End path follower logs ==========");
+
 			ros::Rate r(ros_rate_);
-			double final_distance = 0;
-			// send path to initialize path follower
-			if (!path_follower_.loadPath(goal->position_path, goal->velocity_path, final_distance))
-			{
-				ROS_ERROR_STREAM("Failed to load path");
-				preempted = true;
-			}
-			
+
 			int current_index = 0;
 
 			std_msgs::Bool enable_msg;
@@ -198,10 +192,6 @@ class PathAction
 			auto &x_axis = x_axis_it->second;
 			auto y_axis_it = axis_states_.find("y");
 			auto &y_axis = y_axis_it->second;
-			//in loop, send PID enable commands to rotation, x, y
-			double distance_travelled = 0;
-
-			const auto start_time = ros::Time::now().toSec();
 
 			// Align to first waypoint (within tolerance)
 			x_axis.setEnable(true);
@@ -233,7 +223,7 @@ class PathAction
 				y_axis.setCommand(goal->position_path.poses[0].pose.position.y, 0);
 				x_axis.setState(map_to_baselink_.transform.translation.x);
 				y_axis.setState(map_to_baselink_.transform.translation.y);
-				const double orientation_state = path_follower_.getYaw(map_to_baselink_.transform.rotation);
+				const double orientation_state = path_follower_.getYaw(orientation_);
 
 				std_msgs::Float64 yaw_msg;
 				yaw_msg.data = orientation_state;
@@ -259,6 +249,18 @@ class PathAction
 				r.sleep();
 			}
 
+			double final_distance = 0;
+			// send path to initialize path follower
+			if (!path_follower_.loadPath(goal->position_path, goal->velocity_path, final_distance))
+			{
+				ROS_ERROR_STREAM("Failed to load path");
+				preempted = true;
+			}
+
+			//in loop, send PID enable commands to rotation, x, y
+			double distance_travelled = 0;
+
+			const auto start_time = ros::Time::now().toSec();
 
 			while (ros::ok() && !preempted && !timed_out && !succeeded)
 			{
@@ -285,7 +287,7 @@ class PathAction
 				ROS_INFO_STREAM("----------------------------------------------");
 				ROS_INFO_STREAM("current_position = " << map_to_baselink_.transform.translation.x
 					<< " " << map_to_baselink_.transform.translation.y
-					<< " " << path_follower_.getYaw(map_to_baselink_.transform.rotation));	// PID controllers.
+					<< " " << path_follower_.getYaw(orientation_));	// PID controllers.
 #endif
 				std::optional<PositionVelocity> next_waypoint_opt = path_follower_.run(distance_travelled, current_index); 
 				PositionVelocity next_waypoint = *next_waypoint_opt;
@@ -346,7 +348,7 @@ class PathAction
 					timed_out = true;
 				}
 
-				const double orientation_state = path_follower_.getYaw(map_to_baselink_.transform.rotation);
+				const double orientation_state = path_follower_.getYaw(orientation_);
 				//ROS_INFO_STREAM("orientation_state = " << orientation_state);
 				
 				auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start_time_).count();
