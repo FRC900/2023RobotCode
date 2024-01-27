@@ -1,0 +1,11 @@
+#defining goal
+uint8 left_shooter_speed
+unit8 right_shooter_speed
+
+---
+#defining result
+bool success
+
+---
+#feedback
+bool is_shooting_at_speed

@@ -1,7 +1,10 @@
+#! /usr/bin/env python
 # not the actual shooter controller, but probably the fastest way to get running
 
+import roslib
 import rospy
 import std_msgs.msg
+import actionlib
 
 
 percent = 0.5
@@ -25,7 +28,7 @@ def speed_cb(msg):
     
 # left speeed 630.0, Right speed 210.0
 
-rospy.init_node("motor_test")
+rospy.init_node("shooter_action_server")
 left_pub = rospy.Publisher("/frcrobot_jetson/left_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
 right_pub = rospy.Publisher("/frcrobot_jetson/right_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
 
