@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   geometry_msgs
+  
 )
 
 ## System dependencies are found with CMake's conventions
@@ -102,8 +103,12 @@ add_action_files(
 		Intaking2023.action
 		FourbarElevatorPath2023.action
 		AlignToSubstation2023.action
+<<<<<<< HEAD
 		NoteDiverter.action
 		Claw2024.action
+=======
+		Shooter2024.action
+>>>>>>> b6c11cd5 (fixes to shooting action lib thing, lacks client interactions and needs simtesting)
 		#GoToColor.action
 		#RotatePanel.action
 		DriveToObject.action

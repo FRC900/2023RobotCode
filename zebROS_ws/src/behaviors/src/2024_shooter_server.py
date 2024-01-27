@@ -3,36 +3,83 @@
 
 import roslib
 import rospy
-import std_msgs.msg
 import actionlib
+import std_msgs.msg
+from talon_state_msgs.msg import TalonFXProState
+from behavior_actions.msg import Shooter2024Action, Shooter2024Goal, Shooter2024Feedback
 
 
-percent = 0.5
-speed = 420.0
+global left_joint_velocity
+global left_joint_control_velocity
+global right_joint_velocity
+global right_joint_control_velocty
 
-def percent_cb(msg):
-    global percent
-    percent = msg.data
-    rospy.loginfo(f"Set percent to {percent}")
+_feedback = Shooter2024Feedback()
 
-# takes in speed in rad/s and percent from 0 to 1 
-def speed_cb(msg):
-    global left_pub, right_pub, percent
-    speed = msg.data
-    left_speed = speed + speed * percent
-    right_speed = speed - speed * percent
-    rospy.loginfo(f"Left speed {left_speed}, Right speed {right_speed}, percent {percent}")
-    left_pub.publish(std_msgs.msg.Float64(left_speed))
-    right_pub.publish(std_msgs.msg.Float64(right_speed))
+
+class ShooterServer2024:
+    def __init__(self):
+        self.server = actionlib.SimpleActionServer('shoot_notes', Shooter2024Action, self.execute_cb, auto_start = False)
+        #figure out how client stuff works
+        rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, callback)
+
+
+        
+        self.server.start()
+
+    def execute_cb(self, goal):
+        global left_joint_velocity
+        global left_joint_control_velocity
+        global right_joint_velocity
+        global right_joint_control_velocty
+        
+        
+        if (((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocty) >= 1.05)):
+            #loginfo percent diff plus or minsu 5
+            #log speed
+            #roslog.info
+            rospy.loginfo("Shooter Velocity is within 5 percent difference of set value")
+            rospy.loginfo("Logging left_joint_velocity: %s Logging right_joint_velocity: %s" % (left_joint_velocity,  right_joint_velocity))
+            _feedback.is_shooting_at_speed = True
+
+
+            #set feedback to true because velocity vs control is within error margin
+
+
+
+        #action left shooter speeed and right shooter speed are asccessible via goal.left ...
+
+        
+    
+    def callback(data):
+        global left_joint_velocity
+        global left_joint_control_velocity
+        global right_joint_velocity
+        global right_joint_control_velocty
+        for i in range(len(data.name)):
+            if (data.name[i] == "left_joint"):
+                left_joint_velocity = data.velocity[i]
+                left_joint_control_velocity = data.control_velocity[i]
+            elif (data.name[i] == "right_joint"):
+                right_joint_velocity = data.velocity[i]
+                right_joint_control_velocty = data.control_velocity[i]
+        return
+    
+
+
+
+
+
+
+
+
+
+
 
     
-# left speeed 630.0, Right speed 210.0
+if __name__ == '__main__':
+    rospy.init_node('shoot_notes_server_2024')
+    
+    server = ShooterServer2024()
+    rospy.spin()
 
-rospy.init_node("shooter_action_server")
-left_pub = rospy.Publisher("/frcrobot_jetson/left_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
-right_pub = rospy.Publisher("/frcrobot_jetson/right_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
-
-
-rospy.Subscriber("/shooter_speed", std_msgs.msg.Float64, speed_cb)
-rospy.Subscriber("/shooter_percent", std_msgs.msg.Float64, percent_cb)
-rospy.spin()
