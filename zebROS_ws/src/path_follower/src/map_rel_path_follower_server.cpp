@@ -202,6 +202,62 @@ class PathAction
 
 			const auto start_time = ros::Time::now().toSec();
 
+			// Align to first waypoint (within tolerance)
+			x_axis.setEnable(true);
+			x_axis.setCommand(goal->position_path.poses[0].pose.position.x, 0); 
+			ROS_WARN_STREAM("Setting inital command to pos:" << goal->position_path.poses[0].pose.position.x << " Velocity: " << goal->velocity_path.poses[0].pose.position.x);
+			y_axis.setEnable(true);
+			y_axis.setCommand(goal->position_path.poses[0].pose.position.y, 0); 
+			ROS_WARN_STREAM("Setting inital command to pos:" << goal->position_path.poses[0].pose.position.x << " Velocity: " << goal->velocity_path.poses[0].pose.position.x);
+
+			while (ros::ok() && !preempted && !timed_out && !succeeded)
+			
+			{
+				ros::spinOnce();
+				try{
+					// This gives us the transform from a point in base_link to map.
+					// This is correct, although counterintuitive and we don't know why
+					// Because it feels like it should be the opposite, but breaks when we do what is "correct".
+					map_to_baselink_ = tf_buffer_.lookupTransform(map_frame_, "base_link", ros::Time(0));
+				}
+				catch (tf2::TransformException &ex) {
+					ROS_ERROR_STREAM("path_follower: no map to base link transform found! (!!)" << ex.what());
+					continue;
+				}
+				enable_msg.data = true;
+				combine_cmd_vel_pub_.publish(enable_msg);
+				x_axis.setEnable(true);
+				x_axis.setCommand(goal->position_path.poses[0].pose.position.x, 0); 
+				y_axis.setEnable(true);
+				y_axis.setCommand(goal->position_path.poses[0].pose.position.y, 0);
+				x_axis.setState(map_to_baselink_.transform.translation.x);
+				y_axis.setState(map_to_baselink_.transform.translation.y);
+				const double orientation_state = path_follower_.getYaw(map_to_baselink_.transform.rotation);
+
+				std_msgs::Float64 yaw_msg;
+				yaw_msg.data = orientation_state;
+				robot_relative_yaw_pub_.publish(yaw_msg);
+
+				command_msg.data = path_follower_.getYaw(goal->position_path.poses[0].pose.orientation);
+				if (std::isfinite(command_msg.data)) 
+				{
+					orientation_command_pub_.publish(command_msg);
+					#ifdef DEBUG
+					ROS_INFO_STREAM("Orientation: " << command_msg.data);
+					#endif
+				}
+
+				if ((fabs(goal->position_path.poses[0].pose.position.x - map_to_baselink_.transform.translation.x) < final_pos_tol) &&
+					(fabs(goal->position_path.poses[0].pose.position.y - map_to_baselink_.transform.translation.y) < final_pos_tol) &&
+					(fabs(command_msg.data - orientation_state) < final_rot_tol))
+				{
+					ROS_INFO_STREAM("path_follower: successfully aligned to initial waypoint");
+					break;
+				}
+				r.sleep();
+			}
+
+
 			while (ros::ok() && !preempted && !timed_out && !succeeded)
 			{
 				auto start_time_ = std::chrono::high_resolution_clock::now();
