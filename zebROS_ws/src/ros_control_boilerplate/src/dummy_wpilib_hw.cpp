@@ -503,6 +503,44 @@ int32_t HAL_SetJoystickOutputs(int32_t, int64_t,
 	ROS_ERROR("Called HAL_SetJoystickOutputs(int32_t joystickNum, int64_t outputs, int32_t leftRumble, int32_t rightRumble) on unsupported device");
 	return -1;
 }
+
+int32_t HAL_GetTeamNumber(void)
+{
+	ROS_WARN("HAL_GetTeamNumber() called on unsupported platform");
+	return -1;
+}
+
+HAL_Bool HAL_GetRSLState(int32_t *status)
+{
+	*status = -1;
+	ROS_WARN("HAL_GetRSLState() called on unsupported platform");
+	return false;
+}
+HAL_Bool HAL_GetSystemTimeValid(int32_t *status)
+{
+	*status = -1;
+	ROS_WARN("HAL_GetSystemTimeValid() called on unsupported platform");
+	return false;
+}
+
+void HAL_SetUserRailEnabled6V(HAL_Bool, int32_t* status) {
+	*status = -1;
+	ROS_WARN("HAL_SetUserRailEnabled6V() called on unsupported platform");
+}
+void HAL_SetUserRailEnabled5V(HAL_Bool, int32_t* status) {
+	*status = -1;
+	ROS_WARN("HAL_SetUserRailEnabled5V() called on unsupported platform");
+}
+void HAL_SetUserRailEnabled3V3(HAL_Bool, int32_t* status) {
+	*status = -1;
+	ROS_WARN("HAL_SetUserRailEnabled3V3() called on unsupported platform");
+}
+double HAL_GetCPUTemp(int32_t *status)
+{
+	*status = -1;
+	ROS_WARN("HAL_GetCPUTemp() called on unsupported platform");
+	return -1;
+}
 } /// extern "C"
 
 #include <ros_control_boilerplate/error_queue.h>

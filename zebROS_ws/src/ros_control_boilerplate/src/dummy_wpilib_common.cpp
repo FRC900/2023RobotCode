@@ -170,6 +170,9 @@ NetworkTable::NetworkTable(NT_Inst /*inst*/, std::string_view /*path*/, NetworkT
 
 NetworkTable::~NetworkTable() = default;
 
+void Release(NT_Handle)
+{
+}
 }
 
 #if 0
@@ -217,4 +220,19 @@ int FRC_NetworkCommunication_getJoystickAxes(uint8_t joystickNum, struct Joystic
 {
 	axes->count = 0;
 	return 1;
+}
+
+#include "hal/LEDs.h"
+extern "C"
+{
+void HAL_SetRadioLEDState(HAL_RadioLEDState state, int32_t* status)
+{
+	ROS_WARN("HAL_SetRaiodLEDState called on unsupported platform");
+}
+
+HAL_RadioLEDState HAL_GetRadioLEDState(int32_t *status)
+{
+	ROS_WARN("HAL_GetRadioLEDState called on unsupported platform");
+	return HAL_RadioLED_kOff;
+}
 }
