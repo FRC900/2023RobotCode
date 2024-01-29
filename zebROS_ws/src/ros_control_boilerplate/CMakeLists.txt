@@ -151,7 +151,7 @@ add_library(frc_robot_interface STATIC
 	src/ready_devices.cpp
 	src/rumble_device.cpp
 	src/rumble_devices.cpp
-    src/servo_device.cpp
+	src/servo_device.cpp
 	src/servo_devices.cpp
 	src/solenoid_device.cpp
 	src/solenoid_devices.cpp

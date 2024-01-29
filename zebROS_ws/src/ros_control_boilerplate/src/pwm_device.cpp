@@ -17,12 +17,12 @@ PWMDevice::PWMDevice(const int joint_index,
                      const bool local_hardware,
                      const bool local_update,
                      const bool print)
-    : name_{joint_name}
+    : pwm_{local_hardware ? std::make_unique<frc::PWM>(pwm_channel) : nullptr}
+    , name_{joint_name}
     , pwm_channel_{pwm_channel}
     , invert_{invert}
     , local_hardware_{local_hardware}
     , local_update_{local_update}
-    , pwm_{local_hardware ? std::make_unique<frc::PWM>(pwm_channel) : nullptr}
 {
     ROS_INFO_STREAM("pwm setbounds : " << output_max << " " << deadband_max << " " << center << " " << deadband_min << " " << output_min);
     pwm_->SetBounds(units::microsecond_t{output_max},
@@ -46,7 +46,6 @@ PWMDevice::PWMDevice(const int joint_index,
             throw std::runtime_error("Invalid PWM period multiplier " + std::to_string(period_multiplier) + " for joint " + joint_name);
     }
     pwm_->SetPeriodMultiplier(frc_period_multiplier);
-    // TODO : old code had a check for duplicate use of PWM channels? Needed?
     if (print)
     {
         ROS_INFO_STREAM("Loading joint " << joint_index << "=" << name_ <<
