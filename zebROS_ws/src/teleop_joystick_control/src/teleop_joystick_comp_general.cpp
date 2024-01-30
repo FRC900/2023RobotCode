@@ -3,10 +3,7 @@
 
 #include "ros/ros.h"
 #include "frc_msgs/JoystickState.h"
-//#define NEED_JOINT_STATES
-#ifdef NEED_JOINT_STATES
-#include "sensor_msgs/JointState.h"
-#endif
+
 #include "geometry_msgs/Twist.h"
 #include <string>
 #include <cmath>
@@ -60,7 +57,6 @@ struct DynamicReconfigVars
 	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
 	double angle_to_add{0.135};
 	double angle_threshold{angles::from_degrees(1)};
-	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
 } config;
 
 std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
@@ -69,6 +65,7 @@ std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 
 bool diagnostics_mode = false;
 
+// FIXME: Remove this somehow
 frc_msgs::ButtonBoxState2023 button_box;
 
 // array of joystick_states messages for multiple joysticks
@@ -82,7 +79,6 @@ ros::ServiceClient BrakeSrv;
 ros::ServiceClient ParkSrv;
 ros::ServiceClient IMUZeroSrv;
 ros::ServiceClient SwerveOdomZeroSrv;
-ros::ServiceClient FourbarRezeroSrv;
 
 ros::Publisher auto_mode_select_pub;
 
@@ -101,11 +97,10 @@ int direction_y{};
 int direction_z{};
 
 bool robot_is_disabled{false};
-bool elevator_up = false;
 bool no_driver_input{false};
 
+// FIXME: How are these used?
 uint8_t grid;
-uint8_t game_piece;
 uint8_t node;
 
 uint8_t auto_starting_pos = 1; // 1 indexed
@@ -120,13 +115,14 @@ bool moved = false;
 bool pathed = false;
 bool last_no_driver_input = false;
 
-uint8_t autoMode() {
+uint8_t autoMode(int year) {
 	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
 	//        L  M      R
 	// up =   1, 2, and 3
 	// mid =  4, 5, and 6
 	// down = 7, 8, and 9
-	ROS_INFO_STREAM("teleop_joystick_comp_2023 : auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
+	ROS_INFO_STREAM("teleop_joystick_comp_" << std::to_string(year) 
+		<< ": auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
 	return auto_mode * 3 + auto_starting_pos;
 }
 
@@ -153,7 +149,6 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 	}
 }
 
-ros::ServiceClient snapConeCubeSrv;
 ros::ServiceClient setCenterSrv;
 
 void moveDirection(int x, int y, int z) {
@@ -186,60 +181,13 @@ void sendDirection() {
 void publish_diag_cmds(void)
 {
 	// should publish commands to the diagnostic mode nodes
+	ROS_WARN("Called unfinished function \"publish_diag_cmds\" ");
 }
 
 void zero_all_diag_commands(void)
 {
 	// should zero out all diagnostic mode commands
-}
-
-std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
-
-size_t elevator_idx = std::numeric_limits<size_t>::max();
-double elevator_height{0};
-double elevator_setpoint{0};
-
-void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
-{           
-	// fourbar_master_idx == max of size_t at the start
-	if (elevator_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
-	{
-		for (size_t i = 0; i < talon_state.name.size(); i++)
-		{
-			if (talon_state.name[i] == "elevator_leader")
-			{
-				elevator_idx = i;
-				break;
-			}
-		}
-	}
-	if (elevator_idx != std::numeric_limits<size_t>::max())
-	{
-		elevator_height = talon_state.position[elevator_idx];
-		elevator_setpoint = talon_state.control_position[elevator_idx];
-
-		pathed = (elevator_height >= config.elevator_threshold);
-		// if we are currently above the height or want to go above the height
-		if (elevator_height > config.elevator_threshold || elevator_setpoint > config.elevator_threshold) {
-			teleop_cmd_vel->setSuperSlowMode(true);
-		}
-		else {
-			teleop_cmd_vel->setSuperSlowMode(false);
-		}
-	}
-	else {
-		ROS_ERROR_STREAM_THROTTLE(0.1, "teleop_joystick_comp_2023 : Can not find talon with name = elevator_leader");
-	}
-}
-
-void preemptActionlibServers(void)
-{
-	ROS_WARN_STREAM("Preempting ALL actionlib servers!");
-	// dont forget to add new actionlib servers here
+	ROS_WARN("Called unfinished function \"zero_all_diag_commands\" ");
 }
 
 bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
@@ -253,31 +201,7 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 	return true;
 }
 
-
-
-void place() {
-	behavior_actions::Placing2023Goal goal;
-	goal.node = node;
-	goal.piece = game_piece;
-	goal.override_game_piece = true;
-	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
-	placing_ac->sendGoal(goal);
-	moved = !moved;
-}
-
-// start at waiting to align
-// when driver transition becomes true, and we are at waiting to align, then align
-// if aligning and you see press callback, place
-// if on placing and see a press event, go to waiting to align  
-enum AutoPlaceState {
-	WAITING_TO_ALIGN = 0,
-	ALIGNING = 1,
-	PLACING = 2,
-};
-
-AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
-uint8_t intake_piece = 0;
-
+// FIXME: Can we make a general ButtonBox spec?
 void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
 {
 	//ROS_INFO_STREAM("Button Box callback running!");
@@ -675,8 +599,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	}
 }
 
-bool aligned_to_game_piece = false;
-
 void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)
 {
 	//So the code can use specific joysticks
@@ -782,6 +704,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: buttonA
 			if(joystick_states_array[0].buttonAPress)
 			{
+				// FIXME: Make year general
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cone and enabling robot relative driving mode!");
 				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
 				{
@@ -804,6 +727,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: buttonB
 			if(joystick_states_array[0].buttonBPress)
 			{
+				// FIXME: Make year general
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cube and enabling robot relative driving mode!");
 				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
 				{
@@ -1220,12 +1144,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	}
 }
 
-#ifdef NEED_JOINT_STATES
-void jointStateCallback(const sensor_msgs::JointState &joint_state)
-{
-	// TODO - remove this if not used
-}
-#endif
 
 int main(int argc, char **argv)
 {
@@ -1255,14 +1173,6 @@ int main(int argc, char **argv)
 	if(!n_params.getParam("min_speed", config.min_speed))
 	{
 		ROS_ERROR("Could not read min_speed in teleop_joystick_comp");
-	}
-	if(!n_params.getParam("max_speed_elevator_extended", config.max_speed_elevator_extended))
-	{
-		ROS_ERROR("Could not read max_speed_elevator_extended in teleop_joystick_comp");
-	}
-	if(!n_params.getParam("max_rot_elevator_extended", config.max_rot_elevator_extended))
-	{
-		ROS_ERROR("Could not read max_rot_elevator_extended in teleop_joystick_comp");
 	}
 	if(!n_params.getParam("max_speed", config.max_speed))
 	{
@@ -1318,21 +1228,6 @@ int main(int argc, char **argv)
 		ROS_ERROR("Could not read angle_to_add in teleop_joystick_comp");
 	}
 
-	if(!n_params.getParam("cone_tolerance", config.cone_tolerance))
-	{
-		ROS_ERROR("Could not read cone_tolerance in teleop_joystick_comp");
-	}
-
-	if(!n_params.getParam("cube_tolerance", config.cube_tolerance))
-	{
-		ROS_ERROR("Could not read cube_tolerance in teleop_joystick_comp");
-	}
-
-	if(!n_params.getParam("match_time_to_park", config.match_time_to_park))
-	{
-		ROS_ERROR("Could not read match_time_to_park in teleop_joystick_comp");
-	}
-
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
 
 	ddr.registerVariable<double>("joystick_deadzone", &config.joystick_deadzone, "Joystick deadzone, in percent", 0., 1.);
@@ -1349,13 +1244,8 @@ int main(int argc, char **argv)
 	ddr.registerVariable<double>("trigger_threshold", &config.trigger_threshold, "Amount trigger has to be pressed to trigger action", 0., 1.);
 	ddr.registerVariable<double>("stick_threshold", &config.stick_threshold, "Amount stick has to be moved to trigger diag mode action", 0., 1.);
 	ddr.registerVariable<double>("imu_zero_angle", &config.imu_zero_angle, "Value to pass to imu/set_zero when zeroing", -360., 360.);
-	ddr.registerVariable<double>("max_speed_elevator_extended", &config.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2);
-	ddr.registerVariable<double>("max_rot_elevator_extended", &config.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.);
 	ddr.registerVariable<double>("rotation_epsilon", &config.rotation_epsilon, "rotation_epsilon", 0.0, 1.0);
 	ddr.registerVariable<double>("angle_to_add", &config.angle_to_add, "angle_to_add", 0.0, 10);
-	ddr.registerVariable<double>("cone_tolerance", &config.cone_tolerance, "cone_tolerance", 0.0, 0.5);
-	ddr.registerVariable<double>("cube_tolerance", &config.cube_tolerance, "cube_tolerance", 0.0, 0.5);
-	ddr.registerVariable<double>("match_time_to_park", &config.match_time_to_park, "match_time_to_park", 0.0, 60.0);
 
 	ddr.publishServicesTopics();
 
@@ -1367,20 +1257,16 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	ParkSrv = n.serviceClient<std_srvs::SetBool>("/frcrobot_jetson/swerve_drive_controller/toggle_park", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero_msgs::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
-	snapConeCubeSrv = n.serviceClient<teleop_joystick_control::SnapConeCube>("/snap_to_angle/snap_cone_cube", false, service_connection_header);
-	setCenterSrv = n.serviceClient<talon_swerve_drive_controller_msgs::SetXY>("/frcrobot_jetson/swerve_drive_controller/change_center_of_rotation", false, service_connection_header);	
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	SwerveOdomZeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/reset_odom", false, service_connection_header);
-	FourbarRezeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/four_bar_controller_2023/rezero_service", false, service_connection_header);
-#ifdef NEED_JOINT_STATES
-	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
-#endif
+
 	ros::Subscriber talon_states_sub = n.subscribe("/frcrobot_jetson/talonfxpro_states", 1, &talonFXProStateCallback);
 	ros::Subscriber match_state_sub = n.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
 	ros::ServiceServer robot_orient_service = n.advertiseService("robot_orient", orientCallback);
 
 	auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
 
+	// FIXME: These are specific actions! Change or delete 
 	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
 	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
 	pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
