@@ -42,6 +42,26 @@ hardware_interface:
        - {name: br_angle, type: talonfxpro, can_bus: CANivore, can_id: 14, local: true}
        - {name: bl_drive, type: talonfxpro, can_bus: CANivore, can_id: 23, local: true}
        - {name: bl_angle, type: talonfxpro, can_bus: CANivore, can_id: 13, local: true}
+     
+        #intake
+       - {name: intake, type: talonfxpro, can_bus: CANivore, can_id: 15, local: true}
+       
+       #arm
+       - {name: arm_elbow, type: talonfxpro, can_bus: CANivore, can_id: 31, local: true}
+       - {name: arm_wrist, type: talonfxpro, can_bus: CANivore, can_id: 32, local: true}
+
+       #climb
+       - {name: climb_leader, type: talonfxpro, can_bus: CANivore, can_id: 41, local: true}
+       - {name: climb_follower, type: talonfxpro, can_bus: CANivore, can_id: 42, local: true}
+
+       #shooter
+       - {name: shooter_left, type: talonfxpro, can_bus: CANivore, can_id: 51, local: true}
+       - {name: shooter_right, type: talonfxpro, can_bus: CANivore, can_id: 52, local: true}
+
+       #Claw/Diverter
+       - {name: claw_diverter, type: can_talon_srx, can_bus: can0, can_id: 16, local: true}
+
+       
        
        #- {name: pcm, type: pcm, pcm_id: 0}
        - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
