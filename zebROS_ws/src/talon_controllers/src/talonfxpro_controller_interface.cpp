@@ -779,7 +779,7 @@ bool TalonFXProCIParams::readEnableReadThread(const ros::NodeHandle &n)
 
 bool TalonFXProCIParams::readTypeStringControlMode(const ros::NodeHandle &n)
 {
-    if (std::string type_str; n.getParam("type_string_control_mode", type_str))
+    if (std::string type_str; n.getParam("type", type_str))
     {
         if (type_str == "talonfxpro_controllers/DutyCycleOutController")
         {
