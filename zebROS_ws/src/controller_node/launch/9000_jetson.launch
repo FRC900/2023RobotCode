@@ -37,6 +37,7 @@
 			 latency_compensation_state_controller
 			 pigeon2_state_controller
 			 intake_voltage_controller
+			 diverter_voltage_controller
 			 pigeon2_imu_state_controller
 			 swerve_drive_controller
 			 swerve_drive_state_controller

@@ -48,7 +48,8 @@ hardware_interface:
         - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
 
         # - {name: babys_first_orchestra, type: orchestra, id: 1}
-        - {name: intake_joint, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
+        - {name: intake, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
+        - {name: diverter, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
         - {name: CANivore, type: can_bus_status}
         - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: fl_drive, type: talonfx}, {name: fl_angle, type: talonfx}, {name: fr_drive, type: talonfx}, {name: fr_angle, type: talonfx}, {name: br_drive, type: talonfx}, {name: br_angle, type: talonfx}, {name: bl_drive, type: talonfx}, {name: bl_angle, type: talonfx}, {name: pigeon2, type: pigeon2_yaw} ] }
 
@@ -95,9 +96,15 @@ joint_state_controller_jetson:
    type:         joint_state_controller/JointStateController
    publish_rate: 100
 
-frisbee_voltage_controller:
+intake_voltage_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
-    joint: frisbee_joint
+    joint: intake
+    neutral_mode: Coast
+    dynamic_reconfigure: True
+
+diverter_voltage_controller:
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
+    joint: diverter
     neutral_mode: Coast
     dynamic_reconfigure: True
 
