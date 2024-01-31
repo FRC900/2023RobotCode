@@ -103,6 +103,7 @@ add_action_files(
 		FourbarElevatorPath2023.action
 		AlignToSubstation2023.action
 		NoteDiverter.action
+		Claw2024.action
 		#GoToColor.action
 		#RotatePanel.action
 )
