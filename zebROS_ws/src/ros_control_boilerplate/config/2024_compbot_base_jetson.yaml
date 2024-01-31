@@ -163,7 +163,6 @@ candle_controller:
     type: candle_controller/CANdleController
     name: candle1
 
-<<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
 latency_compensation_state_controller:
   type: latency_compensation_state_controller/LatencyCompensationStateController
   publish_rate: 250
@@ -200,11 +199,6 @@ swerve_drive_state_controller:
 note_conveyor_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: intake
-=======
-note_conveyor_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
-    joint: note_conveyor
->>>>>>> 21c09ce0 (added controllers for sim motors):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml
     invert: counterclockwise_positive
     dynamic_reconfigure: True
     neutral_mode: Coast
@@ -229,4 +223,13 @@ claw_controller:
     invert: counterclockwise_positive
     dynamic_reconfigure: True
     neutral_mode: Coast
+<<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
 >>>>>>> 21c09ce0 (added controllers for sim motors):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml
+=======
+
+claw_controller:
+    type: talon_controllers/TalonPercentOutputController
+    joint: claw
+    dynamic_reconfigure: True
+    voltage_compensation_Enable: True
+>>>>>>> 42c2d2e3 (logic set up except for specifics of reading when switch is pressed):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml

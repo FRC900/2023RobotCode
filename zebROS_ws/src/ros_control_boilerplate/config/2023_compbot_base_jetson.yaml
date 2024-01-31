@@ -254,4 +254,3 @@ note_diverter_talonfxpro_controller:
     invert: counterclockwise_positive
     dynamic_reconfigure: True
     neutral_mode: Coast
->>>>>>> 21c09ce0 (added controllers for sim motors)
