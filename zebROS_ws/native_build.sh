@@ -25,9 +25,6 @@ if [ $? -eq 1 ]; then
 		canifier_controller \
 		demo_tf_node \
 		field \
-		tagslam \
-		tagslam_test \
-		tagslam_viz \
 		frcrobot_description \
 		frcrobot_gazebo \
 		gazebo_frcrobot_control \
