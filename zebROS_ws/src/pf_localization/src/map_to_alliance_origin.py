@@ -38,5 +38,5 @@ def callback(msg):
     
     map_broadcaster.sendTransform(t) #sends the transform
 
-rospy.Subscriber('/frcrobot_rio/match_data', MatchSpecificData, callback) #subscribes to MatchSpecificData
+rospy.Subscriber('/frcrobot_rio/match_data', MatchSpecificData, callback) #subscribed to wrong path? #subscribes to MatchSpecificData
 rospy.spin()
