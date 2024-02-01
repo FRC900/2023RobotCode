@@ -196,14 +196,14 @@ candle_controller:
     name: candle1
 
 note_conveyor_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_conveyor
     invert: counterclockwise_positive
     dynamic_reconfigure: True
     neutral_mode: Coast
 
 note_diverter_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter
     invert: counterclockwise_positive
     dynamic_reconfigure: True

@@ -229,14 +229,14 @@ swerve_drive_state_controller:
         offset: 12.9
 
 note_conveyor_talonfxpro_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_conveyor
     invert: counterclockwise_positive
     dynamic_reconfigure: True
     neutral_mode: Coast
 
 note_diverter_talonfxpro_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter
     invert: counterclockwise_positive
     dynamic_reconfigure: True
