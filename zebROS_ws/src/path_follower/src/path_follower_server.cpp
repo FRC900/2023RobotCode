@@ -313,7 +313,7 @@ class PathAction
 				preempted = true;
 			}
 			
-			int current_index = 0;
+			size_t current_index = 0;
 
 			std_msgs::Bool enable_msg;
 			std_msgs::Float64 command_msg; 

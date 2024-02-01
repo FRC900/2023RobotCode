@@ -95,9 +95,9 @@ class PathFollower
 		ros::Duration start_time_offset_;
 
 	public:
-		PathFollower(double time_offset)
+		explicit PathFollower(double time_offset)
+			: time_offset_{ros::Duration(time_offset)}
 		{
-			time_offset_ = ros::Duration(time_offset);
 		}
 
 		// load nav_msgs::Path
@@ -113,6 +113,6 @@ class PathFollower
 		double interpolate(double start_t, double end_t, double start_x, double end_x, double current_t) const;
 
 		// contains the main control loop
-		std::optional<PositionVelocity> run(double &distance_travelled, int &current_index);
+		std::optional<PositionVelocity> run(double &distance_travelled, size_t &current_index);
 };
 

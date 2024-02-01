@@ -63,13 +63,13 @@ class RobotOrientationDriver
 public:
 	explicit RobotOrientationDriver(const ros::NodeHandle &nh);
 
-	void setTargetOrientation(double angle, bool from_teleop = true, double velocity = 0.0d);
+	void setTargetOrientation(const double angle, const bool from_teleop = true, const double velocity = 0.0);
 	void stopRotation(void);
 	// subscriber to read setTargetOrientation as needed
 
 	// Called from callbacks in teleop code
-	void setRobotOrientation(double angle);
-	void setRobotEnabled(bool enabled);
+	void setRobotOrientation(const double angle);
+	void setRobotEnabled(const bool enabled);
 
 	// For debugging?
 	double getTargetOrientation(void) const;

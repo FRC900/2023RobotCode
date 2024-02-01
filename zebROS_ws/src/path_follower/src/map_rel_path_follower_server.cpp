@@ -2,7 +2,6 @@
 #include <actionlib/server/simple_action_server.h>
 #include <ddynamic_reconfigure/ddynamic_reconfigure.h>
 #include <geometry_msgs/Quaternion.h>
-#include <nav_msgs/Odometry.h>
 #include <path_follower_msgs/PathAction.h>
 #include <path_follower_msgs/PathGoal.h>
 #include <path_follower/axis_state.h>
@@ -12,7 +11,6 @@
 #include <std_msgs/Bool.h>
 #include <vector>
 #include <algorithm>
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "tf2_ros/transform_listener.h"
 #include "pid_velocity_msg/PIDVelocity.h"
 
@@ -170,8 +168,8 @@ class PathAction
 			ROS_INFO_STREAM("Current odom values X = " << map_to_baselink_.transform.translation.x << " Y = " << map_to_baselink_.transform.translation.y << " Rot " << path_follower_.getYaw(orientation_)); 
 			for (size_t i = 0; i < num_waypoints - 1; i++) {
 				ROS_INFO_STREAM("Untransformed waypoint: X = " << goal->position_path.poses[i].pose.position.x << " Y = " << goal->position_path.poses[i].pose.position.y << " rotation = " << path_follower_.getYaw(goal->position_path.poses[i].pose.orientation));
-				geometry_msgs::Pose temp_pose = goal->position_path.poses[i].pose;
-				geometry_msgs::Pose new_pose;
+				// geometry_msgs::Pose temp_pose = goal->position_path.poses[i].pose;
+				// geometry_msgs::Pose new_pose;
 				// tf2::doTransform(temp_pose, new_pose, map_to_base_link_tf);
 				// tf2::Quaternion q;
 				// tf2::fromMsg(map_to_base_link_tf.transform.rotation, q);
@@ -184,7 +182,7 @@ class PathAction
 
 			ros::Rate r(ros_rate_);
 
-			int current_index = 0;
+			size_t current_index = 0;
 
 			std_msgs::Bool enable_msg;
 			pid_velocity_msg::PIDVelocity command_msg; 

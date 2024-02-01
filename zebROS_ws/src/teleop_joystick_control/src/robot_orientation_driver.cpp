@@ -28,7 +28,7 @@ RobotOrientationDriver::RobotOrientationDriver(const ros::NodeHandle &nh)
 }
 
 
-void RobotOrientationDriver::setTargetOrientation(double angle, bool from_teleop, double velocity)
+void RobotOrientationDriver::setTargetOrientation(const double angle, const bool from_teleop, const double velocity)
 {
 	//ROS_INFO_STREAM("Setting orientation with from teleop =" << from_teleop);
 	if (robot_enabled_)
@@ -92,7 +92,7 @@ void RobotOrientationDriver::controlEffortCallback(const std_msgs::Float64::Cons
 	orientation_command_effort_ = control_effort->data;
 }
 
-void RobotOrientationDriver::setRobotOrientation(double angle)
+void RobotOrientationDriver::setRobotOrientation(const double angle)
 {
 	//ROS_INFO_STREAM(__FUNCTION__ << " angle = " << angle);
 	robot_orientation_ = angle;
@@ -110,7 +110,7 @@ void RobotOrientationDriver::setRobotOrientation(double angle)
 	pid_state_pub_.publish(pid_state_msg);
 }
 
-void RobotOrientationDriver::setRobotEnabled(bool enabled)
+void RobotOrientationDriver::setRobotEnabled(const bool enabled)
 {
 	//ROS_INFO_STREAM(__FUNCTION__ << " robot_enabled = " << enabled);
 	robot_enabled_ = enabled;
