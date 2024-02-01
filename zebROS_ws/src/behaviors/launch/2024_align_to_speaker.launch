@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <group ns="align_to_speaker">
+        <node name="align_to_speaker_2024" pkg="behaviors" type="2024_align_to_speaker_server.py" output="screen"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="link_maptospeaker" args="0 5.53 0 0 0 0 1 map speaker" />
+    </group>
+</launch>
