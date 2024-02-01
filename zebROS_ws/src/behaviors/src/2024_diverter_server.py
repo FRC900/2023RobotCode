@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import rospy
-
 import actionlib
+
+from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 
 from behavior_actions.msg import NoteDiverterFeedback, NoteDiverterResult, NoteDiverterGoal, NoteDiverterAction
 from std_msgs.msg import Float64
@@ -24,12 +25,11 @@ class NoteDiverterActionServer(object):
         if goal.mode == goal.OFF:
             conveyor_pct.data = 0
         else:
-            conveyor_pct.data = rospy.get_param("note_conveyor_speed")
+            conveyor_pct.data = conveyor_speed
         self.conveyor_pub.publish(conveyor_pct)
 
         # Diverter topic
         diverter_pct = Float64()
-        diverter_speed = rospy.get_param("note_diverter_speed")
         if goal.mode == goal.OFF:
             diverter_pct.data = 0
         elif goal.mode == goal.TO_CLAW:
@@ -41,11 +41,22 @@ class NoteDiverterActionServer(object):
         self._result.success = True
         rospy.loginfo('%s: Succeeded' % self._action_name)
         self._as.set_succeeded(self._result)
-        
-if __name__ == '__main__':
-    # rospy.set_param('note_conveyor_speed', 1) # cheating
-    # rospy.set_param('note_diverter_speed', 1)
 
+def dyn_rec_callback(config, level):
+    rospy.loginfo("Received reconf call: " + str(config))
+    global conveyor_speed
+    global diverter_speed
+    conveyor_speed = config["conveyor_speed"]
+    diverter_speed = config["diverter_speed"]
+    return config
+
+if __name__ == '__main__':
     rospy.init_node('diverter_server_2024')
+    
+    ddynrec = DDynamicReconfigure("diverter_dyn_rec")
+    ddynrec.add_variable("conveyor_speed", "float/double variable", 1.0, 0.0, 1.0)
+    ddynrec.add_variable("diverter_speed", "float/double variable", 1.0, 0.0, 1.0)
+    ddynrec.start(dyn_rec_callback)
+
     server = NoteDiverterActionServer(rospy.get_name())
     rospy.spin()

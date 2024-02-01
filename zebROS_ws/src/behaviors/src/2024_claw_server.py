@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import rospy
-
 import actionlib
+
+from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 
 from behavior_actions.msg import Claw2024Feedback, Claw2024Result, Claw2024Goal, Claw2024Action
 from sensor_msgs.msg import JointState
@@ -10,8 +11,6 @@ from std_msgs.msg import Float64
 
 from time import sleep
 
-switch = 0
-r = rospy.rate(10)
 class Claw2024ActionServer(object):
     # create messages that are used to publish feedback/result
     _result = Claw2024Result()
@@ -66,15 +65,30 @@ class Claw2024ActionServer(object):
 
 def callback(data):
     global switch
-    switch = data.position[data.name.index("claw_limit_switch")]  # Or whatever actually says when it's pressed
+    if "claw_limit_switch" in data.name:
+        switch = data.position[data.name.index("claw_limit_switch")]  # Or whatever actually says when it's pressed
+    else:
+        rospy.loginfo('Warning: claw_limit_switch not found')
+
+def dyn_rec_callback(config, level):
+    rospy.loginfo("Received reconf call: " + str(config))
+    global intake_speed
+    global outtake_speed
+    global delay
+    intake_speed = config["intake_speed"]
+    outtake_speed = config["outtake_speed"]
+    delay = config["delay"]
+    return config
 
 if __name__ == '__main__':
     rospy.init_node('claw_server_2024')
-    intake_speed = rospy.get_param("intake_speed")
-    outtake_speed = rospy.get_param("outtake_speed")
-    delay = rospy.get_param("outtake_stop_delay")
-    #intake_speed = 1
-    #outtake_speed = 1
-    #delay = 0.5
+    r = rospy.Rate(10)
+
+    ddynrec = DDynamicReconfigure("claw_dyn_rec")
+    ddynrec.add_variable("intake_speed", "float/double variable", 1.0, 0.0, 1.0)
+    ddynrec.add_variable("outtake_speed", "float/double variable", 1.0, 0.0, 1.0)
+    ddynrec.add_variable("delay", "float/double variable", 0.5, 0.0, 1.0)
+    ddynrec.start(dyn_rec_callback)
+    
     server = Claw2024ActionServer(rospy.get_name())
     rospy.spin()
