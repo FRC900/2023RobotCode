@@ -74,7 +74,7 @@ public:
 
 bool init(hardware_interface::RobotHW *hw,
 		ros::NodeHandle &/*root_nh*/,
-		ros::NodeHandle &controller_nh)
+		ros::NodeHandle &controller_nh) override
 {
 	const std::string complete_ns = controller_nh.getNamespace();
 	const size_t id = complete_ns.find_last_of('/');
@@ -415,7 +415,7 @@ bool init(hardware_interface::RobotHW *hw,
 	return true;
 }
 
-void starting(const ros::Time &time)
+void starting(const ros::Time &time) override
 {
 	std::array<double, WHEELCOUNT> steer_angles;
 	for (size_t k = 0; k < WHEELCOUNT; k++)
@@ -440,7 +440,7 @@ void starting(const ros::Time &time)
 	//odometry_.init(time);
 }
 
-void stopping(const ros::Time & time)
+void stopping(const ros::Time &time) override
 {
 	time_before_brake_ = 0;
 	std::array<double, WHEELCOUNT> steer_angles;
@@ -451,7 +451,7 @@ void stopping(const ros::Time & time)
 	brake(steer_angles, time, true);
 }
 
-void update(const ros::Time &time, const ros::Duration &period)
+void update(const ros::Time &time, const ros::Duration &period) override
 {
 	// Grab current steering angle
 	std::array<double, WHEELCOUNT> steer_angles;
