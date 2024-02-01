@@ -205,6 +205,9 @@ note_conveyor_controller:
 
 note_diverter_controller:
 <<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
+<<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
+=======
+>>>>>>> 526377cf (changed controller types and cleaned up pubs, subs and loops):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter
     invert: counterclockwise_positive
