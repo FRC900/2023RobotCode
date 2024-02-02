@@ -5,12 +5,13 @@
   <arg name="zed_node_name"   default="zed_objdetect" />
   <arg name="camera_model"    default="zed2" />
   <arg name="depth_algorithm" default="CONTOURS" />
-  <arg name="cam_pos_x"       default="0.152" />
-  <arg name="cam_pos_y"       default="-0.224" />
-  <arg name="cam_pos_z"       default="0.802" />
-  <arg name="cam_roll"        default="0.0" />
-	<arg name="cam_pitch"       default="0.0" /> <!-- camera is mounted flat -->
-  <arg name="cam_yaw"         default="0.0" />
+  <!-- Note: this is the *9000* config -->
+  <arg name="cam_pos_x"            value="0.2025" />
+  <arg name="cam_pos_y"            value="0.020" />
+  <arg name="cam_pos_z"            value="0.243" />
+  <arg name="cam_roll"             value="0.0" />
+  <arg name="cam_pitch"            value="-0.279" />
+  <arg name="cam_yaw"              value="0.0" />
   <include file="$(find zed_wrapper)/launch/include/zed_camera.launch.xml" if="$(eval input_type != 'video')">
     <arg name="common_params_file"   value="$(find controller_node)/config/zed_objdet/common.yaml" />
     <arg name="camera_params_file"   value="$(find controller_node)/config/zed_objdet/$(arg camera_model).yaml" />

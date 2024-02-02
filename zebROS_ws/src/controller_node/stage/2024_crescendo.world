@@ -104,7 +104,7 @@ objdet_target ( pose [ 13.631 7.008 1.000 0.000 ] fiducial_return 1 color "orang
 
 
 #simulation map dump all for now
-
+# these ids are likely broken from changing them in the yaml file during training
 objdet_target ( pose [ 3.589761 4.112212 0 0 ] fiducial_return 7 color "blue")
 objdet_target ( pose [ 13.3216015 4.1053537855 0 0 ] fiducial_return 8 color "red")
 objdet_target ( pose [ 0 4.4365842215 1.9501675 0 ] fiducial_return 9 color "blue")
