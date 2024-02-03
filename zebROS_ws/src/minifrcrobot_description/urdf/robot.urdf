@@ -240,4 +240,28 @@
     <origin rpy="0.0 0 0" xyz="0 0 0"/>
 </joint>
 
+<link name="pcm_link"></link>
+
+<joint name="pcm" type="fixed">
+    <parent link="base_link"/>
+    <child link="pcm_link" />
+    <origin rpy="0.0 0 0" xyz="0 0 0"/>
+</joint>
+
+<link name="robot_code_ready_jetson_link"></link>
+
+<joint name="robot_code_ready_jetson" type="fixed">
+    <parent link="base_link"/>
+    <child link="robot_code_ready_jetson_link" />
+    <origin rpy="0.0 0 0" xyz="0 0 0"/>
+</joint>
+
+<link name="robot_code_ready_rio_link"></link>
+
+<joint name="robot_code_ready_rio" type="fixed">
+    <parent link="base_link"/>
+    <child link="robot_code_ready_rio_link" />
+    <origin rpy="0.0 0 0" xyz="0 0 0"/>
+</joint>
+
 </robot>
