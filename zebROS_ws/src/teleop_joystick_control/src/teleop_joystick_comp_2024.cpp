@@ -8,6 +8,7 @@
 #include "sensor_msgs/JointState.h"
 #endif
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Bool.h"
 #include <string>
 #include <cmath>
 
@@ -16,14 +17,12 @@
 #include <vector>
 #include "teleop_joystick_control/RobotOrient.h"
 
-#include "frc_msgs/ButtonBoxState2023.h"
 #include "frc_msgs/MatchSpecificData.h"
 
 #include "actionlib/client/simple_action_client.h"
 
 #include "ddynamic_reconfigure/ddynamic_reconfigure.h"
 
-#include "teleop_joystick_control/TeleopCmdVel2023.h"
 #include "behavior_actions/AutoMode.h"
 
 #include "path_follower_msgs/holdPositionAction.h"
@@ -31,16 +30,9 @@
 #include <imu_zero_msgs/ImuZeroAngle.h>
 #include <angles/angles.h>
 #include "teleop_joystick_control/RobotOrientationDriver.h"
-#include <teleop_joystick_control/SnapConeCube.h>
-#include <behavior_actions/Intaking2023Action.h>
-#include <behavior_actions/Placing2023Action.h>
-#include <behavior_actions/FourbarElevatorPath2023Action.h>
 #include <talon_swerve_drive_controller_msgs/SetXY.h>
-#include <behavior_actions/AlignAndPlaceGrid2023Action.h>
 #include <talon_state_msgs/TalonFXProState.h>
 #include <std_srvs/SetBool.h>
-#include "behavior_actions/DriveToObjectAction.h"
-
 
 struct DynamicReconfigVars
 {
@@ -48,10 +40,8 @@ struct DynamicReconfigVars
 	double min_speed{0};                  // "Min linear speed to get robot to overcome friction, in m/s"
 	double max_speed{2.0};                // "Max linear speed, in m/s"
 	double max_speed_slow{0.75};          // "Max linear speed in slow mode, in m/s"
-	double max_speed_elevator_extended{1.5};
 	double max_rot{6.0};                  // "Max angular speed"
 	double max_rot_slow{2.0};             // "Max angular speed in slow mode"
-	double max_rot_elevator_extended{0.2}; 
 	double button_move_speed{0.5};        // "Linear speed when move buttons are pressed, in m/s"
 	double joystick_pow{1.5};             // "Joystick Scaling Power, linear"
 	double rotation_pow{1.0};             // "Joystick Scaling Power, rotation"
@@ -63,22 +53,17 @@ struct DynamicReconfigVars
 	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
 	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
 	double angle_to_add{0.135};
-	double cone_length{0.3302/2};
-	double cube_length{0.2032/2};
 	double angle_threshold{angles::from_degrees(1)};
-	double elevator_threshold{0.5};
-	double cone_tolerance{0.1};
-	double cube_tolerance{0.1};
 	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
 } config;
 
-std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
+//std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
 
 std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 
 bool diagnostics_mode = false;
 
-frc_msgs::ButtonBoxState2023 button_box;
+//frc_msgs::ButtonBoxState2023 button_box;
 
 // array of joystick_states messages for multiple joysticks
 std::vector <frc_msgs::JoystickState> joystick_states_array;
@@ -177,7 +162,6 @@ void moveDirection(int x, int y, int z) {
 	cmd_vel.angular.y = 0.0;
 	cmd_vel.angular.z = 0.0;
 
-	robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), false);
 	JoystickRobotVel.publish(cmd_vel);
 }
 
@@ -190,7 +174,6 @@ void sendDirection() {
 	cmd_vel.angular.y = 0.0;
 	cmd_vel.angular.z = 0.0;
 
-	robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), false);
 	JoystickRobotVel.publish(cmd_vel);
 }
 
@@ -206,20 +189,17 @@ void zero_all_diag_commands(void)
 	// should zero out all diagnostic mode commands
 }
 
+// TODO: Add 2024 versions
 std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::DriveToObjectAction>> auto_note_pickup_ac;
-
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
-std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
-
-size_t elevator_idx = std::numeric_limits<size_t>::max();
-double elevator_height{0};
-double elevator_setpoint{0};
+//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
+//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
+//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
+//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
-{           
+{    
+	// Why does this just do stuff with the elevator?
+	/*     
 	// fourbar_master_idx == max of size_t at the start
 	if (elevator_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
 	{
@@ -240,15 +220,16 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 		pathed = (elevator_height >= config.elevator_threshold);
 		// if we are currently above the height or want to go above the height
 		if (elevator_height > config.elevator_threshold || elevator_setpoint > config.elevator_threshold) {
-			teleop_cmd_vel->setSuperSlowMode(true);
+			//teleop_cmd_vel->setSuperSlowMode(true);
 		}
 		else {
-			teleop_cmd_vel->setSuperSlowMode(false);
+			//teleop_cmd_vel->setSuperSlowMode(false);
 		}
 	}
 	else {
 		ROS_ERROR_STREAM_THROTTLE(0.1, "teleop_joystick_comp_2023 : Can not find talon with name = elevator_leader");
 	}
+	*/  
 }
 
 void preemptActionlibServers(void)
@@ -263,7 +244,7 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 	last_offset = req.offset_angle;
 	last_robot_orient = req.robot_orient;
 	// Used to switch between robot orient and field orient driving
-	teleop_cmd_vel->setRobotOrient(req.robot_orient, req.offset_angle);
+	//teleop_cmd_vel->setRobotOrient(req.robot_orient, req.offset_angle);
 	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
 	return true;
 }
@@ -271,12 +252,14 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 
 
 void place() {
+	/*
 	behavior_actions::Placing2023Goal goal;
 	goal.node = node;
 	goal.piece = game_piece;
 	goal.override_game_piece = true;
 	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
 	placing_ac->sendGoal(goal);
+	*/
 	moved = !moved;
 }
 
@@ -293,402 +276,9 @@ enum AutoPlaceState {
 AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
 uint8_t intake_piece = 0;
 
-void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
+void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event)
 {
-	//ROS_INFO_STREAM("Button Box callback running!");
-
-	button_box = *(event.getMessage());
-
-	static ros::Time last_header_stamp = button_box.header.stamp;
-	
-	bool driver_input_changed = false;
-	if (last_no_driver_input != no_driver_input && no_driver_input == true) {
-		driver_input_changed = true; 
-	}
-	ROS_INFO_STREAM_THROTTLE(1, "Auto place state = " << std::to_string(auto_place_state));
-	
-	if(button_box.lockingSwitchPress)
-	{
-	}
-
-	if(button_box.lockingSwitchButton)
-	{
-		ROS_INFO_STREAM_THROTTLE(1, "Use pathing = true");
-		use_pathing = true;
-	}
-	else
-	{
-		ROS_INFO_STREAM_THROTTLE(1, "Use pathing = false");
-		use_pathing = false;
-	}
-	ROS_INFO_STREAM_THROTTLE(2, "Use pathing = " << use_pathing);
-	ROS_INFO_STREAM_THROTTLE(2, "Alliance color = " << alliance_color);
-
-	if(button_box.lockingSwitchRelease)
-	{
-		// // Clear out pressed state when switching modes
-		// // so that the press will be seen by the new mode
-		// joystick1_left_trigger_pressed = false;
-		// joystick1_right_trigger_pressed = false;
-		// // Force a publish 0 to all the diag mode
-		// // controllers here before switching out
-		// // of diagnostics mode
-		// zero_all_diag_commands();
-		// publish_diag_cmds();
-		// diagnostics_mode = false;
-		// robot_orientation_driver->stopRotation();
-		// ROS_WARN_STREAM("Disabling diagnostics mode!");
-
-		teleop_cmd_vel->setRobotOrient(false, 0.0);
-		ROS_WARN_STREAM("Field relative mode!");
-	}
-
-	if(button_box.redButton) {
-	}
-	if(button_box.redPress) {
-		ROS_WARN_STREAM("Preempting all actions!");
-		placing_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-		pathing_ac->cancelAllGoals();
-		align_and_place_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-		auto_note_pickup_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-		pathed = false;
-	}
-	if(button_box.redRelease) {
-	}
-
-	if(button_box.topLeftConeButton) {
-	}
-	if(button_box.topLeftConePress) {
-		ROS_INFO_STREAM("teleop : rezero fourbar!");
-		std_srvs::Empty rezero_cmd;
-		FourbarRezeroSrv.call(rezero_cmd);
-	}
-	if(button_box.topLeftConeRelease) {
-	}
-
-	if(button_box.topMiddleConeButton) {
-	}
-	if(button_box.topMiddleConePress) {
-		intake_piece = behavior_actions::Intaking2023Goal::BASE_TOWARDS_US_CONE;
-	}
-	if(button_box.topMiddleConeRelease) {
-	}
-
-	if(button_box.topRightCubeButton) {
-	}
-	if(button_box.topRightCubePress) {
-		intake_piece = behavior_actions::Intaking2023Goal::CUBE;
-	}
-	if(button_box.topRightCubeRelease) {
-	}
-
-	// HAS TO BE ABOVE BUTTON
-	if(button_box.gridSelectConeLeftPress || button_box.gridSelectConeRightPress) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
-		last_no_driver_input = false;
-		if (use_pathing) {
-			if (auto_place_state == AutoPlaceState::PLACING) {
-				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
-				ROS_INFO_STREAM("Auto place state == WAITING_TO_ALIGN"); 
-			}
-			else if (auto_place_state == AutoPlaceState::ALIGNING && elevator_height > config.elevator_threshold) {
-				place();
-				auto_place_state = AutoPlaceState::PLACING;
-				ROS_INFO_STREAM("Auto place state == PLACING"); 
-			}
-			else if (elevator_height <= config.elevator_threshold && auto_place_state == AutoPlaceState::ALIGNING) {
-				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
-				ROS_INFO_STREAM("AutoPlaceState set back to waiting to align ");
-			}
-		}
-		if (!use_pathing) {
-			ROS_INFO_STREAM("Placing a cone!");
-			place();
-			pathed = false;
-		}
-	}
-
-	if(button_box.gridSelectConeLeftButton && driver_input_changed && auto_place_state == AutoPlaceState::WAITING_TO_ALIGN && use_pathing) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE;
-		behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
-		align_goal.alliance = alliance_color;
-		moved = true;
-		pathed = true;
-		align_goal.tolerance = config.cone_tolerance;
-		align_goal.tolerance_for_extend = 0.25;
-		align_goal.auto_place = false;
-		align_goal.grid_id = 1 + grid_position;
-		ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
-		align_goal.node = node;
-		align_goal.piece = game_piece;
-		align_goal.override_game_piece = false;
-		align_goal.from_Trex = false; // maybe should be true since that is what we do in auto?
-		align_and_place_ac->sendGoal(align_goal);
-		auto_place_state = AutoPlaceState::ALIGNING; 
-		ROS_INFO_STREAM("AutoPlaceState == ALIGNING");
-	}
-	if(button_box.gridSelectConeLeftRelease) {
-	}
-
-	// PRESS MUST BE BEFORE BUTTON
-	if(button_box.gridSelectCubePress) {
-		last_no_driver_input = false;
-		if (use_pathing) {
-			if (auto_place_state == AutoPlaceState::PLACING) {
-				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
-				ROS_INFO_STREAM("Auto place state == WAITING_TO_ALIGN"); 
-			}
-			else if (elevator_height <= config.elevator_threshold && auto_place_state == AutoPlaceState::ALIGNING) {
-				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
-				ROS_INFO_STREAM("AutoPlaceState set back to waiting to align");
-			}
-		}
-		if (!use_pathing) {
-			ROS_INFO_STREAM("Placing a cube!");
-			place();
-		}
-	}
-
-	if(button_box.gridSelectCubeButton && driver_input_changed && auto_place_state == AutoPlaceState::WAITING_TO_ALIGN && use_pathing) {
-		game_piece = behavior_actions::Placing2023Goal::CUBE;
-		behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
-		align_goal.alliance = alliance_color;
-		moved = true;
-		pathed = true;
-		align_goal.tolerance = config.cube_tolerance;
-		align_goal.tolerance_for_extend = 2.0;
-		align_goal.auto_place = true;
-		align_goal.grid_id = 2 + grid_position;
-		ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
-		align_goal.node = node;
-		align_goal.piece = game_piece;
-		align_goal.override_game_piece = false;
-		align_goal.from_Trex = false; // maybe should be true since that is what we do in auto?
-		align_and_place_ac->sendGoal(align_goal);
-		auto_place_state = AutoPlaceState::PLACING;
-		ROS_INFO_STREAM("Auto Place STATE == PLACING");
-	}
-	if(button_box.gridSelectCubeRelease) {
-	}
-
-	if(button_box.gridSelectConeRightButton && driver_input_changed && auto_place_state == AutoPlaceState::WAITING_TO_ALIGN && use_pathing) {
-		game_piece = behavior_actions::Placing2023Goal::VERTICAL_CONE; // type doesn't matter for placing
-		behavior_actions::AlignAndPlaceGrid2023Goal align_goal;
-		align_goal.alliance = alliance_color;
-		moved = true;
-		pathed = true;
-		align_goal.tolerance = config.cone_tolerance;
-		align_goal.tolerance_for_extend = 0.25;
-		align_goal.auto_place = false;
-		align_goal.grid_id = 3 + grid_position;
-		ROS_INFO_STREAM("Sending align to goal with id " << std::to_string(align_goal.grid_id));
-		align_goal.node = node;
-		align_goal.piece = game_piece;
-		align_goal.override_game_piece = false;
-		align_goal.from_Trex = false; // maybe should be true since that is what we do in auto?
-		
-		align_and_place_ac->sendGoal(align_goal);
-		auto_place_state = AutoPlaceState::ALIGNING; 
-		ROS_INFO_STREAM("AutoPlaceState == ALIGNING");
-	}
-	if(button_box.gridSelectConeRightPress) {
-		// already handled above
-	}
-	if(button_box.gridSelectConeRightRelease) {
-	}
-
-	if(button_box.heightSelectSwitchUpButton) {
-		node = behavior_actions::Placing2023Goal::HIGH;
-	}
-	if(button_box.heightSelectSwitchUpPress) {
-		if (robot_is_disabled)
-		{
-			auto_mode = 0;
-			// should we be worried about messages being dropped here?
-			behavior_actions::AutoMode auto_mode_msg;
-			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_select_pub.publish(auto_mode_msg);
-		}
-		node = behavior_actions::Placing2023Goal::HIGH;
-	}
-	if(button_box.heightSelectSwitchUpRelease) {
-	}
-
-	if(!(button_box.heightSelectSwitchUpButton || button_box.heightSelectSwitchDownButton)) {
-		if (!up_down_switch_mid) {
-			node = behavior_actions::Placing2023Goal::MID;
-			if (robot_is_disabled)
-			{
-				auto_mode = 1;
-				// should we be worried about messages being dropped here?
-				behavior_actions::AutoMode auto_mode_msg;
-				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode();
-				auto_mode_select_pub.publish(auto_mode_msg);
-			}
-		}
-
-		up_down_switch_mid = true;
-	} else {
-		up_down_switch_mid = false;
-	}
-
-	if(button_box.heightSelectSwitchDownButton) {
-		node = behavior_actions::Placing2023Goal::HYBRID;
-	}
-	if(button_box.heightSelectSwitchDownPress) {
-		node = behavior_actions::Placing2023Goal::HYBRID;
-		if (robot_is_disabled)
-		{
-			auto_mode = 2;
-			// should we be worried about messages being dropped here?
-			behavior_actions::AutoMode auto_mode_msg;
-			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_select_pub.publish(auto_mode_msg);
-		}
-	}
-	if(button_box.heightSelectSwitchDownRelease) {
-	}
-
-	if(button_box.heightSelectSwitchLeftButton) {
-	}
-	if(button_box.heightSelectSwitchLeftPress) {
-		if (robot_is_disabled)
-		{
-			auto_starting_pos = 1;
-			// should we be worried about messages being dropped here?
-			behavior_actions::AutoMode auto_mode_msg;
-			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_select_pub.publish(auto_mode_msg);
-		}
-		grid_position = 0;
-	}
-	if(button_box.heightSelectSwitchLeftRelease) {
-	}
-
-	if(!(button_box.heightSelectSwitchLeftButton || button_box.heightSelectSwitchRightButton)) {
-		if (!left_right_switch_mid) {
-			node = behavior_actions::Placing2023Goal::MID;
-			if (robot_is_disabled)
-			{
-				auto_starting_pos = 2;
-				// should we be worried about messages being dropped here?
-				behavior_actions::AutoMode auto_mode_msg;
-				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode();
-				auto_mode_select_pub.publish(auto_mode_msg);
-			}
-		}
-		grid_position = 3;
-		left_right_switch_mid = true;
-	} else {
-		left_right_switch_mid = false;
-	}
-
-	if(button_box.heightSelectSwitchRightButton) {
-	}
-	if(button_box.heightSelectSwitchRightPress) {
-		if (robot_is_disabled)
-		{
-			auto_starting_pos = 3;
-			// should we be worried about messages being dropped here?
-			behavior_actions::AutoMode auto_mode_msg;
-			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_select_pub.publish(auto_mode_msg);
-		}
-		grid_position = 6;
-	}
-	if(button_box.heightSelectSwitchRightRelease) {
-	}
-
-	if(button_box.centralYellowButton) {
-	}
-	if(button_box.centralYellowPress) {
-		robot_orientation_driver->setTargetOrientation(0.0, true);
-	}
-	if(button_box.centralYellowRelease) {
-	}
-
-	if(button_box.bottomLeftYellowButton) {
-	}
-	if(button_box.bottomLeftYellowPress) {
-		robot_orientation_driver->setTargetOrientation(M_PI, true);
-	}
-	if(button_box.bottomLeftYellowRelease) {
-	}
-
-	if(button_box.bottomRightWhiteButton) {
-	}
-	if(button_box.bottomRightWhitePress) {
-		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU to 180");
-		imu_zero_msgs::ImuZeroAngle imu_cmd;
-		imu_cmd.request.angle = 180.0;
-		IMUZeroSrv.call(imu_cmd);
-		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing swerve odom");
-		std_srvs::Empty odom_cmd;
-		SwerveOdomZeroSrv.call(odom_cmd);
-	}
-	if(button_box.bottomRightWhiteRelease) {
-	}
-
-	if(button_box.rightGreenPress)
-	{
-		moveDirection(0, 1, 0);
-	}
-	if(button_box.rightGreenButton)
-	{
-		sendDirection();
-	}
-	if(button_box.rightGreenRelease)
-	{
-		moveDirection(0, -1, 0);
-	}
-
-
-	if(button_box.leftGreenPress)
-	{
-		moveDirection(0, -1, 0);
-	}
-	if(button_box.leftGreenButton)
-	{
-		sendDirection();
-	}
-	if(button_box.leftGreenRelease)
-	{
-		moveDirection(0, 1, 0);
-	}
-
-
-	if(button_box.topGreenPress)
-	{
-		moveDirection(1, 0, 0);
-	}
-	if(button_box.topGreenButton)
-	{
-		sendDirection();
-	}
-	if(button_box.topGreenRelease)
-	{
-		moveDirection(-1, 0, 0);
-	}
-
-	if(button_box.bottomGreenPress)
-	{
-		moveDirection(-1, 0, 0);
-	}
-	if(button_box.bottomGreenButton)
-	{
-		sendDirection();
-	}
-	if(button_box.bottomGreenRelease)
-	{
-		moveDirection(1, 0, 0);
-	}
+	ROS_WARN("Called unimplemented function \"buttonBoxCallback\"");
 }
 
 bool aligned_to_game_piece = false;
@@ -725,10 +315,11 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 
 		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
 
-		teleop_cmd_vel->updateRateLimit(config);
+		//teleop_cmd_vel->updateRateLimit(config);
 		// TODO : make swerve invert the yaw so we can deal in ccw-positive angles
 		// everywhere outside of that code
-		geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], -robot_orientation_driver->getCurrentOrientation(), config);
+		// FIXME
+		geometry_msgs::Twist cmd_vel; //= teleop_cmd_vel->generateCmdVel(joystick_states_array[0], -robot_orientation_driver->getCurrentOrientation(), config);
 
 		/*
 		if (!rotation_increment) {
@@ -759,21 +350,16 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
 				sendSetAngle = true;
 			}
-			ROS_INFO_STREAM_THROTTLE(1, "CMD_VEL angular z" << cmd_vel.angular.z);
 
 			if (cmd_vel.angular.z == 0.0)
 			{
 				cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
 				if (fabs(cmd_vel.angular.z) < config.rotation_epsilon) {
-					// COAST MODE
-					//cmd_vel.angular.z = 0.001 * (cmd_vel.angular.z > 0 ? 1 : -1);
 					cmd_vel.angular.z = 0.0;
 				}
 			}
-			//ROS_WARN_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.angular.z << " " << original_angular_z);
-			
-			/*original_angular_z == 0.0*/ 
-			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && ( cmd_vel.angular.z == 0.0 ) && !sendRobotZero)
+
+			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (original_angular_z == 0.0) && !sendRobotZero)
 			{
 				no_driver_input = true;
 				if (std_srvs::Empty empty; !BrakeSrv.call(empty))
@@ -785,9 +371,9 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				JoystickRobotVel.publish(cmd_vel);
 				sendRobotZero = true;
 			}
-			// 0.002 is slightly more than the 0.001 we set for coast mode
-			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (fabs(cmd_vel.angular.z) >= 0.002))
+			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
 			{
+				//ROS_INFO_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
 				JoystickRobotVel.publish(cmd_vel);
 				sendRobotZero = false;
 				no_driver_input = false;
@@ -803,15 +389,17 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: buttonA
 			if(joystick_states_array[0].buttonAPress)
 			{
+				/*
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cone and enabling robot relative driving mode!");
 				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
 				{
 					if (srv.response.nearest_cone_angle > -900) {
 						ROS_INFO_STREAM("Using angle of " << srv.response.nearest_cone_angle);
-						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cone_angle, true /*from teleop*/);
+						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cone_angle, true); //from teleop
 						teleop_cmd_vel->setRobotOrient(true, 0);
 					}
 				}
+				*/
 			}
 			if(joystick_states_array[0].buttonAButton)
 			{
@@ -819,28 +407,30 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonARelease)
 			{
-				teleop_cmd_vel->setRobotOrient(false, 0);
+				//teleop_cmd_vel->setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonB
 			if(joystick_states_array[0].buttonBPress)
 			{
+				/*
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cube and enabling robot relative driving mode!");
 				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
 				{
 					if (srv.response.nearest_cube_angle > -900) {
 						ROS_INFO_STREAM_THROTTLE(1, "Using angle of " << srv.response.nearest_cube_angle);
-						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cube_angle, true /*from teleop*/);
+						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cube_angle, true); // from teleop
 						teleop_cmd_vel->setRobotOrient(true, 0);
 					}
 				}
+				*/
 			}
 			if(joystick_states_array[0].buttonBButton)
 			{	
 			}
 			if(joystick_states_array[0].buttonBRelease)
 			{
-				teleop_cmd_vel->setRobotOrient(false, 0);
+				//teleop_cmd_vel->setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonX
@@ -871,29 +461,31 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: bumperLeft
 			if(joystick_states_array[0].bumperLeftPress)
 			{
-				teleop_cmd_vel->setSlowMode(true);
+				//teleop_cmd_vel->setSlowMode(true);
 			}
 			if(joystick_states_array[0].bumperLeftButton)
 			{
 			}
 			if(joystick_states_array[0].bumperLeftRelease)
 			{
-				teleop_cmd_vel->setSlowMode(false);
+				//teleop_cmd_vel->setSlowMode(false);
 			}
 
 			//Joystick1: bumperRight
 			if(joystick_states_array[0].bumperRightPress)
 			{
+				/*
 				behavior_actions::Intaking2023Goal goal;
 				goal.outtake = goal.OUTTAKE_CONE;
 				intaking_ac->sendGoal(goal);
+				*/
 			}
 			if(joystick_states_array[0].bumperRightButton)
 			{
 			}
 			if(joystick_states_array[0].bumperRightRelease)
 			{
-				intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 
@@ -969,15 +561,13 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 #ifdef ROTATION_WITH_STICK
 			if(joystick_states_array[0].leftTrigger > config.trigger_threshold)
 			{
-				ROS_INFO_STREAM("LEFT TRIGGER");
 				if(!joystick1_left_trigger_pressed)
 				{
-					behavior_actions::DriveToObjectGoal goal;
-					goal.id = "note";
-					goal.distance_away = 0.6;
-					goal.tolerance = 0.1; // todo make configurable
-					auto_note_pickup_ac->sendGoal(goal);
-					ROS_WARN_STREAM("Auto picking up notes");
+					/*
+					behavior_actions::Intaking2023Goal goal;
+					goal.piece = intake_piece;
+					intaking_ac->sendGoal(goal);
+					*/
 				}
 
 				joystick1_left_trigger_pressed = true;
@@ -986,7 +576,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_left_trigger_pressed)
 				{
-					auto_note_pickup_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_left_trigger_pressed = false;
@@ -997,9 +587,11 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
+					/*
 					behavior_actions::Intaking2023Goal goal;
 					goal.piece = goal.VERTICAL_CONE;
 					intaking_ac->sendGoal(goal);
+					*/
 				}
 
 				joystick1_right_trigger_pressed = true;
@@ -1008,7 +600,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_right_trigger_pressed)
 				{
-					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_right_trigger_pressed = false;
@@ -1281,14 +873,6 @@ int main(int argc, char **argv)
 	{
 		ROS_ERROR("Could not read min_speed in teleop_joystick_comp");
 	}
-	if(!n_params.getParam("max_speed_elevator_extended", config.max_speed_elevator_extended))
-	{
-		ROS_ERROR("Could not read max_speed_elevator_extended in teleop_joystick_comp");
-	}
-	if(!n_params.getParam("max_rot_elevator_extended", config.max_rot_elevator_extended))
-	{
-		ROS_ERROR("Could not read max_rot_elevator_extended in teleop_joystick_comp");
-	}
 	if(!n_params.getParam("max_speed", config.max_speed))
 	{
 		ROS_ERROR("Could not read max_speed in teleop_joystick_comp");
@@ -1343,16 +927,6 @@ int main(int argc, char **argv)
 		ROS_ERROR("Could not read angle_to_add in teleop_joystick_comp");
 	}
 
-	if(!n_params.getParam("cone_tolerance", config.cone_tolerance))
-	{
-		ROS_ERROR("Could not read cone_tolerance in teleop_joystick_comp");
-	}
-
-	if(!n_params.getParam("cube_tolerance", config.cube_tolerance))
-	{
-		ROS_ERROR("Could not read cube_tolerance in teleop_joystick_comp");
-	}
-
 	if(!n_params.getParam("match_time_to_park", config.match_time_to_park))
 	{
 		ROS_ERROR("Could not read match_time_to_park in teleop_joystick_comp");
@@ -1374,17 +948,14 @@ int main(int argc, char **argv)
 	ddr.registerVariable<double>("trigger_threshold", &config.trigger_threshold, "Amount trigger has to be pressed to trigger action", 0., 1.);
 	ddr.registerVariable<double>("stick_threshold", &config.stick_threshold, "Amount stick has to be moved to trigger diag mode action", 0., 1.);
 	ddr.registerVariable<double>("imu_zero_angle", &config.imu_zero_angle, "Value to pass to imu/set_zero when zeroing", -360., 360.);
-	ddr.registerVariable<double>("max_speed_elevator_extended", &config.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2);
-	ddr.registerVariable<double>("max_rot_elevator_extended", &config.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.);
 	ddr.registerVariable<double>("rotation_epsilon", &config.rotation_epsilon, "rotation_epsilon", 0.0, 1.0);
 	ddr.registerVariable<double>("angle_to_add", &config.angle_to_add, "angle_to_add", 0.0, 10);
-	ddr.registerVariable<double>("cone_tolerance", &config.cone_tolerance, "cone_tolerance", 0.0, 0.5);
-	ddr.registerVariable<double>("cube_tolerance", &config.cube_tolerance, "cube_tolerance", 0.0, 0.5);
 	ddr.registerVariable<double>("match_time_to_park", &config.match_time_to_park, "match_time_to_park", 0.0, 60.0);
 
 	ddr.publishServicesTopics();
 
-	teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
+	// FIXME: Add TeleopCmdVel2024
+	//teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
 	robot_orientation_driver = std::make_unique<RobotOrientationDriver>(n);
 
 	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
@@ -1392,7 +963,6 @@ int main(int argc, char **argv)
 	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 	ParkSrv = n.serviceClient<std_srvs::SetBool>("/frcrobot_jetson/swerve_drive_controller/toggle_park", false, service_connection_header);
 	IMUZeroSrv = n.serviceClient<imu_zero_msgs::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
-	snapConeCubeSrv = n.serviceClient<teleop_joystick_control::SnapConeCube>("/snap_to_angle/snap_cone_cube", false, service_connection_header);
 	setCenterSrv = n.serviceClient<talon_swerve_drive_controller_msgs::SetXY>("/frcrobot_jetson/swerve_drive_controller/change_center_of_rotation", false, service_connection_header);	
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	SwerveOdomZeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/reset_odom", false, service_connection_header);
@@ -1406,11 +976,11 @@ int main(int argc, char **argv)
 
 	auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
 
-	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
-	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
-	pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
-	align_and_place_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>>("/align_and_place_grid", true);
-	auto_note_pickup_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::DriveToObjectAction>>("/drive_to_object/drive_to_object", true);
+	// TODO: Replace these with 2024 versions
+	//intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
+	//placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
+	//pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
+	//align_and_place_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>>("/align_and_place_grid", true);
 
 	const ros::Duration startup_wait_time_secs(15);
 	const ros::Time startup_start_time = ros::Time::now();
@@ -1446,8 +1016,8 @@ int main(int argc, char **argv)
 
 	ROS_WARN("joy_init");
 
-	teleop_cmd_vel->setRobotOrient(false, 0.0);
-	teleop_cmd_vel->setSlowMode(false);
+	//teleop_cmd_vel->setRobotOrient(false, 0.0);
+	//teleop_cmd_vel->setSlowMode(false);
 
 	ros::spin();
 	return 0;
