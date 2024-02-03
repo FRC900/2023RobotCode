@@ -108,6 +108,8 @@ class AutoNode {
 		actionlib::SimpleActionClient<behavior_actions::Placing2023Action> placing_ac_;
 		actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action> align_and_place_ac_;
 
+		ros::Publisher intake_publisher_;
+
 		// path follower and feedback
 		std::map<std::string, nav_msgs::Path> premade_position_paths_;
 		std::map<std::string, nav_msgs::Path> premade_velocity_paths_;
@@ -139,6 +141,7 @@ class AutoNode {
 		brake_srv_ = nh_.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 		park_srv_ = nh_.serviceClient<std_srvs::SetBool>("/frcrobot_jetson/swerve_drive_controller/toggle_park", false, service_connection_header);
 		tagslam_relocalize_srv_ = nh_.serviceClient<std_srvs::Empty>("/tagslam_pub_map_to_odom", false, service_connection_header);
+	intake_publisher_ = nh_.advertise<std_msgs::Float64>("/frcrobot_jetson/intake_talonfxpro_controller/command", true);
 
 		//subscribers
 		//rio match data (to know if we're in auto period)
@@ -825,9 +828,10 @@ class AutoNode {
 
 	bool relocalizefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
 		const double start_time = ros::Time::now().toSec();
-		// wait for like 0.2 seconds
-		double duration = 0.2;
-		ros::Time::sleepUntil(ros::Time::now() + ros::Duration(duration));
+
+		std_msgs::Float64 msg;
+		msg.data = 0.2;
+		intake_publisher_.publish(msg);
 
 		// make a std_srvs::Empty request
 		std_srvs::Empty srv;
@@ -838,6 +842,12 @@ class AutoNode {
 			shutdownNode(ERROR, "Auto node - relocalize service call failed");
 			return false;
 		}
+
+		msg.data = 0.0;
+		intake_publisher_.publish(msg);
+		intake_publisher_.publish(msg);
+		intake_publisher_.publish(msg);
+
 		ROS_INFO_STREAM("Auto node - relocalize service call succeeded");
 		return true;
 	}
