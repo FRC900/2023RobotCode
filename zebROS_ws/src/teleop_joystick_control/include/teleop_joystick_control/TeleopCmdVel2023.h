@@ -1,3 +1,6 @@
+#ifndef TELEOP_CMD_VEL_2023_H
+#define TELEOP_CMD_VEL_2023_H
+
 #include <optional>
 #include "ros/console.h"
 #include <Eigen/Dense>
@@ -261,3 +264,5 @@ class TeleopCmdVel
 			return (fabs(test_axis) - dead_zone) / (1.0 - dead_zone);
 		}
 };
+
+#endif 

@@ -38,7 +38,7 @@
 
 struct DynamicReconfigVars config;
 
-//std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
+std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
 
 std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 

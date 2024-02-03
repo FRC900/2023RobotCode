@@ -42,6 +42,21 @@
 #include "behavior_actions/DriveToObjectAction.h"
 
 
+#include "teleop_joystick_control/teleop_joystick_comp_general.h"
+
+// Figure out a better name for this
+struct DynamicReconfigVars2023
+{
+	double max_speed_elevator_extended{1.5};
+	double max_rot_elevator_extended{0.2}; 
+	double cone_length{0.3302/2};
+	double cube_length{0.2032/2};
+	double elevator_threshold{0.5};
+	double cone_tolerance{0.1};
+	double cube_tolerance{0.1};
+} config2023;
+
+/*
 struct DynamicReconfigVars
 {
 	double joystick_deadzone{0};          // "Joystick deadzone, in percent",
@@ -71,38 +86,10 @@ struct DynamicReconfigVars
 	double cube_tolerance{0.1};
 	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
 } config;
-
-std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
-
-std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
-
-bool diagnostics_mode = false;
+*/
 
 frc_msgs::ButtonBoxState2023 button_box;
 
-// array of joystick_states messages for multiple joysticks
-std::vector <frc_msgs::JoystickState> joystick_states_array;
-std::vector <std::string> topic_array;
-
-
-ros::Publisher JoystickRobotVel;
-
-ros::ServiceClient BrakeSrv;
-ros::ServiceClient ParkSrv;
-ros::ServiceClient IMUZeroSrv;
-ros::ServiceClient SwerveOdomZeroSrv;
-ros::ServiceClient FourbarRezeroSrv;
-
-ros::Publisher auto_mode_select_pub;
-
-bool joystick1_left_trigger_pressed = false;
-bool joystick1_right_trigger_pressed = false;
-
-bool up_down_switch_mid = false;
-bool left_right_switch_mid = false;
-
-double last_offset;
-bool last_robot_orient;
 
 // Diagnostic mode controls
 int direction_x{};
@@ -237,10 +224,10 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 		elevator_height = talon_state.position[elevator_idx];
 		elevator_setpoint = talon_state.control_position[elevator_idx];
 
-		pathed = (elevator_height >= config.elevator_threshold);
+		pathed = (elevator_height >= config2023.elevator_threshold);
 		// if we are currently above the height or want to go above the height
-		if (elevator_height > config.elevator_threshold || elevator_setpoint > config.elevator_threshold) {
-			teleop_cmd_vel->setCaps(config.max_speed_elevator_extended, config.max_rot_elevator_extended);
+		if (elevator_height > config2023.elevator_threshold || elevator_setpoint > config2023.elevator_threshold) {
+			teleop_cmd_vel->setCaps(config2023.max_speed_elevator_extended, config2023.max_rot_elevator_extended);
 
 		}
 		else {
@@ -285,11 +272,6 @@ void place() {
 // when driver transition becomes true, and we are at waiting to align, then align
 // if aligning and you see press callback, place
 // if on placing and see a press event, go to waiting to align  
-enum AutoPlaceState {
-	WAITING_TO_ALIGN = 0,
-	ALIGNING = 1,
-	PLACING = 2,
-};
 
 AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
 uint8_t intake_piece = 0;
@@ -393,12 +375,12 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
 				ROS_INFO_STREAM("Auto place state == WAITING_TO_ALIGN"); 
 			}
-			else if (auto_place_state == AutoPlaceState::ALIGNING && elevator_height > config.elevator_threshold) {
+			else if (auto_place_state == AutoPlaceState::ALIGNING && elevator_height > config2023.elevator_threshold) {
 				place();
 				auto_place_state = AutoPlaceState::PLACING;
 				ROS_INFO_STREAM("Auto place state == PLACING"); 
 			}
-			else if (elevator_height <= config.elevator_threshold && auto_place_state == AutoPlaceState::ALIGNING) {
+			else if (elevator_height <= config2023.elevator_threshold && auto_place_state == AutoPlaceState::ALIGNING) {
 				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
 				ROS_INFO_STREAM("AutoPlaceState set back to waiting to align ");
 			}
@@ -416,7 +398,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		align_goal.alliance = alliance_color;
 		moved = true;
 		pathed = true;
-		align_goal.tolerance = config.cone_tolerance;
+		align_goal.tolerance = config2023	.cone_tolerance;
 		align_goal.tolerance_for_extend = 0.25;
 		align_goal.auto_place = false;
 		align_goal.grid_id = 1 + grid_position;
@@ -440,7 +422,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
 				ROS_INFO_STREAM("Auto place state == WAITING_TO_ALIGN"); 
 			}
-			else if (elevator_height <= config.elevator_threshold && auto_place_state == AutoPlaceState::ALIGNING) {
+			else if (elevator_height <= config2023.elevator_threshold && auto_place_state == AutoPlaceState::ALIGNING) {
 				auto_place_state = AutoPlaceState::WAITING_TO_ALIGN;
 				ROS_INFO_STREAM("AutoPlaceState set back to waiting to align");
 			}
@@ -457,7 +439,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		align_goal.alliance = alliance_color;
 		moved = true;
 		pathed = true;
-		align_goal.tolerance = config.cube_tolerance;
+		align_goal.tolerance = config2023.cube_tolerance;
 		align_goal.tolerance_for_extend = 2.0;
 		align_goal.auto_place = true;
 		align_goal.grid_id = 2 + grid_position;
@@ -479,7 +461,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		align_goal.alliance = alliance_color;
 		moved = true;
 		pathed = true;
-		align_goal.tolerance = config.cone_tolerance;
+		align_goal.tolerance = config2023.cone_tolerance;
 		align_goal.tolerance_for_extend = 0.25;
 		align_goal.auto_place = false;
 		align_goal.grid_id = 3 + grid_position;
@@ -1282,11 +1264,11 @@ int main(int argc, char **argv)
 	{
 		ROS_ERROR("Could not read min_speed in teleop_joystick_comp");
 	}
-	if(!n_params.getParam("max_speed_elevator_extended", config.max_speed_elevator_extended))
+	if(!n_params.getParam("max_speed_elevator_extended", config2023.max_speed_elevator_extended))
 	{
 		ROS_ERROR("Could not read max_speed_elevator_extended in teleop_joystick_comp");
 	}
-	if(!n_params.getParam("max_rot_elevator_extended", config.max_rot_elevator_extended))
+	if(!n_params.getParam("max_rot_elevator_extended", config2023.max_rot_elevator_extended))
 	{
 		ROS_ERROR("Could not read max_rot_elevator_extended in teleop_joystick_comp");
 	}
@@ -1344,12 +1326,12 @@ int main(int argc, char **argv)
 		ROS_ERROR("Could not read angle_to_add in teleop_joystick_comp");
 	}
 
-	if(!n_params.getParam("cone_tolerance", config.cone_tolerance))
+	if(!n_params.getParam("cone_tolerance", config2023.cone_tolerance))
 	{
 		ROS_ERROR("Could not read cone_tolerance in teleop_joystick_comp");
 	}
 
-	if(!n_params.getParam("cube_tolerance", config.cube_tolerance))
+	if(!n_params.getParam("cube_tolerance", config2023.cube_tolerance))
 	{
 		ROS_ERROR("Could not read cube_tolerance in teleop_joystick_comp");
 	}
@@ -1375,12 +1357,12 @@ int main(int argc, char **argv)
 	ddr.registerVariable<double>("trigger_threshold", &config.trigger_threshold, "Amount trigger has to be pressed to trigger action", 0., 1.);
 	ddr.registerVariable<double>("stick_threshold", &config.stick_threshold, "Amount stick has to be moved to trigger diag mode action", 0., 1.);
 	ddr.registerVariable<double>("imu_zero_angle", &config.imu_zero_angle, "Value to pass to imu/set_zero when zeroing", -360., 360.);
-	ddr.registerVariable<double>("max_speed_elevator_extended", &config.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2);
-	ddr.registerVariable<double>("max_rot_elevator_extended", &config.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.);
+	ddr.registerVariable<double>("max_speed_elevator_extended", &config2023.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2);
+	ddr.registerVariable<double>("max_rot_elevator_extended", &config2023.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.);
 	ddr.registerVariable<double>("rotation_epsilon", &config.rotation_epsilon, "rotation_epsilon", 0.0, 1.0);
 	ddr.registerVariable<double>("angle_to_add", &config.angle_to_add, "angle_to_add", 0.0, 10);
-	ddr.registerVariable<double>("cone_tolerance", &config.cone_tolerance, "cone_tolerance", 0.0, 0.5);
-	ddr.registerVariable<double>("cube_tolerance", &config.cube_tolerance, "cube_tolerance", 0.0, 0.5);
+	ddr.registerVariable<double>("cone_tolerance", &config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5);
+	ddr.registerVariable<double>("cube_tolerance", &config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5);
 	ddr.registerVariable<double>("match_time_to_park", &config.match_time_to_park, "match_time_to_park", 0.0, 60.0);
 
 	ddr.publishServicesTopics();
