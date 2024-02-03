@@ -247,3 +247,4 @@ claw_controller:
     joint: claw
     dynamic_reconfigure: True
     voltage_compensation_Enable: True
+    voltage_compensation_saturation: 13

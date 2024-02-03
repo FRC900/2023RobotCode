@@ -75,8 +75,8 @@ def dyn_rec_callback(config, level):
     global intake_speed
     global outtake_speed
     global delay
-    intake_speed = config["intake_speed"]
-    outtake_speed = config["outtake_speed"]
+    intake_speed = config["intake_speed"] / 13.0
+    outtake_speed = config["outtake_speed"] / 13.0
     delay = config["delay"]
     return config
 
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     r = rospy.Rate(10)
 
     ddynrec = DDynamicReconfigure("claw_dyn_rec")
-    ddynrec.add_variable("intake_speed", "float/double variable", 1.0, 0.0, 1.0)
-    ddynrec.add_variable("outtake_speed", "float/double variable", 1.0, 0.0, 1.0)
+    ddynrec.add_variable("intake_speed", "float/double variable", 1.0, 0.0, 13.0)
+    ddynrec.add_variable("outtake_speed", "float/double variable", 1.0, 0.0, 13.0)
     ddynrec.add_variable("delay", "float/double variable", 0.5, 0.0, 1.0)
     ddynrec.start(dyn_rec_callback)
     

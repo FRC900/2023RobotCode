@@ -54,8 +54,8 @@ if __name__ == '__main__':
     rospy.init_node('diverter_server_2024')
     
     ddynrec = DDynamicReconfigure("diverter_dyn_rec")
-    ddynrec.add_variable("conveyor_speed", "float/double variable", 1.0, 0.0, 1.0)
-    ddynrec.add_variable("diverter_speed", "float/double variable", 1.0, 0.0, 1.0)
+    ddynrec.add_variable("conveyor_speed", "float/double variable", 1.0, 0.0, 13.0)
+    ddynrec.add_variable("diverter_speed", "float/double variable", 1.0, 0.0, 13.0)
     ddynrec.start(dyn_rec_callback)
 
     server = NoteDiverterActionServer(rospy.get_name())
