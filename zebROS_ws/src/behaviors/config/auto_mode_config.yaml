@@ -60,6 +60,15 @@ map_rel_four_note_grid4_csv:
   goal:
     points:
       - [0.0, 0.0, 0.0]
+      
+drive_to_nearest_note:
+  waypoint_actions: {}
+  type: drive_note
+  goal:
+    tolerance: 0.05 # guess
+    id: "note"
+    distance_away: 0.4 # guess
+    timeout: 2.0 # if we haven't reached the note by this time, we're probably not going to and give up
 
 map_rel_four_note1_csv:
   waypoint_actions: {}
