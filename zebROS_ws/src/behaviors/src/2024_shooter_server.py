@@ -4,6 +4,7 @@ import roslib
 import rospy
 import actionlib
 import std_msgs.msg
+
 from talon_state_msgs.msg import TalonFXProState
 from behavior_actions.msg import Shooter2024Action, Shooter2024Goal, Shooter2024Feedback, Shooter2024Result
 
@@ -62,7 +63,7 @@ def callback(data):
 
 class ShooterServer2024:
     def __init__(self):
-        self.server = actionlib.SimpleActionServer('shoot_notes', Shooter2024Action, self.execute_cb, auto_start = False)
+        self.server = actionlib.SimpleActionServer('set_shooter_speed', Shooter2024Action, self.execute_cb, auto_start = False)
         global left_joint_shooter_pub
         global right_joint_shooter_pub
 
@@ -118,7 +119,7 @@ class ShooterServer2024:
 
 
 if __name__ == '__main__':
-    rospy.init_node('shoot_notes_server_2024')
+    rospy.init_node('set_shooter_speed_server_2024')
 
     server = ShooterServer2024()
     rospy.spin()

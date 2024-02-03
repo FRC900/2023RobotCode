@@ -17,6 +17,7 @@
 =======
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson_sim.yaml" command="load" if="$(eval arg('hw_or_sim')=='sim')"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson.yaml" command="load" if="$(eval arg('hw_or_sim')=='hw')"/>
+		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_pivot.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_concept.yaml" command="load"/>
 >>>>>>> e57cdaaa (launch change?)
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive_phoenix6.yaml" command="load"/>
@@ -63,7 +64,9 @@
 			 swerve_drive_state_controller
 			 robot_code_ready_controller
 			 left_shooter_voltage_velocity_controller
-			 right_shooter_voltage_velocity_controller" />
+			 right_shooter_voltage_velocity_controller
+			 shooter_pivot_motionmagicvoltage_controller
+			 " />
 			 <!--
 			-->
 

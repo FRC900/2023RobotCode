@@ -108,7 +108,11 @@ add_action_files(
 		Claw2024.action
 =======
 		Shooter2024.action
+<<<<<<< HEAD
 >>>>>>> b6c11cd5 (fixes to shooting action lib thing, lacks client interactions and needs simtesting)
+=======
+		ShooterPivot2024.action
+>>>>>>> bd8fd992 (changes for shooter pivot function)
 		#GoToColor.action
 		#RotatePanel.action
 		DriveToObject.action

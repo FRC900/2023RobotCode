@@ -1,0 +1,10 @@
+#defining goal
+float64 pivot_position
+
+---
+#defining result
+#bool success
+
+---
+#feedback
+bool is_at_pivot_position
