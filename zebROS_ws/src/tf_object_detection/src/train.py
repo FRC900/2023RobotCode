@@ -60,7 +60,7 @@ def train_yolo(args: argparse.Namespace) -> None:
                      tensorrt_path,
                      int8=True,
                      fp16=True,
-                     dataset_path='datasets/FRC2024/images/train',
+                     dataset_path='/home/ubuntu/tensorflow_workspace/2024Game/datasets/FRC2024/images/train',
                      calibration_file=calibration_path)
     new_pt_file_path = Path(pt_file_path).with_stem(args.output_stem)
     new_onnx_path = onnx_path.with_stem(args.output_stem)
