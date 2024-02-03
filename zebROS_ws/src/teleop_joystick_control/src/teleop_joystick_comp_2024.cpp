@@ -34,163 +34,13 @@
 #include <talon_state_msgs/TalonFXProState.h>
 #include <std_srvs/SetBool.h>
 
-struct DynamicReconfigVars
-{
-	double joystick_deadzone{0};          // "Joystick deadzone, in percent",
-	double min_speed{0};                  // "Min linear speed to get robot to overcome friction, in m/s"
-	double max_speed{2.0};                // "Max linear speed, in m/s"
-	double max_speed_slow{0.75};          // "Max linear speed in slow mode, in m/s"
-	double max_rot{6.0};                  // "Max angular speed"
-	double max_rot_slow{2.0};             // "Max angular speed in slow mode"
-	double button_move_speed{0.5};        // "Linear speed when move buttons are pressed, in m/s"
-	double joystick_pow{1.5};             // "Joystick Scaling Power, linear"
-	double rotation_pow{1.0};             // "Joystick Scaling Power, rotation"
-	double drive_rate_limit_time{200};    // "msec to go from full back to full forward"
-	double rotate_rate_limit_time{500};   // "msec to go from full counterclockwise to full clockwise"
-	double trigger_threshold{0.5};        // "Amount trigger has to be pressed to trigger action"
-	double stick_threshold{0.5};          // "Amount stick has to be moved to trigger diag mode action"
-	double imu_zero_angle{0.0};           // "Value to pass to imu/set_zero when zeroing"
-	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
-	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
-	double angle_to_add{0.135};
-	double angle_threshold{angles::from_degrees(1)};
-	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
-} config;
+#include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
 //std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
 
-std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
-
-bool diagnostics_mode = false;
-
 //frc_msgs::ButtonBoxState2023 button_box;
 
-// array of joystick_states messages for multiple joysticks
-std::vector <frc_msgs::JoystickState> joystick_states_array;
-std::vector <std::string> topic_array;
-
-
-ros::Publisher JoystickRobotVel;
-
-ros::ServiceClient BrakeSrv;
-ros::ServiceClient ParkSrv;
-ros::ServiceClient IMUZeroSrv;
-ros::ServiceClient SwerveOdomZeroSrv;
-ros::ServiceClient FourbarRezeroSrv;
-
-ros::Publisher auto_mode_select_pub;
-
-bool joystick1_left_trigger_pressed = false;
-bool joystick1_right_trigger_pressed = false;
-
-bool up_down_switch_mid = false;
-bool left_right_switch_mid = false;
-
-double last_offset;
-bool last_robot_orient;
-
-// Diagnostic mode controls
-int direction_x{};
-int direction_y{};
-int direction_z{};
-
-bool robot_is_disabled{false};
-bool elevator_up = false;
-bool no_driver_input{false};
-
-uint8_t grid;
-uint8_t game_piece;
-uint8_t node;
-
-uint8_t auto_starting_pos = 1; // 1 indexed
-uint8_t auto_mode = 0; // 0 indexed
-
-bool sendRobotZero = false;
-bool sendSetAngle = true;
-double old_angular_z = 0.0;
-bool use_pathing = false;
-uint8_t grid_position = 0;
-bool moved = false;
-bool pathed = false;
-bool last_no_driver_input = false;
-
-uint8_t autoMode() {
-	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
-	//        L  M      R
-	// up =   1, 2, and 3
-	// mid =  4, 5, and 6
-	// down = 7, 8, and 9
-	ROS_INFO_STREAM("teleop_joystick_comp_2023 : auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
-	return auto_mode * 3 + auto_starting_pos;
-}
-
-uint8_t alliance_color{};
-bool called_park_endgame = false;
-
-void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
-{
-	// TODO : if in diagnostic mode, zero all outputs on the
-	// transition from enabled to disabled
-	robot_is_disabled = msg.Disabled;
-	alliance_color = msg.allianceColor;
-	if (!called_park_endgame && msg.matchTimeRemaining < config.match_time_to_park && msg.Autonomous == false && msg.Enabled == true && msg.matchTimeRemaining > 0) {
-		// check for enabled and time != 0 so we don't trigger when the node starts (time defaults to 0, auto defaults to false)
-		std_srvs::SetBool setBool;
-		setBool.request.data = true;
-		if (!ParkSrv.call(setBool))
-		{
-			ROS_ERROR("ParkSrv call failed in matchStateCallback");
-		} else {
-			called_park_endgame = true;
-			ROS_INFO("ParkSrv called");
-		}
-	}
-}
-
-ros::ServiceClient snapConeCubeSrv;
-ros::ServiceClient setCenterSrv;
-
-void moveDirection(int x, int y, int z) {
-	geometry_msgs::Twist cmd_vel;
-	direction_x += x;
-	direction_y += y;
-	direction_z += z;
-	cmd_vel.linear.x = direction_x * config.button_move_speed;
-	cmd_vel.linear.y = direction_y * config.button_move_speed;
-	cmd_vel.linear.z = direction_z * config.button_move_speed;
-	cmd_vel.angular.x = 0.0;
-	cmd_vel.angular.y = 0.0;
-	cmd_vel.angular.z = 0.0;
-
-	JoystickRobotVel.publish(cmd_vel);
-}
-
-void sendDirection() {
-	geometry_msgs::Twist cmd_vel;
-	cmd_vel.linear.x = direction_x * config.button_move_speed;
-	cmd_vel.linear.y = direction_y * config.button_move_speed;
-	cmd_vel.linear.z = direction_z * config.button_move_speed;
-	cmd_vel.angular.x = 0.0;
-	cmd_vel.angular.y = 0.0;
-	cmd_vel.angular.z = 0.0;
-
-	JoystickRobotVel.publish(cmd_vel);
-}
-
-void publish_diag_cmds(void)
-{
-	ROS_WARN("Called unimplemented function \"publish_diag_cmds\"");
-	// should publish commands to the diagnostic mode nodes
-}
-
-void zero_all_diag_commands(void)
-{
-	ROS_WARN("Called unimplemented function \"zero_all_diag_commands\"");
-	// should zero out all diagnostic mode commands
-}
-
 // TODO: Add 2024 versions
-std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
 //std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
 //std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
 //std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
@@ -198,7 +48,7 @@ std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAc
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
 {    
-	// Why does this just do stuff with the elevator?
+	// Year specific
 	/*     
 	// fourbar_master_idx == max of size_t at the start
 	if (elevator_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
@@ -232,64 +82,13 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 	*/  
 }
 
-void preemptActionlibServers(void)
-{
-	ROS_WARN_STREAM("Preempting ALL actionlib servers!");
-	// dont forget to add new actionlib servers here
-}
-
-bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
-		teleop_joystick_control::RobotOrient::Response&/* res*/)
-{
-	last_offset = req.offset_angle;
-	last_robot_orient = req.robot_orient;
-	// Used to switch between robot orient and field orient driving
-	//teleop_cmd_vel->setRobotOrient(req.robot_orient, req.offset_angle);
-	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
-	return true;
-}
-
-
-
-void place() {
-	/*
-	behavior_actions::Placing2023Goal goal;
-	goal.node = node;
-	goal.piece = game_piece;
-	goal.override_game_piece = true;
-	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
-	placing_ac->sendGoal(goal);
-	*/
-	moved = !moved;
-}
-
-// start at waiting to align
-// when driver transition becomes true, and we are at waiting to align, then align
-// if aligning and you see press callback, place
-// if on placing and see a press event, go to waiting to align  
-enum AutoPlaceState {
-	WAITING_TO_ALIGN = 0,
-	ALIGNING = 1,
-	PLACING = 2,
-};
-
-AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
-uint8_t intake_piece = 0;
-
-void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event)
-{
-	ROS_WARN("Called unimplemented function \"buttonBoxCallback\"");
-}
-
-bool aligned_to_game_piece = false;
-
-void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)
+void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)	
 {
 	//So the code can use specific joysticks
 	int joystick_id = -1;
 
 	const ros::M_string &header = event.getConnectionHeader();
-	const std::string topic = header.at("topic");
+	const std::string topic = header.at("topic");	
 
 	//Identifies the incoming message as the correct joystick based on the topic the message was recieved from
 	for(size_t i = 0; (i < topic_array.size()); i++)
@@ -309,79 +108,9 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	}
 
 	//Only do this for the first joystick
-	if(joystick_id == 0)
-	{
-		//ROS_INFO_STREAM_THROTTLE(3, "2023 js0 callback running!");
+	if(joystick_id == 0) {
 
-		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
-
-		//teleop_cmd_vel->updateRateLimit(config);
-		// TODO : make swerve invert the yaw so we can deal in ccw-positive angles
-		// everywhere outside of that code
-		// FIXME
-		geometry_msgs::Twist cmd_vel; //= teleop_cmd_vel->generateCmdVel(joystick_states_array[0], -robot_orientation_driver->getCurrentOrientation(), config);
-
-		/*
-		if (!rotation_increment) {
-			robot_orientation_driver->stopRotation();
-		}
-		*/
-		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z);
-
-		//ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
-		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.linear.x != 0.0 || cmd_vel.linear.y != 0.0 || cmd_vel.angular.z != 0.0) {
-			double original_angular_z = cmd_vel.angular.z;
-
-			if (original_angular_z == 0.0 && old_angular_z != 0.0) {
-				ROS_WARN_STREAM_THROTTLE(1, "Send set angle = false");
-				sendSetAngle = false;
-			}
-
-			if (original_angular_z == 0.0 && !sendSetAngle) {
-				ROS_INFO_STREAM("Old angular z " << old_angular_z << " signbit " << signbit(old_angular_z));
-				double multiplier = 1;
-				if (signbit(old_angular_z)) {
-					multiplier = -1;
-				}
-				if (old_angular_z == 0.0) {
-					ROS_WARN_STREAM("Old angular z is zero, wierd");
-				}
-				ROS_INFO_STREAM("Locking to current orientation!");
-				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
-				sendSetAngle = true;
-			}
-
-			if (cmd_vel.angular.z == 0.0)
-			{
-				cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
-				if (fabs(cmd_vel.angular.z) < config.rotation_epsilon) {
-					cmd_vel.angular.z = 0.0;
-				}
-			}
-
-			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && (original_angular_z == 0.0) && !sendRobotZero)
-			{
-				no_driver_input = true;
-				if (std_srvs::Empty empty; !BrakeSrv.call(empty))
-				{
-					ROS_ERROR("BrakeSrv call failed in sendRobotZero_");
-				}
-				ROS_INFO("BrakeSrv called");
-
-				JoystickRobotVel.publish(cmd_vel);
-				sendRobotZero = true;
-			}
-			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (cmd_vel.angular.z != 0.0))
-			{
-				//ROS_INFO_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.linear.z);
-				JoystickRobotVel.publish(cmd_vel);
-				sendRobotZero = false;
-				no_driver_input = false;
-				// if the original command was not zero, then teleop was controlling rotation
-
-			}
-			old_angular_z = original_angular_z;
-		}
+		static ros::Time last_header_stamp = evalateDriverCommands();
 
 		if(!diagnostics_mode)
 		{
@@ -389,17 +118,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: buttonA
 			if(joystick_states_array[0].buttonAPress)
 			{
-				/*
-				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cone and enabling robot relative driving mode!");
-				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
-				{
-					if (srv.response.nearest_cone_angle > -900) {
-						ROS_INFO_STREAM("Using angle of " << srv.response.nearest_cone_angle);
-						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cone_angle, true); //from teleop
-						teleop_cmd_vel->setRobotOrient(true, 0);
-					}
-				}
-				*/
+
 			}
 			if(joystick_states_array[0].buttonAButton)
 			{
@@ -407,30 +126,20 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonARelease)
 			{
-				//teleop_cmd_vel->setRobotOrient(false, 0);
+				
 			}
 
 			//Joystick1: buttonB
 			if(joystick_states_array[0].buttonBPress)
 			{
-				/*
-				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cube and enabling robot relative driving mode!");
-				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
-				{
-					if (srv.response.nearest_cube_angle > -900) {
-						ROS_INFO_STREAM_THROTTLE(1, "Using angle of " << srv.response.nearest_cube_angle);
-						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cube_angle, true); // from teleop
-						teleop_cmd_vel->setRobotOrient(true, 0);
-					}
-				}
-				*/
+
 			}
 			if(joystick_states_array[0].buttonBButton)
 			{	
 			}
 			if(joystick_states_array[0].buttonBRelease)
 			{
-				//teleop_cmd_vel->setRobotOrient(false, 0);
+			
 			}
 
 			//Joystick1: buttonX
@@ -461,31 +170,27 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: bumperLeft
 			if(joystick_states_array[0].bumperLeftPress)
 			{
-				//teleop_cmd_vel->setSlowMode(true);
+				
 			}
 			if(joystick_states_array[0].bumperLeftButton)
 			{
 			}
 			if(joystick_states_array[0].bumperLeftRelease)
 			{
-				//teleop_cmd_vel->setSlowMode(false);
+				
 			}
 
 			//Joystick1: bumperRight
 			if(joystick_states_array[0].bumperRightPress)
 			{
-				/*
-				behavior_actions::Intaking2023Goal goal;
-				goal.outtake = goal.OUTTAKE_CONE;
-				intaking_ac->sendGoal(goal);
-				*/
+				
 			}
 			if(joystick_states_array[0].bumperRightButton)
 			{
 			}
 			if(joystick_states_array[0].bumperRightRelease)
 			{
-				//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				
 			}
 
 
@@ -563,11 +268,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(!joystick1_left_trigger_pressed)
 				{
-					/*
-					behavior_actions::Intaking2023Goal goal;
-					goal.piece = intake_piece;
-					intaking_ac->sendGoal(goal);
-					*/
+					
 				}
 
 				joystick1_left_trigger_pressed = true;
@@ -576,7 +277,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_left_trigger_pressed)
 				{
-					//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					
 				}
 
 				joystick1_left_trigger_pressed = false;
@@ -587,11 +288,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
-					/*
-					behavior_actions::Intaking2023Goal goal;
-					goal.piece = goal.VERTICAL_CONE;
-					intaking_ac->sendGoal(goal);
-					*/
+					
 				}
 
 				joystick1_right_trigger_pressed = true;
@@ -600,7 +297,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_right_trigger_pressed)
 				{
-					//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+
 				}
 
 				joystick1_right_trigger_pressed = false;

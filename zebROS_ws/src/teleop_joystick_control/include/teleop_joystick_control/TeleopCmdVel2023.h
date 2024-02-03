@@ -52,9 +52,16 @@ class TeleopCmdVel
 			}
 		}
 
-		void setSuperSlowMode(const bool super_slow_mode)
+		void setCaps(const double speed_cap, const double rotation_cap)
 		{
-			super_slow_mode_ = super_slow_mode;
+			speed_cap_ = speed_cap;
+			rotation_cap_ = rotation_cap;
+		}
+
+		void resetCaps(void)
+		{
+			speed_cap_ = {};
+			rotation_cap_ = {};
 		}
 
 		void restoreRobotOrient(void)
@@ -70,7 +77,7 @@ class TeleopCmdVel
 
 		// Note - updateRiseTimeInMsec() does nothing if the
 		// requested time is the same as the current config
-		void updateRateLimit(const ConfigT &config)
+		void updateRateLimit(const ConfigT &config)	
 		{
 			x_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
 			y_rate_limit_.updateRiseTimeInMsec(config.drive_rate_limit_time);
@@ -82,11 +89,12 @@ class TeleopCmdVel
 		{
 			double max_speed;
 			double max_rot;
-			if (super_slow_mode_) {
-				max_speed = config.max_speed_elevator_extended;
-				max_rot = config.max_rot_elevator_extended;
-			}
-			else {
+			// speed cap and rotation cap are set at the same time, so one being set implies the other
+			// TODO: Make this a tuple instead?
+			if (speed_cap_) {
+				max_speed = *speed_cap_;
+				max_rot = *rotation_cap_;
+			} else {
 				max_speed = slow_mode_ ? config.max_speed_slow : config.max_speed;
 				max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
 			}
@@ -135,6 +143,7 @@ class TeleopCmdVel
 			//ROS_INFO_STREAM(__LINE__ << " "  << xSpeed << " " << ySpeed);
 
 			// Rotation is a bit simpler since it is just one independent axis
+		
 
 #ifdef ROTATION_WITH_STICK
 			const double rotAxisVal = event.rightStickX;
@@ -189,8 +198,8 @@ class TeleopCmdVel
 		double generateAngleIncrement(const double rotationZ, const ros::Time &stamp, ConfigT &config)
 		{
 			double max_rot;
-			if (super_slow_mode_) {
-				max_rot = config.max_rot_elevator_extended;
+			if (rotation_cap_) {
+				max_rot = *rotation_cap_;
 			}
 			else {
 				max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
@@ -225,7 +234,10 @@ class TeleopCmdVel
 		double offset_angle_{M_PI / 2.0};
 
 		bool slow_mode_{false};
-		bool super_slow_mode_{false};
+
+		std::optional<double> speed_cap_{};
+		std::optional<double> rotation_cap_{};
+
 		bool saved_robot_orient_{false};
 		double saved_offset_angle_{M_PI / 2.0};
 

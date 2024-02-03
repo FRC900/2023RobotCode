@@ -240,10 +240,11 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 		pathed = (elevator_height >= config.elevator_threshold);
 		// if we are currently above the height or want to go above the height
 		if (elevator_height > config.elevator_threshold || elevator_setpoint > config.elevator_threshold) {
-			teleop_cmd_vel->setSuperSlowMode(true);
+			teleop_cmd_vel->setCaps(config.max_speed_elevator_extended, config.max_rot_elevator_extended);
+
 		}
 		else {
-			teleop_cmd_vel->setSuperSlowMode(false);
+			teleop_cmd_vel->resetCaps();
 		}
 	}
 	else {
