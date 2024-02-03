@@ -173,7 +173,7 @@ swerve_drive_state_controller:
     max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
 
     # TODO : move this into sensor_to_mechanism_ratio for Falcons
-    ratio_encoder_to_rotations: 0.163398693 # Test me, will show up in odom results
+    ratio_encoder_to_rotations: 0.148148148 # Test me, will show up in odom results
 
     wheel_coords: [[-0.22225, 0.19685], [0.22225, 0.19685], [-0.22225, -0.19685], [0.22225, -0.19685]]
 

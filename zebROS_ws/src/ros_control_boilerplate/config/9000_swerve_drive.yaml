@@ -31,7 +31,7 @@ swerve_drive_controller:
     f_v: 0.0379
 
     # TODO : move this into sensor_to_mechanism_ratio for Falcons
-    ratio_encoder_to_rotations: 0.163398693 # Test me, will show up in odom results
+    ratio_encoder_to_rotations: 0.148148148 # Test me, will show up in odom results
 
     encoder_drive_get_V_units: 1
     encoder_drive_set_V_units: 1

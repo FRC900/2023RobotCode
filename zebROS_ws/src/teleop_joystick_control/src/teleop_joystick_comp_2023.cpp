@@ -969,9 +969,12 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(!joystick1_left_trigger_pressed)
 				{
-					behavior_actions::Intaking2023Goal goal;
-					goal.piece = intake_piece;
-					intaking_ac->sendGoal(goal);
+					std_msgs::Float64 msg;
+					msg.data = -intake_test_voltage; // hopefully volts
+					ROS_INFO_STREAM("Starting 9000 intake (" << -intake_test_voltage << "V) / diverter (" << -diverter_test_voltage << "V) !=======");
+					intake_test_pub.publish(msg);
+					msg.data = -diverter_test_voltage;
+					diverter_test_pub.publish(msg);
 				}
 
 				joystick1_left_trigger_pressed = true;
@@ -980,7 +983,11 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			{
 				if(joystick1_left_trigger_pressed)
 				{
-					intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+					std_msgs::Float64 msg;
+					msg.data = 0.0;
+					ROS_INFO_STREAM("Stopping 9000 intake / diverter !=======");
+					intake_test_pub.publish(msg);
+					diverter_test_pub.publish(msg);
 				}
 
 				joystick1_left_trigger_pressed = false;
@@ -1382,8 +1389,8 @@ int main(int argc, char **argv)
 	ddr.registerVariable<double>("cone_tolerance", &config.cone_tolerance, "cone_tolerance", 0.0, 0.5);
 	ddr.registerVariable<double>("cube_tolerance", &config.cube_tolerance, "cube_tolerance", 0.0, 0.5);
 	ddr.registerVariable<double>("match_time_to_park", &config.match_time_to_park, "match_time_to_park", 0.0, 60.0);
-	ddr.registerVariable<double>("intake_test_voltage", &intake_test_voltage, "intake_test_voltage", 0.0, 13.0);
-	ddr.registerVariable<double>("diverter_test_voltage", &diverter_test_voltage, "diverter_test_voltage", 0.0, 13.0);
+	ddr.registerVariable<double>("intake_test_voltage", &intake_test_voltage, "intake_test_voltage", -13.0, 13.0);
+	ddr.registerVariable<double>("diverter_test_voltage", &diverter_test_voltage, "diverter_test_voltage", -13.0, 13.0);
 
 	ddr.publishServicesTopics();
 
