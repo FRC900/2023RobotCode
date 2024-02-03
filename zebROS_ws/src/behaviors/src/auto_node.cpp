@@ -844,7 +844,8 @@ class AutoNode {
 	}
 
 	bool autoDriveNotefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
-		
+		ROS_ERROR_STREAM("Not implmented===");
+		return true;
 		
 	}
 

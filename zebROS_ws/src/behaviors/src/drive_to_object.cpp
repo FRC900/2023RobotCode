@@ -190,7 +190,7 @@ public:
     const std::map<std::string, std::string> service_connection_header{ {"tcp_nodelay", "1"} };
 
     imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 1, &DriveToObjectActionServer::imuCb, this);
-    cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/align/cmd_vel", 1, false);
+    cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/auto_note_align/cmd_vel", 1, false);
     x_effort_sub_ = nh_.subscribe<std_msgs::Float64>("x_position_pid/x_command", 1, [&](const std_msgs::Float64ConstPtr &msg) {x_eff_ = msg->data;});
 
     AlignActionAxisConfig x_axis("x", "x_position_pid/pid_enable", "x_position_pid/x_cmd_pub", "x_position_pid/x_state_pub", "x_position_pid/pid_debug", "x_timeout_param", "x_error_threshold_param");
@@ -358,6 +358,7 @@ public:
         point.header = latest_.header;
         geometry_msgs::PointStamped point_out;
         // no need for x to be field relative so get the x value before the transform to map
+        ROS_INFO_STREAM("Point header" << point.header);
         tf_buffer_.transform(point, point_out, "base_link", ros::Duration(0.1));
         objectLocation.x = point_out.point.x;
         objectLocation.y = point_out.point.y;
