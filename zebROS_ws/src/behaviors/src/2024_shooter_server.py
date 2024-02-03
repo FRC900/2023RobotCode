@@ -48,12 +48,16 @@ def callback(data):
     global right_joint_velocity
     global right_joint_control_velocity
     for i in range(len(data.name)):
-        if (data.name[i] == "left_joint_shooter_motor"):     #pretty sure its just the joint name
+        
+        if (data.name[i] == "left_shooter_joint"): 
+            #rospy.loginfo("reached first if condition")    #pretty sure its just the joint name
             left_joint_velocity = data.velocity[i]
+            #rospy.loginfo(left_joint_velocity)
             left_joint_control_velocity = data.control_velocity[i]
-        elif (data.name[i] == "right_joint_shooter_motor"):
+        elif (data.name[i] == "right_shooter_joint"):
             right_joint_velocity = data.velocity[i]    #pretty sure its just hte point name as well should make these more descriptive
             right_joint_control_velocity = data.control_velocity[i]
+            #rospy.loginfo(right_joint_velocity)
     return
 
 class ShooterServer2024:
@@ -93,6 +97,11 @@ class ShooterServer2024:
 
         if (((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((left_joint_velocity / left_joint_control_velocity) <= 1.05)):
                 if (((right_joint_velocity / right_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocity) <= 1.05)):
+                    #so if velocity is plus five percent of hte measured velocity, then run the code
+                    #set succes htat is 
+
+
+
                     #need to fix this since its not even right lmao ^
                     #loginfo percent diff plus or minsu 5
                     #log speed
