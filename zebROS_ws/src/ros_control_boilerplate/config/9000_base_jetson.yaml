@@ -98,12 +98,14 @@ joint_state_controller_jetson:
 
 intake_voltage_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
+    invert: clockwise_positive
     joint: intake
     neutral_mode: Coast
     dynamic_reconfigure: True
 
 diverter_voltage_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
+    invert: clockwise_positive
     joint: diverter
     neutral_mode: Coast
     dynamic_reconfigure: True
