@@ -348,10 +348,6 @@ public:
           x_axis.setEnable(true);
           missed_frames = 0;
         }
-        field_relative_object_angle = latest_yaw_ + atan2(closestObject.location.y, closestObject.location.x);
-
-        msg.data = field_relative_object_angle;
-        orientation_command_pub_.publish(msg);
 
         geometry_msgs::PointStamped point;
         point.point = closestObject.location;
@@ -368,7 +364,13 @@ public:
         x_axis.setCommand(-goal->distance_away);
 
         x_error_ = fabs(goal->distance_away - objectLocation.x);
-        angle_error_ = fabs(atan2(closestObject.location.y, closestObject.location.x));
+
+        field_relative_object_angle = latest_yaw_ + atan2(point_out.point.y, point_out.point.x);
+
+        msg.data = field_relative_object_angle;
+        orientation_command_pub_.publish(msg);
+
+        angle_error_ = fabs(atan2(point_out.point.y, point_out.point.x));
 
         // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
         // could try to do the math, but i'm not sure how we'd calculate that.
