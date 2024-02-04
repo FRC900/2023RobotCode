@@ -184,7 +184,6 @@ class AutoNode {
 
 		// START change year to year
 		// better way to initalize?
-		functionMap_["drive_to_nearest_note"] = &AutoNode::autoDriveNotefn;
 		functionMap_["relocalize"] = &AutoNode::relocalizefn;
 		functionMap_["pause"] = &AutoNode::pausefn;
 		functionMap_["intaking_actionlib_server"] = &AutoNode::intakefn;
@@ -841,12 +840,6 @@ class AutoNode {
 
 		ROS_INFO_STREAM("Auto node - relocalize service call succeeded");
 		return true;
-	}
-
-	bool autoDriveNotefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
-		ROS_ERROR_STREAM("Not implmented===");
-		return true;
-		
 	}
 
 	bool placefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
