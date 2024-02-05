@@ -5,6 +5,7 @@ import rospy # If you don't know what this is, either you're on mechanical or VE
 import actionlib # Lets us do server stuff
 from behavior_actions import Arm, ArmGoal, ArmFeedback, ArmResult # The ".msg" of action servers
 
+
 class ArmAction(): # Creates ArmAction class
     # Defining our feedback and result stuff (Don't ask why there's an underscore at the front because I don't know either)
     _feedback = ArmFeedback()
@@ -14,6 +15,8 @@ class ArmAction(): # Creates ArmAction class
         self._action_name = name # Give it a name, used as a namespace (For people confuse [like me :D], a namespace is pretty much a dictionary that stores different stuff)
         self._as = actionlib.SimpleActionServer(self._action_name, Arm.ArmAction, execute_cb=self.execute_cb, auto_start = False) # Create the Action Server, and set autostart to False bc ros says so
         self._as.start() # "Start up" the server 
+
+        
    
     def execute_cb(self, goal):
         # Quality of life variables
@@ -26,6 +29,19 @@ class ArmAction(): # Creates ArmAction class
         """
         I'm supposed to be ✨moving the motor✨ here
         """
+        if goal.path == goal.DIVERTER:
+            
+            #publish to frcrobot_jetson/arm_controller/command?
+        elif goal.path == goal.AMP:
+
+            #publish to frcrobot_jetson/arm_controller/command?
+
+        elif goal.path == goal.TRAP: 
+             
+            #publish to frcrobot_jetson/arm_controller/command?
+
+             
+
 
         # Check if the goal is preempted (canceled) and end the action if it is
         if self._as.is_preempt_requested():
