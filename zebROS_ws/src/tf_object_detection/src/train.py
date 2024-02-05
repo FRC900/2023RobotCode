@@ -27,7 +27,7 @@ def train_yolo(args: argparse.Namespace) -> None:
                     batch=args.batch_size,
                     patience=args.patience,
                     optimizer='SGD',
-                    lr0=0.002,
+                    lr0=0.00125,
                     warmup_bias_lr=args.warmup_bias_lr,
                     augment=True, #Pretty sure this is a no-op
                     fliplr=False,
