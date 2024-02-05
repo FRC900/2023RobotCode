@@ -20,23 +20,7 @@
             <remap from="pid_debug" to="x_position_pid/pid_debug" />
             <remap from="pid_enable" to="x_position_pid/pid_enable" />
         </node>
-
-        <node name="y_position_pid" pkg="pid" type="controller" >
-            <param name="node_name" value="y_position_pid" />
-            <param name="Kp" value="1.0" />
-            <param name="Ki" value="0.0" />
-            <param name="Kd" value="0.0" />
-            <param name="upper_limit" value="1.0" />
-            <param name="lower_limit" value="-1.0" />
-            <param name="windup_limit" value="10" />
-            <param name="max_loop_frequency" value="250.0" />
-            <param name="min_loop_frequency" value="250.0" />
-            <param name="topic_from_controller" value="y_position_pid/y_command" />
-            <param name="setpoint_topic" value="y_position_pid/y_cmd_pub" />
-            <param name="topic_from_plant" value="y_position_pid/y_state_pub" />
-            <remap from="pid_debug" to="y_position_pid/pid_debug" />
-            <remap from="pid_enable" to="y_position_pid/pid_enable" />
-        </node>
+        
     </group>
 
 </launch>

@@ -20,81 +20,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "tf2_ros/transform_listener.h"
 #include <std_srvs/Empty.h>
-
-class AlignActionAxisConfig
-{
-	public:
-		AlignActionAxisConfig(const std::string &name,
-							  const std::string &enable_pub_topic,
-							  const std::string &command_pub_topic,
-							  const std::string &state_pub_topic,
-							  const std::string &error_sub_topic,
-							  const std::string &timeout_param,
-							  const std::string &error_threshold_param)
-			: name_(name)
-			, enable_pub_topic_(enable_pub_topic)
-			, command_pub_topic_(command_pub_topic)
-			, state_pub_topic_(state_pub_topic)
-			, error_sub_topic_(error_sub_topic)
-			, timeout_param_(timeout_param)
-			, error_threshold_param_(error_threshold_param)
-		{
-		}
-		std::string name_;
-		std::string enable_pub_topic_;
-		std::string command_pub_topic_;
-		std::string state_pub_topic_;
-		std::string error_sub_topic_;
-		std::string timeout_param_;
-		std::string error_threshold_param_;
-};
-
-class AlignActionAxisState
-{
-	public:
-		AlignActionAxisState(ros::NodeHandle &nh,
-							 const std::string &enable_pub_topic,
-							 const std::string &command_pub_topic,
-							 const std::string &state_pub_topic)
-			: enable_pub_(nh.advertise<std_msgs::Bool>(enable_pub_topic, 1, true))
-			, command_pub_(nh.advertise<std_msgs::Float64>(command_pub_topic, 1, true))
-			, state_pub_(nh.advertise<std_msgs::Float64>(state_pub_topic, 1, true))
-		{
-			// Set defaults for PID node topics to prevent
-			// spam of "Waiting for first setpoint message."
-			std_msgs::Bool bool_msg;
-			bool_msg.data = false;
-			enable_pub_.publish(bool_msg);
-
-			std_msgs::Float64 float64_msg;
-			float64_msg.data = 0.0;
-			command_pub_.publish(float64_msg);
-			state_pub_.publish(float64_msg);
-		}
-		void setEnable(bool enable_state)
-		{
-			std_msgs::Bool enable_msg;
-			enable_msg.data = enable_state;
-			enable_pub_.publish(enable_msg);
-		}
-		void setCommand(double command)
-		{
-			std_msgs::Float64 command_msg;
-			command_msg.data = command;
-			command_pub_.publish(command_msg);
-		}
-		void setState(double state)
-		{
-			std_msgs::Float64 state_msg;
-			state_msg.data = state;
-			state_pub_.publish(state_msg);
-		}
-	private:
-		ros::Publisher enable_pub_;
-		ros::Publisher command_pub_;
-		ros::Publisher state_pub_;
-};
-
+#include "path_follower/axis_state.h"
 
 geometry_msgs::Point operator-(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs) {
     geometry_msgs::Point p;
@@ -159,7 +85,7 @@ protected:
   double missed_frames_before_exit_{20};
   double velocity_ramp_time_{0.5}; // time to transition from current command velocity to full PID control
 
-  std::map<std::string, AlignActionAxisState> axis_states_;
+  std::map<std::string, AlignActionAxisStatePosition> axis_states_;
 
   ros::Publisher cmd_vel_pub_;
   ros::Subscriber x_effort_sub_;
@@ -189,9 +115,9 @@ public:
   {
     const std::map<std::string, std::string> service_connection_header{ {"tcp_nodelay", "1"} };
 
-    imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 1, &DriveToObjectActionServer::imuCb, this);
+    imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("/imu/zeroed_imu", 1, &DriveToObjectActionServer::imuCb, this, ros::TransportHints().tcpNoDelay());
     cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/auto_note_align/cmd_vel", 1, false);
-    x_effort_sub_ = nh_.subscribe<std_msgs::Float64>("x_position_pid/x_command", 1, [&](const std_msgs::Float64ConstPtr &msg) {x_eff_ = msg->data;});
+    x_effort_sub_ = nh_.subscribe<std_msgs::Float64>("x_position_pid/x_command", 1, [&](const std_msgs::Float64ConstPtr &msg) {x_eff_ = msg->data;}, ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay());
 
     AlignActionAxisConfig x_axis("x", "x_position_pid/pid_enable", "x_position_pid/x_cmd_pub", "x_position_pid/x_state_pub", "x_position_pid/pid_debug", "x_timeout_param", "x_error_threshold_param");
     if (!addAxis(x_axis))
@@ -240,7 +166,7 @@ public:
   bool addAxis(const AlignActionAxisConfig &axis_config)
   {
     axis_states_.emplace(std::make_pair(axis_config.name_,
-                      AlignActionAxisState(nh_,
+                      AlignActionAxisStatePosition(nh_,
                           axis_config.enable_pub_topic_,
                           axis_config.command_pub_topic_,
                           axis_config.state_pub_topic_)));
@@ -253,7 +179,7 @@ public:
     if (detection.objects.size() == 0) {
       return std::nullopt;
     }
-    for (field_obj::Object obj : detection.objects) {
+    for (const field_obj::Object &obj : detection.objects) {
       double d = distance(obj.location);
       if (d < minDistance && obj.id == object_id) {
         minDistance = d;
@@ -267,7 +193,7 @@ public:
     // takes a vector of <cmd_vel, weight> pairs and computes their weighted average
     // weights must all add to one
     std::vector<geometry_msgs::Twist> weightedTwists;
-    std::transform(entries.begin(), entries.end(), std::back_inserter(weightedTwists), [](std::pair<geometry_msgs::Twist, double> entry){
+    std::transform(entries.begin(), entries.end(), std::back_inserter(weightedTwists), [](const std::pair<geometry_msgs::Twist, double> &entry){
       geometry_msgs::Twist t = entry.first;
       t.linear.x *= entry.second;
       t.linear.y *= entry.second;
@@ -275,7 +201,7 @@ public:
       return t;
     });
     geometry_msgs::Twist finalTwist;
-    std::for_each(weightedTwists.begin(), weightedTwists.end(), [&](geometry_msgs::Twist t){
+    std::for_each(weightedTwists.begin(), weightedTwists.end(), [&](const geometry_msgs::Twist &t){
       finalTwist.linear.x += t.linear.x;
       finalTwist.linear.y += t.linear.y;
       finalTwist.angular.z += t.angular.z;
@@ -288,7 +214,7 @@ public:
     // just to make sure to go through the loop once
     x_error_ = 100;
     angle_error_ = 100;
-    ros::Rate r = ros::Rate(250);
+    ros::Rate r = ros::Rate(60);
     ROS_INFO_STREAM("Execute callback");
     auto x_axis_it = axis_states_.find("x");
     auto &x_axis = x_axis_it->second;

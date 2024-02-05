@@ -31,13 +31,14 @@ float findMedianOfMat(cv::Mat mat) {
 // the supplied bounding rectangle, using contour finding
 float contoursDepthMat(const cv::Mat& depth_, const cv::Rect& bound_rect, bool debug, bool adaptive) {
 	if (bound_rect.size().area() == 0) { // if the ROI is zero, return -1 (no depth)
-		ROS_ERROR_STREAM("ROI is zero==");
+		if (debug) {
+			ROS_ERROR_STREAM("screen_to_world: ROI is zero ============================");
+		}
 		return -1;
 	}
 
 	// Crop depth to region of interest
 	cv::Mat depth = depth_(bound_rect);
-	
 
 	// set very large outliers and nan to 0 so they can be removed later. TODO see if the ZED actually reports negative depth
 	float nan_ = std::numeric_limits<float>::quiet_NaN();
