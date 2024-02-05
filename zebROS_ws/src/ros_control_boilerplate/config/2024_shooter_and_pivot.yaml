@@ -27,6 +27,7 @@ hardware_interface:
    joints:
        - {name: left_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
        - {name: right_shooter_joint, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
+       - {name: shooter_pivot_motionmagic_joint, type: talonfxpro, can_bus: CANivore, can_id: 3, local: true}
        - {name: robot_code_ready_rio, local: false, type: ready}
        - {name: robot_code_ready_jetson, local: true, type: ready}
 
@@ -96,4 +97,18 @@ right_shooter_voltage_velocity_controller:
    neutral_mode: Coast
    forward_limit_enable: False
    reverse_limit_enable: False
+
+shooter_pivot_motionmagicvoltage_controller:
+   type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
+   joint: shooter_pivot_motionmagic_joint
+   motion_magic_cruise_velocity: 8.0
+   motion_magic_acceleration: 16.0
+   motion_magic_jerk: 24.0
+   sensor_to_mechanism_ratio: 1.0
+   rotor_to_sensor_ratio: 1.0
+   close_loop_values:
+       - {kP: 65, kI: 1, kD: 0.00, kV: 0.085, kS: 0}
+   dynamic_reconfigure: True
+
+
 

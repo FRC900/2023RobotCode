@@ -25,7 +25,7 @@ hardware_interface:
    run_hal_robot: false
    can_interface: can0
    joints:
-       - {name: shooter_pivot_motionmagic_joint, type: talonfxpro, can_bus: CANivore, can_id: 79, local: true}
+       - {name: shooter_pivot_motionmagic_joint, type: talonfxpro, can_bus: CANivore, can_id: 3, local: true}
        - {name: robot_code_ready_rio, local: false, type: ready}
        - {name: robot_code_ready_jetson, local: true, type: ready}
 
@@ -64,18 +64,15 @@ match_state_listener_controller:
 shooter_pivot_motionmagicvoltage_controller:
    type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
    joint: shooter_pivot_motionmagic_joint
-   invert: clockwise_positive
+   motion_magic_cruise_velocity: 8.0
+   motion_magic_acceleration: 16.0
+   motion_magic_jerk: 24.0
+   sensor_to_mechanism_ratio: 1.0
+   rotor_to_sensor_ratio: 1.0
    close_loop_values:
-      - {kP: 0.2, kI: 0.0, kD: 0.0, kV: 0.0575, kS: 0.0}
-   #current_limit_continuous_amps: 15
-   #current_limit_peak_amps: 25
-   #current_limit_peak_msec: 50
-   #current_limit_enable: True
-   #peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.5
-   # voltage_closed_loop_ramp_period: 0.10
+       - {kP: 65, kI: 1, kD: 0.00, kV: 0.085, kS: 0}
    dynamic_reconfigure: True
-   neutral_mode: Coast
-   forward_limit_enable: False
-   reverse_limit_enable: False
+
+
+
 

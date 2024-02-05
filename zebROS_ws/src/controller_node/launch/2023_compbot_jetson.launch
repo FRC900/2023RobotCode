@@ -17,9 +17,15 @@
 =======
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson_sim.yaml" command="load" if="$(eval arg('hw_or_sim')=='sim')"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_base_jetson.yaml" command="load" if="$(eval arg('hw_or_sim')=='hw')"/>
+<<<<<<< HEAD
 		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_pivot.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_concept.yaml" command="load"/>
 >>>>>>> e57cdaaa (launch change?)
+=======
+
+		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_and_pivot.yaml" command="load"/>
+		
+>>>>>>> 7e7c47c4 (merged talon yaml files)
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive_phoenix6.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_offsets.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_elevator_phoenix6_params.yaml" command="load"/>
@@ -65,8 +71,7 @@
 			 robot_code_ready_controller
 			 left_shooter_voltage_velocity_controller
 			 right_shooter_voltage_velocity_controller
-			 shooter_pivot_motionmagicvoltage_controller
-			 " />
+			 shooter_pivot_motionmagicvoltage_controller" />
 			 <!--
 			-->
 
