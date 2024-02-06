@@ -85,7 +85,6 @@ void zero_all_diag_commands(void);
 void preemptActionlibServers(void);
 bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 		teleop_joystick_control::RobotOrient::Response&/* res*/);
-//void place(void); 
 // Don't uncomment until we generalize the button box
 //void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
 ros::Time evalateDriverCommands(void);

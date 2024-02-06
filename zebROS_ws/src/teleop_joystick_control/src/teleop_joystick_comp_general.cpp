@@ -44,8 +44,6 @@ std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 
 bool diagnostics_mode = false;
 
-//frc_msgs::ButtonBoxState2023 button_box;
-
 // array of joystick_states messages for multiple joysticks
 std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
@@ -186,20 +184,6 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
 	return true;
 }
-
-
-/*
-void place(void) {
-	ROS_WARN("Called unimplemented function \"place\"");
-	behavior_actions::Placing2023Goal goal;
-	goal.node = node;
-	goal.piece = game_piece;
-	goal.override_game_piece = true;
-	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
-	placing_ac->sendGoal(goal);
-	moved = !moved;
-}
-*/
 
 AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
 

@@ -91,16 +91,6 @@ struct DynamicReconfigVars
 frc_msgs::ButtonBoxState2023 button_box;
 ros::ServiceClient FourbarRezeroSrv;
 
-uint8_t autoMode() {
-	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
-	//        L  M      R
-	// up =   1, 2, and 3
-	// mid =  4, 5, and 6
-	// down = 7, 8, and 9
-	ROS_INFO_STREAM("teleop_joystick_comp_2023 : auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
-	return auto_mode * 3 + auto_starting_pos;
-}
-
 ros::ServiceClient snapConeCubeSrv;
 
 std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::DriveToObjectAction>> auto_note_pickup_ac;
@@ -380,7 +370,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_msg.auto_mode = autoMode(2023);
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		node = behavior_actions::Placing2023Goal::HIGH;
@@ -397,7 +387,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				// should we be worried about messages being dropped here?
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode();
+				auto_mode_msg.auto_mode = autoMode(2023);
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -418,7 +408,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_msg.auto_mode = autoMode(2023);
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 	}
@@ -434,7 +424,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_msg.auto_mode = autoMode(2023);
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 0;
@@ -451,7 +441,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				// should we be worried about messages being dropped here?
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode();
+				auto_mode_msg.auto_mode = autoMode(2023);
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -470,7 +460,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode();
+			auto_mode_msg.auto_mode = autoMode(2023);
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 6;
@@ -591,81 +581,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	//Only do this for the first joystick
 	if(joystick_id == 0)
 	{
-		//ROS_INFO_STREAM_THROTTLE(3, "2023 js0 callback running!");
-
-		static ros::Time last_header_stamp = joystick_states_array[0].header.stamp;
-
-		teleop_cmd_vel->updateRateLimit(config);
-		// TODO : make swerve invert the yaw so we can deal in ccw-positive angles
-		// everywhere outside of that code
-		geometry_msgs::Twist cmd_vel = teleop_cmd_vel->generateCmdVel(joystick_states_array[0], -robot_orientation_driver->getCurrentOrientation(), config);
-
-		/*
-		if (!rotation_increment) {
-			robot_orientation_driver->stopRotation();
-		}
-		*/
-		//ROS_INFO_STREAM_THROTTLE(1, "Angular z " << cmd_vel.angular.z);
-
-		//ROS_INFO_STREAM_THROTTLE(1, "From teleop=" << robot_orientation_driver->mostRecentCommandIsFromTeleop());
-		if (robot_orientation_driver->mostRecentCommandIsFromTeleop() || cmd_vel.linear.x != 0.0 || cmd_vel.linear.y != 0.0 || cmd_vel.angular.z != 0.0) {
-			double original_angular_z = cmd_vel.angular.z;
-
-			if (original_angular_z == 0.0 && old_angular_z != 0.0) {
-				ROS_WARN_STREAM_THROTTLE(1, "Send set angle = false");
-				sendSetAngle = false;
-			}
-
-			if (original_angular_z == 0.0 && !sendSetAngle) {
-				ROS_INFO_STREAM("Old angular z " << old_angular_z << " signbit " << signbit(old_angular_z));
-				double multiplier = 1;
-				if (signbit(old_angular_z)) {
-					multiplier = -1;
-				}
-				if (old_angular_z == 0.0) {
-					ROS_WARN_STREAM("Old angular z is zero, wierd");
-				}
-				ROS_INFO_STREAM("Locking to current orientation!");
-				robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
-				sendSetAngle = true;
-			}
-			ROS_INFO_STREAM_THROTTLE(1, "CMD_VEL angular z" << cmd_vel.angular.z);
-
-			if (cmd_vel.angular.z == 0.0)
-			{
-				cmd_vel.angular.z = robot_orientation_driver->getOrientationVelocityPIDOutput();
-				if (fabs(cmd_vel.angular.z) < config.rotation_epsilon) {
-					// COAST MODE
-					//cmd_vel.angular.z = 0.001 * (cmd_vel.angular.z > 0 ? 1 : -1);
-					cmd_vel.angular.z = 0.0;
-				}
-			}
-			//ROS_WARN_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.angular.z << " " << original_angular_z);
-			
-			/*original_angular_z == 0.0*/ 
-			if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && ( cmd_vel.angular.z == 0.0 ) && !sendRobotZero)
-			{
-				no_driver_input = true;
-				if (std_srvs::Empty empty; !BrakeSrv.call(empty))
-				{
-					ROS_ERROR("BrakeSrv call failed in sendRobotZero_");
-				}
-				ROS_INFO("BrakeSrv called");
-
-				JoystickRobotVel.publish(cmd_vel);
-				sendRobotZero = true;
-			}
-			// 0.002 is slightly more than the 0.001 we set for coast mode
-			else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (fabs(cmd_vel.angular.z) >= 0.002))
-			{
-				JoystickRobotVel.publish(cmd_vel);
-				sendRobotZero = false;
-				no_driver_input = false;
-				// if the original command was not zero, then teleop was controlling rotation
-
-			}
-			old_angular_z = original_angular_z;
-		}
+		static ros::Time last_header_stamp = evalateDriverCommands();
 
 		if(!diagnostics_mode)
 		{

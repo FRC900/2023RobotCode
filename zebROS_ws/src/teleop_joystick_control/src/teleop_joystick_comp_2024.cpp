@@ -651,8 +651,7 @@ int main(int argc, char **argv)
 
 	ddr.publishServicesTopics();
 
-	// FIXME: Add TeleopCmdVel2024
-	//teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
+	teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
 	robot_orientation_driver = std::make_unique<RobotOrientationDriver>(n);
 
 	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
@@ -712,8 +711,8 @@ int main(int argc, char **argv)
 
 	ROS_WARN("joy_init");
 
-	//teleop_cmd_vel->setRobotOrient(false, 0.0);
-	//teleop_cmd_vel->setSlowMode(false);
+	teleop_cmd_vel->setRobotOrient(false, 0.0);
+	teleop_cmd_vel->setSlowMode(false);
 
 	ros::spin();
 	return 0;
