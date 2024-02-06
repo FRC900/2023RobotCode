@@ -16,7 +16,8 @@ global shooter_pivot_pub
 global motion_magic_value
 
 #initialize motion magic value
-motion_magic_value = 900.0
+
+motion_magic_value = 100.0
 
 def callback(data):
     global motion_magic_value

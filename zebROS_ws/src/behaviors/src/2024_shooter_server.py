@@ -98,7 +98,7 @@ class ShooterServer2024:
 
         if (((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((left_joint_velocity / left_joint_control_velocity) <= 1.05)):
                 if (((right_joint_velocity / right_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocity) <= 1.05)):
-                    #so if velocity is plus five percent of hte measured velocity, then run the code
+                    #so if velocity value sent is plus or minus five percent of hte measured velocity, then run the code
                     #set succes htat is 
 
 
