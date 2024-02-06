@@ -1,4 +1,4 @@
-#!/usr/bin/env/python3
+#!/usr/bin/env python3
 
 # Importing stuff, self-explanatory, but I'll explain it anyway because I'm bored :D
 import rospy # If you don't know what this is, either you're on mechanical or VERY behind
@@ -35,8 +35,8 @@ class ArmAction(): # Creates ArmAction class
         """
         I'm supposed to be ✨moving the motor✨ here
         """
+        rot_pos = Float64()
         if goal.path == goal.DIVERTER:
-            rot_pos = Float64()
             rot_pos.data = self.diverter_position
             
 
@@ -47,8 +47,6 @@ class ArmAction(): # Creates ArmAction class
         elif goal.path == goal.TRAP: 
             rot_pos.data = self.trap_position
         
-        Subscriber.sub
-
         self.pub.publish(rot_pos)  
 
 
