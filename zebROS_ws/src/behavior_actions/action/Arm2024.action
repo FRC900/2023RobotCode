@@ -4,8 +4,8 @@ uint8 AMP=1
 uint8 TRAP=2
 uint8 path
 ---
-# feedback
-float64 percent_complete
----
 # result
 bool success
+---
+# feedback
+float64 percent_complete

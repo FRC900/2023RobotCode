@@ -37,18 +37,19 @@ class ArmAction(): # Creates ArmAction class
         """
         if goal.path == goal.DIVERTER:
             rot_pos = Float64()
-            rot_pos.data = pi/2
-            self.pub.publish(rot_pos)
+            rot_pos.data = self.diverter_position
+            
 
         elif goal.path == goal.AMP:
-            rot_pos.data = pi/4
-            self.pub.publish(rot_pos)
+            rot_pos.data = self.amp_position
+        
 
         elif goal.path == goal.TRAP: 
-            rot_pos.data = (2*pi)/3
-            self.pub.publish(rot_pos)
+            rot_pos.data = self.trap_position
+        
+        Subscriber.sub
 
-             
+        self.pub.publish(rot_pos)  
 
 
         # Check if the goal is preempted (canceled) and end the action if it is
