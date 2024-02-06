@@ -5,7 +5,7 @@ import rospy # If you don't know what this is, either you're on mechanical or VE
 import actionlib # Lets us do server stuff
 from behavior_actions.msg import Arm2024Action, Arm2024Goal, Arm2024Feedback, Arm2024Result # The ".msg" of action servers
 from std_msgs.msg import Float64
-import math
+from talon_state_msgs.msg import TalonFXProState
 
 class ArmAction(): # Creates ArmAction class
     # Defining our feedback and result stuff (Don't ask why there's an underscore at the front because I don't know either)
@@ -14,6 +14,7 @@ class ArmAction(): # Creates ArmAction class
 
 
     def __init__(self, name):
+        self.sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, execute_cb) # ASK
         self.diverter_position = rospy.get_param("diverter_position")
         self.amp_position = rospy.get_param("amp_position")
         self.trap_position = rospy.get_param("trap_position")
@@ -67,5 +68,3 @@ if __name__ == '__main__':
     rospy.init_node('2024_move_arm_server', anonymous=True) # Initiates the node (wow really?)
     server = ArmAction(rospy.get_name()) # Pretty much ros finds the name of the code automagically
     rospy.spin() # SpInNnNn (A fancy "while: True" loop)
-
-#testing
