@@ -56,7 +56,7 @@ extern ros::ServiceClient BrakeSrv;
 extern ros::ServiceClient ParkSrv;
 extern ros::ServiceClient IMUZeroSrv;
 extern ros::ServiceClient SwerveOdomZeroSrv;
-extern ros::ServiceClient FourbarRezeroSrv;
+extern ros::ServiceClient setCenterSrv;	
 extern ros::Publisher auto_mode_select_pub;
 extern bool joystick1_left_trigger_pressed;
 extern bool joystick1_right_trigger_pressed;
@@ -75,12 +75,8 @@ extern bool use_pathing;
 extern uint8_t grid_position;
 extern bool pathed;
 extern bool last_no_driver_input;
-extern ros::ServiceClient snapConeCubeSrv;
-extern ros::ServiceClient setCenterSrv;
 extern std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
 extern AutoPlaceState auto_place_state;
-extern uint8_t intake_piece;
-extern bool aligned_to_game_piece;
 extern uint8_t alliance_color;
 extern bool called_park_endgame;
 
@@ -89,7 +85,7 @@ void zero_all_diag_commands(void);
 void preemptActionlibServers(void);
 bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 		teleop_joystick_control::RobotOrient::Response&/* res*/);
-void place(void); 
+//void place(void); 
 // Don't uncomment until we generalize the button box
 //void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
 ros::Time evalateDriverCommands(void);

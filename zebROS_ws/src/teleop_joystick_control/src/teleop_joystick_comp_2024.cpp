@@ -663,7 +663,6 @@ int main(int argc, char **argv)
 	setCenterSrv = n.serviceClient<talon_swerve_drive_controller_msgs::SetXY>("/frcrobot_jetson/swerve_drive_controller/change_center_of_rotation", false, service_connection_header);	
 	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 	SwerveOdomZeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/reset_odom", false, service_connection_header);
-	FourbarRezeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/four_bar_controller_2023/rezero_service", false, service_connection_header);
 #ifdef NEED_JOINT_STATES
 	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
 #endif

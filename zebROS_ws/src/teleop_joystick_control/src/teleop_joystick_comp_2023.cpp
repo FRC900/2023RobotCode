@@ -89,32 +89,7 @@ struct DynamicReconfigVars
 */
 
 frc_msgs::ButtonBoxState2023 button_box;
-
-
-// Diagnostic mode controls
-int direction_x{};
-int direction_y{};
-int direction_z{};
-
-bool robot_is_disabled{false};
-bool elevator_up = false;
-bool no_driver_input{false};
-
-uint8_t grid;
-uint8_t game_piece;
-uint8_t node;
-
-uint8_t auto_starting_pos = 1; // 1 indexed
-uint8_t auto_mode = 0; // 0 indexed
-
-bool sendRobotZero = false;
-bool sendSetAngle = true;
-double old_angular_z = 0.0;
-bool use_pathing = false;
-uint8_t grid_position = 0;
-bool moved = false;
-bool pathed = false;
-bool last_no_driver_input = false;
+ros::ServiceClient FourbarRezeroSrv;
 
 uint8_t autoMode() {
 	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
@@ -126,74 +101,8 @@ uint8_t autoMode() {
 	return auto_mode * 3 + auto_starting_pos;
 }
 
-uint8_t alliance_color{};
-bool called_park_endgame = false;
-
-void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
-{
-	// TODO : if in diagnostic mode, zero all outputs on the
-	// transition from enabled to disabled
-	robot_is_disabled = msg.Disabled;
-	alliance_color = msg.allianceColor;
-	if (!called_park_endgame && msg.matchTimeRemaining < config.match_time_to_park && msg.Autonomous == false && msg.Enabled == true && msg.matchTimeRemaining > 0) {
-		// check for enabled and time != 0 so we don't trigger when the node starts (time defaults to 0, auto defaults to false)
-		std_srvs::SetBool setBool;
-		setBool.request.data = true;
-		if (!ParkSrv.call(setBool))
-		{
-			ROS_ERROR("ParkSrv call failed in matchStateCallback");
-		} else {
-			called_park_endgame = true;
-			ROS_INFO("ParkSrv called");
-		}
-	}
-}
-
 ros::ServiceClient snapConeCubeSrv;
-ros::ServiceClient setCenterSrv;
 
-void moveDirection(int x, int y, int z) {
-	geometry_msgs::Twist cmd_vel;
-	direction_x += x;
-	direction_y += y;
-	direction_z += z;
-	cmd_vel.linear.x = direction_x * config.button_move_speed;
-	cmd_vel.linear.y = direction_y * config.button_move_speed;
-	cmd_vel.linear.z = direction_z * config.button_move_speed;
-	cmd_vel.angular.x = 0.0;
-	cmd_vel.angular.y = 0.0;
-	cmd_vel.angular.z = 0.0;
-
-	robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), false);
-	JoystickRobotVel.publish(cmd_vel);
-}
-
-void sendDirection() {
-	geometry_msgs::Twist cmd_vel;
-	cmd_vel.linear.x = direction_x * config.button_move_speed;
-	cmd_vel.linear.y = direction_y * config.button_move_speed;
-	cmd_vel.linear.z = direction_z * config.button_move_speed;
-	cmd_vel.angular.x = 0.0;
-	cmd_vel.angular.y = 0.0;
-	cmd_vel.angular.z = 0.0;
-
-	robot_orientation_driver->setTargetOrientation(robot_orientation_driver->getCurrentOrientation(), false);
-	JoystickRobotVel.publish(cmd_vel);
-}
-
-void publish_diag_cmds(void)
-{
-	ROS_WARN("Called unimplemented function \"publish_diag_cmds\"");
-	// should publish commands to the diagnostic mode nodes
-}
-
-void zero_all_diag_commands(void)
-{
-	ROS_WARN("Called unimplemented function \"zero_all_diag_commands\"");
-	// should zero out all diagnostic mode commands
-}
-
-std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
 std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::DriveToObjectAction>> auto_note_pickup_ac;
 
 std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
@@ -239,25 +148,6 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 	}
 }
 
-void preemptActionlibServers(void)
-{
-	ROS_WARN_STREAM("Preempting ALL actionlib servers!");
-	// dont forget to add new actionlib servers here
-}
-
-bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
-		teleop_joystick_control::RobotOrient::Response&/* res*/)
-{
-	last_offset = req.offset_angle;
-	last_robot_orient = req.robot_orient;
-	// Used to switch between robot orient and field orient driving
-	teleop_cmd_vel->setRobotOrient(req.robot_orient, req.offset_angle);
-	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
-	return true;
-}
-
-
-
 void place() {
 	behavior_actions::Placing2023Goal goal;
 	goal.node = node;
@@ -273,7 +163,6 @@ void place() {
 // if aligning and you see press callback, place
 // if on placing and see a press event, go to waiting to align  
 
-AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
 uint8_t intake_piece = 0;
 
 void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 const>& event)
@@ -673,8 +562,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		moveDirection(1, 0, 0);
 	}
 }
-
-bool aligned_to_game_piece = false;
 
 void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)
 {

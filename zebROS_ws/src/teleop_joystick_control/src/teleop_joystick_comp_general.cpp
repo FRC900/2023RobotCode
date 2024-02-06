@@ -57,7 +57,6 @@ ros::ServiceClient BrakeSrv;
 ros::ServiceClient ParkSrv;
 ros::ServiceClient IMUZeroSrv;
 ros::ServiceClient SwerveOdomZeroSrv;
-ros::ServiceClient FourbarRezeroSrv;
 
 ros::Publisher auto_mode_select_pub;
 
@@ -128,7 +127,6 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 	}
 }
 
-ros::ServiceClient snapConeCubeSrv;
 ros::ServiceClient setCenterSrv;
 
 void moveDirection(int x, int y, int z) {
@@ -190,19 +188,18 @@ bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 }
 
 
-
+/*
 void place(void) {
 	ROS_WARN("Called unimplemented function \"place\"");
-	/*
 	behavior_actions::Placing2023Goal goal;
 	goal.node = node;
 	goal.piece = game_piece;
 	goal.override_game_piece = true;
 	goal.step = moved ? goal.PLACE_RETRACT : goal.MOVE;
 	placing_ac->sendGoal(goal);
-	*/
 	moved = !moved;
 }
+*/
 
 AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
 
