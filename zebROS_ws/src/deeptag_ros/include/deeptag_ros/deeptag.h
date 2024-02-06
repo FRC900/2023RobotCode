@@ -70,8 +70,9 @@ class DeepTag
                          const cv::Mat &cameraMatrix,
                          const cv::Mat &distCoeffs,
                          const double tagRealSizeInMeter,
-                         const std::string &detectOnnxModelPath,
-                         const std::string &decodeOnnxModelPath);
+                         const std::string &modelPath,
+                         const std::string &detectOnnxModelFileName,
+                         const std::string &decodeOnnxModelFileName);
         DeepTag(const DeepTag &other) = delete;
         DeepTag(DeepTag &&other) noexcept = delete;
 

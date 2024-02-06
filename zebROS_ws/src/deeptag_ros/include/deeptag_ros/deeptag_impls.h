@@ -41,8 +41,9 @@ class DeepTagImpl : public DeepTagImplBase
                              const cv::Mat &cameraMatrix,
                              const cv::Mat &distCoeffs,
                              const double tagRealSizeInMeter,
-                             const std::string &detectOnnxModelPath,
-                             const std::string &decodeOnnxModelPath);
+                             const std::string &modelPath,
+                             const std::string &detectOnnxModelFileName,
+                             const std::string &decodeOnnxModelFileName);
         DeepTagImpl(const DeepTagImpl &other) = delete;
         DeepTagImpl(DeepTagImpl &&other) noexcept = delete;
 

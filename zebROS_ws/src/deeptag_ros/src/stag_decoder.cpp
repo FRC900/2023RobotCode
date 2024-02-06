@@ -26,11 +26,12 @@ STagDecoder<MARKER_DICT, GRID_SIZE>::STagDecoder(const MARKER_DICT &markerDict, 
 }
 
 template <class MARKER_DICT, size_t GRID_SIZE>
-void STagDecoder<MARKER_DICT, GRID_SIZE>::initEngine(const std::string &enginePath)
+void STagDecoder<MARKER_DICT, GRID_SIZE>::initEngine(const std::string &modelPath, const std::string &onnxModelFilename)
 {
-    if (!Util::doesFileExist(enginePath))
+    if (const std::string onnxModelPath = modelPath + "/" + onnxModelFilename;
+        !Util::doesFileExist(onnxModelPath))
     {
-        throw std::runtime_error("Error: Unable to find file at path: " + enginePath);
+        throw std::runtime_error("Error: Unable to find ONNX model file at path: " + onnxModelPath);
     }
     // Specify our GPU inference configuration options
     Options decodeOptions;
@@ -38,15 +39,15 @@ void STagDecoder<MARKER_DICT, GRID_SIZE>::initEngine(const std::string &enginePa
     // FP16 is approximately twice as fast as FP32.
     decodeOptions.precision = Precision::FP16;
     // If using INT8 precision, must specify path to directory containing calibration data.
-    decodeOptions.calibrationDataDirectoryPath = "";
+    decodeOptions.calibrationDataDirectoryPath = "/home/ubuntu";
     // If the model does not support dynamic batch size, then the below two parameters must be set to 1.
     // Specify the batch size to optimize for.
-    decodeOptions.optBatchSize = 2;
+    decodeOptions.optBatchSize = 4;
     // Specify the maximum batch size we plan on running.
     decodeOptions.maxBatchSize = m_maxBatchSize;
     m_decodeEngine = std::make_unique<DecoderEngine>(decodeOptions);
     // Build the onnx model into a TensorRT engine file.
-    if (!m_decodeEngine->build(enginePath))
+    if (!m_decodeEngine->build(modelPath, onnxModelFilename))
     {
         throw std::runtime_error("Unable to build TRT engine.");
     }

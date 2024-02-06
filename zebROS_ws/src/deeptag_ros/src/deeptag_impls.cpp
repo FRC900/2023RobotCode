@@ -39,16 +39,17 @@ DeepTagImpl<NUM_TILES, USE_SCALED_IMAGE, MARKER_GRID_SIZE>::DeepTagImpl(const De
                                                                         const cv::Mat &cameraMatrix,
                                                                         const cv::Mat &distCoeffs,
                                                                         const double tagRealSizeInMeter,
-                                                                        const std::string &detectOnnxModelPath,
-                                                                        const std::string &decodeOnnxModelPath)
+                                                                        const std::string &modelPath,
+                                                                        const std::string &detectOnnxModelFilename,
+                                                                        const std::string &decodeOnnxModelFilename)
     : DeepTagImplBase{}
     , m_sTagDetector{getTimings()}
     , m_arucoMarkerDict{deepTagTypeToCVName(dictionaryType)}
     , m_sTagDecoder{m_arucoMarkerDict, cameraMatrix, distCoeffs, getTimings()}
     , m_poseEstimator{cameraMatrix, distCoeffs, m_arucoMarkerDict.getUnitTagTemplate().getUnitTags(), tagRealSizeInMeter}
 {
-    m_sTagDetector.initEngine(detectOnnxModelPath);
-    m_sTagDecoder.initEngine(decodeOnnxModelPath);
+    m_sTagDetector.initEngine(modelPath, detectOnnxModelFilename);
+    m_sTagDecoder.initEngine(modelPath, decodeOnnxModelFilename);
 
     cv::namedWindow("Trackbars", cv::WINDOW_NORMAL);
     cv::TrackbarCallback trackbarCallback = [](int pos, void *userdata) { (*(TrackbarAction *)userdata)(pos); };

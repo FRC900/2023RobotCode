@@ -7,8 +7,9 @@ DeepTag::DeepTag(const cv::Mat &cpuImg,
                  const cv::Mat &cameraMatrix,
                  const cv::Mat &distCoeffs,
                  const double tagRealSizeInMeter,
-                 const std::string &detectOnnxModelPath,
-                 const std::string &decodeOnnxModelPath)
+                 const std::string &modelPath,
+                 const std::string &detectOnnxModelFileName,
+                 const std::string &decodeOnnxModelFileName)
 {
     // Various c++ nonsense to convert from a variable dictionaryType
     // into code which will make compile-time batch & grid size template
@@ -23,8 +24,9 @@ DeepTag::DeepTag(const cv::Mat &cpuImg,
                                                                                         cameraMatrix,
                                                                                         distCoeffs,
                                                                                         tagRealSizeInMeter,
-                                                                                        detectOnnxModelPath,
-                                                                                        decodeOnnxModelPath);
+                                                                                        modelPath,
+                                                                                        detectOnnxModelFileName,
+                                                                                        decodeOnnxModelFileName);
         }
         else
         {

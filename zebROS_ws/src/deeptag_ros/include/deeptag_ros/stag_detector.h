@@ -40,7 +40,7 @@ public:
 
     virtual ~STagDetector();
 
-    void initEngine(const std::string &enginePath);
+    void initEngine(const std::string &modelPath, const std::string &onnxModelFilename);
     std::vector<TagDetectInfo> detectTags(const cv::Mat &cpuImg);
 
     const std::vector<std::vector<GpuImageWrapper>> &getDetectInputs(void) const;

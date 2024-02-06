@@ -49,11 +49,12 @@ STagDetector<NUM_TILES, USE_SCALED_IMAGE>::~STagDetector()
 }
 
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
-void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::initEngine(const std::string &enginePath)
+void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::initEngine(const std::string &modelPath, const std::string &onnxModelFilename)
 {
-    if (!Util::doesFileExist(enginePath))
+    if (const std::string onnxModelPath = modelPath + "/" + onnxModelFilename;
+        !Util::doesFileExist(onnxModelPath))
     {
-        throw std::runtime_error("Error: Unable to find file at path: " + enginePath);
+        throw std::runtime_error("Error: Unable to find ONNX model file at path: " + onnxModelFilename);
     }
     // Specify our GPU inference configuration options
     Options detectOptions;
@@ -61,7 +62,7 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::initEngine(const std::string &en
     // FP16 is approximately twice as fast as FP32.
     detectOptions.precision = Precision::INT8;
     // If using INT8 precision, must specify path to directory containing calibration data.
-    detectOptions.calibrationDataDirectoryPath = "";
+    detectOptions.calibrationDataDirectoryPath = "/home/ubuntu";
     // Use NUM_TILES input-sized images tiles plus one copy of the full image resized
     // The higher resolution tiles should give better detection distance,
     // and the lower resolution full image will help detect very large tags
@@ -75,7 +76,7 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::initEngine(const std::string &en
     m_detectEngine = std::make_unique<DetectionEngine<NUM_TILES, USE_SCALED_IMAGE>>(detectOptions);
 
     // Build the onnx model into a TensorRT engine file.
-    if (!m_detectEngine->build(enginePath))
+    if (!m_detectEngine->build(modelPath, onnxModelFilename))
     {
         throw std::runtime_error("Unable to build TRT engine.");
     }

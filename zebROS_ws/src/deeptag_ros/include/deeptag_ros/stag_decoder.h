@@ -36,7 +36,7 @@ public:
     STagDecoder &operator=(const STagDecoder &other) = delete;
     STagDecoder &operator=(STagDecoder &&other) noexcept = delete;
 
-    void initEngine(const std::string &enginePath);
+    void initEngine(const std::string &modelPath, const std::string &onnxModelFilename);
 
     std::vector<DecodedTag<GRID_SIZE>> detectTags(const std::vector<std::vector<GpuImageWrapper>> &detectInputs,
                                                   const std::vector<std::array<cv::Point2d, 4>> &rois);
