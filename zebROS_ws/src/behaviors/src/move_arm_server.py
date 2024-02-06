@@ -68,3 +68,5 @@ if __name__ == '__main__':
     rospy.init_node('2024_move_arm_server', anonymous=True) # Initiates the node (wow really?)
     server = ArmAction(rospy.get_name()) # Pretty much ros finds the name of the code automagically
     rospy.spin() # SpInNnNn (A fancy "while: True" loop)
+
+#testing
