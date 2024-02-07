@@ -8,7 +8,6 @@ import std_msgs.msg
 from talon_state_msgs.msg import TalonFXProState
 from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Feedback, ShooterPivot2024Result
 
-
 _result = ShooterPivot2024Result()
 _feedback = ShooterPivot2024Feedback()
 
@@ -18,6 +17,7 @@ global motion_magic_value
 #initialize motion magic value
 
 motion_magic_value = 100.0
+
 
 def callback(data):
     global motion_magic_value
@@ -47,6 +47,8 @@ class ShooterPivotServer2024:
     def execute_cb(self, goal):
         global shooter_pivot_pub
         global motion_magic_value
+        r = rospy.Rate(50)
+
         #inside cb, use the passed goal values and set them to the motor values? though is this a client interaction or a server interaction?
         #like, when we send our goal to the ros thingy, like do we sned goal values thoruhg hte client or this server?
 
@@ -66,6 +68,16 @@ class ShooterPivotServer2024:
             rospy.loginfo("Actual motion magic value %s" % motion_magic_value)
             rospy.loginfo("Motion magic asked value and motion magic actual value is within a plus or minus five difference")
             self.server.set_succeeded(_result)
+        else:
+            while (((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05)) != True:
+                r.sleep()
+                rospy.loginfo("hehehehe")
+                if ((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05):
+                    self.server.set_succeeded(_result)
+
+
+        #figure out how to create a loop that sleeps while hte condition above is not true
+
 
 
 if __name__ == '__main__':
