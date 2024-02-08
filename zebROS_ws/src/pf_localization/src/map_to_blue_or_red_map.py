@@ -6,14 +6,17 @@ from frc_msgs.msg import MatchSpecificData
 import tf2_ros
 
 rospy.init_node('map_chooser', anonymous=True) #Initializes the node
+rospy.loginfo("hi")
 
 map_broadcaster = tf2_ros.StaticTransformBroadcaster() #defines the broadcaster as map_broadcaster
 t = geometry_msgs.msg.TransformStamped()
 t.header.stamp = rospy.Time.now()
 t.header.frame_id = "map"
 
+
+
 def callback(msg):
-    
+    rospy.loginfo("callback")
     #rotates and moves the map if the aliance color is blue
     if msg.allianceColor == 1:
         t.child_frame_id = "blue_map"
@@ -25,6 +28,8 @@ def callback(msg):
         t.transform.rotation.z = 0
         t.transform.rotation.w = 1
 
+
+
     #rotates and moves the map if the alliance color is red
     elif msg.allianceColor == 0:
         t.child_frame_id = "red_map"
@@ -35,8 +40,8 @@ def callback(msg):
         t.transform.rotation.y = 1
         t.transform.rotation.z = 0
         t.transform.rotation.w = 0
-    
+
     map_broadcaster.sendTransform(t) #sends the transform
 
-rospy.Subscriber('/frcrobot_rio/match_data', MatchSpecificData, callback) #subscribed to wrong path? #subscribes to MatchSpecificData
+rospy.Subscriber('/frcrobot_rio/match_data', MatchSpecificData, callback) #subscribes to MatchSpecificData
 rospy.spin()
