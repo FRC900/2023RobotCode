@@ -54,13 +54,6 @@ class ArmAction(): # Creates ArmAction class
             if rospy.is_shutdown():
                 break
             self._feedback.percent_complete = ((self.rot_pos - start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)) * 100 # Let the feedback be equal to the position of the motor divided by where the motor wants to be. Multiply by 100 to make it a percent.
-            rospy.loginfo(self.rot_pos)
-            rospy.loginfo(start_rot_pos)
-            rospy.loginfo(self.rot_pos_goal.data)
-            rospy.loginfo((self.rot_pos - start_rot_pos))
-            rospy.loginfo((self.rot_pos_goal.data - start_rot_pos))
-            rospy.loginfo(((self.rot_pos - start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)))
-            rospy.loginfo(((self.rot_pos)/(self.rot_pos_goal.data)) * 100)
 
             # Check if the goal is preempted (canceled) and end the action if it is
             self._as.publish_feedback(self._feedback)
