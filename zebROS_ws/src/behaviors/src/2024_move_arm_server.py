@@ -13,54 +13,61 @@ class ArmAction(): # Creates ArmAction class
     _result = Arm2024Result()
 
     def __init__(self, name):
-        self.sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, execute_cb) # ASK
+        self.rot_pos_goal = Float64()
+        self.sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.callback) # ASK
         self.diverter_position = rospy.get_param("diverter_position")
         self.amp_position = rospy.get_param("amp_position")
         self.trap_position = rospy.get_param("trap_position")
         self.pub = rospy.Publisher('/frcrobot_jetson/arm_controller/command', Float64, queue_size=1)
         self._action_name = name # Give it a name, used as a namespace (For people confuse [like me :D], a namespace is pretty much a dictionary that stores different stuff)
         self._as = actionlib.SimpleActionServer(self._action_name, Arm2024Action, execute_cb=self.execute_cb, auto_start = False) # Create the Action Server, and set autostart to False bc ros says so
-        self._as.start() # "Start up" the server 
+        self._as.start() # "Start up" the server
+        
 
         
-   
+    def callback(self, data):
+        for i in range(len(data.name)):
+            if data.name[i] == "arm":
+                self.rot_pos = data.position[i]
     def execute_cb(self, goal):
         # Quality of life variables
-        r = rospy.Rate(1)
+        r = rospy.Rate(20)
         success = True
+        start_rot_pos = self.rot_pos
 
         rospy.loginfo(f"{self._action_name}: Executing. Moving arm to {Arm2024Goal}") # This will give info to the person running the server of whats going on
-        while not rospy.is_shutdown():
-            """
-            I'm supposed to be ✨moving the motor✨ here
-            """
-            rot_pos = Float64()
-            if goal.path == goal.DIVERTER:
-                rot_pos.data = self.diverter_position
-                
 
-            elif goal.path == goal.AMP:
-                rot_pos.data = self.amp_position
+        if goal.path == goal.DIVERTER:
+            self.rot_pos_goal.data = self.diverter_position
             
 
-            elif goal.path == goal.TRAP: 
-                rot_pos.data = self.trap_position
-            
-            self.pub.publish(rot_pos)  
+        elif goal.path == goal.AMP:
+            self.rot_pos_goal.data = self.amp_position
+        
 
-            while success:
-                self._feedback.percent_complete = (TalonFXProState.control_position / self.goal) * 100 # Let the feedback be equal to the position of the motor divided by where the motor wants to be. Multiply by 100 to make it a percent.
-                # Check if the goal is preempted (canceled) and end the action if it is
-                if self._as.is_preempt_requested():
-                        rospy.loginfo(f'{self._action_name}: Preempted')
-                        self._as.set_preempted()
-                        success = False # You did not succeed :(
-                # Show off your percent_completion value 🥳
-                self._as.publish_feedback(self._feedback)
-                if success: # Yay you did it :D (This should be self-explanatory)
-                    self._result.success = True
-                    rospy.loginfo(f"{self._action_name}: Succeeded")
-                    self._as.set_succeeded(self._result)
+        elif goal.path == goal.TRAP: 
+            self.rot_pos_goal.data = self.trap_position
+        self.pub.publish(self.rot_pos_goal)
+        
+        while success:
+            if rospy.is_shutdown:
+                break
+            self._feedback.percent_complete = ((self.rot_pos -  start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)) * 100 # Let the feedback be equal to the position of the motor divided by where the motor wants to be. Multiply by 100 to make it a percent.
+            rospy.loginfo(((self.rot_pos -  start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)) * 100)
+            # Check if the goal is preempted (canceled) and end the action if it is
+            self._as.publish_feedback(self._feedback)
+            if self._as.is_preempt_requested():
+                    rospy.loginfo(f'{self._action_name}: Preempted')
+                    self._as.set_preempted()
+                    success = False # You did not succeed :(
+            # Show off your percent_completion value 🥳
+            percent_difference = ((abs(self.rot_pos-self.rot_pos_goal.data))/((self.rot_pos + self.rot_pos_goal.data)/2)) * 100
+            if (percent_difference < 1) or (percent_difference > -1): # Yay you did it :D (This should be self-explanatory)
+                self._result.success = True
+                rospy.loginfo(f"{self._action_name}: Succeeded")
+                self._as.set_succeeded(self._result)
+                break
+            r.sleep()
 
 # Run everything
 if __name__ == '__main__': 
