@@ -29,9 +29,10 @@ class ArmAction(): # Creates ArmAction class
         for i in range(len(data.name)):
             if data.name[i] == "arm":
                 self.rot_pos = data.position[i]
+
     def execute_cb(self, goal):
         # Quality of life variables
-        r = rospy.Rate(20)
+        r = rospy.Rate(20) 
         success = True
         start_rot_pos = self.rot_pos
 
@@ -50,10 +51,17 @@ class ArmAction(): # Creates ArmAction class
         self.pub.publish(self.rot_pos_goal)
         
         while success:
-            if rospy.is_shutdown:
+            if rospy.is_shutdown():
                 break
-            self._feedback.percent_complete = ((self.rot_pos -  start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)) * 100 # Let the feedback be equal to the position of the motor divided by where the motor wants to be. Multiply by 100 to make it a percent.
-            rospy.loginfo(((self.rot_pos -  start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)) * 100)
+            self._feedback.percent_complete = ((self.rot_pos - start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)) * 100 # Let the feedback be equal to the position of the motor divided by where the motor wants to be. Multiply by 100 to make it a percent.
+            rospy.loginfo(self.rot_pos)
+            rospy.loginfo(start_rot_pos)
+            rospy.loginfo(self.rot_pos_goal.data)
+            rospy.loginfo((self.rot_pos - start_rot_pos))
+            rospy.loginfo((self.rot_pos_goal.data - start_rot_pos))
+            rospy.loginfo(((self.rot_pos - start_rot_pos)/(self.rot_pos_goal.data - start_rot_pos)))
+            rospy.loginfo(((self.rot_pos)/(self.rot_pos_goal.data)) * 100)
+
             # Check if the goal is preempted (canceled) and end the action if it is
             self._as.publish_feedback(self._feedback)
             if self._as.is_preempt_requested():
@@ -61,9 +69,11 @@ class ArmAction(): # Creates ArmAction class
                     self._as.set_preempted()
                     success = False # You did not succeed :(
             # Show off your percent_completion value 🥳
-            percent_difference = ((abs(self.rot_pos-self.rot_pos_goal.data))/((self.rot_pos + self.rot_pos_goal.data)/2)) * 100
-            if (percent_difference < 1) or (percent_difference > -1): # Yay you did it :D (This should be self-explanatory)
+            percent_difference = ((abs(self.rot_pos - self.rot_pos_goal.data))/((self.rot_pos + self.rot_pos_goal.data)/2)) * 100
+            if (percent_difference < 1): # Yay you did it :D (This should be self-explanatory)
                 self._result.success = True
+                self._feedback.percent_complete = 100.00
+                self._as.publish_feedback(self._feedback)
                 rospy.loginfo(f"{self._action_name}: Succeeded")
                 self._as.set_succeeded(self._result)
                 break

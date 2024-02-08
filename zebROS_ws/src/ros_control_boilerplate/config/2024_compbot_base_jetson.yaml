@@ -99,8 +99,8 @@ arm_controller:
         - {kP: 1, kI: 0.000, kD: 0.0, kV: 0, kS: 0}
     invert: counterclockwise_positive
     neutral_deadband: 0.01
-    motion_magic_cruise_velocity: 5.0
-    motion_magic_acceleration: 50.0
+    motion_magic_cruise_velocity: 0.1
+    motion_magic_acceleration: .1
     motion_magic_jerk: 350.0
     forward_limit_enable: False
     reverse_limit_enable: False
