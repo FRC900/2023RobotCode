@@ -12,7 +12,8 @@ from sensor_msgs.msg import Imu
 from time import sleep
 
 def imu_callback(imu):
-    return imu.orientation
+    global orientation
+    orientation = imu.orientation
 
 def make_colour_obj(start, count, r, g, b):
     colour = ColourRequest()
@@ -44,6 +45,7 @@ GREEN = [0, 255, 0]
 BLUE = [0, 0, 255]
 if __name__ == "__main__":
     rospy.init_node("pregame_candle")
+    orientation_sub = rospy.Subscriber("/imu/zeroed_imu", Imu, imu_callback)
     r = rospy.Rate(5)
     wanted_loc = [20, 20, 0, 0]
 
@@ -64,7 +66,6 @@ if __name__ == "__main__":
         else:
             y_col = BLUE
         
-        orientation = rospy.Subscriber("/imu/zeroed_imu", Imu, imu_callback)
         euler_orientation = euler_from_quaternion(orientation)
         if euler_orientation[2] - wanted_loc[2] < 5:
             r_col = GREEN
