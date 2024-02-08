@@ -22,6 +22,11 @@ struct StrafeSpeeds
 	}
 };
 
+struct MovementCaps {
+	double speed_cap_{};
+	double rotation_cap_{};
+};
+
 template <class ConfigT>
 class TeleopCmdVel
 {
@@ -57,14 +62,13 @@ class TeleopCmdVel
 
 		void setCaps(const double speed_cap, const double rotation_cap)
 		{
-			speed_cap_ = speed_cap;
-			rotation_cap_ = rotation_cap;
+			(*movement_caps_).speed_cap_ = speed_cap;
+			(*movement_caps_).rotation_cap_ = rotation_cap;
 		}
 
 		void resetCaps(void)
 		{
-			speed_cap_ = {};
-			rotation_cap_ = {};
+			movement_caps_ = {};
 		}
 
 		void restoreRobotOrient(void)
@@ -94,9 +98,9 @@ class TeleopCmdVel
 			double max_rot;
 			// speed cap and rotation cap are set at the same time, so one being set implies the other
 			// TODO: Make this a tuple instead?
-			if (speed_cap_) {
-				max_speed = *speed_cap_;
-				max_rot = *rotation_cap_;
+			if (movement_caps_) {
+				max_speed = (*movement_caps_).speed_cap_;
+				max_rot = (*movement_caps_).rotation_cap_;
 			} else {
 				max_speed = slow_mode_ ? config.max_speed_slow : config.max_speed;
 				max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
@@ -201,8 +205,8 @@ class TeleopCmdVel
 		double generateAngleIncrement(const double rotationZ, const ros::Time &stamp, ConfigT &config)
 		{
 			double max_rot;
-			if (rotation_cap_) {
-				max_rot = *rotation_cap_;
+			if (movement_caps_) {
+				max_rot = (*movement_caps_).rotation_cap_;
 			}
 			else {
 				max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
@@ -238,8 +242,7 @@ class TeleopCmdVel
 
 		bool slow_mode_{false};
 
-		std::optional<double> speed_cap_{};
-		std::optional<double> rotation_cap_{};
+		std::optional<MovementCaps> movement_caps_; 
 
 		bool saved_robot_orient_{false};
 		double saved_offset_angle_{M_PI / 2.0};

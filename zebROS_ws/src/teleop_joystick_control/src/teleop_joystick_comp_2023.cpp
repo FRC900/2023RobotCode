@@ -44,6 +44,24 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
+// start at waiting to align
+// when driver transition becomes true, and we are at waiting to align, then align
+// if aligning and you see press callback, place
+// if on placing and see a press event, go to waiting to align  
+enum AutoPlaceState {
+	WAITING_TO_ALIGN = 0,
+	ALIGNING = 1,
+	PLACING = 2,
+};
+
+AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
+
+bool up_down_switch_mid;
+bool left_right_switch_mid;
+bool robot_is_disabled;
+bool elevator_up;
+uint8_t grid;
+
 // Figure out a better name for this
 struct DynamicReconfigVars2023
 {
@@ -55,38 +73,6 @@ struct DynamicReconfigVars2023
 	double cone_tolerance{0.1};
 	double cube_tolerance{0.1};
 } config2023;
-
-/*
-struct DynamicReconfigVars
-{
-	double joystick_deadzone{0};          // "Joystick deadzone, in percent",
-	double min_speed{0};                  // "Min linear speed to get robot to overcome friction, in m/s"
-	double max_speed{2.0};                // "Max linear speed, in m/s"
-	double max_speed_slow{0.75};          // "Max linear speed in slow mode, in m/s"
-	double max_speed_elevator_extended{1.5};
-	double max_rot{6.0};                  // "Max angular speed"
-	double max_rot_slow{2.0};             // "Max angular speed in slow mode"
-	double max_rot_elevator_extended{0.2}; 
-	double button_move_speed{0.5};        // "Linear speed when move buttons are pressed, in m/s"
-	double joystick_pow{1.5};             // "Joystick Scaling Power, linear"
-	double rotation_pow{1.0};             // "Joystick Scaling Power, rotation"
-	double drive_rate_limit_time{200};    // "msec to go from full back to full forward"
-	double rotate_rate_limit_time{500};   // "msec to go from full counterclockwise to full clockwise"
-	double trigger_threshold{0.5};        // "Amount trigger has to be pressed to trigger action"
-	double stick_threshold{0.5};          // "Amount stick has to be moved to trigger diag mode action"
-	double imu_zero_angle{0.0};           // "Value to pass to imu/set_zero when zeroing"
-	double rotation_epsilon{0.01};		  // "Threshold Z-speed deciding if the robot is stopped"
-	double rotation_axis_scale{1.0};      // "Scale factor for rotation axis stick input"
-	double angle_to_add{0.135};
-	double cone_length{0.3302/2};
-	double cube_length{0.2032/2};
-	double angle_threshold{angles::from_degrees(1)};
-	double elevator_threshold{0.5};
-	double cone_tolerance{0.1};
-	double cube_tolerance{0.1};
-	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
-} config;
-*/
 
 frc_msgs::ButtonBoxState2023 button_box;
 ros::ServiceClient FourbarRezeroSrv;
@@ -1041,6 +1027,7 @@ void jointStateCallback(const sensor_msgs::JointState &joint_state)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "Joystick_controller");
+
 	ros::NodeHandle n;
 	ros::NodeHandle n_params(n, "teleop_params");
 	ros::NodeHandle n_diagnostics_params(n, "teleop_diagnostics_params");
@@ -1192,10 +1179,6 @@ int main(int argc, char **argv)
 
 	auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
 
-	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
-	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
-	pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
-	align_and_place_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>>("/align_and_place_grid", true);
 	auto_note_pickup_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::DriveToObjectAction>>("/drive_to_object/drive_to_object", true);
 
 	const ros::Duration startup_wait_time_secs(15);
@@ -1228,13 +1211,18 @@ int main(int argc, char **argv)
 		subscriber_array.push_back(n.subscribe(topic_array[j], 1, &evaluateCommands));
 	}
 
-	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
-
 	ROS_WARN("joy_init");
 
 	teleop_cmd_vel->setRobotOrient(false, 0.0);
 	teleop_cmd_vel->setSlowMode(false);
 
 	ros::spin();
+
+	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
+	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);
+	pathing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>>("/fourbar_elevator_path/fourbar_elevator_path_server_2023", true);
+	align_and_place_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>>("/align_and_place_grid", true);
+
+	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 	return 0;
 }

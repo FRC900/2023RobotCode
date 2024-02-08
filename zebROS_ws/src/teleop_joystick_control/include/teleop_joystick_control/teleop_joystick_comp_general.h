@@ -27,16 +27,6 @@ struct DynamicReconfigVars
 	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
 }; 
 
-// start at waiting to align
-// when driver transition becomes true, and we are at waiting to align, then align
-// if aligning and you see press callback, place
-// if on placing and see a press event, go to waiting to align  
-enum AutoPlaceState {
-	WAITING_TO_ALIGN = 0,
-	ALIGNING = 1,
-	PLACING = 2,
-};
-
 extern uint8_t auto_mode; 
 extern uint8_t auto_starting_pos;
 extern double last_offset;
@@ -60,12 +50,7 @@ extern ros::ServiceClient setCenterSrv;
 extern ros::Publisher auto_mode_select_pub;
 extern bool joystick1_left_trigger_pressed;
 extern bool joystick1_right_trigger_pressed;
-extern bool up_down_switch_mid;
-extern bool left_right_switch_mid;
-extern bool robot_is_disabled;
-extern bool elevator_up;
 extern bool no_driver_input;
-extern uint8_t grid;
 extern uint8_t game_piece;
 extern uint8_t node;
 extern bool sendRobotZero;
@@ -75,8 +60,7 @@ extern bool use_pathing;
 extern uint8_t grid_position;
 extern bool pathed;
 extern bool last_no_driver_input;
-extern std::shared_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
-extern AutoPlaceState auto_place_state;
+extern std::unique_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
 extern uint8_t alliance_color;
 extern bool called_park_endgame;
 
@@ -92,5 +76,6 @@ void moveDirection(int x, int y, int z);
 void sendDirection(void);
 uint8_t autoMode(int year);
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
+int init(int argc, char **argv, void (*callback)(const ros::MessageEvent<frc_msgs::JoystickState const>&));
 
 #endif
