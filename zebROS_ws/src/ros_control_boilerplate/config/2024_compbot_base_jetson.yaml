@@ -204,10 +204,6 @@ note_conveyor_controller:
     neutral_mode: Coast
 
 note_diverter_controller:
-<<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
-<<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
-=======
->>>>>>> 526377cf (changed controller types and cleaned up pubs, subs and loops):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter
     invert: counterclockwise_positive
@@ -220,19 +216,3 @@ claw_controller:
     dynamic_reconfigure: True
     voltage_compensation_Enable: True
     voltage_compensation_saturation: 10
-=======
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
-    joint: note_diverter
-    invert: counterclockwise_positive
-    dynamic_reconfigure: True
-    neutral_mode: Coast
-<<<<<<< HEAD:zebROS_ws/src/ros_control_boilerplate/config/2024_compbot_base_jetson.yaml
->>>>>>> 21c09ce0 (added controllers for sim motors):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml
-=======
-
-claw_controller:
-    type: talon_controllers/TalonPercentOutputController
-    joint: claw
-    dynamic_reconfigure: True
-    voltage_compensation_Enable: True
->>>>>>> 42c2d2e3 (logic set up except for specifics of reading when switch is pressed):zebROS_ws/src/ros_control_boilerplate/config/2023_compbot_base_jetson_sim.yaml
