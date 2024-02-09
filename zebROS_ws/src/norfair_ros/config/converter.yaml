@@ -1,0 +1,8 @@
+converter_subscribers:
+  yolo_detect:
+    topic: "/tf_object_detection/obj_detection_msg"
+
+converter_publishers:
+  output:
+    topic: "norfair/input"
+    queue_size: 1
