@@ -2,6 +2,7 @@
 <!--
 	Test pf localization using only a zed camera.
 	Uses ZED cam data -> apritags -> pf localization, plus
+		 ZED cam data -> object detection -> pf localization, plus
          ZED odom data -> imu_zero -> pf localization, plus
          PF fake cmd_vel -> pf localization (this never mimcs motion, just keeps the internal PF timestamp up to date
 -->
