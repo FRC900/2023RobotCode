@@ -1,0 +1,14 @@
+# for zed2i, taken from camera info
+# this is the back camera on 9000
+cam0:
+  camera_model: pinhole
+  # NOTE: the intrinsics data is [fx, fy, cx, cy]! It is a common mistake to switch that around, as they show up in a different order in the K-matrix.
+  intrinsics: [521.1928100585938, 521.1928100585938, 637.887451171875, 360.9993896484375]
+  distortion_model: plumb_bob
+  # are we sure they are all zero?
+  distortion_coeffs: [0.0, 0.0, 0.0, 0.0, 0.000000]
+  resolution: [1280, 720]
+  rostopic: /zed_objdetect/left/image_rect_color
+  # fix me
+  tagtopic: /apriltag_detection/tags
+  rig_body: frc_robot
