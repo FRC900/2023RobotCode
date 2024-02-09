@@ -1027,9 +1027,10 @@ void jointStateCallback(const sensor_msgs::JointState &joint_state)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "Joystick_controller");
-
 	ros::NodeHandle n;
 	ros::NodeHandle n_params(n, "teleop_params");
+	ros::NodeHandle n_diagnostics_params(n, "teleop_diagnostics_params");
+	ros::NodeHandle n_swerve_params(n, "/frcrobot_jetson/swerve_drive_controller");
 
 	if(!n_params.getParam("max_speed_elevator_extended", config2023.max_speed_elevator_extended))
 	{
@@ -1049,16 +1050,13 @@ int main(int argc, char **argv)
 		ROS_ERROR("Could not read cube_tolerance in teleop_joystick_comp");
 	}
 
-
-	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
-
+	TeleopInitializer initializer;
+	initializer.set_n_params(n_params);
 	
-	ddr.registerVariable<double>("max_speed_elevator_extended", &config2023.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2);
-	ddr.registerVariable<double>("max_rot_elevator_extended", &config2023.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.);
-	ddr.registerVariable<double>("cone_tolerance", &config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5);
-	ddr.registerVariable<double>("cube_tolerance", &config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5);
-
-	//ddr.publishServicesTopics();
+	initializer.add_custom_var( DDRVariable {"max_speed_elevator_extended", &config2023.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2} );
+	initializer.add_custom_var( DDRVariable {"max_rot_elevator_extended", &config2023.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.} );
+	initializer.add_custom_var( DDRVariable {"cone_tolerance", &config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5} );
+	initializer.add_custom_var( DDRVariable {"cube_tolerance", &config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5} );
 
 	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
 

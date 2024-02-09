@@ -78,4 +78,26 @@ uint8_t autoMode(int year);
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
 int init(int argc, char **argv, void (*callback)(const ros::MessageEvent<frc_msgs::JoystickState const>&));
 
+struct DDRVariable {
+	std::string name;
+	double value;
+	std::string description;
+	double min;
+	double max;
+};
+
+class TeleopInitializer {
+public:
+	void add_custom_var(DDRVariable var);
+	void set_n_params(ros::NodeHandle n_params);
+	void set_n(ros::NodeHandle n);
+	void init();
+
+private:
+	std::vector<DDRVariable> custom_vars;
+	ros::NodeHandle n_;
+	ros::NodeHandle n_params_;
+
+};
+
 #endif

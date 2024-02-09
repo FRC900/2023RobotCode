@@ -444,3 +444,181 @@ int init(int argc, char **argv, void (*callback)(const ros::MessageEvent<frc_msg
 	ros::spin();
 	return 0;
 }
+
+void TeleopInitializer::add_custom_var(DDRVariable var) {
+	this->custom_vars.push_back(var);
+}
+
+void TeleopInitializer::set_n_params(ros::NodeHandle n_params_) {
+	this.n_params = n_params_;
+}
+
+void TeleopInitializer::set_n_params(ros::NodeHandle n) {
+	this.n_= n;
+}
+
+void TeleopInitializer::init() {
+	int num_joysticks = 1;
+	if(!n_params.getParam("num_joysticks", num_joysticks))
+	{
+		ROS_ERROR("Could not read num_joysticks in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("joystick_deadzone", config.joystick_deadzone))
+	{
+		ROS_ERROR("Could not read joystick_deadzone in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("joystick_pow", config.joystick_pow))
+	{
+		ROS_ERROR("Could not read joystick_pow in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("rotation_pow", config.rotation_pow))
+	{
+		ROS_ERROR("Could not read rotation_pow in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("min_speed", config.min_speed))
+	{
+		ROS_ERROR("Could not read min_speed in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("max_speed", config.max_speed))
+	{
+		ROS_ERROR("Could not read max_speed in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("max_speed_slow", config.max_speed_slow))
+	{
+		ROS_ERROR("Could not read max_speed_slow in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("button_move_speed", config.button_move_speed))
+	{
+		ROS_ERROR("Could not read button_move_speed in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("max_rot", config.max_rot))
+	{
+		ROS_ERROR("Could not read max_rot in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("max_rot_slow", config.max_rot_slow))
+	{
+		ROS_ERROR("Could not read max_rot_slow in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("drive_rate_limit_time", config.drive_rate_limit_time))
+	{
+		ROS_ERROR("Could not read drive_rate_limit_time in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("rotate_rate_limit_time", config.rotate_rate_limit_time))
+	{
+		ROS_ERROR("Could not read rotate_rate_limit_time in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("trigger_threshold", config.trigger_threshold))
+	{
+		ROS_ERROR("Could not read trigger_threshold in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("stick_threshold", config.stick_threshold))
+	{
+		ROS_ERROR("Could not read stick_threshold in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("imu_zero_angle", config.imu_zero_angle))
+	{
+		ROS_ERROR("Could not read imu_zero_angle in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("rotation_axis_scale", config.rotation_axis_scale))
+	{
+		ROS_ERROR("Could not read rotation_axis_scale in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("rotation_epsilon", config.rotation_epsilon))
+	{
+		ROS_ERROR("Could not read rotation_epsilon in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("angle_to_add", config.angle_to_add))
+	{
+		ROS_ERROR("Could not read angle_to_add in teleop_joystick_comp");
+	}
+	if(!n_params.getParam("match_time_to_park", config.match_time_to_park))
+	{
+		ROS_ERROR("Could not read match_time_to_park in teleop_joystick_comp");
+	}
+
+	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
+
+	ddr.registerVariable<double>("joystick_deadzone", &config.joystick_deadzone, "Joystick deadzone, in percent", 0., 1.);
+	ddr.registerVariable<double>("min_speed", &config.min_speed, "Min linear speed to get robot to overcome friction, in m/s", 0, 1);
+	ddr.registerVariable<double>("max_speed", &config.max_speed, "Max linear speed, in m/s", 0, 10.);
+	ddr.registerVariable<double>("max_speed_slow", &config.max_speed_slow, "Max linear speed in slow mode, in m/s", 0., 5.);
+	ddr.registerVariable<double>("max_rot", &config.max_rot, "Max angular speed", 0., 13.);
+	ddr.registerVariable<double>("max_rot_slow", &config.max_rot_slow, "Max angular speed in slow mode", 0., 3.);
+	ddr.registerVariable<double>("button_move_speed", &config.button_move_speed, "Linear speed when move buttons are pressed, in m/s", 0, 5);
+	ddr.registerVariable<double>("joystick_pow", &config.joystick_pow, "Joystick Scaling Power, linear", 0., 5.);
+	ddr.registerVariable<double>("rotation_pow", &config.rotation_pow, "Joystick Scaling Power, rotation", 0., 5.);
+	ddr.registerVariable<double>("drive_rate_limit_time", &config.drive_rate_limit_time, "msec to go from full back to full forward", 0., 2000.);
+	ddr.registerVariable<double>("rotate_rate_limit_time", &config.rotate_rate_limit_time, "msec to go from full counterclockwise to full clockwise", 0., 2000.);
+	ddr.registerVariable<double>("trigger_threshold", &config.trigger_threshold, "Amount trigger has to be pressed to trigger action", 0., 1.);
+	ddr.registerVariable<double>("stick_threshold", &config.stick_threshold, "Amount stick has to be moved to trigger diag mode action", 0., 1.);
+	ddr.registerVariable<double>("imu_zero_angle", &config.imu_zero_angle, "Value to pass to imu/set_zero when zeroing", -360., 360.);
+	ddr.registerVariable<double>("rotation_epsilon", &config.rotation_epsilon, "rotation_epsilon", 0.0, 1.0);
+	ddr.registerVariable<double>("angle_to_add", &config.angle_to_add, "angle_to_add", 0.0, 10);
+	ddr.registerVariable<double>("match_time_to_park", &config.match_time_to_park, "match_time_to_park", 0.0, 60.0);
+
+	// register custom variables
+	for (DDRVariable& var : this->custom_vars) {
+		ddr.registerVariable<double>(var.name, var.value, var.description, var.min, var.max);
+	}
+
+	ddr.publishServicesTopics();
+
+	teleop_cmd_vel = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
+	robot_orientation_driver = std::make_unique<RobotOrientationDriver>(n);
+
+	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
+
+	BrakeSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
+	ParkSrv = n.serviceClient<std_srvs::SetBool>("/frcrobot_jetson/swerve_drive_controller/toggle_park", false, service_connection_header);
+	IMUZeroSrv = n.serviceClient<imu_zero_msgs::ImuZeroAngle>("/imu/set_imu_zero", false, service_connection_header);
+	setCenterSrv = n.serviceClient<talon_swerve_drive_controller_msgs::SetXY>("/frcrobot_jetson/swerve_drive_controller/change_center_of_rotation", false, service_connection_header);	
+	JoystickRobotVel = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
+	SwerveOdomZeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/reset_odom", false, service_connection_header);
+#ifdef NEED_JOINT_STATES
+	ros::Subscriber joint_states_sub = n.subscribe("/frcrobot_jetson/joint_states", 1, &jointStateCallback);
+#endif
+	//ros::Subscriber talon_states_sub = n.subscribe("/frcrobot_jetson/talonfxpro_states", 1, &talonFXProStateCallback);
+	ros::Subscriber match_state_sub = n.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
+	ros::ServiceServer robot_orient_service = n.advertiseService("robot_orient", orientCallback);
+
+	auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
+
+	const ros::Duration startup_wait_time_secs(15);
+	const ros::Time startup_start_time = ros::Time::now();
+	ros::Duration startup_wait_time;
+	startup_wait_time = std::max(startup_wait_time_secs - (ros::Time::now() - startup_start_time), ros::Duration(0.1));
+	if(!BrakeSrv.waitForExistence(startup_wait_time))
+	{
+		ROS_ERROR("Wait (15 sec) timed out, for Brake Service in teleop_joystick_comp.cpp");
+	}
+
+	startup_wait_time = std::max(startup_wait_time_secs - (ros::Time::now() - startup_start_time), ros::Duration(0.1));
+	if(!IMUZeroSrv.waitForExistence(startup_wait_time))
+	{
+		ROS_ERROR("Wait (1 sec) timed out, for IMU Zero Service in teleop_joystick_comp.cpp");
+	}
+
+	//Read from _num_joysticks joysticks
+	// Set up this callback last, since it might use all of the various stuff
+	// initialized above here. Setting it up first risks the chance that a callback
+	// happens immediately and tries to use them before they have valid values
+
+	std::vector <ros::Subscriber> subscriber_array;
+	joystick_states_array.resize(num_joysticks);
+	for(int j = 0; j < num_joysticks; j++)
+	{
+		std::stringstream s;
+		s << "/frcrobot_rio/joystick_states";
+		s << (j+1);
+		topic_array.push_back(s.str());
+		subscriber_array.push_back(n.subscribe(topic_array[j], 1, callback));
+	}
+
+	ROS_WARN("joy_init");
+
+	teleop_cmd_vel->setRobotOrient(false, 0.0);
+	teleop_cmd_vel->setSlowMode(false);
+
+	ros::spin();
+	return 0;
+}
