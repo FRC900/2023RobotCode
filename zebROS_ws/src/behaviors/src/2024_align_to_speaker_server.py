@@ -38,7 +38,7 @@ class Aligner:
         self.current_yaw = yaw
     def robot_orientation_effort_callback(self, msg):
         self.current_orient_effort = msg.data
-    def aligner_callback(self, goal):
+    def aligner_callback(self, goal: behavior_actions.msg.AlignToSpeaker2024Goal):
         success = True
         rospy.loginfo(f"Auto Aligning Actionlib called with goal {goal}")
         rate = rospy.Rate(50.0)
@@ -69,9 +69,14 @@ class Aligner:
             cmd_vel_msg.linear.z = 0
             self.pub_cmd_vel.publish(cmd_vel_msg)
             
+            # TODO make this tolerance configurable, it's at about 3 degrees right now
+            if abs(msg.data - self.current_yaw) < 0.05 and not goal.align_forever:
+                success = True
+                break
+
             rate.sleep()
         if success:
-            self._result.sequence = self._feedback.sequence
+            self._result.success = success
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
         
