@@ -86,9 +86,16 @@ class FakeGoalDetection
 					obj.location.x = p.x;
 					obj.location.y = p.y;
 					obj.location.z = p.z;
+					
 					obj.angle = atan2(obj.location.y, obj.location.x) * 180. / M_PI;
 					obj.confidence = msgIn->markers[i].ids_confidence[0];
 					obj.id = objMap_[msgIn->markers[i].ids[0]];
+					if (obj.id == "note") {
+						// ROS_INFO_STREAM("Found a note!");
+						if (hypot(p.x, p.y) < 1.0) {
+							ROS_INFO_STREAM_THROTTLE(1, "Note too close! Dropping");
+						}
+ 					}
 					msgOut.objects.push_back(obj);
 
 					geometry_msgs::TransformStamped transformStamped;
@@ -123,6 +130,8 @@ class FakeGoalDetection
 					dummy.angle = atan2(dummy.location.y, dummy.location.x) * 180. / M_PI;
 					dummy.confidence = msgIn->markers[i].ids_confidence[0];
 					dummy.id = std::to_string(msgIn->markers[i].ids[0]);
+					ROS_INFO_STREAM("Saw else " << dummy.id);
+
 					msgOut.objects.push_back(dummy);
 				}
 			}
