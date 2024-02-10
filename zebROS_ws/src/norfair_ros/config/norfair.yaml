@@ -8,9 +8,9 @@ norfair_publishers:
     queue_size: 1
 
 norfair_setup:
-  distance_function: "iou_opt"
-  distance_threshold: 0.9
-  hit_counter_max: 10
+  distance_function: "euclidean"
+  distance_threshold: 30 # no clue what units
+  hit_counter_max: 140
   initialization_delay: 4
   pointwise_hit_counter_max: 4
   detection_threshold: 0.01

@@ -1,6 +1,8 @@
 converter_subscribers:
   yolo_detect:
     topic: "/tf_object_detection/obj_detection_msg"
+  screen_to_world:  
+    topic: "/tf_object_detection/object_detection_world"
 
 converter_publishers:
   output:

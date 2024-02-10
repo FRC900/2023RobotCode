@@ -21,6 +21,7 @@
 #include "tf2_ros/transform_listener.h"
 #include <std_srvs/Empty.h>
 #include "path_follower/axis_state.h"
+#include <norfair_ros/Detections.h>
 
 geometry_msgs::Point operator-(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs) {
     geometry_msgs::Point p;

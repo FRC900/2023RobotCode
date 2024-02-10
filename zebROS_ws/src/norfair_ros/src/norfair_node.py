@@ -5,7 +5,7 @@ from norfair import Detection, Tracker
 from norfair_ros.msg import Detection as DetectionMsg
 from norfair_ros.msg import Detections as DetectionsMsg
 from norfair_ros.msg import Point
-
+import tf2_ros
 
 class NorfairNode:
     def publisher(self, tracked_objects: list):
@@ -42,17 +42,20 @@ class NorfairNode:
         bbox : DetectionsMsg
             DetectionsMsg message from converter.
         """
+        # print("Pipeline call back")
         detections = []
         for detection in bbox.detections:
+            # print("Detection: ", detection)
             detections.append(
                 Detection(
-                    points=np.array([point.point for point in detection.points]),
+                    points=np.array([detection.points[0].point[0], detection.points[0].point[1]]),
                     scores=np.array(detection.scores),
                     label=detection.label,
                 )
             )
-        tracked_objects = self.tracker.update(detections)
         
+        tracked_objects = self.tracker.update(detections)
+
         self.publisher(tracked_objects)
 
     def main(self):
@@ -85,6 +88,9 @@ class NorfairNode:
             norfair_detections["topic"], DetectionsMsg, queue_size=norfair_detections["queue_size"]
         )
         rospy.Subscriber(converter["topic"], DetectionsMsg, self.pipeline)
+        # make a tf publisher
+        
+        self.br = tf2_ros.TransformBroadcaster()
 
         rospy.spin()
 
