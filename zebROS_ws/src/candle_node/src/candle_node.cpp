@@ -258,6 +258,10 @@ int main(int argc, char **argv) {
 
     // ROS loop
     ros::Rate r(10);
+    // Candle node pregame is getting replaced
+    while (ctx.disabled) {
+        r.sleep();
+    }
     while (ros::ok()) {
         ros::spinOnce();
         if (ctx.disabled && ctx.updated) {

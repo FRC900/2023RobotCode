@@ -6,6 +6,7 @@ from tf.transformations import euler_from_quaternion
 from candle_controller_msgs.srv import Colour, ColourRequest
 import geometry_msgs.msg
 from sensor_msgs.msg import Imu
+from frc_msgs.msg import MatchSpecificData
 from time import sleep
 
 def imu_callback(imu):
@@ -19,6 +20,10 @@ def wanted_point_callback(pose):
     wanted_x = pose.position.x
     wanted_y = pose.position.y
     wanted_r = euler_from_quaternion(pose.orientation)
+
+def match_data_callback(data):
+    global is_enabled
+    is_enabled = data.Enabled
 
 def make_colour_obj(start, count, r, g, b):
     colour = ColourRequest()
@@ -51,10 +56,12 @@ GREEN = [0, 255, 0]
 BLUE = [0, 0, 255]
 wanted_x = None
 orientation = None
+is_enabled = False
 if __name__ == "__main__":
     rospy.init_node("pregame_candle")
     orientation_sub = rospy.Subscriber("/imu/zeroed_imu", Imu, imu_callback)
     wanted_point_sub = rospy.Subscriber("/auto/first_point", geometry_msgs.Pose, wanted_point_callback)
+    match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, match_data_callback)
     r = rospy.Rate(10)
 
     while not rospy.is_shutdown():
@@ -83,5 +90,7 @@ if __name__ == "__main__":
                 else:
                     r_col = BLUE
             send_colours(x_col, y_col, r_col)
-        # Way to make it stop? goes here
+            
+        if is_enabled:
+            break
         r.sleep()
