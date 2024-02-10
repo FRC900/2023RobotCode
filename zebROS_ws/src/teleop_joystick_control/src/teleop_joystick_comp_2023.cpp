@@ -1053,18 +1053,16 @@ int main(int argc, char **argv)
 	TeleopInitializer initializer;
 	initializer.set_n_params(n_params);
 	
-	initializer.add_custom_var( DDRVariable {"max_speed_elevator_extended", &config2023.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2} );
-	initializer.add_custom_var( DDRVariable {"max_rot_elevator_extended", &config2023.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.} );
-	initializer.add_custom_var( DDRVariable {"cone_tolerance", &config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5} );
-	initializer.add_custom_var( DDRVariable {"cube_tolerance", &config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5} );
+	initializer.add_custom_var( DDRVariable {"max_speed_elevator_extended", config2023.max_speed_elevator_extended, "Max linear speed in elevator extended mode, in m/s", 0., 2} );
+	initializer.add_custom_var( DDRVariable {"max_rot_elevator_extended", config2023.max_rot_elevator_extended, "Max angular speed in elevator extended mode", 0., 1.} );
+	initializer.add_custom_var( DDRVariable {"cone_tolerance", config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5} );
+	initializer.add_custom_var( DDRVariable {"cube_tolerance", config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5} );
 
-	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
+	initializer.init(evaluateCommands);
 
-// Get back n and s_c_h
-	FourbarRezeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/four_bar_controller_2023/rezero_service", false, service_connection_header);
+	FourbarRezeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/four_bar_controller_2023/rezero_service", false, {{"tcp_nodelay", "1"}});
+
 	ros::Subscriber talon_states_sub = n.subscribe("/frcrobot_jetson/talonfxpro_states", 1, &talonFXProStateCallback);
-
-	
 
 	intaking_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>>("/intaking/intaking_server_2023", true);
 	placing_ac = std::make_shared<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>>("/placing/placing_server_2023", true);

@@ -91,7 +91,7 @@ public:
 	void add_custom_var(DDRVariable var);
 	void set_n_params(ros::NodeHandle n_params);
 	void set_n(ros::NodeHandle n);
-	void init();
+	void init(void (*callback)(const ros::MessageEvent<frc_msgs::JoystickState const>&));
 
 private:
 	std::vector<DDRVariable> custom_vars;
