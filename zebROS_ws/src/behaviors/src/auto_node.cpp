@@ -605,7 +605,7 @@ class AutoNode {
 				waypointsIdxs_[auto_steps_[j]] = waypointsIdx;
 
 				if (premade_position_paths_.size() == 1) {
-					first_point_pub_.publish(pos_path_msg::poses[0]::pose)
+					first_point_pub_.publish(pos_path_msg::poses[0]::pose);
 				}
 				continue;
 			}
