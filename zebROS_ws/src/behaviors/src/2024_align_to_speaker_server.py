@@ -10,6 +10,7 @@ import sensor_msgs.msg
 import math
 import behavior_actions.msg
 from tf.transformations import euler_from_quaternion # may look like tf1 but is actually tf2
+from frc_msgs.msg import MatchSpecificData
 import std_srvs.srv
 
 class Aligner:
@@ -19,6 +20,8 @@ class Aligner:
 
     def __init__(self, name):   
         self._action_name = name
+        self.tolerance = rospy.get_param("tolerance")
+        self.color = 0
         self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.AlignToSpeaker2024Action, execute_cb=self.aligner_callback, auto_start = False)
         self._as.start()
         self.current_yaw = 0
@@ -27,6 +30,8 @@ class Aligner:
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
         self.object_publish = rospy.Publisher("/teleop/orientation_command", std_msgs.msg.Float64, queue_size =1)
         self.object_subscribe = rospy.Subscriber("/imu/zeroed_imu", sensor_msgs.msg.Imu ,self.imu_callback)
+
+        self.team_subscribe = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.data_callback)
 
         self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback)
         self.pub_cmd_vel = rospy.Publisher("/speaker_align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)
@@ -39,6 +44,10 @@ class Aligner:
         euler = euler_from_quaternion([q.x, q.y, q.z, q.w]) 
         yaw = euler[2]
         self.current_yaw = yaw
+    def data_callback(self, data_msg):
+        self.color = data_msg.allianceColor
+        
+        
     def robot_orientation_effort_callback(self, msg):
         self.current_orient_effort = msg.data
     def aligner_callback(self, goal: behavior_actions.msg.AlignToSpeaker2024Goal):
@@ -54,7 +63,7 @@ class Aligner:
                 success = False
                 break
             try:
-                trans = self.tfBuffer.lookup_transform('base_link', 'speaker', rospy.Time())#gets 
+                trans = self.tfBuffer.lookup_transform('base_link', 'bluespeaker' if self.color == 1 else 'redspeaker', rospy.Time())#gets 
             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
                 rospy.logwarn(e)
                 rate.sleep()
@@ -84,8 +93,7 @@ class Aligner:
             cmd_vel_msg.linear.z = 0
             self.pub_cmd_vel.publish(cmd_vel_msg)
             
-            # TODO make this tolerance configurable, it's at about 3 degrees right now
-            if abs(msg.data - self.current_yaw) < 0.05 and not goal.align_forever:
+            if abs(msg.data - self.current_yaw) < self.tolerance and not goal.align_forever:
                 success = True
                 break
 
