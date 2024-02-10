@@ -31,8 +31,8 @@ class Aligner:
         self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback)
         self.pub_cmd_vel = rospy.Publisher("/speaker_align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)
 
-        self.pub_dist_vel = rospy.Publisher("/speaker_align/dist_vel", std_msgs.msg.Float64, queue_size=1) #distance
-        self.pub_dist_ang = rospy.Publisher("/speaker_align/dist_ang", std_msgs.msg.Float64, queue_size=1) #angle not field rel
+        self.pub_dist_vel = rospy.Publisher("/speaker_align/dist", std_msgs.msg.Float64, queue_size=1) #distance
+        self.pub_dist_ang = rospy.Publisher("/speaker_align/ang", std_msgs.msg.Float64, queue_size=1) #angle not field rel
 
     def imu_callback(self, imu_msg):
         q = imu_msg.orientation
@@ -68,6 +68,9 @@ class Aligner:
             msg.data = self.current_yaw + math.atan2(trans.transform.translation.y, trans.transform.translation.x)
             msg2.data = math.atan2(trans.transform.translation.y, trans.transform.translation.x)
 
+            self._feedback.error = math.atan2(trans.transform.translation.y, trans.transform.translation.x)
+            self._as.publish_feedback(self._feedback)
+
             self.object_publish.publish(msg) 
             self.pub_dist_vel.publish(msg1) 
             self.pub_dist_ang.publish(msg2) 
@@ -88,6 +91,7 @@ class Aligner:
 
             rate.sleep()
         if success:
+            self._result.success = True
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
         
