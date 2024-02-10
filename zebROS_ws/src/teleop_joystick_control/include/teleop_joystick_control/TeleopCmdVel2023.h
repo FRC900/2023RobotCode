@@ -77,11 +77,6 @@ class TeleopCmdVel
 			offset_angle_ = saved_offset_angle_;
 		}
 
-		void setSlowMode(const bool slow_mode)
-		{
-			slow_mode_ = slow_mode;
-		}
-
 		// Note - updateRiseTimeInMsec() does nothing if the
 		// requested time is the same as the current config
 		void updateRateLimit(const ConfigT &config)	
@@ -96,14 +91,13 @@ class TeleopCmdVel
 		{
 			double max_speed;
 			double max_rot;
-			// speed cap and rotation cap are set at the same time, so one being set implies the other
-			// TODO: Make this a tuple instead?
+
 			if (movement_caps_) {
 				max_speed = (*movement_caps_).speed_cap_;
 				max_rot = (*movement_caps_).rotation_cap_;
 			} else {
-				max_speed = slow_mode_ ? config.max_speed_slow : config.max_speed;
-				max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
+				max_speed = config.max_speed;
+				max_rot = config.max_rot;
 			}
 
 			x_rate_limit_.updateMinMax(-max_speed, max_speed);

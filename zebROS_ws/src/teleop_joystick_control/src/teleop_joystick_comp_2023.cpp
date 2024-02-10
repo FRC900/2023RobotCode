@@ -643,14 +643,14 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: bumperLeft
 			if(joystick_states_array[0].bumperLeftPress)
 			{
-				teleop_cmd_vel->setSlowMode(true);
+				teleop_cmd_vel->setCaps(config.max_speed_slow, config.max_rot_slow);
 			}
 			if(joystick_states_array[0].bumperLeftButton)
 			{
 			}
 			if(joystick_states_array[0].bumperLeftRelease)
 			{
-				teleop_cmd_vel->setSlowMode(false);
+				teleop_cmd_vel->resetCaps();
 			}
 
 			//Joystick1: bumperRight
@@ -1026,6 +1026,7 @@ void jointStateCallback(const sensor_msgs::JointState &joint_state)
 
 int main(int argc, char **argv)
 {
+	// TODO: Abstract this code as well?
 	ros::init(argc, argv, "Joystick_controller");
 	ros::NodeHandle n;
 	ros::NodeHandle n_params(n, "teleop_params");

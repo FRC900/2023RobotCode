@@ -543,6 +543,14 @@ void jointStateCallback(const sensor_msgs::JointState &joint_state)
 
 int main(int argc, char **argv)
 {
-	init(argc, argv, &evaluateCommands);
+	ros::init(argc, argv, "Joystick_controller");
+	ros::NodeHandle n;
+	ros::NodeHandle n_params(n, "teleop_params");
+	ros::NodeHandle n_diagnostics_params(n, "teleop_diagnostics_params");
+	ros::NodeHandle n_swerve_params(n, "/frcrobot_jetson/swerve_drive_controller");
+
+	TeleopInitializer initializer;
+	initializer.set_n_params(n_params);
+	initializer.init(evaluateCommands);
 	return 0;
 }

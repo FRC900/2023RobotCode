@@ -76,7 +76,6 @@ void moveDirection(int x, int y, int z);
 void sendDirection(void);
 uint8_t autoMode(int year);
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
-int init(int argc, char **argv, void (*callback)(const ros::MessageEvent<frc_msgs::JoystickState const>&));
 
 struct DDRVariable {
 	std::string name;
@@ -98,6 +97,25 @@ private:
 	ros::NodeHandle n_;
 	ros::NodeHandle n_params_;
 
+};
+
+class Driver {
+public:
+	Driver();
+	void moveDirection(int x, int y, int z, double button_move_speed);
+	void sendDirection(double button_move_speed);
+	ros::Time evalateDriverCommands(void);
+private:
+	ros::Publisher JoystickRobotVel_;
+	std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel_;
+	ros::ServiceClient BrakeSrv_;
+	std::unique_ptr<RobotOrientationDriver> robot_orientation_driver_;
+	int direction_x_;
+	int direction_y_;
+	int direction_z_;
+	bool sendRobotZero_;
+	bool no_driver_input_;
+	double old_angular_z_;
 };
 
 #endif
