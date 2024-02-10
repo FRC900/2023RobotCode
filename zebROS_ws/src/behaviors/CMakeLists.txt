@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   frc_msgs
   field_obj
+  norfair_ros
   geometry_msgs
   nav_msgs
   path_follower_msgs

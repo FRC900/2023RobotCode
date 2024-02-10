@@ -1,8 +1,8 @@
 // This node autonomously targets and drives to a configurable distance away from an object detected using vision.
 // It continuously checks where the object is to update its target.
 #include "ros/ros.h"
-#include "field_obj/Detection.h"
-#include "field_obj/Object.h"
+// #include "field_obj/Detection.h"
+// #include "field_obj/Object.h"
 #include "geometry_msgs/Point.h"
 #include <actionlib/server/simple_action_server.h>
 #include "behavior_actions/DriveToObjectAction.h"
@@ -22,6 +22,7 @@
 #include <std_srvs/Empty.h>
 #include "path_follower/axis_state.h"
 #include <norfair_ros/Detections.h>
+#include <math.h>
 
 geometry_msgs::Point operator-(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs) {
     geometry_msgs::Point p;
@@ -52,6 +53,11 @@ double distance(const geometry_msgs::Point &pt) {
     return hypot(pt.x, pt.y, pt.z);
 }
 
+double dist_between_points(double x1, double y1, double x2, double y2) {
+  return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+}
+
+
 bool operator<(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs) {
     return distance(lhs) < distance(rhs);
 }
@@ -70,7 +76,7 @@ protected:
   // create messages that are used to published feedback/result
   behavior_actions::DriveToObjectFeedback feedback_;
   behavior_actions::DriveToObjectResult result_;
-  field_obj::Detection latest_;
+  norfair_ros::Detections latest_;
   ros::Subscriber sub_;
   ros::Subscriber imu_sub_;
   actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction> ac_hold_position_;
@@ -109,7 +115,7 @@ public:
   DriveToObjectActionServer(std::string name) :
     as_(nh_, name, boost::bind(&DriveToObjectActionServer::executeCB, this, _1), false),
     action_name_(name),
-    sub_(nh_.subscribe<field_obj::Detection>("/tf_object_detection/object_detection_world", 1, &DriveToObjectActionServer::callback, this, ros::TransportHints().tcpNoDelay())),
+    sub_(nh_.subscribe<norfair_ros::Detections>("/norfair/output", 1, &DriveToObjectActionServer::callback, this, ros::TransportHints().tcpNoDelay())),
     ac_hold_position_("/hold_position/hold_position_server", true),
     tf_listener_(tf_buffer_),
     orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1)),
@@ -163,7 +169,7 @@ public:
     latest_yaw_ = getYaw(msg->orientation);
   }
 
-  void callback(const field_obj::DetectionConstPtr& msg) {
+  void callback(const norfair_ros::DetectionsConstPtr& msg) {
     latest_ = *msg;
   }
 
@@ -177,18 +183,39 @@ public:
     return true;
   }
 
-  std::optional<field_obj::Object> findClosestObject(const field_obj::Detection &detection, const std::string &object_id) {
+  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id) {
     double minDistance = std::numeric_limits<double>::max();
-    std::optional<field_obj::Object> closestObject = std::nullopt;
-    if (detection.objects.size() == 0 || (ros::Time::now() - detection.header.stamp) > ros::Duration(timeout_)) {
+    // ROS_INFO_STREAM("Finding closest object");
+    auto map_to_baselink = tf_buffer_.lookupTransform("map", "base_link", ros::Time::now(), ros::Duration(0.1));
+    double map_x = map_to_baselink.transform.translation.x;
+    double map_y = map_to_baselink.transform.translation.y;
+    // ROS_INFO_STREAM("HERE");
+    std::optional<norfair_ros::Detection> closestObject = std::nullopt;
+    if (detections.detections.size() == 0 || (ros::Time::now() - detections.header.stamp) > ros::Duration(timeout_)) {
+      ROS_INFO_STREAM("RETURING NULLOPT");
+      ROS_INFO_STREAM("Det size " << detections.detections.size());
       return std::nullopt;
     }
-    for (const field_obj::Object &obj : detection.objects) {
-      double d = distance(obj.location);
-      if (d < minDistance && obj.id == object_id) {
+    // ROS_INFO_STREAM("BEFORE LOOP");
+    for (const norfair_ros::Detection &obj : detections.detections) {
+      // ROS_INFO_STREAM("LOOP");
+      if (obj.points.size() > 1) {
+        ROS_ERROR_STREAM("SHOULD ONLY CONTAIN ONE POINT");
+      }
+      // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
+      double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
+
+      if (d < minDistance && obj.label == object_id) {
         minDistance = d;
         closestObject = obj;
       }
+    }
+    ROS_INFO_STREAM("Map location x,y " << map_x << "," << map_y);
+    if (closestObject.has_value()) {
+      ROS_INFO_STREAM("Closest object is " << closestObject.value().id << closestObject.value().label << " at x,y " << closestObject.value().points[0].point[0] << "," << closestObject.value().points[0].point[1]);
+    }
+    else {
+      ROS_ERROR_STREAM("No object :(");
     }
     return closestObject;
   }
@@ -224,21 +251,23 @@ public:
     auto &x_axis = x_axis_it->second;
 
     x_axis.setEnable(true);
-    std::optional<field_obj::Object> closestObject_ = findClosestObject(latest_, goal->id);
-    field_obj::Object closestObject;
+    std::optional<norfair_ros::Detection> closestObject_ = findClosestObject(latest_, goal->id);
+    norfair_ros::Detection closestObject;
     if (closestObject_ == std::nullopt) {
-      closestObject = field_obj::Object();
-      closestObject.location.x = 0;
-      closestObject.location.y = 0;
-      closestObject.location.z = 0;
+      closestObject = norfair_ros::Detection();
+      norfair_ros::Point p = norfair_ros::Point();
+      ROS_INFO_STREAM("I am here");
+      p.point.push_back(0);
+      p.point.push_back(0);
+      p.point.push_back(0);
+
+      closestObject.points.push_back(p);
       ROS_INFO_STREAM("No initial object found!");
     } else {
       closestObject = closestObject_.value();
     }
 
-    double field_relative_object_angle = latest_yaw_ + atan2(closestObject.location.y, closestObject.location.x);
-
-    geometry_msgs::Point objectLocation;
+    double field_relative_object_angle = latest_yaw_ + atan2(closestObject.points[0].point[1], closestObject.points[0].point[0]);
 
     int missed_frames = 0;
     std_msgs::Float64 msg;
@@ -268,7 +297,9 @@ public:
           closestObject = closestObject_.value();
           missed_frames = 0;
           geometry_msgs::PointStamped object_point;
-          object_point.point = closestObject.location;
+          object_point.point.x = closestObject.points[0].point[0];
+          object_point.point.y = closestObject.points[0].point[1];
+          object_point.point.z = closestObject.points[0].point[2];
           object_point.header = latest_.header;
 
           tf_buffer_.transform(object_point, latest_map_relative_detection, "map");

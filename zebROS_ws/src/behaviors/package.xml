@@ -54,6 +54,7 @@
   <depend>std_srvs</depend>
   <depend>talon_state_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>norfair_ros</depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>

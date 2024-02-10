@@ -68,22 +68,25 @@ class Converter:
         # print("screen to world callback")
         detections = []
         # print(field_dets)
+        transform = self.tfBuffer.lookup_transform("map", field_dets.header.frame_id, rospy.Time())
+
         for detection in field_dets.objects:
             # transform the point from zed_objdetect_left_camera_frame to map
-            transform = self.tfBuffer.lookup_transform("map", field_dets.header.frame_id, rospy.Time())
             p = tf2_geometry_msgs.PointStamped()
             p.point.x = detection.location.x
             p.point.y = detection.location.y
             
             res = tf2_geometry_msgs.do_transform_point(p, transform)
-            print(f"\ninital point {detection.location}\ntransformed point {res.point}")
+            if detection.id == "note":
+                print(f"\ninital point {detection.location}\ntransformed point {res.point}")
+            
             detections.append(
                 DetectionMsg(
                     id=0,
                     label=detection.id,
                     scores=[1.0],
                     points=[
-                        Point([detection.location.x, detection.location.y]),
+                        Point([res.point.x, res.point.y]),
                     ],
                 )
             )
