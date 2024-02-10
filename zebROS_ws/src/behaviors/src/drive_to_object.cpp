@@ -85,6 +85,8 @@ protected:
   double missed_frames_before_exit_{20};
   double velocity_ramp_time_{0.5}; // time to transition from current command velocity to full PID control
 
+  double timeout_{0.25};
+
   std::map<std::string, AlignActionAxisStatePosition> axis_states_;
 
   ros::Publisher cmd_vel_pub_;
@@ -129,6 +131,7 @@ public:
     nh_.getParam("min_valid_frames", valid_frames_config_);
     nh_.getParam("velocity_ramp_time", velocity_ramp_time_);
     nh_.getParam("missed_frames_allowed", missed_frames_before_exit_);
+    nh_.getParam("timeout", timeout_);
 
     // geometry_msgs::Twist t1;
     // t1.linear.x = 1.0;
@@ -175,8 +178,8 @@ public:
 
   std::optional<field_obj::Object> findClosestObject(const field_obj::Detection &detection, const std::string &object_id) {
     double minDistance = std::numeric_limits<double>::max();
-    std::optional<field_obj::Object> closestObject = std::nullopt; 
-    if (detection.objects.size() == 0) {
+    std::optional<field_obj::Object> closestObject = std::nullopt;
+    if (detection.objects.size() == 0 || (ros::Time::now() - detection.header.stamp) > ros::Duration(timeout_)) {
       return std::nullopt;
     }
     for (const field_obj::Object &obj : detection.objects) {
@@ -246,6 +249,8 @@ public:
     ROS_INFO_STREAM("Initial cmd vel is " << initial_cmd_vel);
     ros::Time start = ros::Time::now();
 
+    geometry_msgs::PointStamped latest_map_relative_detection;
+
     while (abs(x_error_) > goal->tolerance || valid_frames < valid_frames_config_) {
         ros::spinOnce(); // grab latest callback data
         if (as_.isPreemptRequested() || !ros::ok())
@@ -257,46 +262,34 @@ public:
         }
 
         closestObject_ = findClosestObject(latest_, goal->id);
-        if (closestObject_ == std::nullopt) {
-            ROS_ERROR_STREAM("drive_to_object : Could not find object for this frame! :(");
-            missed_frames++;
-            if (missed_frames >= missed_frames_before_exit_) {
-              ROS_ERROR_STREAM("Missed more than " << missed_frames_before_exit_ << " frames! Aborting");
-              x_axis.setEnable(false);
-              as_.setPreempted();
-              return;
-            }
-            r.sleep();
-            continue;
-        }
-        else {
+        geometry_msgs::PointStamped base_link_point;
+        if (closestObject_ != std::nullopt) {
           closestObject = closestObject_.value();
-          x_axis.setEnable(true);
           missed_frames = 0;
+          geometry_msgs::PointStamped object_point;
+          object_point.point = closestObject.location;
+          object_point.header = latest_.header;
+
+          tf_buffer_.transform(object_point, latest_map_relative_detection, "map");
         }
 
-        geometry_msgs::PointStamped point;
-        point.point = closestObject.location;
-        point.header = latest_.header;
-        geometry_msgs::PointStamped point_out;
-        // no need for x to be field relative so get the x value before the transform to map
-        ROS_INFO_STREAM("Point header" << point.header);
-        tf_buffer_.transform(point, point_out, "base_link", ros::Duration(0.1));
-        objectLocation.x = point_out.point.x;
-        objectLocation.y = point_out.point.y;
+        x_axis.setEnable(true);
 
-        x_axis.setState(-objectLocation.x);
+        auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "map", ros::Time::now(), ros::Duration(0.1));
+        tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
+
+        x_axis.setState(-base_link_point.point.x);
 
         x_axis.setCommand(-goal->distance_away);
 
-        x_error_ = fabs(goal->distance_away - objectLocation.x);
+        x_error_ = fabs(goal->distance_away - base_link_point.point.x);
 
-        field_relative_object_angle = latest_yaw_ + atan2(point_out.point.y, point_out.point.x);
+        field_relative_object_angle = latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
 
         msg.data = field_relative_object_angle;
         orientation_command_pub_.publish(msg);
 
-        angle_error_ = fabs(atan2(point_out.point.y, point_out.point.x));
+        angle_error_ = fabs(atan2(base_link_point.point.y, base_link_point.point.x));
 
         // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
         // could try to do the math, but i'm not sure how we'd calculate that.
