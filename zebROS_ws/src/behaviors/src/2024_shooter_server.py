@@ -10,6 +10,8 @@ from behavior_actions.msg import Shooter2024Action, Shooter2024Goal, Shooter2024
 
 
 
+#if the shooter speed is ever zero, and we check the speeds for plus or minus percentage, this will abort
+
 #todo: Figure out how to set acutal motors to the control velocity given? Probably involves pid tuning from the inputs given to said motors
 #figure out the pivot position angles etc 
 
@@ -35,11 +37,11 @@ def initialize_vars():
     global right_joint_velocity
     global right_joint_control_velocity
    
-    left_joint_velocity = 900.0
-    left_joint_control_velocity = 900.0
+    left_joint_velocity = 1.0
+    left_joint_control_velocity = 1.0
 
-    right_joint_velocity = 900.0
-    right_joint_control_velocity = 900.0
+    right_joint_velocity = 1.0
+    right_joint_control_velocity = 1.0
 
 def callback(data):
     #the point of this function is to callback whenever the subscriber sees someting on the talonfxpro_states
@@ -84,7 +86,7 @@ class ShooterServer2024:
         global right_joint_control_velocity
         global left_joint_shooter_pub
         global right_joint_shooter_pub
-
+        r = rospy.Rate(50)
         #inside cb, use the passed goal values and set them to the motor values? though is this a client interaction or a server interaction?
         #like, when we send our goal to the ros thingy, like do we sned goal values thoruhg hte client or this server?
 
@@ -96,27 +98,37 @@ class ShooterServer2024:
         if ((left_joint_velocity or left_joint_control_velocity or right_joint_velocity or right_joint_control_velocity) == 0.0):
             initialize_vars() #this is for sim since we can't really stimulate the talonfxpro_states topic
 
-        if (((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((left_joint_velocity / left_joint_control_velocity) <= 1.05)):
-                if (((right_joint_velocity / right_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocity) <= 1.05)):
-                    #so if velocity value sent is plus or minus five percent of hte measured velocity, then run the code
-                    #set succes htat is 
+        try:
+            if (((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((left_joint_velocity / left_joint_control_velocity) <= 1.05)) and (((right_joint_velocity / right_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocity) <= 1.05)):
+                    
+                #so if velocity value sent is plus or minus five percent of hte measured velocity, then run the code
+                #set succes htat is 
+                #need to fix this since its not even right lmao ^
+                #loginfo percent diff plus or minsu 5
+                #log speed
+                #roslog.info
+                rospy.loginfo("Shooter Velocity is within 5 percent difference of set value")
+                rospy.loginfo("Set control velocity on left: %s Set control velocity on right: %s" % (goal.left_shooter_speed, goal.right_shooter_speed))
+                #rospy.loginfo("Logging left_joint_velocity: %s Logging right_joint_velocity: %s" % (left_joint_velocity,  right_joint_velocity))
+                _feedback.is_shooting_at_speed = True
+                #set success
+                #set feedback to true because velocity vs control is within error margi
+                self.server.set_succeeded(_result)
+            #make sure that there ais a condition to hold things here should the speed not be uup to date.
 
-
-
-                    #need to fix this since its not even right lmao ^
-                    #loginfo percent diff plus or minsu 5
-                    #log speed
-                    #roslog.info
-                    rospy.loginfo("Shooter Velocity is within 5 percent difference of set value")
-                    rospy.loginfo("Set control velocity on left: %s Set control velocity on right: %s" % (goal.left_shooter_speed, goal.right_shooter_speed))
-                    rospy.loginfo("Logging left_joint_velocity: %s Logging right_joint_velocity: %s" % (left_joint_velocity,  right_joint_velocity))
-                    _feedback.is_shooting_at_speed = True
-
-                    #set success
-                    #set feedback to true because velocity vs control is within error margin
-
-                    self.server.set_succeeded(_result)
-
+            else:
+                while ((((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((left_joint_velocity / left_joint_control_velocity) <= 1.05)) and (((right_joint_velocity / right_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocity) <= 1.05))) != True:
+                    r.sleep()
+                    if (((left_joint_velocity / left_joint_control_velocity)  >= .95) and ((left_joint_velocity / left_joint_control_velocity) <= 1.05)) and (((right_joint_velocity / right_joint_control_velocity)  >= .95) and ((right_joint_velocity / right_joint_control_velocity) <= 1.05)):
+                        rospy.loginfo("Shooter Velocity is within 5 percent difference of set value")
+                        rospy.loginfo("Set control velocity on left: %s Set control velocity on right: %s" % (goal.left_shooter_speed, goal.right_shooter_speed))
+                        rospy.loginfo("Logging left_joint_velocity: %s Logging right_joint_velocity: %s" % (left_joint_velocity,  right_joint_velocity))
+                        _feedback.is_shooting_at_speed = True
+                        #set success
+                        #set feedback to true because velocity vs control is within error margi
+                        self.server.set_succeeded(_result)
+        except ZeroDivisionError as e:
+            print(e)
 
 if __name__ == '__main__':
     rospy.init_node('set_shooter_speed_server_2024')

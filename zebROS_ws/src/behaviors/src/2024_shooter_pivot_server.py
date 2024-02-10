@@ -4,6 +4,7 @@ import roslib
 import rospy
 import actionlib
 import std_msgs.msg
+import time
 
 from talon_state_msgs.msg import TalonFXProState
 from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Feedback, ShooterPivot2024Result
@@ -11,12 +12,19 @@ from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, S
 _result = ShooterPivot2024Result()
 _feedback = ShooterPivot2024Feedback()
 
+
+#if motion magic value is ever zero it will throw an error and abort
+
+#preempt doesnt actualyl preempt, as in, the values in sim stikll head towards the value that we want.
+#ask ben or kevin about hte second issue
+
+
 global shooter_pivot_pub
 global motion_magic_value
 
 #initialize motion magic value
 
-motion_magic_value = 100.0
+motion_magic_value = 1.0
 
 
 def callback(data):
@@ -59,22 +67,48 @@ class ShooterPivotServer2024:
         #if motionmagic value / motion magic value inputeted >= .95 or motionmagic value / mogtionmagicvalue passed <= 1.05:
         #code
         #self.server.set_succeeded(_result)
+        time.sleep(.5)
+            
+        try:
+            if ((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05):
 
-        if ((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05):
+                #if the inputted motion magic value and the acutal pivot position is within a 5 percent bound of error, set as successs for acitnlib
+                #rospy.loginfo("Success")
+                rospy.loginfo("Set pivot_position value is: %s" % goal.pivot_position)
+                rospy.loginfo("Actual motion magic value %s" % motion_magic_value)
+                rospy.loginfo("Motion magic asked value and motion magic actual value is within a plus or minus five difference")
+                self.server.set_succeeded(_result)
 
-            #if the inputted motion magic value and the acutal pivot position is within a 5 percent bound of error, set as successs for acitnlib
-            #rospy.loginfo("Success")
-            rospy.loginfo("Set pivot_position value is: %s" % goal.pivot_position)
-            rospy.loginfo("Actual motion magic value %s" % motion_magic_value)
-            rospy.loginfo("Motion magic asked value and motion magic actual value is within a plus or minus five difference")
-            self.server.set_succeeded(_result)
-        else:
-            while (((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05)) != True:
-                r.sleep()
-                rospy.loginfo("hehehehe")
-                if ((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05):
-                    self.server.set_succeeded(_result)
 
+        
+            else:
+                while (((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05)) != True:
+                    r.sleep()
+                    if self.server.is_preempt_requested():
+                        self.server.set_preempted()
+
+                    elif ((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05):
+                        rospy.loginfo("Set pivot_position value is: %s" % goal.pivot_position)
+                        rospy.loginfo("Actual motion magic value %s" % motion_magic_value)
+                        rospy.loginfo("Motion magic asked value and motion magic actual value is within a plus or minus five difference")
+                        self.server.set_succeeded(_result)
+        
+        except ZeroDivisionError as e:
+            print(e)
+            if goal.pivot_position == 0.0:
+                print("exception thrown due to zero edge case")
+                self.server.set_succeeded(_result)
+            else:
+                print("got into this loop")
+                while (((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05)) != True:
+                    r.sleep()
+                    if self.server.is_preempt_requested():
+                        self.server.set_preempted()
+                    elif ((goal.pivot_position / motion_magic_value) >= .95) and ((goal.pivot_position / motion_magic_value) <= 1.05):
+                        rospy.loginfo("Set pivot_position value is: %s" % goal.pivot_position)
+                        rospy.loginfo("Actual motion magic value %s" % motion_magic_value)
+                        rospy.loginfo("Motion magic asked value and motion magic actual value is within a plus or minus five difference")
+                        self.server.set_succeeded(_result)
 
         #figure out how to create a loop that sleeps while hte condition above is not true
 
