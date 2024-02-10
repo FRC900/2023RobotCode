@@ -95,7 +95,7 @@ protected:
   double timeout_{0.25};
 
   std::map<std::string, AlignActionAxisStatePosition> axis_states_;
-
+  int object_id_;
   ros::Publisher cmd_vel_pub_;
   ros::Subscriber x_effort_sub_;
   double x_eff_;
@@ -202,13 +202,24 @@ public:
       if (obj.points.size() > 1) {
         ROS_ERROR_STREAM("SHOULD ONLY CONTAIN ONE POINT");
       }
-      // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
-      double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
+      if (object_id_ == -1) {
+        ROS_WARN_STREAM("First frame");
+        // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
+        double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
 
-      if (d < minDistance && obj.label == object_id) {
-        minDistance = d;
-        closestObject = obj;
+        if (d < minDistance && obj.label == object_id) {
+          minDistance = d;
+          closestObject = obj;
+        }
       }
+      else {
+        if (obj.id == object_id_) {
+          ROS_INFO_STREAM("Found FOR OBJECT WITH ID " << object_id_);
+
+          closestObject = obj;
+        }
+      }
+
     }
     ROS_INFO_STREAM("Map location x,y " << map_x << "," << map_y);
     if (closestObject.has_value()) {
@@ -243,6 +254,7 @@ public:
   void executeCB(const behavior_actions::DriveToObjectGoalConstPtr &goal)
   {
     // just to make sure to go through the loop once
+    object_id_ = -1;
     x_error_ = 100;
     angle_error_ = 100;
     ros::Rate r = ros::Rate(60);
@@ -254,17 +266,12 @@ public:
     std::optional<norfair_ros::Detection> closestObject_ = findClosestObject(latest_, goal->id);
     norfair_ros::Detection closestObject;
     if (closestObject_ == std::nullopt) {
-      closestObject = norfair_ros::Detection();
-      norfair_ros::Point p = norfair_ros::Point();
-      ROS_INFO_STREAM("I am here");
-      p.point.push_back(0);
-      p.point.push_back(0);
-      p.point.push_back(0);
-
-      closestObject.points.push_back(p);
-      ROS_INFO_STREAM("No initial object found!");
+      ROS_ERROR_STREAM("No inital object, exiting");
+      result_.success = false;
+      as_.setSucceeded(result_);
     } else {
       closestObject = closestObject_.value();
+      object_id_ = closestObject.id;
     }
 
     double field_relative_object_angle = latest_yaw_ + atan2(closestObject.points[0].point[1], closestObject.points[0].point[0]);
@@ -301,14 +308,15 @@ public:
           object_point.point.y = closestObject.points[0].point[1];
           object_point.point.z = closestObject.points[0].point[2];
           object_point.header = latest_.header;
-
+          // will go map to map but copies
           tf_buffer_.transform(object_point, latest_map_relative_detection, "map");
         }
 
         x_axis.setEnable(true);
-
         auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "map", ros::Time::now(), ros::Duration(0.1));
         tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
+        // ROS_WARN_STREAM("Base link pt " << base_);
+
 
         x_axis.setState(-base_link_point.point.x);
 
