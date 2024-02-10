@@ -87,16 +87,16 @@ class ShootingServer(object):
         rospy.loginfo("2024_shooting_server: succeeded")
         self.server.set_succeeded(self.result)
 
-def dyn_rec_callback(config, level):
-    rospy.loginfo("Received reconf call: " + str(config))
-    global conveyor_speed
-    global diverter_speed
-    conveyor_speed = config["conveyor_speed"]
-    diverter_speed = config["diverter_speed"]
-    return config
+# def dyn_rec_callback(config, level):
+#     rospy.loginfo("Received reconf call: " + str(config))
+#     global conveyor_speed
+#     global diverter_speed
+#     conveyor_speed = config["conveyor_speed"]
+#     diverter_speed = config["diverter_speed"]
+#     return config
 
 if __name__ == '__main__':
-    rospy.init_node('diverter_server_2024')
+    rospy.init_node('shooting_server_2024')
     
     # ddynrec = DDynamicReconfigure("diverter_dyn_rec")
     # ddynrec.add_variable("conveyor_speed", "float/double variable", rospy.get_param("note_conveyor_speed"), 0.0, 13.0)
