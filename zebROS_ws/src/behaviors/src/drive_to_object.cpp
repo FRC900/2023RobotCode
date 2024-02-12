@@ -269,6 +269,7 @@ public:
       ROS_ERROR_STREAM("No inital object, exiting");
       result_.success = false;
       as_.setSucceeded(result_);
+      return;
     } else {
       closestObject = closestObject_.value();
       object_id_ = closestObject.id;
@@ -317,7 +318,9 @@ public:
         tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
         // ROS_WARN_STREAM("Base link pt " << base_);
 
-
+        ROS_INFO_STREAM("Object is at x,y " << base_link_point.point.x << "," << base_link_point.point.y);
+        ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
+        ROS_INFO_STREAM("Distance away " << goal->distance_away);
         x_axis.setState(-base_link_point.point.x);
 
         x_axis.setCommand(-goal->distance_away);
@@ -330,7 +333,7 @@ public:
         orientation_command_pub_.publish(msg);
 
         angle_error_ = fabs(atan2(base_link_point.point.y, base_link_point.point.x));
-
+        ROS_INFO_STREAM("Angle error is " << angle_error_);
         // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
         // could try to do the math, but i'm not sure how we'd calculate that.
         // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)

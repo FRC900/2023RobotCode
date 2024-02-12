@@ -94,6 +94,7 @@ class FakeGoalDetection
 						// ROS_INFO_STREAM("Found a note!");
 						if (hypot(p.x, p.y) < 1.0) {
 							ROS_INFO_STREAM_THROTTLE(1, "Note too close! Dropping");
+							continue;
 						}
  					}
 					msgOut.objects.push_back(obj);

@@ -9,7 +9,7 @@ norfair_publishers:
 
 norfair_setup:
   distance_function: "euclidean"
-  distance_threshold: 0.9 # no clue what units
+  distance_threshold: 0.3 # no clue what units, assuming meters
   hit_counter_max: 15
   initialization_delay: 4
   pointwise_hit_counter_max: 4
