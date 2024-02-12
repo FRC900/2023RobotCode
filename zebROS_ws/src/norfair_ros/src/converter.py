@@ -78,8 +78,8 @@ class Converter:
             
             res = tf2_geometry_msgs.do_transform_point(p, transform)
             if detection.id == "note":
-                print(f"\ninital point {detection.location}\ntransformed point {res.point}")
-            
+                #print(f"\ninital point {detection.location}\ntransformed point {res.point}")
+                pass
             detections.append(
                 DetectionMsg(
                     id=0,

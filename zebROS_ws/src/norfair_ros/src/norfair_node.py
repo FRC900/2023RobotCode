@@ -6,6 +6,7 @@ from norfair_ros.msg import Detection as DetectionMsg
 from norfair_ros.msg import Detections as DetectionsMsg
 from norfair_ros.msg import Point
 import tf2_ros
+import time
 
 class NorfairNode:
     def publisher(self, tracked_objects: list):
@@ -55,9 +56,30 @@ class NorfairNode:
                 )
             )
         
+        
         tracked_objects = self.tracker.update(detections)
-
+        self.tracked_objects  = tracked_objects
         self.publisher(tracked_objects)
+
+    def tf_pub(self, event):
+        # publish transform between odom to the tracked notes
+        print(f"current time: {rospy.Time.now()}")
+        for tracked_object in self.tracked_objects:
+            t = tracked_object.last_detection.points[0]
+            # print("t: ", t)
+            transform = tf2_ros.TransformStamped()
+            transform.header.stamp = rospy.Time.now()
+            transform.header.frame_id = "map"
+            transform.child_frame_id = "track_note_" + str(tracked_object.id)
+            transform.transform.translation.x = t[0]
+            transform.transform.translation.y = t[1]
+            transform.transform.translation.z = 0.0
+            transform.transform.rotation.x = 0.0
+            transform.transform.rotation.y = 0.0
+            transform.transform.rotation.z = 0.0
+            transform.transform.rotation.w = 1.0
+            self.br.sendTransform(transform)
+            print(f"publishing transform: {transform}")
 
     def main(self):
         """
@@ -92,6 +114,8 @@ class NorfairNode:
         # make a tf publisher
         
         self.br = tf2_ros.TransformBroadcaster()
+        # make a timer to publish the transform every 0.1 seconds
+        rospy.Timer(rospy.Duration(0.1), self.tf_pub, oneshot=False)
 
         rospy.spin()
 

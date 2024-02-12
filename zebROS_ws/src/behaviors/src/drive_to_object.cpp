@@ -203,7 +203,7 @@ public:
         ROS_ERROR_STREAM("SHOULD ONLY CONTAIN ONE POINT");
       }
       if (object_id_ == -1) {
-        ROS_WARN_STREAM("First frame");
+        ROS_WARN_STREAM("First frame, finding closest object");
         // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
         double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
 
@@ -214,7 +214,7 @@ public:
       }
       else {
         if (obj.id == object_id_) {
-          ROS_INFO_STREAM("Found FOR OBJECT WITH ID " << object_id_);
+          ROS_INFO_STREAM("Tracked object WITH ID " << object_id_);
 
           closestObject = obj;
         }
@@ -226,7 +226,7 @@ public:
       ROS_INFO_STREAM("Closest object is " << closestObject.value().id << closestObject.value().label << " at x,y " << closestObject.value().points[0].point[0] << "," << closestObject.value().points[0].point[1]);
     }
     else {
-      ROS_ERROR_STREAM("No object :(");
+      ROS_WARN_STREAM("No object :(");
     }
     return closestObject;
   }
