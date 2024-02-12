@@ -186,7 +186,7 @@ class AutoNode {
 
 		// START change year to year
 		// better way to initalize?
-		first_point_pub_ = nh.advertise<std_msgs::String>("first_point", 1);
+		first_point_pub_ = nh.advertise<geometry_msgs::Pose>("first_point", 1);
 		functionMap_["relocalize"] = &AutoNode::relocalizefn;
 		functionMap_["pause"] = &AutoNode::pausefn;
 		functionMap_["intaking_actionlib_server"] = &AutoNode::intakefn;
@@ -605,7 +605,7 @@ class AutoNode {
 				waypointsIdxs_[auto_steps_[j]] = waypointsIdx;
 
 				if (premade_position_paths_.size() == 1) {
-					first_point_pub_.publish(pos_path_msg::poses[0]::pose);
+					first_point_pub_.publish(pos_path_msg.poses[0].pose);
 				}
 				continue;
 			}
