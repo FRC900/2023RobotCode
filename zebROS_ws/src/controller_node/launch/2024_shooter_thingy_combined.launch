@@ -3,16 +3,10 @@
 <launch>
 
 	<!-- GDB functionality -->
-	<arg name="debug" default="false" />
-	<arg name="launch_prefix" default="" />
-
-	<arg name="hw_or_sim" default="hw" />
-	<arg name="joy_or_key" default="joy" />
-	<arg name="button_box" default="true"/>
-	<arg name="record" default="false"/>
-
+	
     <!-- Jetson Nodes -->
-    <include file="$(find controller_node)/launch/2024_shooter_thingy_jetson.launch" pass_all_args="true"/>
+	<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_and_pivot.yaml" command="load"/>
+
 
 <!--
 	<include file="$(find controller_node)/launch/joysticks_sim.launch" if="$(eval arg('hw_or_sim')=='sim')">

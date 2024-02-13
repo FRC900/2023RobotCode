@@ -9,3 +9,5 @@ float64 right_shooter_speed
 ---
 #feedback
 bool is_shooting_at_speed
+float64 left_percent_complete
+float64 right_percent_complete
