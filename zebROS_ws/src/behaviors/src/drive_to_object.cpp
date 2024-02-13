@@ -11,18 +11,14 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <path_follower_msgs/holdPositionAction.h>
 #include <sensor_msgs/Imu.h>
-#include <frc_msgs/MatchSpecificData.h>
-#include <behavior_actions/GamePieceState2023.h>
-#include "std_msgs/Bool.h"
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "tf2_ros/transform_listener.h"
-#include <std_srvs/Empty.h>
 #include "path_follower/axis_state.h"
 #include <norfair_ros/Detections.h>
-#include <math.h>
+#include <cmath>
 
 geometry_msgs::Point operator-(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs) {
     geometry_msgs::Point p;
@@ -54,7 +50,8 @@ double distance(const geometry_msgs::Point &pt) {
 }
 
 double dist_between_points(double x1, double y1, double x2, double y2) {
-  return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+  // return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+  return hypot(x2 - x1, y2 - y1);
 }
 
 
@@ -80,8 +77,6 @@ protected:
   ros::Subscriber sub_;
   ros::Subscriber imu_sub_;
   actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction> ac_hold_position_;
-  double xOffset_;
-  double holdPosTimeout_;
   double latest_yaw_{0};
   double orient_effort_{0};
 
@@ -89,18 +84,14 @@ protected:
   double angle_error_{0};
 
   double valid_frames_config_{4};
-  double missed_frames_before_exit_{20};
   double velocity_ramp_time_{0.5}; // time to transition from current command velocity to full PID control
 
   double timeout_{0.25};
 
   std::map<std::string, AlignActionAxisStatePosition> axis_states_;
-  int object_id_;
   ros::Publisher cmd_vel_pub_;
   ros::Subscriber x_effort_sub_;
   double x_eff_;
-  ros::Subscriber y_effort_sub_;
-  double y_eff_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
@@ -115,7 +106,7 @@ public:
   DriveToObjectActionServer(std::string name) :
     as_(nh_, name, boost::bind(&DriveToObjectActionServer::executeCB, this, _1), false),
     action_name_(name),
-    sub_(nh_.subscribe<norfair_ros::Detections>("/norfair/output", 1, &DriveToObjectActionServer::callback, this, ros::TransportHints().tcpNoDelay())),
+    sub_(nh_.subscribe<norfair_ros::Detections>("/norfair/output", 1, &DriveToObjectActionServer::update_latest_detection, this, ros::TransportHints().tcpNoDelay())),
     ac_hold_position_("/hold_position/hold_position_server", true),
     tf_listener_(tf_buffer_),
     orientation_command_pub_(nh_.advertise<std_msgs::Float64>("/teleop/orientation_command", 1)),
@@ -137,7 +128,6 @@ public:
 
     nh_.getParam("min_valid_frames", valid_frames_config_);
     nh_.getParam("velocity_ramp_time", velocity_ramp_time_);
-    nh_.getParam("missed_frames_allowed", missed_frames_before_exit_);
     nh_.getParam("timeout", timeout_);
 
     // geometry_msgs::Twist t1;
@@ -169,7 +159,7 @@ public:
     latest_yaw_ = getYaw(msg->orientation);
   }
 
-  void callback(const norfair_ros::DetectionsConstPtr& msg) {
+  void update_latest_detection(const norfair_ros::DetectionsConstPtr& msg) {
     latest_ = *msg;
   }
 
@@ -183,7 +173,7 @@ public:
     return true;
   }
 
-  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id) {
+  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id, const int &tracked_object_id) {
     double minDistance = std::numeric_limits<double>::max();
     // ROS_INFO_STREAM("Finding closest object");
     auto map_to_baselink = tf_buffer_.lookupTransform("map", "base_link", ros::Time::now(), ros::Duration(0.1));
@@ -192,8 +182,8 @@ public:
     // ROS_INFO_STREAM("HERE");
     std::optional<norfair_ros::Detection> closestObject = std::nullopt;
     if (detections.detections.size() == 0 || (ros::Time::now() - detections.header.stamp) > ros::Duration(timeout_)) {
-      ROS_INFO_STREAM("RETURING NULLOPT");
-      ROS_INFO_STREAM("Det size " << detections.detections.size());
+      ROS_ERROR_STREAM("RETURING NULLOPT");
+      ROS_ERROR_STREAM("Det size " << detections.detections.size());
       return std::nullopt;
     }
     // ROS_INFO_STREAM("BEFORE LOOP");
@@ -202,7 +192,7 @@ public:
       if (obj.points.size() > 1) {
         ROS_ERROR_STREAM("SHOULD ONLY CONTAIN ONE POINT");
       }
-      if (object_id_ == -1) {
+      if (tracked_object_id == -1) {
         ROS_WARN_STREAM("First frame, finding closest object");
         // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
         double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
@@ -213,14 +203,14 @@ public:
         }
       }
       else {
-        if (obj.id == object_id_) {
-          ROS_INFO_STREAM("Tracked object WITH ID " << object_id_);
+        if (obj.id == tracked_object_id) {
+          ROS_INFO_STREAM("Tracked object WITH ID " << tracked_object_id);
 
           closestObject = obj;
         }
       }
-
     }
+
     ROS_INFO_STREAM("Map location x,y " << map_x << "," << map_y);
     if (closestObject.has_value()) {
       ROS_INFO_STREAM("Closest object is " << closestObject.value().id << closestObject.value().label << " at x,y " << closestObject.value().points[0].point[0] << "," << closestObject.value().points[0].point[1]);
@@ -253,8 +243,10 @@ public:
 
   void executeCB(const behavior_actions::DriveToObjectGoalConstPtr &goal)
   {
+    // Probably should add a timeout 
+
     // just to make sure to go through the loop once
-    object_id_ = -1;
+    int tracked_object_id = -1;
     x_error_ = 100;
     angle_error_ = 100;
     ros::Rate r = ros::Rate(60);
@@ -263,7 +255,7 @@ public:
     auto &x_axis = x_axis_it->second;
 
     x_axis.setEnable(true);
-    std::optional<norfair_ros::Detection> closestObject_ = findClosestObject(latest_, goal->id);
+    std::optional<norfair_ros::Detection> closestObject_ = findClosestObject(latest_, goal->id, tracked_object_id);
     norfair_ros::Detection closestObject;
     if (closestObject_ == std::nullopt) {
       ROS_ERROR_STREAM("No inital object, exiting");
@@ -272,16 +264,14 @@ public:
       return;
     } else {
       closestObject = closestObject_.value();
-      object_id_ = closestObject.id;
+      tracked_object_id = closestObject.id;
     }
 
     double field_relative_object_angle = latest_yaw_ + atan2(closestObject.points[0].point[1], closestObject.points[0].point[0]);
-
-    int missed_frames = 0;
     std_msgs::Float64 msg;
     msg.data = field_relative_object_angle;
     orientation_command_pub_.publish(msg);
-    uint8_t valid_frames = 0;
+    int valid_frames = 0;
 
     geometry_msgs::Twist initial_cmd_vel = latest_cmd_vel_.twist;
     ROS_INFO_STREAM("Initial cmd vel is " << initial_cmd_vel);
@@ -290,78 +280,76 @@ public:
     geometry_msgs::PointStamped latest_map_relative_detection;
 
     while (abs(x_error_) > goal->tolerance || valid_frames < valid_frames_config_) {
-        ros::spinOnce(); // grab latest callback data
-        if (as_.isPreemptRequested() || !ros::ok())
-        {
-            ROS_ERROR_STREAM("drive_to_object : Preempted");
-            as_.setPreempted();
-            x_axis.setEnable(false);
-            return;
-        }
+      ros::spinOnce(); // grab latest callback data
+      if (as_.isPreemptRequested() || !ros::ok())
+      {
+        ROS_ERROR_STREAM("drive_to_object : Preempted");
+        as_.setPreempted();
+        x_axis.setEnable(false);
+        return;
+      }
 
-        closestObject_ = findClosestObject(latest_, goal->id);
-        geometry_msgs::PointStamped base_link_point;
-        if (closestObject_ != std::nullopt) {
-          closestObject = closestObject_.value();
-          missed_frames = 0;
-          geometry_msgs::PointStamped object_point;
-          object_point.point.x = closestObject.points[0].point[0];
-          object_point.point.y = closestObject.points[0].point[1];
-          object_point.point.z = closestObject.points[0].point[2];
-          object_point.header = latest_.header;
-          // will go map to map but copies
-          tf_buffer_.transform(object_point, latest_map_relative_detection, "map");
-        }
+      closestObject_ = findClosestObject(latest_, goal->id, tracked_object_id);
+      geometry_msgs::PointStamped base_link_point;
+      if (closestObject_ != std::nullopt) {
+        closestObject = closestObject_.value();
+        geometry_msgs::PointStamped object_point;
+        object_point.point.x = closestObject.points[0].point[0];
+        object_point.point.y = closestObject.points[0].point[1];
+        object_point.point.z = closestObject.points[0].point[2];
+        object_point.header = latest_.header;
+        // will go map to map but copies
+        tf_buffer_.transform(object_point, latest_map_relative_detection, "map");
+      }
 
-        x_axis.setEnable(true);
-        auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "map", ros::Time::now(), ros::Duration(0.1));
-        tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
-        // ROS_WARN_STREAM("Base link pt " << base_);
+      x_axis.setEnable(true);
+      auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "map", ros::Time::now(), ros::Duration(0.1));
+      tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
+      // ROS_WARN_STREAM("Base link pt " << base_);
 
-        ROS_INFO_STREAM("Object is at x,y " << base_link_point.point.x << "," << base_link_point.point.y);
-        ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
-        ROS_INFO_STREAM("Distance away " << goal->distance_away);
-        x_axis.setState(-base_link_point.point.x);
+      ROS_INFO_STREAM("Object is at x,y " << base_link_point.point.x << "," << base_link_point.point.y);
+      ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
+      ROS_INFO_STREAM("Distance away " << goal->distance_away);
+      x_axis.setState(-base_link_point.point.x);
 
-        x_axis.setCommand(-goal->distance_away);
+      x_axis.setCommand(-goal->distance_away);
 
-        x_error_ = fabs(goal->distance_away - base_link_point.point.x);
+      x_error_ = fabs(goal->distance_away - base_link_point.point.x);
 
-        field_relative_object_angle = latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
+      field_relative_object_angle = latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
 
-        msg.data = field_relative_object_angle;
-        orientation_command_pub_.publish(msg);
+      msg.data = field_relative_object_angle;
+      orientation_command_pub_.publish(msg);
 
-        angle_error_ = fabs(atan2(base_link_point.point.y, base_link_point.point.x));
-        ROS_INFO_STREAM("Angle error is " << angle_error_);
-        // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
-        // could try to do the math, but i'm not sure how we'd calculate that.
-        // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)
-        // seems like the correct way to do it is just based on how far we've turned since the last vision update:
+      angle_error_ = fabs(atan2(base_link_point.point.y, base_link_point.point.x));
+      ROS_INFO_STREAM("Angle error is " << angle_error_);
+      // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
+      // could try to do the math, but i'm not sure how we'd calculate that.
+      // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)
+      // seems like the correct way to do it is just based on how far we've turned since the last vision update:
 
-        geometry_msgs::Twist pid_twist;
-        // t.linear.x = x_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::cos(orient_effort_);
-        // t.linear.y = y_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::sin(orient_effort_);
-        pid_twist.linear.x = x_eff_ * cos(field_relative_object_angle - latest_yaw_);
-				pid_twist.linear.y = x_eff_ * sin(field_relative_object_angle - latest_yaw_);
-        pid_twist.angular.z = orient_effort_;
+      geometry_msgs::Twist pid_twist;
+      // t.linear.x = x_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::cos(orient_effort_);
+      pid_twist.linear.x = x_eff_ * cos(field_relative_object_angle - latest_yaw_);
+      pid_twist.linear.y = x_eff_ * sin(field_relative_object_angle - latest_yaw_);
+      pid_twist.angular.z = orient_effort_;
 
-        double timeDelta = (ros::Time::now() - start).toSec();
-        double initialVelocityInfluence = timeDelta > velocity_ramp_time_ ? 0.0 : ((velocity_ramp_time_ - timeDelta) / velocity_ramp_time_);
+      double timeDelta = (ros::Time::now() - start).toSec();
+      double initialVelocityInfluence = timeDelta > velocity_ramp_time_ ? 0.0 : ((velocity_ramp_time_ - timeDelta) / velocity_ramp_time_);
 
-        std::vector<std::pair<geometry_msgs::Twist, double>> pairs;
-        pairs.push_back({pid_twist, 1.0 - initialVelocityInfluence});
-        pairs.push_back({initial_cmd_vel, initialVelocityInfluence});
-        geometry_msgs::Twist t = weightedAverageCmdVel(pairs);
+      std::vector<std::pair<geometry_msgs::Twist, double>> pairs;
+      pairs.push_back({pid_twist, 1.0 - initialVelocityInfluence});
+      pairs.push_back({initial_cmd_vel, initialVelocityInfluence});
+      geometry_msgs::Twist t = weightedAverageCmdVel(pairs);
 
-        cmd_vel_pub_.publish(t);
-        feedback_.x_error = x_error_;
-        feedback_.angle_error = angle_error_;
-        if (abs(x_error_) <= goal->tolerance && angle_error_ <= goal->tolerance) {
-          valid_frames++;
-        }
-        as_.publishFeedback(feedback_);
-        r.sleep();
+      cmd_vel_pub_.publish(t);
+      feedback_.x_error = x_error_;
+      feedback_.angle_error = angle_error_;
+      if (abs(x_error_) <= goal->tolerance && angle_error_ <= goal->tolerance) {
+        valid_frames++;
+      }
+      as_.publishFeedback(feedback_);
+      r.sleep();
     }
     x_axis.setEnable(false);
     result_.success = true;
