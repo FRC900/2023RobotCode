@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="zed_name"             default="zed_objdetect" />
+  <arg name="zed_name"             default="zed_objdet" />
   <arg name="zed_config_dir"       default="$(arg zed_name)" />
   <arg name="camera_model"         default="zed2" />
   <arg name="zed_node_name"        default="$(arg zed_name)" />

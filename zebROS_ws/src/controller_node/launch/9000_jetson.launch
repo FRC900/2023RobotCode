@@ -86,7 +86,10 @@
 			<remap from="cmd_vel_out" to="/frcrobot_jetson/swerve_drive_controller/cmd_vel"/>
 		</node>
 	</group>
-
+	<!-- 
+		RPY for both cameras is almost certainly not correct
+		Fix it using tagslam calibration data
+	-->
 	<include file="$(find controller_node)/launch/zed_detection.launch">
 		<arg name="run_camera"      value="false" if="$(eval hw_or_sim == 'sim')"/>
 		<arg name="zed_name"        value="zed_front" />
