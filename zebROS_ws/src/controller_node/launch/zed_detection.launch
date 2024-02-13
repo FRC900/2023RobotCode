@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="zed_name"             default="zed_objdetect" />
+  <arg name="zed_config_dir"       default="$(arg zed_name)" />
+  <arg name="camera_model"         default="zed2" />
   <arg name="zed_node_name"        default="$(arg zed_name)" />
-  <arg name="camera_model"         default="zedx" />
+  <arg name="camera_id"            default="0" />
+  <arg name="serial_number"        default="0" />
   <arg name="cam_pos_x"            default="0.0" />
   <arg name="cam_pos_y"            default="0.0" />
   <arg name="cam_pos_z"            default="0.0" />
@@ -16,19 +19,22 @@
   <arg name="run_pub_video"        default="false" />
 
   <include file="$(find zed_wrapper)/launch/include/zed_camera.launch.xml" if="$(eval run_camera)">
-    <arg name="common_params_file"   value="$(find controller_node)/config/$(arg zed_name)/common.yaml" />
-    <arg name="camera_params_file"   value="$(find controller_node)/config/$(arg zed_name)/$(arg camera_model).yaml" />
-    <arg name="node_name"            value="$(arg zed_node_name)" />
-    <arg name="publish_urdf"         value="true" />
     <arg name="camera_name"          value="$(arg zed_name)" />
     <arg name="camera_model"         value="$(arg camera_model)" />
+    <arg name="node_name"            value="$(arg zed_node_name)" />
     <arg name="base_frame"           value="base_link" />
+    <arg name="publish_urdf"         value="true" />
+    <arg name="camera_id"            value="$(arg camera_id)" />
+    <arg name="serial_number"        value="$(arg serial_number)" />
     <arg name="cam_pos_x"            value="$(arg cam_pos_x)" />
     <arg name="cam_pos_y"            value="$(arg cam_pos_y)" />
     <arg name="cam_pos_z"            value="$(arg cam_pos_z)" />
     <arg name="cam_roll"             value="$(arg cam_roll)"  />
     <arg name="cam_pitch"            value="$(arg cam_pitch)" />
     <arg name="cam_yaw"              value="$(arg cam_yaw)"   />
+
+    <arg name="common_params_file"   value="$(find controller_node)/config/$(arg zed_config_dir)/common.yaml" />
+    <arg name="camera_params_file"   value="$(find controller_node)/config/$(arg zed_config_dir)/$(arg camera_model).yaml" />
   </include>
 
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_apriltag)">
@@ -45,7 +51,7 @@
         Publishes to $(ns)/tag_detection_msgs
     -->
     <node pkg="tf_object_detection" name="tag_depth" type="tag_depth.py" output="screen">
-			<remap from="/tag_detections" to="/apriltag_$(arg zed_name)/apriltag_detection/tags"/>
+			<remap from="tags_in" to="/apriltag_$(arg zed_name)/apriltag_detection/tags"/>
     </node>
     <!-- Use depth info to generate apriltag world coords -->
 		<node pkg="tf_object_detection" name="tf_object_screen_to_world_tags" type="tf_object_screen_to_world" output="screen">

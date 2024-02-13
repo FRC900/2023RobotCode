@@ -1,4 +1,8 @@
 #! /usr/bin/env python3
+'''
+Remap from an input apriltag message (of various types) to
+a TFDetection message to feed into screen to world
+'''
 import rospy
 from field_obj.msg import TFDetection, TFObject
 from apriltag_msgs.msg import ApriltagArrayStamped
@@ -35,7 +39,7 @@ def depth_check_cb(msg):
 
 def regular_main():
     global pub 
-    sub_topic = "/apriltag_detection/tags"
+    sub_topic = "tags_in"
     pub_topic = "tag_detection_msg"
     rospy.init_node('tag_depth', anonymous=True)
 
