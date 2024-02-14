@@ -186,7 +186,7 @@ class AutoNode {
 
 		// START change year to year
 		// better way to initalize?
-		first_point_pub_ = nh.advertise<geometry_msgs::Pose>("first_point", 1);
+		first_point_pub_ = nh_.advertise<geometry_msgs::Pose>("first_point", 1);
 		functionMap_["relocalize"] = &AutoNode::relocalizefn;
 		functionMap_["pause"] = &AutoNode::pausefn;
 		functionMap_["intaking_actionlib_server"] = &AutoNode::intakefn;
