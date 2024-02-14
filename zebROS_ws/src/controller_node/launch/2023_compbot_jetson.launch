@@ -18,7 +18,7 @@
 		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_pivot.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_concept.yaml" command="load"/>
 
-		<rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_and_pivot.yaml" command="load"/>
+		<!-- <rosparam file="$(find ros_control_boilerplate)/config/2024_shooter_and_pivot.yaml" command="load"/> -->
 		
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_swerve_drive_phoenix6.yaml" command="load"/>
 		<rosparam file="$(find ros_control_boilerplate)/config/2023_compbot_offsets.yaml" command="load"/>
