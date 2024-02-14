@@ -150,7 +150,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	static ros::Time last_header_stamp = button_box.header.stamp;
 	
 	bool driver_input_changed = false;
-	if (last_no_driver_input != no_driver_input && no_driver_input == true) {
+	if (last_no_driver_input != driver.getNoDriverInput() && driver.getNoDriverInput() == true) {
 		driver_input_changed = true; 
 	}
 	ROS_INFO_STREAM_THROTTLE(1, "Auto place state = " << std::to_string(auto_place_state));
@@ -567,7 +567,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 	//Only do this for the first joystick
 	if(joystick_id == 0)
 	{
-		static ros::Time last_header_stamp = evalateDriverCommands();
+		static ros::Time last_header_stamp = driver.evalateDriverCommands(joystick_states_array[0], config);
 
 		if(!diagnostics_mode)
 		{

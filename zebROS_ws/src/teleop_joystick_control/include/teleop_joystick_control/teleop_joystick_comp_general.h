@@ -67,11 +67,12 @@ extern bool called_park_endgame;
 void publish_diag_cmds(void);
 void zero_all_diag_commands(void);
 void preemptActionlibServers(void);
-bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
-		teleop_joystick_control::RobotOrient::Response&/* res*/);
+//bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
+//		teleop_joystick_control::RobotOrient::Response&/* res*/);
+
 // Don't uncomment until we generalize the button box
 //void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
-ros::Time evalateDriverCommands(void);
+//ros::Time evalateDriverCommands(void);
 void moveDirection(int x, int y, int z);
 void sendDirection(void);
 uint8_t autoMode(int year);
@@ -101,11 +102,16 @@ private:
 
 class Driver {
 public:
-	//Driver(); // I don't think we need to provide arguments for any of the member initializers, so we can use the default constructor
+	Driver() = default;
+	Driver(ros::NodeHandle n, DynamicReconfigVars config);
 	void moveDirection(int x, int y, int z, double button_move_speed);
 	void sendDirection(double button_move_speed);
 	ros::Time evalateDriverCommands(frc_msgs::JoystickState joy_state, DynamicReconfigVars config);
-	void setTargetOrientation(const double angle, const bool from_teleop);
+	void setTargetOrientation(const double angle, const bool from_teleop, const double velocity = (0.0));
+	bool getNoDriverInput();
+	bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
+		teleop_joystick_control::RobotOrient::Response&/* res*/);
+	bool waitForBrakeSrv(ros::Duration startup_wait_time);
 
 	std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel_;
 private:
