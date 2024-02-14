@@ -9,18 +9,26 @@ from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, S
 
 global shooter_pivot_pub
 global motion_magic_value
+global motion_magic_value_index
 
 
+motion_magic_value_index = None
 motion_magic_value = 1.0
 
 
 def callback(data):
     global motion_magic_value
-    for i in range(len(data.name)):
-        #rospy.loginfo(data.name[i])
-        if (data.name[i] == "shooter_pivot_motionmagic_joint"): 
-            motion_magic_value = data.position[i]
-            break
+    global motion_magic_value_index
+    if (motion_magic_value_index == None):
+        for i in range(len(data.name)):
+            #rospy.loginfo(data.name[i])
+            if (data.name[i] == "shooter_pivot_motionmagic_joint"): 
+                motion_magic_value = data.position[i]
+                motion_magic_value_index = i
+                break
+    else:
+        motion_magic_value = data.position[motion_magic_value_index]
+
 
 
 class ShooterPivotServer2024:
