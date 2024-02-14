@@ -45,7 +45,7 @@ struct NodeCTX {
         cone_button_pressed{false},
         cube_button_pressed{false},
         updated{false},
-        disabled{false},
+        disabled{true},
         pathing{false},
         intake_idx{std::numeric_limits<size_t>::max()}
     {}
