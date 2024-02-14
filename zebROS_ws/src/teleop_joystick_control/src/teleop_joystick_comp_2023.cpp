@@ -45,6 +45,7 @@
 struct DynamicReconfigVars
 {
 	double joystick_deadzone{0};          // "Joystick deadzone, in percent",
+	double radial_deadzone{0.05} ;
 	double min_speed{0};                  // "Min linear speed to get robot to overcome friction, in m/s"
 	double max_speed{2.0};                // "Max linear speed, in m/s"
 	double max_speed_slow{0.75};          // "Max linear speed in slow mode, in m/s"
@@ -1267,6 +1268,10 @@ int main(int argc, char **argv)
 	{
 		ROS_ERROR("Could not read joystick_deadzone in teleop_joystick_comp");
 	}
+	if(!n_params.getParam("radial_deadzone", config.radial_deadzone))
+	{
+		ROS_ERROR("Could not read radial_deadzone in teleop_joystick_comp");
+	}
 	if(!n_params.getParam("joystick_pow", config.joystick_pow))
 	{
 		ROS_ERROR("Could not read joystick_pow in teleop_joystick_comp");
@@ -1359,6 +1364,7 @@ int main(int argc, char **argv)
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params);
 
 	ddr.registerVariable<double>("joystick_deadzone", &config.joystick_deadzone, "Joystick deadzone, in percent", 0., 1.);
+	ddr.registerVariable<double>("radial_deadzone", &config.radial_deadzone, "Radial deadzone, in radians", 0., M_PI/4);
 	ddr.registerVariable<double>("min_speed", &config.min_speed, "Min linear speed to get robot to overcome friction, in m/s", 0, 1);
 	ddr.registerVariable<double>("max_speed", &config.max_speed, "Max linear speed, in m/s", 0, 10.);
 	ddr.registerVariable<double>("max_speed_slow", &config.max_speed_slow, "Max linear speed in slow mode, in m/s", 0., 5.);
