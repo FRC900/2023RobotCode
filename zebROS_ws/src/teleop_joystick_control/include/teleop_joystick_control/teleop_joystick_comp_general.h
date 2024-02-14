@@ -32,17 +32,17 @@ extern uint8_t auto_starting_pos;
 extern double last_offset;
 extern bool last_robot_orient;
 extern bool moved;
-extern int direction_x;
-extern int direction_y;
-extern int direction_z;
+//extern int direction_x;
+//extern int direction_y;
+//extern int direction_z;
 extern bool diagnostics_mode;
 extern struct DynamicReconfigVars config;
-extern ros::Publisher JoystickRobotVel;
-extern std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
-extern std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
+//extern ros::Publisher JoystickRobotVel;
+//extern std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
+//extern std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
 extern std::vector <frc_msgs::JoystickState> joystick_states_array;
 extern std::vector <std::string> topic_array;
-extern ros::ServiceClient BrakeSrv;
+//extern ros::ServiceClient BrakeSrv;
 extern ros::ServiceClient ParkSrv;
 extern ros::ServiceClient IMUZeroSrv;
 extern ros::ServiceClient SwerveOdomZeroSrv;
@@ -50,12 +50,12 @@ extern ros::ServiceClient setCenterSrv;
 extern ros::Publisher auto_mode_select_pub;
 extern bool joystick1_left_trigger_pressed;
 extern bool joystick1_right_trigger_pressed;
-extern bool no_driver_input;
+//extern bool no_driver_input;
 extern uint8_t game_piece;
 extern uint8_t node;
-extern bool sendRobotZero;
+//extern bool sendRobotZero;
 extern bool sendSetAngle;
-extern double old_angular_z;
+//extern double old_angular_z;
 extern bool use_pathing;
 extern uint8_t grid_position;
 extern bool pathed;
@@ -101,13 +101,16 @@ private:
 
 class Driver {
 public:
-	Driver();
+	//Driver(); // I don't think we need to provide arguments for any of the member initializers, so we can use the default constructor
 	void moveDirection(int x, int y, int z, double button_move_speed);
 	void sendDirection(double button_move_speed);
-	ros::Time evalateDriverCommands(void);
+	ros::Time evalateDriverCommands(frc_msgs::JoystickState joy_state, DynamicReconfigVars config);
+	void setTargetOrientation(const double angle, const bool from_teleop);
+
+	std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel_;
 private:
 	ros::Publisher JoystickRobotVel_;
-	std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel_;
+	
 	ros::ServiceClient BrakeSrv_;
 	std::unique_ptr<RobotOrientationDriver> robot_orientation_driver_;
 	int direction_x_;
@@ -117,5 +120,7 @@ private:
 	bool no_driver_input_;
 	double old_angular_z_;
 };
+
+extern Driver driver;
 
 #endif

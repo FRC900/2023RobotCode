@@ -112,11 +112,11 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 		pathed = (elevator_height >= config2023.elevator_threshold);
 		// if we are currently above the height or want to go above the height
 		if (elevator_height > config2023.elevator_threshold || elevator_setpoint > config2023.elevator_threshold) {
-			teleop_cmd_vel->setCaps(config2023.max_speed_elevator_extended, config2023.max_rot_elevator_extended);
+			driver.teleop_cmd_vel_->setCaps(config2023.max_speed_elevator_extended, config2023.max_rot_elevator_extended);
 
 		}
 		else {
-			teleop_cmd_vel->resetCaps();
+			driver.teleop_cmd_vel_->resetCaps();
 		}
 	}
 	else {
@@ -187,7 +187,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		// robot_orientation_driver->stopRotation();
 		// ROS_WARN_STREAM("Disabling diagnostics mode!");
 
-		teleop_cmd_vel->setRobotOrient(false, 0.0);
+		driver.teleop_cmd_vel_->setRobotOrient(false, 0.0);
 		ROS_WARN_STREAM("Field relative mode!");
 	}
 
@@ -457,7 +457,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.centralYellowButton) {
 	}
 	if(button_box.centralYellowPress) {
-		robot_orientation_driver->setTargetOrientation(0.0, true);
+		driver.setTargetOrientation(0.0, true);
 	}
 	if(button_box.centralYellowRelease) {
 	}
@@ -465,7 +465,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.bottomLeftYellowButton) {
 	}
 	if(button_box.bottomLeftYellowPress) {
-		robot_orientation_driver->setTargetOrientation(M_PI, true);
+		driver.setTargetOrientation(M_PI, true);
 	}
 	if(button_box.bottomLeftYellowRelease) {
 	}
@@ -486,56 +486,56 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 	if(button_box.rightGreenPress)
 	{
-		moveDirection(0, 1, 0);
+		driver.moveDirection(0, 1, 0, config.button_move_speed);
 	}
 	if(button_box.rightGreenButton)
 	{
-		sendDirection();
+		driver.sendDirection(config.button_move_speed);
 	}
 	if(button_box.rightGreenRelease)
 	{
-		moveDirection(0, -1, 0);
+		driver.moveDirection(0, -1, 0, config.button_move_speed);
 	}
 
 
 	if(button_box.leftGreenPress)
 	{
-		moveDirection(0, -1, 0);
+		driver.moveDirection(0, -1, 0, config.button_move_speed);
 	}
 	if(button_box.leftGreenButton)
 	{
-		sendDirection();
+		driver.sendDirection(config.button_move_speed);
 	}
 	if(button_box.leftGreenRelease)
 	{
-		moveDirection(0, 1, 0);
+		driver.moveDirection(0, 1, 0, config.button_move_speed);
 	}
 
 
 	if(button_box.topGreenPress)
 	{
-		moveDirection(1, 0, 0);
+		driver.moveDirection(1, 0, 0, config.button_move_speed);
 	}
 	if(button_box.topGreenButton)
 	{
-		sendDirection();
+		driver.sendDirection(config.button_move_speed);
 	}
 	if(button_box.topGreenRelease)
 	{
-		moveDirection(-1, 0, 0);
+		driver.moveDirection(-1, 0, 0, config.button_move_speed);
 	}
 
 	if(button_box.bottomGreenPress)
 	{
-		moveDirection(-1, 0, 0);
+		driver.moveDirection(-1, 0, 0, config.button_move_speed);
 	}
 	if(button_box.bottomGreenButton)
 	{
-		sendDirection();
+		driver.sendDirection(config.button_move_speed);
 	}
 	if(button_box.bottomGreenRelease)
 	{
-		moveDirection(1, 0, 0);
+		driver.moveDirection(1, 0, 0, config.button_move_speed);
 	}
 }
 
@@ -580,8 +580,8 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				{
 					if (srv.response.nearest_cone_angle > -900) {
 						ROS_INFO_STREAM("Using angle of " << srv.response.nearest_cone_angle);
-						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cone_angle, true /*from teleop*/);
-						teleop_cmd_vel->setRobotOrient(true, 0);
+						driver.setTargetOrientation(srv.response.nearest_cone_angle, true /*from teleop*/);
+						driver.teleop_cmd_vel_->setRobotOrient(true, 0);
 					}
 				}
 			}
@@ -591,7 +591,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonARelease)
 			{
-				teleop_cmd_vel->setRobotOrient(false, 0);
+				driver.teleop_cmd_vel_->setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonB
@@ -602,8 +602,8 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				{
 					if (srv.response.nearest_cube_angle > -900) {
 						ROS_INFO_STREAM_THROTTLE(1, "Using angle of " << srv.response.nearest_cube_angle);
-						robot_orientation_driver->setTargetOrientation(srv.response.nearest_cube_angle, true /*from teleop*/);
-						teleop_cmd_vel->setRobotOrient(true, 0);
+						driver.setTargetOrientation(srv.response.nearest_cube_angle, true /*from teleop*/);
+						driver.teleop_cmd_vel_->setRobotOrient(true, 0);
 					}
 				}
 			}
@@ -612,7 +612,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 			if(joystick_states_array[0].buttonBRelease)
 			{
-				teleop_cmd_vel->setRobotOrient(false, 0);
+				driver.teleop_cmd_vel_->setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonX
@@ -643,14 +643,14 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			//Joystick1: bumperLeft
 			if(joystick_states_array[0].bumperLeftPress)
 			{
-				teleop_cmd_vel->setCaps(config.max_speed_slow, config.max_rot_slow);
+				driver.teleop_cmd_vel_->setCaps(config.max_speed_slow, config.max_rot_slow);
 			}
 			if(joystick_states_array[0].bumperLeftButton)
 			{
 			}
 			if(joystick_states_array[0].bumperLeftRelease)
 			{
-				teleop_cmd_vel->resetCaps();
+				driver.teleop_cmd_vel_->resetCaps();
 			}
 
 			//Joystick1: bumperRight

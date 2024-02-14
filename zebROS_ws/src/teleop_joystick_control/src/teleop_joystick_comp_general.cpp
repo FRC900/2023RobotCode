@@ -38,20 +38,12 @@
 
 struct DynamicReconfigVars config;
 
-std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
-
-std::unique_ptr<RobotOrientationDriver> robot_orientation_driver;
-
 bool diagnostics_mode = false;
 
 // array of joystick_states messages for multiple joysticks
 std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
 
-
-ros::Publisher JoystickRobotVel;
-
-ros::ServiceClient BrakeSrv;
 ros::ServiceClient ParkSrv;
 ros::ServiceClient IMUZeroSrv;
 ros::ServiceClient SwerveOdomZeroSrv;
@@ -64,27 +56,20 @@ bool joystick1_right_trigger_pressed = false;
 double last_offset;
 bool last_robot_orient;
 
-// Diagnostic mode controls
-int direction_x{};
-int direction_y{};
-int direction_z{};
-
-bool no_driver_input{false};
-
 uint8_t game_piece;
 uint8_t node;
 
 uint8_t auto_starting_pos = 1; // 1 indexed
 uint8_t auto_mode = 0; // 0 indexed
 
-bool sendRobotZero = false;
 bool sendSetAngle = true;
-double old_angular_z = 0.0;
 bool use_pathing = false;
 uint8_t grid_position = 0;
 bool moved = false;
 bool pathed = false;
 bool last_no_driver_input = false;
+
+Driver driver;
 
 uint8_t autoMode(int year) {
 	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
@@ -149,6 +134,10 @@ void Driver::sendDirection(double button_move_speed) {
 
 // joystick_states_array[0]
 // Hold a copy of robot orientation driver?
+void Driver::setTargetOrientation(const double angle, const bool from_teleop, const double velocity = (0.0)) {
+	robot_orientation_driver_->setTargetOrientation(angle, from_teleop, velocity);
+}
+
 ros::Time Driver::evalateDriverCommands(frc_msgs::JoystickState joy_state, DynamicReconfigVars config) {
 	static ros::Time last_header_stamp = joy_state.header.stamp;
 
