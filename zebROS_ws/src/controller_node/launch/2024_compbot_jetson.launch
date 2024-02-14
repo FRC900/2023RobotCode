@@ -112,7 +112,6 @@
 	<include file="$(find behaviors)/launch/2024_claw.launch"/>
 	
     <include file="$(find behaviors)/launch/2024_shooter.launch" pass_all_args="true"/>
-	
 
 	<node name="candle_node" pkg="candle_node" type="candle_node" respawn="false" output="screen"/>
 
