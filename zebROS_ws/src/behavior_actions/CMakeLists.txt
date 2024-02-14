@@ -105,7 +105,6 @@ add_action_files(
 		NoteDiverter.action
 		Claw2024.action
 		Shooter2024.action
-
 		ShooterPivot2024.action
 		#GoToColor.action
 		#RotatePanel.action
