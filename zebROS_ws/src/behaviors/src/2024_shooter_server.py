@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-import roslib
 import rospy
 import actionlib
 import std_msgs.msg
@@ -31,12 +30,12 @@ def callback(data):
     global left_joint_velocity
     global right_joint_velocity
     for i in range(len(data.name)):
-        
+        rospy.loginfo(data.name[i])
         if (data.name[i] == "left_shooter_joint"): 
             left_joint_velocity = data.velocity[i]
         elif (data.name[i] == "right_shooter_joint"):
             right_joint_velocity = data.velocity[i]  
-        break  
+      
     return
 
 class ShooterServer2024:
@@ -56,6 +55,7 @@ class ShooterServer2024:
         right_joint_shooter_pub = rospy.Publisher("/frcrobot_jetson/right_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
    
         self.server.start()
+        
     
 
     def execute_cb(self, goal):
@@ -65,24 +65,15 @@ class ShooterServer2024:
         global right_joint_shooter_pub
         
         r = rospy.Rate(50)
-        #inside cb, use the passed goal values and set them to the motor values? though is this a client interaction or a server interaction?
-        #like, when we send our goal to the ros thingy, like do we sned goal values thoruhg hte client or this server?
+       
         initial_left_speed = left_joint_velocity
         initial_right_speed = right_joint_velocity
 
 
         left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
         right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
-        #send the asked motor speeds to the topics, this should allow for the motors to begin spinning up to said speed
 
-
-
-        #need to figure out rosepy if shtudown case and what not.
-       
-
-        current_left_speed = left_joint_velocity
-        current_right_speed = right_joint_velocity
-
+     
     
 
 
@@ -91,27 +82,58 @@ class ShooterServer2024:
             self.server.set_succeeded(self._result)
         
         
-        while (((((current_left_speed - initial_left_speed) / (goal.left_shooter_speed - initial_left_speed)) >= .9) and ((current_right_speed - initial_right_speed) / (goal.right_shooter_speed - initial_right_speed )) >= .9) != True):
+        #while ((((current_left_speed - initial_left_speed) / (goal.left_shooter_speed - initial_left_speed)) >= .9) and (((current_right_speed - initial_right_speed) / (goal.right_shooter_speed - initial_right_speed )) >= .9) != True):
+        while True:
+            if rospy.is_shutdown():
+                break
             r.sleep()
-            #while sleepign, publish the feedabck states, in percetnage to completion
-            #self._feedback.left_percent_complete = (current_left_speed - initial_left_speed) / (goal.left_shooter_speed - initial_left_speed)
-            #self._feedback.right_percent_complete = (current_right_speed - initial_right_speed) / (goal.right_shooter_speed - initial_right_speed)
-            #self.server.publish_feedback(self._feedback)
-            if self.server.preempt_requested():
-                left_joint_shooter_pub.publish(std_msgs.Float64(current_left_speed))
-                right_joint_shooter_pub.publish(std_msgs.Float64(current_right_speed))
-                #preempt
-            elif ((((current_left_speed - initial_left_speed) / (goal.left_shooter_speed - initial_left_speed)) >= .9) and (((current_right_speed - initial_right_speed) / (goal.right_shooter_speed - initial_right_speed ))) >= .9):
+
+
+
+
+              
+            self._feedback.left_percent_complete = (((left_joint_velocity - initial_left_speed) / (goal.left_shooter_speed - initial_left_speed))) * 100
+
+            
+
+
+
+
+            self._feedback.right_percent_complete = (((right_joint_velocity - initial_right_speed) / (goal.right_shooter_speed - initial_right_speed))) * 100
+
+            left_percent_difference = (((abs(left_joint_velocity - goal.left_shooter_speed)) / ((left_joint_velocity + goal.left_shooter_speed))) / 2) * 100
+            right_percent_difference = (((abs(right_joint_velocity - goal.right_shooter_speed)) / ((right_joint_velocity + goal.right_shooter_speed))) / 2) * 100
+            tolerance = .9
+
+
+            self.server.publish_feedback(self._feedback)
+
+            if self.server.is_preempt_requested():
+               left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
+               right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
+               self.server.set_preempted()
+               break
+            
+
+            elif ((left_percent_difference < tolerance) and (right_percent_difference < tolerance)):
+                rospy.loginfo("fsdfdsfds")
+
+                rospy.loginfo(left_percent_difference)
+                rospy.loginfo(right_percent_difference)
+                self._result.success = True
+                self._feedback.left_percent_complete = 100.0
+                self._feedback.right_percent_complete = 100.0
+                self._feedback.is_shooting_at_speed = True
+                self.server.publish_feedback(self._feedback)
+                r.sleep()
                 self.server.set_succeeded(self._result)
-
-
-
+                break
 
 
 
 
 if __name__ == '__main__':
-    rospy.init_node('set_shooter_speed_server_2024')
+    rospy.init_node('shooter_server_2024')
 
     server = ShooterServer2024()
     rospy.spin()
