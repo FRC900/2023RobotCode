@@ -1,0 +1,12 @@
+extend_speed: 1.0
+extend_acceleration: 5.0
+fast_retract_speed: 1.5
+trap_retract_speed: 0.5
+fast_retract_acceleration: 10.0
+trap_retract_acceleration: 3.0
+extend_height: 1.5
+trap_height: 0.5
+fast_height: 0.1
+joint_name: climb_leader
+loop_rate: 50.0
+tolerance: 0.05
