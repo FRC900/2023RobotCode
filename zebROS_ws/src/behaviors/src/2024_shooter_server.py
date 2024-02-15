@@ -12,8 +12,7 @@ from behavior_actions.msg import Shooter2024Action, Shooter2024Goal, Shooter2024
 
 global left_joint_velocity
 global right_joint_velocity
-global left_joint_shooter_pub
-global right_joint_shooter_pub
+
 global left_joint_index
 global right_joint_index
 
@@ -50,33 +49,28 @@ class ShooterServer2024:
     _feedback = Shooter2024Feedback()
     def __init__(self):
         self.server = actionlib.SimpleActionServer('set_shooter_speed', Shooter2024Action, self.execute_cb, auto_start = False)
-        global left_joint_shooter_pub
-        global right_joint_shooter_pub
+     
 
         #figure out how client stuff works
         rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, callback)
         #subscribing here so that we can figure out the actual speed of said motor at a given time, talonfxpro_states gives us these values
-        left_joint_shooter_pub = rospy.Publisher("/frcrobot_jetson/left_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
-        right_joint_shooter_pub = rospy.Publisher("/frcrobot_jetson/right_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
+        self.left_joint_shooter_pub = rospy.Publisher("/frcrobot_jetson/left_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
+        self.right_joint_shooter_pub = rospy.Publisher("/frcrobot_jetson/right_shooter_voltage_velocity_controller/command", std_msgs.msg.Float64, queue_size=1)
    
         self.server.start()
         
     def execute_cb(self, goal):
         global left_joint_velocity
         global right_joint_velocity
-        global left_joint_shooter_pub
-        global right_joint_shooter_pub
         
         r = rospy.Rate(50)
         initial_left_speed = left_joint_velocity
         initial_right_speed = right_joint_velocity
 
-        left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
-        right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
+        self.left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
+        self.right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
 
-        if ((goal.left_shooter_speed - initial_left_speed) or (goal.right_shooter_speed - initial_right_speed)) == 0.0:
-            #setfeedback state to true nad set success as the thing is alreayd hwere it needs to be
-            self.server.set_succeeded(self._result)
+     
         
         while True:
             if rospy.is_shutdown():
@@ -84,7 +78,7 @@ class ShooterServer2024:
             r.sleep()
 
             if goal.left_shooter_speed == 0.0:
-                left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
+                self.left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
                 left_percent_difference = 0.0
                 self._result.success = True
                 self._feedback.left_percent_complete = 100.0
@@ -93,7 +87,7 @@ class ShooterServer2024:
                 r.sleep()
             
             if goal.right_shooter_speed == 0.0:
-                right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
+                self.right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
                 right_percent_difference = 0.0
                 self._result.success = True
                 self._feedback.right_percent_complete = 100.0
@@ -113,15 +107,13 @@ class ShooterServer2024:
             self.server.publish_feedback(self._feedback)
 
             if self.server.is_preempt_requested():
-               left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
-               right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
+               self.left_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.left_shooter_speed))
+               self.right_joint_shooter_pub.publish(std_msgs.msg.Float64(goal.right_shooter_speed))
                self.server.set_preempted()
                break
             
 
             elif ((left_percent_difference < tolerance) and (right_percent_difference < tolerance)):
-                rospy.loginfo(left_percent_difference)
-                rospy.loginfo(right_percent_difference)
                 self._result.success = True
                 self._feedback.left_percent_complete = 100.0
                 self._feedback.right_percent_complete = 100.0

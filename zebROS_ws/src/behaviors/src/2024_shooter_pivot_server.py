@@ -7,7 +7,6 @@ import std_msgs.msg
 from talon_state_msgs.msg import TalonFXProState
 from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Feedback, ShooterPivot2024Result
 
-global shooter_pivot_pub
 global motion_magic_value
 global motion_magic_value_index
 
@@ -36,24 +35,23 @@ class ShooterPivotServer2024:
     _feedback = ShooterPivot2024Feedback()
 
     def __init__(self):
-        global shooter_pivot_pub
+
         self.server = actionlib.SimpleActionServer('set_shooter_pivot', ShooterPivot2024Action, self.execute_cb, auto_start = False)
 
         rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, callback)
         #subscribing here so that we can figure out the actual speed of said motor at a given time, talonfxpro_states gives us these values
         #maybe we subscibe to the voltage velocity controller instead of hte fx pro
 
-        shooter_pivot_pub = rospy.Publisher("/frcrobot_jetson/shooter_pivot_motionmagicvoltage_controller/command", std_msgs.msg.Float64, queue_size=1)
+        self.shooter_pivot_pub = rospy.Publisher("/frcrobot_jetson/shooter_pivot_motionmagicvoltage_controller/command", std_msgs.msg.Float64, queue_size=1)
    
         self.server.start()
 
     def execute_cb(self, goal):
-        global shooter_pivot_pub
         global motion_magic_value
         r = rospy.Rate(50)
 
         initial_motion_magic_value = motion_magic_value 
-        shooter_pivot_pub.publish(std_msgs.msg.Float64(goal.pivot_position))
+        self.shooter_pivot_pub.publish(std_msgs.msg.Float64(goal.pivot_position))
    
         while True:
 
@@ -62,14 +60,16 @@ class ShooterPivotServer2024:
             r.sleep()
 
 
-            
-            self._feedback.percent_complete = (((motion_magic_value - initial_motion_magic_value) / (goal.pivot_position - initial_motion_magic_value))) * 100
+            if (goal.pivot_position - initial_motion_magic_value) == 0.0: #either a double or a int i'm not entirely sure
+                self._feedback.percent_complete = 100.0
+            else:
+                self._feedback.percent_complete = (((motion_magic_value - initial_motion_magic_value) / (goal.pivot_position - initial_motion_magic_value))) * 100
             percent_difference = (((abs(motion_magic_value - goal.pivot_position)) / ((motion_magic_value + goal.pivot_position))) / 2) * 100
             tolerance = .9
             self.server.publish_feedback(self._feedback)
 
             if self.server.is_preempt_requested():
-                shooter_pivot_pub.publish(std_msgs.msg.Float64(motion_magic_value))
+                self.shooter_pivot_pub.publish(std_msgs.msg.Float64(motion_magic_value))
                 self.server.set_preempted()
                 break
              
