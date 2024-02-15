@@ -52,7 +52,7 @@ def train_yolo(args: argparse.Namespace) -> None:
         '/home/ubuntu/YOLOv8-TensorRT/export-det.py',
         '--weights', pt_file_path,
         '--iou-thres', '0.65',
-        '--conf-thres', '0.25',
+        '--conf-thres', '0.05',
         '--topk', '100',
         '--opset', '11',
         '--sim',
