@@ -19,6 +19,7 @@ class Claw2024ActionServer(object):
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, Claw2024Action, execute_cb=self.execute_cb, auto_start = False)
         self._as.start()
+        self.limitSwitchName = 
 
     def execute_cb(self, goal: Claw2024Goal):
         pct_out = Float64()
@@ -64,6 +65,7 @@ class Claw2024ActionServer(object):
 
 def callback(data):
     global switch
+
     if "claw_limit_switch" in data.name:
         switch = data.position[data.name.index("claw_limit_switch")]  # Or whatever actually says when it's pressed
     else:
