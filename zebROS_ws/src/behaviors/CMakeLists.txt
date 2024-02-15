@@ -21,7 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   frc_msgs
   field_obj
-  norfair_ros
   geometry_msgs
   nav_msgs
   path_follower_msgs
@@ -151,10 +150,6 @@ add_dependencies(auto_node ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGE
 add_executable(publish_pid_cmd_vel_node src/publish_pid_cmd_vel.cpp)
 add_dependencies(publish_pid_cmd_vel_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(publish_pid_cmd_vel_node ${catkin_LIBRARIES})
-
-add_executable(drive_to_object_node src/drive_to_object.cpp)
-target_link_libraries(drive_to_object_node ${catkin_LIBRARIES})
-add_dependencies(drive_to_object_node ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # 2023 actionlib servers
 add_executable(path_to_apriltag src/path_to_apriltag.cpp)

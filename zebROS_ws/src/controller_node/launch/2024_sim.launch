@@ -125,7 +125,7 @@
 
 	<include file="$(find fake_sensors)/launch/apriltag_sim.launch"/>
 
-	<include file="$(find behaviors)/launch/drive_to_object.launch">
+	<include file="$(find drive_to_object)/launch/drive_to_object.launch">
 	</include>
 	<include file="$(find norfair_ros)/launch/norfair_node.launch">
 	</include>
