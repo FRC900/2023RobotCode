@@ -59,7 +59,7 @@
 			 orchestra_state_controller
 			note_diverter_controller
 			 note_conveyor_controller
-			 claw_controller
+			 clawster_controller
 			 arm_controller
 			 left_shooter_voltage_velocity_controller
 			 right_shooter_voltage_velocity_controller
@@ -117,6 +117,7 @@
 	<!-- Add 2024 actionlib servers here -->
 	<!-- <include file="$(find behaviors)/launch/2024_diverter.launch"/>
 	<include file="$(find behaviors)/launch/2024_claw.launch"/>
+	<include file="$(find behaviors)/launch/2024_preshooter.launch"/>
 	
     <include file="$(find behaviors)/launch/2024_shooter.launch"/> -->
 
