@@ -67,8 +67,6 @@ extern bool called_park_endgame;
 void publish_diag_cmds(void);
 void zero_all_diag_commands(void);
 void preemptActionlibServers(void);
-//bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
-//		teleop_joystick_control::RobotOrient::Response&/* res*/);
 
 // Don't uncomment until we generalize the button box
 //void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
