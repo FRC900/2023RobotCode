@@ -262,19 +262,17 @@ public:
     auto &x_axis = x_axis_it->second;
 
     x_axis.setEnable(true);
-    std::optional<norfair_ros::Detection> closestObject_ = findClosestObject(latest_, goal->id, tracked_object_id);
-    norfair_ros::Detection closestObject;
-    if (closestObject_ == std::nullopt) {
+    std::optional<norfair_ros::Detection> closestObject = findClosestObject(latest_, goal->id, tracked_object_id);
+    if (closestObject == std::nullopt) {
       ROS_ERROR_STREAM("No inital object, exiting");
       result_.success = false;
       as_.setSucceeded(result_);
       return;
     } else {
-      closestObject = closestObject_.value();
-      tracked_object_id = closestObject.id;
+      tracked_object_id = closestObject->id;
     }
 
-    double field_relative_object_angle = latest_yaw_ + atan2(closestObject.points[0].point[1], closestObject.points[0].point[0]);
+    double field_relative_object_angle = latest_yaw_ + atan2(closestObject->points[0].point[1], closestObject->points[0].point[0]);
     std_msgs::Float64 msg;
     msg.data = field_relative_object_angle;
     orientation_command_pub_.publish(msg);
@@ -296,14 +294,13 @@ public:
         return;
       }
 
-      closestObject_ = findClosestObject(latest_, goal->id, tracked_object_id);
+      closestObject = findClosestObject(latest_, goal->id, tracked_object_id);
       geometry_msgs::PointStamped base_link_point;
-      if (closestObject_ != std::nullopt) {
-        closestObject = closestObject_.value();
+      if (closestObject != std::nullopt) {
         geometry_msgs::PointStamped object_point;
-        object_point.point.x = closestObject.points[0].point[0];
-        object_point.point.y = closestObject.points[0].point[1];
-        object_point.point.z = closestObject.points[0].point[2];
+        object_point.point.x = closestObject->points[0].point[0];
+        object_point.point.y = closestObject->points[0].point[1];
+        object_point.point.z = closestObject->points[0].point[2];
         object_point.header = latest_.header;
         // will go map to map but copies
         tf_buffer_.transform(object_point, latest_map_relative_detection, "map");
