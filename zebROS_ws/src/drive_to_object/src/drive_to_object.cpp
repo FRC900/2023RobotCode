@@ -1,8 +1,6 @@
 // This node autonomously targets and drives to a configurable distance away from an object detected using vision.
 // It continuously checks where the object is to update its target.
 #include "ros/ros.h"
-// #include "field_obj/Detection.h"
-// #include "field_obj/Object.h"
 #include "geometry_msgs/Point.h"
 #include <actionlib/server/simple_action_server.h>
 #include "behavior_actions/DriveToObjectAction.h"
@@ -62,6 +60,18 @@ bool operator>(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs)
     return distance(lhs) > distance(rhs);
 }
 
+struct WeightedCmdVel {
+  geometry_msgs::Twist cmd_vel;
+  double weight;
+  WeightedCmdVel() {
+
+  }
+  WeightedCmdVel(const geometry_msgs::Twist &cmd_vel, double weight) {
+    this->cmd_vel = cmd_vel;
+    this->weight = weight;
+  }
+};
+
 class DriveToObjectActionServer
 {
 protected:
@@ -81,7 +91,7 @@ protected:
   double x_error_{0};
   double angle_error_{0};
 
-  double valid_frames_config_{4};
+  int valid_frames_config_{4};
   double velocity_ramp_time_{0.5}; // time to transition from current command velocity to full PID control
 
   double timeout_{0.25};
@@ -218,15 +228,15 @@ public:
     return closestObject;
   }
 
-  geometry_msgs::Twist weightedAverageCmdVel(const std::vector<std::pair<geometry_msgs::Twist, double>> &entries) {
+  geometry_msgs::Twist weightedAverageCmdVel(const std::vector<WeightedCmdVel> &entries) {
     // takes a vector of <cmd_vel, weight> pairs and computes their weighted average
     // weights must all add to one
     std::vector<geometry_msgs::Twist> weightedTwists;
-    std::transform(entries.begin(), entries.end(), std::back_inserter(weightedTwists), [](const std::pair<geometry_msgs::Twist, double> &entry){
-      geometry_msgs::Twist t = entry.first;
-      t.linear.x *= entry.second;
-      t.linear.y *= entry.second;
-      t.angular.z *= entry.second;
+    std::transform(entries.begin(), entries.end(), std::back_inserter(weightedTwists), [](const WeightedCmdVel &entry){
+      geometry_msgs::Twist t = entry.cmd_vel;
+      t.linear.x *= entry.weight;
+      t.linear.y *= entry.weight;
+      t.angular.z *= entry.weight;
       return t;
     });
     geometry_msgs::Twist finalTwist;
@@ -334,10 +344,10 @@ public:
       double timeDelta = (ros::Time::now() - start).toSec();
       double initialVelocityInfluence = timeDelta > velocity_ramp_time_ ? 0.0 : ((velocity_ramp_time_ - timeDelta) / velocity_ramp_time_);
 
-      std::vector<std::pair<geometry_msgs::Twist, double>> pairs;
-      pairs.push_back({pid_twist, 1.0 - initialVelocityInfluence});
-      pairs.push_back({initial_cmd_vel, initialVelocityInfluence});
-      geometry_msgs::Twist t = weightedAverageCmdVel(pairs);
+      std::vector<WeightedCmdVel> weighted_cmd_vels;
+      weighted_cmd_vels.push_back({pid_twist, 1.0 - initialVelocityInfluence});
+      weighted_cmd_vels.push_back({initial_cmd_vel, initialVelocityInfluence});
+      geometry_msgs::Twist t = weightedAverageCmdVel(weighted_cmd_vels);
 
       cmd_vel_pub_.publish(t);
       feedback_.x_error = x_error_;

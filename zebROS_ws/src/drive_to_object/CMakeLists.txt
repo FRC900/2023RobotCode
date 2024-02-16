@@ -9,12 +9,10 @@ project(drive_to_object)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   behavior_actions
-  field_obj
   frc_msgs
   geometry_msgs
   norfair_ros
   path_follower
-  path_follower_msgs
   sensor_msgs
   std_msgs
   std_srvs
