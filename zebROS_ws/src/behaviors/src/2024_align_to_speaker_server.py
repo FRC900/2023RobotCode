@@ -36,8 +36,7 @@ class Aligner:
         self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback)
         self.pub_cmd_vel = rospy.Publisher("/speaker_align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)
 
-        self.pub_dist_vel = rospy.Publisher("/speaker_align/dist", std_msgs.msg.Float64, queue_size=1) #distance
-        self.pub_dist_ang = rospy.Publisher("/speaker_align/ang", std_msgs.msg.Float64, queue_size=1) #angle not field rel
+        self.pub_dist_and_ang_vel = rospy.Publisher("/speaker_align/dist_and_ang", behavior_actions.msg.AutoAlignSpeaker, queue_size=1) #distance and angle
 
     def imu_callback(self, imu_msg):
         q = imu_msg.orientation
@@ -70,19 +69,17 @@ class Aligner:
                 continue
 
             msg = std_msgs.msg.Float64()
-            msg1 = std_msgs.msg.Float64()
-            msg2 = std_msgs.msg.Float64()
+            msg1 = behavior_actions.msg.AutoAlignSpeaker()
 
-            msg1.data = math.sqrt(trans.transform.translation.x ** 2 + trans.transform.translation.y ** 2)
+            msg1.distance = math.sqrt(trans.transform.translation.x ** 2 + trans.transform.translation.y ** 2)
             msg.data = self.current_yaw + math.atan2(trans.transform.translation.y, trans.transform.translation.x)
-            msg2.data = math.atan2(trans.transform.translation.y, trans.transform.translation.x)
+            msg1.angle = math.atan2(trans.transform.translation.y, trans.transform.translation.x)
 
             self._feedback.error = math.atan2(trans.transform.translation.y, trans.transform.translation.x)
             self._as.publish_feedback(self._feedback)
 
             self.object_publish.publish(msg) 
-            self.pub_dist_vel.publish(msg1) 
-            self.pub_dist_ang.publish(msg2) 
+            self.pub_dist_and_ang_vel.publish(msg1) 
             
             cmd_vel_msg = geometry_msgs.msg.Twist()
             cmd_vel_msg.angular.x = 0 # todo, tune me

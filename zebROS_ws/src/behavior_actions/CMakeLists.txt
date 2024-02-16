@@ -56,6 +56,7 @@ add_message_files(
   ShooterOffset.msg
   GamePieceState2023.msg
   IntakeState2023.msg
+  AutoAlignSpeaker.msg
 )
 
 ## Generate services in the 'srv' folder
