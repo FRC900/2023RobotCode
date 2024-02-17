@@ -36,7 +36,7 @@
 		<!-- Load controller manager-->
 		<node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
 			output="screen" args="spawn
-			 swerve_drive_controller 
+			  
 			 joint_state_controller_jetson
 			 joint_state_listener_controller_jetson
 			 talon_state_controller_jetson
@@ -44,12 +44,14 @@
 			 match_state_listener_controller
 			 talonfxpro_state_controller
 			 talonfxpro_config_controller
-			 latency_compensation_state_controller
+			 swerve_angle_phoenix6_controller
 			 robot_code_ready_controller" />
 			 
 			 <!--swerve_drive_state_controller
 			 swerve_drive_state_controller
 
+			 latency_compensation_state_controller
+			 swerve_drive_controller
 			 pigeon2_imu_state_controller
 			 			 candle_controller
 			 orchestra_controller
@@ -126,7 +128,6 @@
 	
 	<!-- <include file="$(find controller_node)/launch/zed_detection.launch">
 		<arg name="run_camera" value="false" if="$(eval hw_or_sim == 'sim')"/>
-		<!-- TODO : add camera position params here -->
 		<arg name="cam_pos_x"  value="0.0" />
 		<arg name="cam_pos_y"  value="0.0" />
 		<arg name="cam_pos_z"  value="0.0" />
