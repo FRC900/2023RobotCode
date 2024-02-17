@@ -289,7 +289,7 @@ public:
 
     geometry_msgs::PointStamped latest_map_relative_detection;
 
-    while (!(abs(x_error_) <= goal->tolerance && angle_error_ <= goal->tolerance)) {
+    while (!(abs(x_error_) <= goal->tolerance)) {
       ros::spinOnce(); // grab latest callback data
       if (as_.isPreemptRequested() || !ros::ok())
       {
@@ -327,6 +327,7 @@ public:
       // checking if it is 900, we only want to set this value once and then keep it. 
       if (x_error_ > distance_to_hold_angle_) {
         field_relative_object_angle = latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
+        ROS_INFO_STREAM("SETTING ANGLE TO " << field_relative_object_angle);
       }
 
       msg.data = field_relative_object_angle;
