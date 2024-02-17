@@ -36,8 +36,6 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
-//std::unique_ptr<TeleopCmdVel<DynamicReconfigVars>> teleop_cmd_vel;
-
 //frc_msgs::ButtonBoxState2023 button_box;
 
 // TODO: Add 2024 versions
@@ -48,38 +46,7 @@
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
 {    
-	// Year specific
-	/*     
-	// fourbar_master_idx == max of size_t at the start
-	if (elevator_idx == std::numeric_limits<size_t>::max()) // could maybe just check for > 0
-	{
-		for (size_t i = 0; i < talon_state.name.size(); i++)
-		{
-			if (talon_state.name[i] == "elevator_leader")
-			{
-				elevator_idx = i;
-				break;
-			}
-		}
-	}
-	if (elevator_idx != std::numeric_limits<size_t>::max())
-	{
-		elevator_height = talon_state.position[elevator_idx];
-		elevator_setpoint = talon_state.control_position[elevator_idx];
-
-		pathed = (elevator_height >= config.elevator_threshold);
-		// if we are currently above the height or want to go above the height
-		if (elevator_height > config.elevator_threshold || elevator_setpoint > config.elevator_threshold) {
-			//teleop_cmd_vel->setSuperSlowMode(true);
-		}
-		else {
-			//teleop_cmd_vel->setSuperSlowMode(false);
-		}
-	}
-	else {
-		ROS_ERROR_STREAM_THROTTLE(0.1, "teleop_joystick_comp_2023 : Can not find talon with name = elevator_leader");
-	}
-	*/  
+	ROS_WARN("Calling unimplemented function \"talonFXProStateCallback()\" in teleop_joystick_comp_2024.cpp ");
 }
 
 void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)	
@@ -109,7 +76,6 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 
 	//Only do this for the first joystick
 	if(joystick_id == 0) {
-
 		static ros::Time last_header_stamp = driver.evalateDriverCommands(joystick_states_array[0], config);
 
 		if(!diagnostics_mode)

@@ -62,8 +62,8 @@ class TeleopCmdVel
 
 		void setCaps(const double speed_cap, const double rotation_cap)
 		{
-			(*movement_caps_).speed_cap_ = speed_cap;
-			(*movement_caps_).rotation_cap_ = rotation_cap;
+			movement_caps_->speed_cap_ = speed_cap;
+			movement_caps_->rotation_cap_ = rotation_cap;
 		}
 
 		void resetCaps(void)
@@ -93,8 +93,8 @@ class TeleopCmdVel
 			double max_rot;
 
 			if (movement_caps_) {
-				max_speed = (*movement_caps_).speed_cap_;
-				max_rot = (*movement_caps_).rotation_cap_;
+				max_speed = movement_caps_->speed_cap_;
+				max_rot = movement_caps_->rotation_cap_;
 			} else {
 				max_speed = config.max_speed;
 				max_rot = config.max_rot;
@@ -200,10 +200,10 @@ class TeleopCmdVel
 		{
 			double max_rot;
 			if (movement_caps_) {
-				max_rot = (*movement_caps_).rotation_cap_;
+				max_rot = movement_caps_->rotation_cap_;
 			}
 			else {
-				max_rot = slow_mode_ ? config.max_rot_slow : config.max_rot;
+				max_rot = config.max_rot;
 			}
 			//rot_rate_limit_.updateMinMax(-max_rot, max_rot);
 			//rot_rate_limit_.updateRiseTimeInMsec(config.rotate_rate_limit_time);
@@ -233,8 +233,6 @@ class TeleopCmdVel
 	private:
 		bool robot_orient_{false};
 		double offset_angle_{M_PI / 2.0};
-
-		bool slow_mode_{false};
 
 		std::optional<MovementCaps> movement_caps_; 
 

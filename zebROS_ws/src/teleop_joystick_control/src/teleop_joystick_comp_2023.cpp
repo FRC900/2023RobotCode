@@ -55,12 +55,20 @@ enum AutoPlaceState {
 };
 
 AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
+uint8_t auto_starting_pos = 1; // 1 indexed
 
+bool moved = false;
 bool up_down_switch_mid;
 bool left_right_switch_mid;
 bool robot_is_disabled;
 bool elevator_up;
 uint8_t grid;
+uint8_t game_piece;
+uint8_t node;
+bool use_pathing = false;
+uint8_t grid_position = 0;
+bool pathed = false;
+bool last_no_driver_input = false;
 
 // Figure out a better name for this
 struct DynamicReconfigVars2023
@@ -356,7 +364,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023);
+			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		node = behavior_actions::Placing2023Goal::HIGH;
@@ -373,7 +381,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				// should we be worried about messages being dropped here?
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode(2023);
+				auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -394,7 +402,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023);
+			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 	}
@@ -410,7 +418,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023);
+			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 0;
@@ -427,7 +435,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				// should we be worried about messages being dropped here?
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode(2023);
+				auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -446,7 +454,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023);
+			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 6;

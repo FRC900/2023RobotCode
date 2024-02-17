@@ -47,27 +47,14 @@ std::vector <std::string> topic_array;
 ros::ServiceClient ParkSrv;
 ros::ServiceClient IMUZeroSrv;
 ros::ServiceClient SwerveOdomZeroSrv;
-
 ros::Publisher auto_mode_select_pub;
+
+bool sendSetAngle = true;
 
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
 
-double last_offset;
-bool last_robot_orient;
-
-uint8_t game_piece;
-uint8_t node;
-
-uint8_t auto_starting_pos = 1; // 1 indexed
 uint8_t auto_mode = 0; // 0 indexed
-
-bool sendSetAngle = true;
-bool use_pathing = false;
-uint8_t grid_position = 0;
-bool moved = false;
-bool pathed = false;
-bool last_no_driver_input = false;
 
 Driver driver;
 
@@ -77,8 +64,8 @@ uint8_t autoMode(int year) {
 	// up =   1, 2, and 3
 	// mid =  4, 5, and 6
 	// down = 7, 8, and 9
-	ROS_INFO_STREAM("teleop_joystick_comp_" << std::to_string(year) <<  ": auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
-	return auto_mode * 3 + auto_starting_pos;
+	ROS_INFO_STREAM("teleop_joystick_comp_" << std::to_string(year) <<  ": auto_mode = " << std::to_string(auto_mode * 3));
+	return auto_mode * 3;
 }
 
 uint8_t alliance_color{};
@@ -106,10 +93,10 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 ros::ServiceClient setCenterSrv;
 
 Driver::Driver(ros::NodeHandle n, DynamicReconfigVars config) {
-	teleop_cmd_vel_ = std::make_unique<TeleopCmdVel<DynamicReconfigVars>>(config);
+	teleop_cmd_vel_ =TeleopCmdVel<DynamicReconfigVars>(config);
 	teleop_cmd_vel_->setRobotOrient(false, 0.0);
 	teleop_cmd_vel_->resetCaps();
-	robot_orientation_driver_ = std::make_unique<RobotOrientationDriver>(n);
+	robot_orientation_driver_ = RobotOrientationDriver(n);//std::make_unique<RobotOrientationDriver>(n);
 	BrakeSrv_ = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, {{"tcp_nodelay", "1"}});
 	JoystickRobotVel_ = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
 }
@@ -117,8 +104,6 @@ Driver::Driver(ros::NodeHandle n, DynamicReconfigVars config) {
 bool Driver::orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 		teleop_joystick_control::RobotOrient::Response&/* res*/)
 {
-	last_offset = req.offset_angle;
-	last_robot_orient = req.robot_orient;
 	// Used to switch between robot orient and field orient driving
 	teleop_cmd_vel_->setRobotOrient(req.robot_orient, req.offset_angle);
 	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
@@ -160,13 +145,11 @@ void Driver::sendDirection(double button_move_speed) {
 	JoystickRobotVel_.publish(cmd_vel);
 }
 
-// joystick_states_array[0]
-// Hold a copy of robot orientation driver?
 void Driver::setTargetOrientation(const double angle, const bool from_teleop, const double velocity) {
 	robot_orientation_driver_->setTargetOrientation(angle, from_teleop, velocity);
 }
 
-ros::Time Driver::evalateDriverCommands(frc_msgs::JoystickState joy_state, DynamicReconfigVars config) {
+ros::Time Driver::evalateDriverCommands(frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config) {
 	static ros::Time last_header_stamp = joy_state.header.stamp;
 
 	teleop_cmd_vel_->updateRateLimit(config);
