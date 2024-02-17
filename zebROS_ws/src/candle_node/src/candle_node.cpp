@@ -24,31 +24,39 @@ constexpr uint8_t LEFT_COUNT = 13;
 
 struct NodeCTX {
     ros::Time last_green_time;
-    bool cone_button_pressed;
-    bool cube_button_pressed;
-    bool updated;
-    bool OVERRIDE_GREEN{false};
-    bool disabled;
-    uint8_t auto_mode;
+    bool cone_button_pressed{false};
+    bool cube_button_pressed{false};
+    bool updated{true};
+    bool override_green{false};
+    bool disabled{true};
+    uint8_t auto_mode{255};
     double imu_tolerance{M_PI/18.0}; // 10 deg
-    bool imu_zeroed;
+    bool imu_zeroed{false};
     size_t intake_idx;
-    bool current_exceeded_;
+    bool current_exceeded_{false};
     double intake_current_threshold_;
-    bool pathing;
-    bool DPADLEFT;
-    bool DPADRIGHT;
-    bool DPADUP; 
-    bool DPADDOWN;
+    bool pathing{false};
+    bool dpad_left{false};
+    bool dpad_right{false};
+    bool dpad_up{false}; 
+    bool dpad_down{false};
 
     NodeCTX() :
         cone_button_pressed{false},
         cube_button_pressed{false},
-        updated{false},
+        updated{true},
         disabled{true},
         pathing{false},
         intake_idx{std::numeric_limits<size_t>::max()}
     {}
+
+    bool set_leds_green_callback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        // sets for three seconds, just to make sure operator (me) knows when they have been taking too long to place
+        updated = true;
+        override_green = true;
+        last_green_time = ros::Time::now();
+        return true;
+    }
 
     void team_colour_callback(const frc_msgs::MatchSpecificData& msg) {
         disabled = msg.Disabled;
@@ -102,48 +110,48 @@ struct NodeCTX {
         ROS_INFO_STREAM_THROTTLE(2, "Joystick callback!");
         if(msg.directionLeftPress)
         {
-            DPADLEFT = true;
-            DPADRIGHT = false;
-            DPADUP = false; 
-            DPADDOWN = false;
+            dpad_left = true;
+            dpad_right = false;
+            dpad_up = false; 
+            dpad_down = false;
             this->updated = true;
         }
 
         //Joystick1: directionRight
         if(msg.directionRightPress)
         {
-            DPADRIGHT = true;
-            DPADLEFT = false;
-            DPADUP = false; 
-            DPADDOWN = false;
+            dpad_right = true;
+            dpad_left = false;
+            dpad_up = false; 
+            dpad_down = false;
             this->updated = true;
         }
 
         //Joystick1: directionUp
         if(msg.directionUpPress)
         {
-            DPADUP = true;
-            DPADLEFT = false;
-            DPADRIGHT = false;
-            DPADDOWN = false;
+            dpad_up = true;
+            dpad_left = false;
+            dpad_right = false;
+            dpad_down = false;
             this->updated = true;
         }
 
         //Joystick1: directionDown
         if(msg.directionDownPress)
         {
-            DPADDOWN = true;
-            DPADLEFT = false;
-            DPADRIGHT = false;
-            DPADUP = false; 
+            dpad_down = true;
+            dpad_left = false;
+            dpad_right = false;
+            dpad_up = false; 
             this->updated = true;
         }
         if(msg.buttonXPress)
         {
-            DPADDOWN = false;
-            DPADLEFT = false;
-            DPADRIGHT = false;
-            DPADUP = false; 
+            dpad_down = false;
+            dpad_left = false;
+            dpad_right = false;
+            dpad_up = false; 
             this->updated = true; 
         }
     }
@@ -200,16 +208,6 @@ struct NodeCTX {
 };
 
 NodeCTX ctx;
-// did not want to try and figure out the syntax for it in a struct, tried 
-// ros::ServiceServer green_srv = node.advertiseService("/candle_node/set_leds_green", boost::bind(&NodeCTX::set_leds_green_callback, &ctx, _1));
-// so just made it global
-bool set_leds_green_callback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-    // sets for three seconds, just to make sure operator (me) knows when they have been taking too long to place
-    ctx.updated = true;
-    ctx.OVERRIDE_GREEN = true;
-    ctx.last_green_time = ros::Time::now();
-    return true;
-}
 
 int main(int argc, char **argv) {
     // ROS node
@@ -232,7 +230,8 @@ int main(int argc, char **argv) {
     ros::ServiceClient colour_client = node.serviceClient<candle_controller_msgs::Colour>("/frcrobot_jetson/candle_controller/colour", false);
     ros::ServiceClient animation_client = node.serviceClient<candle_controller_msgs::Animation>("/frcrobot_jetson/candle_controller/animation", false);
     ros::ServiceClient brightness_client = node.serviceClient<candle_controller_msgs::Brightness>("/frcrobot_jetson/candle_controller/brightness", false);
-    ros::ServiceServer green_srv = node.advertiseService("/candle_node/set_leds_green", &set_leds_green_callback);
+    ros::ServiceServer green_srv = node.advertiseService("/candle_node/set_leds_green", &NodeCTX::set_leds_green_callback, &ctx);
+    // ros::ServiceServer green_srv = node.advertiseService("/candle_node/set_leds_green", &set_leds_green_callback);
     // param = /intaking/current_threshold
 
 
@@ -245,6 +244,9 @@ int main(int argc, char **argv) {
     candle_controller_msgs::Colour clear_req;
     clear_req.request.start = 0;
     clear_req.request.count = MAX_LED;
+
+    
+
     while (!colour_client.call(clear_req)) {
         delay.sleep();
     }
@@ -275,7 +277,7 @@ int main(int argc, char **argv) {
             imu_colour_req.request.red = ctx.imu_zeroed ? 0 : 128;
             imu_colour_req.request.green = ctx.imu_zeroed ? 128 : 0;
             imu_colour_req.request.blue = 0;
-            if (ctx.DPADDOWN) {
+            if (ctx.dpad_down) {
                 // down 
                 ros::Duration(0.25).sleep();
 
@@ -299,7 +301,7 @@ int main(int argc, char **argv) {
                     ROS_ERROR_STREAM("Failed to update LEDs");
                 }
             }
-            else if (ctx.DPADUP) {
+            else if (ctx.dpad_up) {
                 // down 
                 ros::Duration(0.25).sleep();
 
@@ -325,10 +327,10 @@ int main(int argc, char **argv) {
                     ROS_ERROR_STREAM("Failed to update LEDs");
                 }
             }
-            else if (ctx.DPADRIGHT) {
+            else if (ctx.dpad_right) {
 
             }
-            else if (ctx.DPADLEFT) {
+            else if (ctx.dpad_left) {
 
             }
             else if (ctx.auto_mode <= 3) {
@@ -403,7 +405,7 @@ int main(int argc, char **argv) {
             colour_req.request.start = 0;
             colour_req.request.count = MAX_LED;
 
-            if (ctx.OVERRIDE_GREEN) {
+            if (ctx.override_green) {
                 colour_req.request.green = 255;
             } else if (ctx.current_exceeded_) {
                 ros::Duration(0.1).sleep();
@@ -455,8 +457,8 @@ int main(int argc, char **argv) {
             }
         }
         r.sleep();
-        if (ctx.OVERRIDE_GREEN && (ros::Time::now() - ctx.last_green_time) >= ros::Duration(3)) {
-            ctx.OVERRIDE_GREEN = false;
+        if (ctx.override_green && (ros::Time::now() - ctx.last_green_time) >= ros::Duration(3)) {
+            ctx.override_green = false;
             ctx.updated = true;
         }
     }
