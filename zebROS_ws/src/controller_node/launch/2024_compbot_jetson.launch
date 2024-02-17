@@ -44,21 +44,23 @@
 			 match_state_listener_controller
 			 talonfxpro_state_controller
 			 talonfxpro_config_controller
-			 candle_controller
+			 latency_compensation_state_controller
+			 robot_code_ready_controller" />
+			 
+			 <!--swerve_drive_state_controller
+			 swerve_drive_state_controller
+
+			 pigeon2_imu_state_controller
+			 			 candle_controller
 			 orchestra_controller
 			 orchestra_state_controller
-			 pigeon2_imu_state_controller
-			 latency_compensation_state_controller
-			 note_diverter_controller
+			note_diverter_controller
 			 note_conveyor_controller
 			 claw_controller
 			 arm_controller
 			 left_shooter_voltage_velocity_controller
 			 right_shooter_voltage_velocity_controller
 			 shooter_pivot_motionmagicvoltage_controller
-			 robot_code_ready_controller" />
-			 <!--swerve_drive_state_controller
-			 swerve_drive_state_controller
 			-->
 
 		<node name="uptime_jetson" pkg="uptime" type="uptime_node" output="screen" />
@@ -68,12 +70,13 @@
 		</include>
 	</group>
 
-	<group ns="imu">
+	<!-- ADD ME BACK -->
+	<!-- <group ns="imu">
 		<include file="$(find controller_node)/launch/2019_compbot_jetson_imu.launch">
 			<arg name="hw_or_sim" value="$(arg hw_or_sim)" />
 			<arg name="primary_imu" value="$(arg primary_imu)" />
 		</include>
-	</group>
+	</group> -->
 
 	<group ns="robot_state">
 		<param name="robot_description" command="$(find xacro)/xacro '$(find controller_node)/urdf/2024_compbot.xacro'" />
@@ -88,9 +91,10 @@
 		<!-- <include file="$(find controller_node)/launch/fuse_odom.launch"/> -->
 	</group>
 
-	<include file="$(find controller_node)/launch/teleop.launch">
+	<!-- ADD TELEOP BACK -->
+	<!-- <include file="$(find controller_node)/launch/teleop.launch">
 		<arg name="year" value="2024" />
-	</include>
+	</include> -->
 
 	<group ns="cmd_vel_mux">
 		<node name="twist_mux" pkg="twist_mux" type="twist_mux">
@@ -104,23 +108,23 @@
 	
 	<!-- <include file="$(find controller_node)/launch/distance_to_pose.launch"/> -->
 	<include file="$(find behaviors)/launch/auto_node.launch"/>
-	<include file="$(find behaviors)/launch/2024_arm.launch"/>
+	<!-- <include file="$(find behaviors)/launch/2024_arm.launch"/> -->
 
 
 	<!-- Add 2024 actionlib servers here -->
-	<include file="$(find behaviors)/launch/2024_diverter.launch"/>
+	<!-- <include file="$(find behaviors)/launch/2024_diverter.launch"/>
 	<include file="$(find behaviors)/launch/2024_claw.launch"/>
 	
-    <include file="$(find behaviors)/launch/2024_shooter.launch"/>
+    <include file="$(find behaviors)/launch/2024_shooter.launch"/> -->
 
-	<node name="candle_node" pkg="candle_node" type="candle_node" respawn="false" output="screen"/>
+	<!-- <node name="candle_node" pkg="candle_node" type="candle_node" respawn="false" output="screen"/> -->
 
 	<!-- Consider adding 2024 launch file for recording -->
 	<include file="$(find controller_node)/launch/record_2024_compbot.launch" if="$(arg record)" />
 
 	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
 	
-	<include file="$(find controller_node)/launch/zed_detection.launch">
+	<!-- <include file="$(find controller_node)/launch/zed_detection.launch">
 		<arg name="run_camera" value="false" if="$(eval hw_or_sim == 'sim')"/>
 		<!-- TODO : add camera position params here -->
 		<arg name="cam_pos_x"  value="0.0" />
@@ -129,7 +133,7 @@
 		<arg name="cam_roll"   value="0.0" />
 		<arg name="cam_pitch"  value="0.0" />
 		<arg name="cam_yaw"    value="0.0" />
-	</include>
+	</include> -->
 
 	<!-- 
 	<group ns="wpilib_odom">
