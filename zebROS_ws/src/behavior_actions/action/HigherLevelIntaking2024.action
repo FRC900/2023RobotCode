@@ -1,0 +1,11 @@
+#definfing goal
+uint8 SHOOTER=0
+uint8 CLAW=1
+uint8 OUTTAKE=2
+uint8 destination
+---
+#defining result
+bool success
+---
+#feedback
+
