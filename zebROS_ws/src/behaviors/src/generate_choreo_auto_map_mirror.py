@@ -34,7 +34,7 @@ for file in files:
         pose.pose.orientation.z = transformations.quaternion_from_euler(0, 0, t['heading'])[2]
         pose.pose.orientation.w = transformations.quaternion_from_euler(0, 0, t['heading'])[3]
 
-        csv += f"{t['timestamp']},{pose.pose.position.x},{pose.pose.position.y},{transformations.euler_from_quaternion([pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]},{t['angularVelocity']},{t['velocityX']},{t['velocityY']},0\n"
+        csv += f"{t['timestamp']},{pose.pose.position.x},{pose.pose.position.y},{math.pi - transformations.euler_from_quaternion([pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]},{t['angularVelocity']},{t['velocityX']},{t['velocityY']},0\n"
     with open(f"/home/ubuntu/2023RobotCode/zebROS_ws/src/behaviors/path/map_rel_{file.replace('.traj', '').replace('.', '')}_red_csv.csv", "w") as csv_file:
         print(csv)
         csv_file.write(csv)
