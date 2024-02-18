@@ -27,6 +27,6 @@
 		<arg name="run_camera"           value="$(arg run_camera)" />
 		<arg name="run_apriltag"         value="$(arg run_apriltag)" />
 		<arg name="run_object_detection" value="false" />
-		<args name="startup_delay"       value="15.0" />
+		<arg name="startup_delay"        value="15.0" />
 	</include>
 </launch>
