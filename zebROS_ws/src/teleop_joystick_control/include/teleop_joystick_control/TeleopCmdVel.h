@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <angles/angles.h>
 #include <geometry_msgs/Twist.h>
 #include "frc_msgs/JoystickState.h"
 #include "teleop_joystick_control/rate_limiter.h"
@@ -64,6 +65,21 @@ class TeleopCmdVel
 
 			// Convert to polar coordinates
 			double direction = atan2(leftStickY, leftStickX);
+			
+			double tolerance = 0.5;
+		
+			if(fabs(angles::shortest_angular_distance(direction,0))) {
+				direction = 0;
+			}
+			else if(fabs(angles::shortest_angular_distance(direction,M_PI/2))) {
+				direction = M_PI/2;
+			}
+			else if(fabs(angles::shortest_angular_distance(direction,M_PI))) {
+				direction = M_PI;
+			}
+			else if(fabs(angles::shortest_angular_distance(direction,3*M_PI/2))) {
+				direction = 3*M_PI/2;
+			}
 			//ROS_INFO_STREAM(__LINE__ << " direction:"  << direction);
 
 			// Do a dead zone check on the magnitude of the velocity,
