@@ -111,6 +111,18 @@ class TeleopCmdVel
 
 			// Convert to polar coordinates
 			double direction = atan2(leftStickY, leftStickX);
+			if(fabs(angles::shortest_angular_distance(direction,0)) < config.radial_deadzone) {
+				direction = 0;
+			}
+			else if(fabs(angles::shortest_angular_distance(direction,M_PI/2)) < config.radial_deadzone) {
+				direction = M_PI/2;
+			}
+			else if(fabs(angles::shortest_angular_distance(direction,M_PI)) < config.radial_deadzone) {
+				direction = M_PI;
+			}
+			else if(fabs(angles::shortest_angular_distance(direction,3*M_PI/2)) < config.radial_deadzone) {
+				direction = 3*M_PI/2;
+			}
 			//ROS_INFO_STREAM(__LINE__ << " direction:"  << direction);
 
 			// Do a dead zone check on the magnitude of the velocity,

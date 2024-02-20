@@ -25,6 +25,7 @@ private:
 struct DynamicReconfigVars
 {
 	double joystick_deadzone{0};          // "Joystick deadzone, in percent",
+	double radial_deadzone{0.05};		  // "Radial deadzone, in angular distance",
 	double min_speed{0};                  // "Min linear speed to get robot to overcome friction, in m/s"
 	double max_speed{2.0};                // "Max linear speed, in m/s"
 	double max_speed_slow{0.75};          // "Max linear speed in slow mode, in m/s"

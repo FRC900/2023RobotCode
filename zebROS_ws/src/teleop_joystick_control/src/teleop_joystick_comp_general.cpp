@@ -263,6 +263,10 @@ void TeleopInitializer::init() {
 	{
 		ROS_ERROR("Could not read joystick_deadzone in teleop_joystick_comp");
 	}
+	if(!n_params_.getParam("radial_deadzone", config.radial_deadzone))
+	{
+		ROS_ERROR("Could not read radial_deadzone in teleop_joystick_comp");
+	}
 	if(!n_params_.getParam("joystick_pow", config.joystick_pow))
 	{
 		ROS_ERROR("Could not read joystick_pow in teleop_joystick_comp");
@@ -335,6 +339,7 @@ void TeleopInitializer::init() {
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params_);
 
 	ddr.registerVariable<double>("joystick_deadzone", &config.joystick_deadzone, "Joystick deadzone, in percent", 0., 1.);
+	ddr.registerVariable<double>("radial_deadzone", &config.radial_deadzone, "Radial deadzone, in radians", 0., M_PI/4);
 	ddr.registerVariable<double>("min_speed", &config.min_speed, "Min linear speed to get robot to overcome friction, in m/s", 0, 1);
 	ddr.registerVariable<double>("max_speed", &config.max_speed, "Max linear speed, in m/s", 0, 10.);
 	ddr.registerVariable<double>("max_speed_slow", &config.max_speed_slow, "Max linear speed in slow mode, in m/s", 0., 5.);
