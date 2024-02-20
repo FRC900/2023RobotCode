@@ -129,21 +129,18 @@ bool moved = false;
 bool pathed = false;
 bool last_no_driver_input = false;
 
-uint8_t alliance_color{};
-bool called_park_endgame = false;
-
 uint8_t autoMode() {
 	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
 	//        L  M      R
 	// up =   1, 2, and 3
 	// mid =  4, 5, and 6
 	// down = 7, 8, and 9
-
-	// for testing, change based on alliance color. if alliance color is red, multiply by 10.
-	int8_t mode = (auto_mode * 3 + auto_starting_pos) * (alliance_color == frc_msgs::MatchSpecificData::ALLIANCE_COLOR_RED ? 10 : 1);
-	ROS_INFO_STREAM("teleop_joystick_comp_2023 : auto_mode = " << std::to_string(mode) << ", alliance_color = " << std::to_string(alliance_color));
-	return mode;
+	ROS_INFO_STREAM("teleop_joystick_comp_2023 : auto_mode = " << std::to_string(auto_mode * 3 + auto_starting_pos));
+	return auto_mode * 3 + auto_starting_pos;
 }
+
+uint8_t alliance_color{};
+bool called_park_endgame = false;
 
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 {
@@ -510,7 +507,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
 			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_msg.allianceColor = alliance_color;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		node = behavior_actions::Placing2023Goal::HIGH;
@@ -528,7 +524,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
 				auto_mode_msg.auto_mode = autoMode();
-			auto_mode_msg.allianceColor = alliance_color;
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -550,7 +545,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
 			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_msg.allianceColor = alliance_color;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 	}
@@ -567,7 +561,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
 			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_msg.allianceColor = alliance_color;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 0;
@@ -585,7 +578,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
 				auto_mode_msg.auto_mode = autoMode();
-			auto_mode_msg.allianceColor = alliance_color;
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -605,7 +597,6 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
 			auto_mode_msg.auto_mode = autoMode();
-			auto_mode_msg.allianceColor = alliance_color;
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 6;
