@@ -46,26 +46,13 @@ std::vector <std::string> topic_array;
 ros::ServiceClient ParkSrv;
 ros::ServiceClient IMUZeroSrv;
 ros::ServiceClient SwerveOdomZeroSrv;
-ros::Publisher auto_mode_select_pub;
 
 bool sendSetAngle = true;
 
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
 
-uint8_t auto_mode = 0; // 0 indexed
-
 std::unique_ptr<Driver> driver;
-
-uint8_t autoMode(int year) {
-	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
-	//        L  M      R
-	// up =   1, 2, and 3
-	// mid =  4, 5, and 6
-	// down = 7, 8, and 9
-	ROS_INFO_STREAM("teleop_joystick_comp_" << std::to_string(year) <<  ": auto_mode = " << std::to_string(auto_mode * 3));
-	return auto_mode * 3;
-}
 
 uint8_t alliance_color{};
 bool called_park_endgame = false;
@@ -386,9 +373,6 @@ void TeleopInitializer::init() {
 	//ros::Subscriber talon_states_sub = n.subscribe("/frcrobot_jetson/talonfxpro_states", 1, &talonFXProStateCallback);
 	ros::Subscriber match_state_sub = n_.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
 	ros::ServiceServer robot_orient_service = n_.advertiseService("robot_orient", &Driver::orientCallback, driver.get());
-	// Subscribe to arbitrary clients
-
-	auto_mode_select_pub = n_.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
 
 	const ros::Duration startup_wait_time_secs(15);
 	const ros::Time startup_start_time = ros::Time::now();

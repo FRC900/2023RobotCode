@@ -44,10 +44,25 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
-class AutoModeCalculator {
-
+class AutoModeCalculator2023 : public AutoModeCalculator {
+public:
+	AutoModeCalculator2023() 
+		: auto_mode_{0}, auto_starting_pos_{1} {}
+	uint8_t calculateAutoMode() {
+		return auto_mode_ * 3 + auto_starting_pos_;
+	}
+	void set_auto_mode(uint8_t auto_mode) {
+		auto_mode_ = auto_mode;
+	}
+	void set_auto_starting_pos(uint8_t auto_starting_pos) {
+		auto_starting_pos_ = auto_starting_pos;
+	}
+private:
+	uint8_t auto_mode_;
+	uint8_t auto_starting_pos_;
 };
-AutoModeCalculator thing;
+
+AutoModeCalculator2023 auto_calculator;
 
 // start at waiting to align
 // when driver transition becomes true, and we are at waiting to align, then align
@@ -60,7 +75,7 @@ enum AutoPlaceState {
 };
 
 AutoPlaceState auto_place_state = AutoPlaceState::WAITING_TO_ALIGN; 
-uint8_t auto_starting_pos = 1; // 1 indexed
+//uint8_t auto_starting_pos = 1; // 1 indexed
 
 bool moved = false;
 bool up_down_switch_mid;
@@ -365,11 +380,11 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.heightSelectSwitchUpPress) {
 		if (robot_is_disabled)
 		{
-			auto_mode = 0;
+			auto_calculator.set_auto_mode(0);
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
+			auto_mode_msg.auto_mode = auto_calculator.calculateAutoMode();
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		node = behavior_actions::Placing2023Goal::HIGH;
@@ -382,11 +397,11 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			node = behavior_actions::Placing2023Goal::MID;
 			if (robot_is_disabled)
 			{
-				auto_mode = 1;
+				auto_calculator.set_auto_mode(1);
 				// should we be worried about messages being dropped here?
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
+				auto_mode_msg.auto_mode = auto_calculator.calculateAutoMode();
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -403,11 +418,11 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		node = behavior_actions::Placing2023Goal::HYBRID;
 		if (robot_is_disabled)
 		{
-			auto_mode = 2;
+			auto_calculator.set_auto_mode(2);
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
+			auto_mode_msg.auto_mode = auto_calculator.calculateAutoMode();
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 	}
@@ -419,11 +434,11 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.heightSelectSwitchLeftPress) {
 		if (robot_is_disabled)
 		{
-			auto_starting_pos = 1;
+			auto_calculator.set_auto_starting_pos(1);
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
+			auto_mode_msg.auto_mode = auto_calculator.calculateAutoMode();
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 0;
@@ -436,11 +451,11 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 			node = behavior_actions::Placing2023Goal::MID;
 			if (robot_is_disabled)
 			{
-				auto_starting_pos = 2;
+				auto_calculator.set_auto_starting_pos(2);
 				// should we be worried about messages being dropped here?
 				behavior_actions::AutoMode auto_mode_msg;
 				auto_mode_msg.header.stamp = ros::Time::now();
-				auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
+				auto_mode_msg.auto_mode = auto_calculator.calculateAutoMode();
 				auto_mode_select_pub.publish(auto_mode_msg);
 			}
 		}
@@ -455,11 +470,11 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.heightSelectSwitchRightPress) {
 		if (robot_is_disabled)
 		{
-			auto_starting_pos = 3;
+			auto_calculator.set_auto_starting_pos(3);
 			// should we be worried about messages being dropped here?
 			behavior_actions::AutoMode auto_mode_msg;
 			auto_mode_msg.header.stamp = ros::Time::now();
-			auto_mode_msg.auto_mode = autoMode(2023) + auto_starting_pos;
+			auto_mode_msg.auto_mode = auto_calculator.calculateAutoMode();
 			auto_mode_select_pub.publish(auto_mode_msg);
 		}
 		grid_position = 6;
@@ -1022,6 +1037,8 @@ int main(int argc, char **argv)
 	ros::NodeHandle n_params(n, "teleop_params");
 	ros::NodeHandle n_diagnostics_params(n, "teleop_diagnostics_params");
 	ros::NodeHandle n_swerve_params(n, "/frcrobot_jetson/swerve_drive_controller");
+
+	auto_calculator.register_publisher(n);
 
 	if(!n_params.getParam("max_speed_elevator_extended", config2023.max_speed_elevator_extended))
 	{

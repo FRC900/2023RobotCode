@@ -36,10 +36,6 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
-class AutoModeCalculator {
-
-};
-AutoModeCalculator thing;
 
 //frc_msgs::ButtonBoxState2023 button_box;
 

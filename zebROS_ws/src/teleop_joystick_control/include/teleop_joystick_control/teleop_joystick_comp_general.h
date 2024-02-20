@@ -5,10 +5,22 @@
 #include "teleop_joystick_control/TeleopCmdVel2023.h"
 
 // There's gotta be a better name for this
-class AutoModeCalculator;
-//extern uint8_t AutoModeCalculator::calculate_auto_mode();
-//extern void AutoModeCalculator::set_auto_mode();
-extern AutoModeCalculator thing;
+class AutoModeCalculator {
+public:
+	virtual uint8_t calculateAutoMode() = 0;
+	void register_publisher(ros::NodeHandle n) {
+		auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
+		ros::Timer timer = n.createTimer(ros::Duration(0.1), &AutoModeCalculator::publisher_callback, this);
+	}	
+	void publisher_callback(const ros::TimerEvent&) {
+		behavior_actions::AutoMode msg;
+		msg.header.stamp = ros::Time::now();
+		msg.auto_mode = calculateAutoMode();
+		auto_mode_select_pub.publish(msg);
+	}
+private:
+	ros::Publisher auto_mode_select_pub;
+};
 
 struct DynamicReconfigVars
 {
@@ -60,10 +72,8 @@ private:
 	double old_angular_z_;
 };
 
-extern uint8_t auto_mode; 
 extern bool diagnostics_mode;
 extern struct DynamicReconfigVars config;
-extern AutoModeCalculator auto_calculator;
 extern std::unique_ptr<Driver> driver;
 extern std::vector <std::string> topic_array;
 extern ros::ServiceClient ParkSrv;
@@ -84,7 +94,6 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 
 // Don't uncomment until we generalize the button box
 //void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
-uint8_t autoMode(int year);
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
 
 struct DDRVariable {
