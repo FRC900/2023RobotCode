@@ -44,6 +44,11 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
+class AutoModeCalculator {
+
+};
+AutoModeCalculator thing;
+
 // start at waiting to align
 // when driver transition becomes true, and we are at waiting to align, then align
 // if aligning and you see press callback, place
@@ -120,11 +125,11 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 		pathed = (elevator_height >= config2023.elevator_threshold);
 		// if we are currently above the height or want to go above the height
 		if (elevator_height > config2023.elevator_threshold || elevator_setpoint > config2023.elevator_threshold) {
-			driver.teleop_cmd_vel_->setCaps(config2023.max_speed_elevator_extended, config2023.max_rot_elevator_extended);
+			driver->teleop_cmd_vel_.setCaps(config2023.max_speed_elevator_extended, config2023.max_rot_elevator_extended);
 
 		}
 		else {
-			driver.teleop_cmd_vel_->resetCaps();
+			driver->teleop_cmd_vel_.resetCaps();
 		}
 	}
 	else {
@@ -158,7 +163,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	static ros::Time last_header_stamp = button_box.header.stamp;
 	
 	bool driver_input_changed = false;
-	if (last_no_driver_input != driver.getNoDriverInput() && driver.getNoDriverInput() == true) {
+	if (last_no_driver_input != driver->getNoDriverInput() && driver->getNoDriverInput() == true) {
 		driver_input_changed = true; 
 	}
 	ROS_INFO_STREAM_THROTTLE(1, "Auto place state = " << std::to_string(auto_place_state));
@@ -195,7 +200,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 		// robot_orientation_driver->stopRotation();
 		// ROS_WARN_STREAM("Disabling diagnostics mode!");
 
-		driver.teleop_cmd_vel_->setRobotOrient(false, 0.0);
+		driver->teleop_cmd_vel_.setRobotOrient(false, 0.0);
 		ROS_WARN_STREAM("Field relative mode!");
 	}
 
@@ -465,7 +470,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.centralYellowButton) {
 	}
 	if(button_box.centralYellowPress) {
-		driver.setTargetOrientation(0.0, true);
+		driver->setTargetOrientation(0.0, true);
 	}
 	if(button_box.centralYellowRelease) {
 	}
@@ -473,7 +478,7 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 	if(button_box.bottomLeftYellowButton) {
 	}
 	if(button_box.bottomLeftYellowPress) {
-		driver.setTargetOrientation(M_PI, true);
+		driver->setTargetOrientation(M_PI, true);
 	}
 	if(button_box.bottomLeftYellowRelease) {
 	}
@@ -494,184 +499,161 @@ void buttonBoxCallback(const ros::MessageEvent<frc_msgs::ButtonBoxState2023 cons
 
 	if(button_box.rightGreenPress)
 	{
-		driver.moveDirection(0, 1, 0, config.button_move_speed);
+		driver->moveDirection(0, 1, 0, config.button_move_speed);
 	}
 	if(button_box.rightGreenButton)
 	{
-		driver.sendDirection(config.button_move_speed);
+		driver->sendDirection(config.button_move_speed);
 	}
 	if(button_box.rightGreenRelease)
 	{
-		driver.moveDirection(0, -1, 0, config.button_move_speed);
+		driver->moveDirection(0, -1, 0, config.button_move_speed);
 	}
 
 
 	if(button_box.leftGreenPress)
 	{
-		driver.moveDirection(0, -1, 0, config.button_move_speed);
+		driver->moveDirection(0, -1, 0, config.button_move_speed);
 	}
 	if(button_box.leftGreenButton)
 	{
-		driver.sendDirection(config.button_move_speed);
+		driver->sendDirection(config.button_move_speed);
 	}
 	if(button_box.leftGreenRelease)
 	{
-		driver.moveDirection(0, 1, 0, config.button_move_speed);
+		driver->moveDirection(0, 1, 0, config.button_move_speed);
 	}
 
 
 	if(button_box.topGreenPress)
 	{
-		driver.moveDirection(1, 0, 0, config.button_move_speed);
+		driver->moveDirection(1, 0, 0, config.button_move_speed);
 	}
 	if(button_box.topGreenButton)
 	{
-		driver.sendDirection(config.button_move_speed);
+		driver->sendDirection(config.button_move_speed);
 	}
 	if(button_box.topGreenRelease)
 	{
-		driver.moveDirection(-1, 0, 0, config.button_move_speed);
+		driver->moveDirection(-1, 0, 0, config.button_move_speed);
 	}
 
 	if(button_box.bottomGreenPress)
 	{
-		driver.moveDirection(-1, 0, 0, config.button_move_speed);
+		driver->moveDirection(-1, 0, 0, config.button_move_speed);
 	}
 	if(button_box.bottomGreenButton)
 	{
-		driver.sendDirection(config.button_move_speed);
+		driver->sendDirection(config.button_move_speed);
 	}
 	if(button_box.bottomGreenRelease)
 	{
-		driver.moveDirection(1, 0, 0, config.button_move_speed);
+		driver->moveDirection(1, 0, 0, config.button_move_speed);
 	}
 }
 
-void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)
-{
-	//So the code can use specific joysticks
-	int joystick_id = -1;
-
-	const ros::M_string &header = event.getConnectionHeader();
-	const std::string topic = header.at("topic");
-
-	//Identifies the incoming message as the correct joystick based on the topic the message was recieved from
-	for(size_t i = 0; (i < topic_array.size()); i++)
-	{
-		if(topic == topic_array[i])
-		{
-			joystick_states_array[i] = *(event.getMessage());
-			joystick_id = i;
-			break;
-		}
-	}
-
-	if(joystick_id == -1)
-	{
-		ROS_ERROR("Joystick message topic not identified. Teleop callback failed.");
-		return;
-	}
+void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int joystick_id) {
 
 	//Only do this for the first joystick
 	if(joystick_id == 0)
 	{
-		static ros::Time last_header_stamp = driver.evalateDriverCommands(joystick_states_array[0], config);
+		static ros::Time last_header_stamp = driver->evalateDriverCommands(*joystick_state, config);
 
 		if(!diagnostics_mode)
 		{
 			//Joystick1: buttonA
 			//Joystick1: buttonA
-			if(joystick_states_array[0].buttonAPress)
+			if(joystick_state->buttonAPress)
 			{
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cone and enabling robot relative driving mode!");
 				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
 				{
 					if (srv.response.nearest_cone_angle > -900) {
 						ROS_INFO_STREAM("Using angle of " << srv.response.nearest_cone_angle);
-						driver.setTargetOrientation(srv.response.nearest_cone_angle, true /*from teleop*/);
-						driver.teleop_cmd_vel_->setRobotOrient(true, 0);
+						driver->setTargetOrientation(srv.response.nearest_cone_angle, true /*from teleop*/);
+						driver->teleop_cmd_vel_.setRobotOrient(true, 0);
 					}
 				}
 			}
-			if(joystick_states_array[0].buttonAButton)
+			if(joystick_state->buttonAButton)
 			{
 				
 			}
-			if(joystick_states_array[0].buttonARelease)
+			if(joystick_state->buttonARelease)
 			{
-				driver.teleop_cmd_vel_->setRobotOrient(false, 0);
+				driver->teleop_cmd_vel_.setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonB
-			if(joystick_states_array[0].buttonBPress)
+			if(joystick_state->buttonBPress)
 			{
 				ROS_INFO_STREAM("teleop_joystick_comp_2023 : snapping to nearest cube and enabling robot relative driving mode!");
 				if (teleop_joystick_control::SnapConeCube srv; snapConeCubeSrv.call(srv))
 				{
 					if (srv.response.nearest_cube_angle > -900) {
 						ROS_INFO_STREAM_THROTTLE(1, "Using angle of " << srv.response.nearest_cube_angle);
-						driver.setTargetOrientation(srv.response.nearest_cube_angle, true /*from teleop*/);
-						driver.teleop_cmd_vel_->setRobotOrient(true, 0);
+						driver->setTargetOrientation(srv.response.nearest_cube_angle, true /*from teleop*/);
+						driver->teleop_cmd_vel_.setRobotOrient(true, 0);
 					}
 				}
 			}
-			if(joystick_states_array[0].buttonBButton)
+			if(joystick_state->buttonBButton)
 			{	
 			}
-			if(joystick_states_array[0].buttonBRelease)
+			if(joystick_state->buttonBRelease)
 			{
-				driver.teleop_cmd_vel_->setRobotOrient(false, 0);
+				driver->teleop_cmd_vel_.setRobotOrient(false, 0);
 			}
 
 			//Joystick1: buttonX
-			if(joystick_states_array[0].buttonXPress)
+			if(joystick_state->buttonXPress)
 			{
 
 			}
-			if(joystick_states_array[0].buttonXButton)
+			if(joystick_state->buttonXButton)
 			{
 			}
-			if(joystick_states_array[0].buttonXRelease)
+			if(joystick_state->buttonXRelease)
 			{
 			}
 
 			//Joystick1: buttonY
-			if(joystick_states_array[0].buttonYPress)
+			if(joystick_state->buttonYPress)
 			{
 
 			}
-			if(joystick_states_array[0].buttonYButton)
+			if(joystick_state->buttonYButton)
 			{
 			}
-			if(joystick_states_array[0].buttonYRelease)
+			if(joystick_state->buttonYRelease)
 			{
 
 			}
 
 			//Joystick1: bumperLeft
-			if(joystick_states_array[0].bumperLeftPress)
+			if(joystick_state->bumperLeftPress)
 			{
-				driver.teleop_cmd_vel_->setCaps(config.max_speed_slow, config.max_rot_slow);
+				driver->teleop_cmd_vel_.setCaps(config.max_speed_slow, config.max_rot_slow);
 			}
-			if(joystick_states_array[0].bumperLeftButton)
+			if(joystick_state->bumperLeftButton)
 			{
 			}
-			if(joystick_states_array[0].bumperLeftRelease)
+			if(joystick_state->bumperLeftRelease)
 			{
-				driver.teleop_cmd_vel_->resetCaps();
+				driver->teleop_cmd_vel_.resetCaps();
 			}
 
 			//Joystick1: bumperRight
-			if(joystick_states_array[0].bumperRightPress)
+			if(joystick_state->bumperRightPress)
 			{
 				behavior_actions::Intaking2023Goal goal;
 				goal.outtake = goal.OUTTAKE_CONE;
 				intaking_ac->sendGoal(goal);
 			}
-			if(joystick_states_array[0].bumperRightButton)
+			if(joystick_state->bumperRightButton)
 			{
 			}
-			if(joystick_states_array[0].bumperRightRelease)
+			if(joystick_state->bumperRightRelease)
 			{
 				intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
@@ -680,52 +662,52 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			// Should be the dpad right here
 
 			//Joystick1: directionLeft
-			if(joystick_states_array[0].directionLeftPress)
+			if(joystick_state->directionLeftPress)
 			{
 				
 			}
-			if(joystick_states_array[0].directionLeftButton)
+			if(joystick_state->directionLeftButton)
 			{
 
 			}
 			else
 			{
 			}
-			if(joystick_states_array[0].directionLeftRelease)
+			if(joystick_state->directionLeftRelease)
 			{
 
 			}
 
 			//Joystick1: directionRight
-			if(joystick_states_array[0].directionRightPress)
+			if(joystick_state->directionRightPress)
 			{
 			}
-			if(joystick_states_array[0].directionRightButton)
+			if(joystick_state->directionRightButton)
 			{
 			}
-			if(joystick_states_array[0].directionRightRelease)
+			if(joystick_state->directionRightRelease)
 			{
 			}
 
 			//Joystick1: directionUp
-			if(joystick_states_array[0].directionUpPress)
+			if(joystick_state->directionUpPress)
 			{
 			}
-			if(joystick_states_array[0].directionUpButton)
+			if(joystick_state->directionUpButton)
 			{
 			}
-			if(joystick_states_array[0].directionUpRelease)
+			if(joystick_state->directionUpRelease)
 			{
 			}
 
 			//Joystick1: directionDown
-			if(joystick_states_array[0].directionDownPress)
+			if(joystick_state->directionDownPress)
 			{
 			}
-			if(joystick_states_array[0].directionDownButton)
+			if(joystick_state->directionDownButton)
 			{
 			}
-			if(joystick_states_array[0].directionDownRelease)
+			if(joystick_state->directionDownRelease)
 			{
 			}
 
@@ -733,21 +715,21 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 
 
 			//Joystick1: stickLeft
-			if(joystick_states_array[0].stickLeftPress)
+			if(joystick_state->stickLeftPress)
 			{
 			}
-			if(joystick_states_array[0].stickLeftButton)
+			if(joystick_state->stickLeftButton)
 			{
 			}
 			else
 			{
 			}
-			if(joystick_states_array[0].stickLeftRelease)
+			if(joystick_state->stickLeftRelease)
 			{
 			}
 
 #ifdef ROTATION_WITH_STICK
-			if(joystick_states_array[0].leftTrigger > config.trigger_threshold)
+			if(joystick_state->leftTrigger > config.trigger_threshold)
 			{
 				ROS_INFO_STREAM("LEFT TRIGGER");
 				if(!joystick1_left_trigger_pressed)
@@ -773,7 +755,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 
 			//Joystick1: rightTrigger
-			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
+			if(joystick_state->rightTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
@@ -800,138 +782,138 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			// Drive in diagnostic mode unconditionally
 	#if 0
 			//Joystick1 Diagnostics: leftStickY
-			if(abs(joystick_states_array[0].leftStickY) > config.stick_threshold)
+			if(abs(joystick_state->leftStickY) > config.stick_threshold)
 			{
 			}
 
 			//Joystick1 Diagnostics: leftStickX
-			if(abs(joystick_states_array[0].leftStickX) > config.stick_threshold)
+			if(abs(joystick_state->leftStickX) > config.stick_threshold)
 			{
 			}
 
 			//Joystick1 Diagnostics: rightStickY
-			if(abs(joystick_states_array[0].rightStickY) > config.stick_threshold)
+			if(abs(joystick_state->rightStickY) > config.stick_threshold)
 			{
 			}
 
 			//Joystick1 Diagnostics: rightStickX
-			if(abs(joystick_states_array[0].rightStickX) > config.stick_threshold)
+			if(abs(joystick_state->rightStickX) > config.stick_threshold)
 			{
 			}
 #endif
 
 			//Joystick1 Diagnostics: stickLeft
-			if(joystick_states_array[0].stickLeftPress)
+			if(joystick_state->stickLeftPress)
 			{
 			}
-			if(joystick_states_array[0].stickLeftButton)
+			if(joystick_state->stickLeftButton)
 			{
 			}
-			if(joystick_states_array[0].stickLeftRelease)
+			if(joystick_state->stickLeftRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: stickRight
-			if(joystick_states_array[0].stickRightPress)
+			if(joystick_state->stickRightPress)
 			{
 			}
-			if(joystick_states_array[0].stickRightButton)
+			if(joystick_state->stickRightButton)
 			{
 			}
-			if(joystick_states_array[0].stickRightRelease)
+			if(joystick_state->stickRightRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonA
-			if(joystick_states_array[0].buttonAPress)
+			if(joystick_state->buttonAPress)
 			{
 			}
-			if(joystick_states_array[0].buttonAButton)
+			if(joystick_state->buttonAButton)
 			{
 			}
-			if(joystick_states_array[0].buttonARelease)
+			if(joystick_state->buttonARelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonB
-			if(joystick_states_array[0].buttonBPress)
+			if(joystick_state->buttonBPress)
 			{
 			}
-			if(joystick_states_array[0].buttonBButton)
+			if(joystick_state->buttonBButton)
 			{
 			}
-			if(joystick_states_array[0].buttonBRelease)
+			if(joystick_state->buttonBRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonX
-			if(joystick_states_array[0].buttonXPress)
+			if(joystick_state->buttonXPress)
 			{
 			}
-			if(joystick_states_array[0].buttonXButton)
+			if(joystick_state->buttonXButton)
 			{
 			}
-			if(joystick_states_array[0].buttonXRelease)
+			if(joystick_state->buttonXRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonY
-			if(joystick_states_array[0].buttonYPress)
+			if(joystick_state->buttonYPress)
 			{
 			}
-			if(joystick_states_array[0].buttonYButton)
+			if(joystick_state->buttonYButton)
 			{
 			}
-			if(joystick_states_array[0].buttonYRelease)
+			if(joystick_state->buttonYRelease)
 			{
 			}
 
 			//Joystick1: buttonBack
-			if(joystick_states_array[0].buttonBackPress)
+			if(joystick_state->buttonBackPress)
 			{
 			}
-			if(joystick_states_array[0].buttonBackButton)
+			if(joystick_state->buttonBackButton)
 			{
 			}
-			if(joystick_states_array[0].buttonBackRelease)
+			if(joystick_state->buttonBackRelease)
 			{
 			}
 
 			//Joystick1: buttonStart
-			if(joystick_states_array[0].buttonStartPress)
+			if(joystick_state->buttonStartPress)
 			{
 			}
-			if(joystick_states_array[0].buttonStartButton)
+			if(joystick_state->buttonStartButton)
 			{
 			}
-			if(joystick_states_array[0].buttonStartRelease)
+			if(joystick_state->buttonStartRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: bumperLeft
-			if(joystick_states_array[0].bumperLeftPress)
+			if(joystick_state->bumperLeftPress)
 			{
 			}
-			if(joystick_states_array[0].bumperLeftButton)
+			if(joystick_state->bumperLeftButton)
 			{
 			}
-			if(joystick_states_array[0].bumperLeftRelease)
+			if(joystick_state->bumperLeftRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: bumperRight
-			if(joystick_states_array[0].bumperRightPress)
+			if(joystick_state->bumperRightPress)
 			{
 			}
-			if(joystick_states_array[0].bumperRightButton)
+			if(joystick_state->bumperRightButton)
 			{
 			}
-			if(joystick_states_array[0].bumperRightRelease)
+			if(joystick_state->bumperRightRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: leftTrigger
-			if(joystick_states_array[0].leftTrigger > config.trigger_threshold)
+			if(joystick_state->leftTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_left_trigger_pressed)
 				{
@@ -950,7 +932,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				joystick1_left_trigger_pressed = false;
 			}
 			//Joystick1 Diagnostics: rightTrigger
-			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
+			if(joystick_state->rightTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
@@ -969,51 +951,51 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 
 			//Joystick1 Diagnostics: directionLeft
-			if(joystick_states_array[0].directionLeftPress)
+			if(joystick_state->directionLeftPress)
 			{
 			}
-			if(joystick_states_array[0].directionLeftButton)
+			if(joystick_state->directionLeftButton)
 			{
 			}
-			if(joystick_states_array[0].directionLeftRelease)
+			if(joystick_state->directionLeftRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: directionRight
-			if(joystick_states_array[0].directionRightPress)
+			if(joystick_state->directionRightPress)
 			{
 			}
-			if(joystick_states_array[0].directionRightButton)
+			if(joystick_state->directionRightButton)
 			{
 			}
-			if(joystick_states_array[0].directionRightRelease)
+			if(joystick_state->directionRightRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: directionUp
-			if(joystick_states_array[0].directionUpPress)
+			if(joystick_state->directionUpPress)
 			{
 			}
-			if(joystick_states_array[0].directionUpButton)
+			if(joystick_state->directionUpButton)
 			{
 			}
-			if(joystick_states_array[0].directionUpRelease)
+			if(joystick_state->directionUpRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: directionDown
-			if(joystick_states_array[0].directionDownPress)
+			if(joystick_state->directionDownPress)
 			{
 			}
-			if(joystick_states_array[0].directionDownButton)
+			if(joystick_state->directionDownButton)
 			{
 			}
-			if(joystick_states_array[0].directionDownRelease)
+			if(joystick_state->directionDownRelease)
 			{
 			}
 		}
 
-		last_header_stamp = joystick_states_array[0].header.stamp;
+		last_header_stamp = joystick_state->header.stamp;
 	}
 	else if(joystick_id == 1)
 	{
@@ -1067,7 +1049,7 @@ int main(int argc, char **argv)
 	initializer.add_custom_var( DDRVariable {"cone_tolerance", config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5} );
 	initializer.add_custom_var( DDRVariable {"cube_tolerance", config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5} );
 
-	initializer.init(evaluateCommands);
+	initializer.init();
 
 	FourbarRezeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/four_bar_controller_2023/rezero_service", false, {{"tcp_nodelay", "1"}});
 

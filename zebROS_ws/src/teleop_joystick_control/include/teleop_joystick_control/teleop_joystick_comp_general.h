@@ -4,6 +4,12 @@
 // TODO: Rename file (is actually general)
 #include "teleop_joystick_control/TeleopCmdVel2023.h"
 
+// There's gotta be a better name for this
+class AutoModeCalculator;
+//extern uint8_t AutoModeCalculator::calculate_auto_mode();
+//extern void AutoModeCalculator::set_auto_mode();
+extern AutoModeCalculator thing;
+
 struct DynamicReconfigVars
 {
 	double joystick_deadzone{0};          // "Joystick deadzone, in percent",
@@ -27,60 +33,13 @@ struct DynamicReconfigVars
 	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
 }; 
 
-extern uint8_t auto_mode; 
-extern bool diagnostics_mode;
-extern struct DynamicReconfigVars config;
-extern std::vector <frc_msgs::JoystickState> joystick_states_array;
-extern std::vector <std::string> topic_array;
-extern ros::ServiceClient ParkSrv;
-extern ros::ServiceClient IMUZeroSrv;
-extern ros::ServiceClient SwerveOdomZeroSrv;
-extern ros::ServiceClient setCenterSrv;	
-extern ros::Publisher auto_mode_select_pub;
-extern bool joystick1_left_trigger_pressed;
-extern bool joystick1_right_trigger_pressed;
-extern bool sendSetAngle;
-extern uint8_t alliance_color;
-extern bool called_park_endgame;
-
-void publish_diag_cmds(void);
-void zero_all_diag_commands(void);
-void preemptActionlibServers(void);
-
-// Don't uncomment until we generalize the button box
-//void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
-uint8_t autoMode(int year);
-void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
-
-struct DDRVariable {
-	std::string name;
-	double value;
-	std::string description;
-	double min;
-	double max;
-};
-
-class TeleopInitializer {
-public:
-	void add_custom_var(DDRVariable var);
-	void set_n_params(ros::NodeHandle n_params);
-	void set_n(ros::NodeHandle n);
-	void init(void (*callback)(const ros::MessageEvent<frc_msgs::JoystickState const>&));
-
-private:
-	std::vector<DDRVariable> custom_vars;
-	ros::NodeHandle n_;
-	ros::NodeHandle n_params_;
-
-};
-
 class Driver {
 public:
-	Driver() {};
+	Driver() = delete;
 	Driver(ros::NodeHandle n, DynamicReconfigVars config);
 	void moveDirection(int x, int y, int z, double button_move_speed);
 	void sendDirection(double button_move_speed);
-	ros::Time evalateDriverCommands(frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config);
+	ros::Time evalateDriverCommands(const frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config);
 	void setTargetOrientation(const double angle, const bool from_teleop, const double velocity = (0.0));
 	bool getNoDriverInput();
 	bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
@@ -101,6 +60,53 @@ private:
 	double old_angular_z_;
 };
 
-extern Driver driver;
+extern uint8_t auto_mode; 
+extern bool diagnostics_mode;
+extern struct DynamicReconfigVars config;
+extern AutoModeCalculator auto_calculator;
+extern std::unique_ptr<Driver> driver;
+extern std::vector <std::string> topic_array;
+extern ros::ServiceClient ParkSrv;
+extern ros::ServiceClient IMUZeroSrv;
+extern ros::ServiceClient SwerveOdomZeroSrv;
+extern ros::ServiceClient setCenterSrv;	
+extern ros::Publisher auto_mode_select_pub;
+extern bool joystick1_left_trigger_pressed;
+extern bool joystick1_right_trigger_pressed;
+extern bool sendSetAngle;
+extern uint8_t alliance_color;
+extern bool called_park_endgame;
+
+void publish_diag_cmds(void);
+void zero_all_diag_commands(void);
+void preemptActionlibServers(void);
+void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int joystick_id);
+
+// Don't uncomment until we generalize the button box
+//void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event);
+uint8_t autoMode(int year);
+void matchStateCallback(const frc_msgs::MatchSpecificData &msg);
+
+struct DDRVariable {
+	std::string name;
+	double value;
+	std::string description;
+	double min;
+	double max;
+};
+
+class TeleopInitializer {
+public:
+	void add_custom_var(DDRVariable var);
+	void set_n_params(ros::NodeHandle n_params);
+	void set_n(ros::NodeHandle n);
+	void init();
+
+private:
+	std::vector<DDRVariable> custom_vars;
+	ros::NodeHandle n_;
+	ros::NodeHandle n_params_;
+
+};
 
 #endif

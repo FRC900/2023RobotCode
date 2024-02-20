@@ -36,6 +36,11 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
+class AutoModeCalculator {
+
+};
+AutoModeCalculator thing;
+
 //frc_msgs::ButtonBoxState2023 button_box;
 
 // TODO: Add 2024 versions
@@ -49,112 +54,89 @@ void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state
 	ROS_WARN("Calling unimplemented function \"talonFXProStateCallback()\" in teleop_joystick_comp_2024.cpp ");
 }
 
-void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& event)	
+void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int joystick_id)	
 {
-	//So the code can use specific joysticks
-	int joystick_id = -1;
-
-	const ros::M_string &header = event.getConnectionHeader();
-	const std::string topic = header.at("topic");	
-
-	//Identifies the incoming message as the correct joystick based on the topic the message was recieved from
-	for(size_t i = 0; (i < topic_array.size()); i++)
-	{
-		if(topic == topic_array[i])
-		{
-			joystick_states_array[i] = *(event.getMessage());
-			joystick_id = i;
-			break;
-		}
-	}
-
-	if(joystick_id == -1)
-	{
-		ROS_ERROR("Joystick message topic not identified. Teleop callback failed.");
-		return;
-	}
-
 	//Only do this for the first joystick
 	if(joystick_id == 0) {
-		static ros::Time last_header_stamp = driver.evalateDriverCommands(joystick_states_array[0], config);
+		static ros::Time last_header_stamp = driver->evalateDriverCommands(*joystick_state, config);
 
 		if(!diagnostics_mode)
 		{
 			//Joystick1: buttonA
 			//Joystick1: buttonA
-			if(joystick_states_array[0].buttonAPress)
+			if(joystick_state->buttonAPress)
 			{
 
 			}
-			if(joystick_states_array[0].buttonAButton)
+			if(joystick_state->buttonAButton)
 			{
 				
 			}
-			if(joystick_states_array[0].buttonARelease)
+			if(joystick_state->buttonARelease)
 			{
 				
 			}
 
 			//Joystick1: buttonB
-			if(joystick_states_array[0].buttonBPress)
+			if(joystick_state->buttonBPress)
 			{
 
 			}
-			if(joystick_states_array[0].buttonBButton)
+			if(joystick_state->buttonBButton)
 			{	
 			}
-			if(joystick_states_array[0].buttonBRelease)
+			if(joystick_state->buttonBRelease)
 			{
 			
 			}
 
 			//Joystick1: buttonX
-			if(joystick_states_array[0].buttonXPress)
+			if(joystick_state->buttonXPress)
 			{
 
 			}
-			if(joystick_states_array[0].buttonXButton)
+			if(joystick_state->buttonXButton)
 			{
 			}
-			if(joystick_states_array[0].buttonXRelease)
+			if(joystick_state->buttonXRelease)
 			{
 			}
 
 			//Joystick1: buttonY
-			if(joystick_states_array[0].buttonYPress)
+			if(joystick_state->buttonYPress)
 			{
 
 			}
-			if(joystick_states_array[0].buttonYButton)
+			if(joystick_state->buttonYButton)
 			{
 			}
-			if(joystick_states_array[0].buttonYRelease)
+			if(joystick_state->buttonYRelease)
 			{
 
 			}
 
 			//Joystick1: bumperLeft
-			if(joystick_states_array[0].bumperLeftPress)
+			if(joystick_state->bumperLeftPress)
 			{
 				
 			}
-			if(joystick_states_array[0].bumperLeftButton)
+			if(joystick_state->bumperLeftButton)
 			{
 			}
-			if(joystick_states_array[0].bumperLeftRelease)
+			if(joystick_state->bumperLeftRelease)
 			{
 				
 			}
 
 			//Joystick1: bumperRight
-			if(joystick_states_array[0].bumperRightPress)
+			if(joystick_state->bumperRightPress)
 			{
 				
 			}
-			if(joystick_states_array[0].bumperRightButton)
+			if(joystick_state->bumperRightButton)
 			{
 			}
-			if(joystick_states_array[0].bumperRightRelease)
+			if(joystick_state->bumperRightRelease)
 			{
 				
 			}
@@ -163,52 +145,52 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			// Should be the dpad right here
 
 			//Joystick1: directionLeft
-			if(joystick_states_array[0].directionLeftPress)
+			if(joystick_state->directionLeftPress)
 			{
 				
 			}
-			if(joystick_states_array[0].directionLeftButton)
+			if(joystick_state->directionLeftButton)
 			{
 
 			}
 			else
 			{
 			}
-			if(joystick_states_array[0].directionLeftRelease)
+			if(joystick_state->directionLeftRelease)
 			{
 
 			}
 
 			//Joystick1: directionRight
-			if(joystick_states_array[0].directionRightPress)
+			if(joystick_state->directionRightPress)
 			{
 			}
-			if(joystick_states_array[0].directionRightButton)
+			if(joystick_state->directionRightButton)
 			{
 			}
-			if(joystick_states_array[0].directionRightRelease)
+			if(joystick_state->directionRightRelease)
 			{
 			}
 
 			//Joystick1: directionUp
-			if(joystick_states_array[0].directionUpPress)
+			if(joystick_state->directionUpPress)
 			{
 			}
-			if(joystick_states_array[0].directionUpButton)
+			if(joystick_state->directionUpButton)
 			{
 			}
-			if(joystick_states_array[0].directionUpRelease)
+			if(joystick_state->directionUpRelease)
 			{
 			}
 
 			//Joystick1: directionDown
-			if(joystick_states_array[0].directionDownPress)
+			if(joystick_state->directionDownPress)
 			{
 			}
-			if(joystick_states_array[0].directionDownButton)
+			if(joystick_state->directionDownButton)
 			{
 			}
-			if(joystick_states_array[0].directionDownRelease)
+			if(joystick_state->directionDownRelease)
 			{
 			}
 
@@ -216,21 +198,21 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 
 
 			//Joystick1: stickLeft
-			if(joystick_states_array[0].stickLeftPress)
+			if(joystick_state->stickLeftPress)
 			{
 			}
-			if(joystick_states_array[0].stickLeftButton)
+			if(joystick_state->stickLeftButton)
 			{
 			}
 			else
 			{
 			}
-			if(joystick_states_array[0].stickLeftRelease)
+			if(joystick_state->stickLeftRelease)
 			{
 			}
 
 #ifdef ROTATION_WITH_STICK
-			if(joystick_states_array[0].leftTrigger > config.trigger_threshold)
+			if(joystick_state->leftTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_left_trigger_pressed)
 				{
@@ -250,7 +232,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 
 			//Joystick1: rightTrigger
-			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
+			if(joystick_state->rightTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
@@ -275,138 +257,138 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			// Drive in diagnostic mode unconditionally
 	#if 0
 			//Joystick1 Diagnostics: leftStickY
-			if(abs(joystick_states_array[0].leftStickY) > config.stick_threshold)
+			if(abs(joystick_state->leftStickY) > config.stick_threshold)
 			{
 			}
 
 			//Joystick1 Diagnostics: leftStickX
-			if(abs(joystick_states_array[0].leftStickX) > config.stick_threshold)
+			if(abs(joystick_state->leftStickX) > config.stick_threshold)
 			{
 			}
 
 			//Joystick1 Diagnostics: rightStickY
-			if(abs(joystick_states_array[0].rightStickY) > config.stick_threshold)
+			if(abs(joystick_state->rightStickY) > config.stick_threshold)
 			{
 			}
 
 			//Joystick1 Diagnostics: rightStickX
-			if(abs(joystick_states_array[0].rightStickX) > config.stick_threshold)
+			if(abs(joystick_state->rightStickX) > config.stick_threshold)
 			{
 			}
 #endif
 
 			//Joystick1 Diagnostics: stickLeft
-			if(joystick_states_array[0].stickLeftPress)
+			if(joystick_state->stickLeftPress)
 			{
 			}
-			if(joystick_states_array[0].stickLeftButton)
+			if(joystick_state->stickLeftButton)
 			{
 			}
-			if(joystick_states_array[0].stickLeftRelease)
+			if(joystick_state->stickLeftRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: stickRight
-			if(joystick_states_array[0].stickRightPress)
+			if(joystick_state->stickRightPress)
 			{
 			}
-			if(joystick_states_array[0].stickRightButton)
+			if(joystick_state->stickRightButton)
 			{
 			}
-			if(joystick_states_array[0].stickRightRelease)
+			if(joystick_state->stickRightRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonA
-			if(joystick_states_array[0].buttonAPress)
+			if(joystick_state->buttonAPress)
 			{
 			}
-			if(joystick_states_array[0].buttonAButton)
+			if(joystick_state->buttonAButton)
 			{
 			}
-			if(joystick_states_array[0].buttonARelease)
+			if(joystick_state->buttonARelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonB
-			if(joystick_states_array[0].buttonBPress)
+			if(joystick_state->buttonBPress)
 			{
 			}
-			if(joystick_states_array[0].buttonBButton)
+			if(joystick_state->buttonBButton)
 			{
 			}
-			if(joystick_states_array[0].buttonBRelease)
+			if(joystick_state->buttonBRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonX
-			if(joystick_states_array[0].buttonXPress)
+			if(joystick_state->buttonXPress)
 			{
 			}
-			if(joystick_states_array[0].buttonXButton)
+			if(joystick_state->buttonXButton)
 			{
 			}
-			if(joystick_states_array[0].buttonXRelease)
+			if(joystick_state->buttonXRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: buttonY
-			if(joystick_states_array[0].buttonYPress)
+			if(joystick_state->buttonYPress)
 			{
 			}
-			if(joystick_states_array[0].buttonYButton)
+			if(joystick_state->buttonYButton)
 			{
 			}
-			if(joystick_states_array[0].buttonYRelease)
+			if(joystick_state->buttonYRelease)
 			{
 			}
 
 			//Joystick1: buttonBack
-			if(joystick_states_array[0].buttonBackPress)
+			if(joystick_state->buttonBackPress)
 			{
 			}
-			if(joystick_states_array[0].buttonBackButton)
+			if(joystick_state->buttonBackButton)
 			{
 			}
-			if(joystick_states_array[0].buttonBackRelease)
+			if(joystick_state->buttonBackRelease)
 			{
 			}
 
 			//Joystick1: buttonStart
-			if(joystick_states_array[0].buttonStartPress)
+			if(joystick_state->buttonStartPress)
 			{
 			}
-			if(joystick_states_array[0].buttonStartButton)
+			if(joystick_state->buttonStartButton)
 			{
 			}
-			if(joystick_states_array[0].buttonStartRelease)
+			if(joystick_state->buttonStartRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: bumperLeft
-			if(joystick_states_array[0].bumperLeftPress)
+			if(joystick_state->bumperLeftPress)
 			{
 			}
-			if(joystick_states_array[0].bumperLeftButton)
+			if(joystick_state->bumperLeftButton)
 			{
 			}
-			if(joystick_states_array[0].bumperLeftRelease)
+			if(joystick_state->bumperLeftRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: bumperRight
-			if(joystick_states_array[0].bumperRightPress)
+			if(joystick_state->bumperRightPress)
 			{
 			}
-			if(joystick_states_array[0].bumperRightButton)
+			if(joystick_state->bumperRightButton)
 			{
 			}
-			if(joystick_states_array[0].bumperRightRelease)
+			if(joystick_state->bumperRightRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: leftTrigger
-			if(joystick_states_array[0].leftTrigger > config.trigger_threshold)
+			if(joystick_state->leftTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_left_trigger_pressed)
 				{
@@ -425,7 +407,7 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 				joystick1_left_trigger_pressed = false;
 			}
 			//Joystick1 Diagnostics: rightTrigger
-			if(joystick_states_array[0].rightTrigger > config.trigger_threshold)
+			if(joystick_state->rightTrigger > config.trigger_threshold)
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
@@ -444,51 +426,51 @@ void evaluateCommands(const ros::MessageEvent<frc_msgs::JoystickState const>& ev
 			}
 
 			//Joystick1 Diagnostics: directionLeft
-			if(joystick_states_array[0].directionLeftPress)
+			if(joystick_state->directionLeftPress)
 			{
 			}
-			if(joystick_states_array[0].directionLeftButton)
+			if(joystick_state->directionLeftButton)
 			{
 			}
-			if(joystick_states_array[0].directionLeftRelease)
+			if(joystick_state->directionLeftRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: directionRight
-			if(joystick_states_array[0].directionRightPress)
+			if(joystick_state->directionRightPress)
 			{
 			}
-			if(joystick_states_array[0].directionRightButton)
+			if(joystick_state->directionRightButton)
 			{
 			}
-			if(joystick_states_array[0].directionRightRelease)
+			if(joystick_state->directionRightRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: directionUp
-			if(joystick_states_array[0].directionUpPress)
+			if(joystick_state->directionUpPress)
 			{
 			}
-			if(joystick_states_array[0].directionUpButton)
+			if(joystick_state->directionUpButton)
 			{
 			}
-			if(joystick_states_array[0].directionUpRelease)
+			if(joystick_state->directionUpRelease)
 			{
 			}
 
 			//Joystick1 Diagnostics: directionDown
-			if(joystick_states_array[0].directionDownPress)
+			if(joystick_state->directionDownPress)
 			{
 			}
-			if(joystick_states_array[0].directionDownButton)
+			if(joystick_state->directionDownButton)
 			{
 			}
-			if(joystick_states_array[0].directionDownRelease)
+			if(joystick_state->directionDownRelease)
 			{
 			}
 		}
 
-		last_header_stamp = joystick_states_array[0].header.stamp;
+		last_header_stamp = joystick_state->header.stamp;
 	}
 	else if(joystick_id == 1)
 	{
@@ -517,6 +499,6 @@ int main(int argc, char **argv)
 
 	TeleopInitializer initializer;
 	initializer.set_n_params(n_params);
-	initializer.init(evaluateCommands);
+	initializer.init();
 	return 0;
 }

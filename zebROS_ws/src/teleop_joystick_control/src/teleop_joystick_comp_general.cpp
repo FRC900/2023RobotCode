@@ -11,6 +11,7 @@
 #include "std_msgs/Bool.h"
 #include <string>
 #include <cmath>
+#include <boost/bind.hpp>
 
 #include "std_srvs/Empty.h"
 
@@ -40,8 +41,6 @@ struct DynamicReconfigVars config;
 
 bool diagnostics_mode = false;
 
-// array of joystick_states messages for multiple joysticks
-std::vector <frc_msgs::JoystickState> joystick_states_array;
 std::vector <std::string> topic_array;
 
 ros::ServiceClient ParkSrv;
@@ -56,7 +55,7 @@ bool joystick1_right_trigger_pressed = false;
 
 uint8_t auto_mode = 0; // 0 indexed
 
-Driver driver;
+std::unique_ptr<Driver> driver;
 
 uint8_t autoMode(int year) {
 	// if ignoring starting positions, set the same auto modes for the three listed next to the switch position
@@ -92,20 +91,21 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 
 ros::ServiceClient setCenterSrv;
 
-Driver::Driver(ros::NodeHandle n, DynamicReconfigVars config) {
-	teleop_cmd_vel_ =TeleopCmdVel<DynamicReconfigVars>(config);
-	teleop_cmd_vel_->setRobotOrient(false, 0.0);
-	teleop_cmd_vel_->resetCaps();
-	robot_orientation_driver_ = RobotOrientationDriver(n);//std::make_unique<RobotOrientationDriver>(n);
-	BrakeSrv_ = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, {{"tcp_nodelay", "1"}});
-	JoystickRobotVel_ = n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1);
+Driver::Driver(ros::NodeHandle n, DynamicReconfigVars config) 
+	: teleop_cmd_vel_{TeleopCmdVel<DynamicReconfigVars>(config)}
+	, robot_orientation_driver_{RobotOrientationDriver(n)}
+	, BrakeSrv_{n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, {{"tcp_nodelay", "1"}})}
+	, JoystickRobotVel_{n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1)}
+{
+	teleop_cmd_vel_.setRobotOrient(false, 0.0);
+	teleop_cmd_vel_.resetCaps();
 }
 
 bool Driver::orientCallback(teleop_joystick_control::RobotOrient::Request& req,
 		teleop_joystick_control::RobotOrient::Response&/* res*/)
 {
 	// Used to switch between robot orient and field orient driving
-	teleop_cmd_vel_->setRobotOrient(req.robot_orient, req.offset_angle);
+	teleop_cmd_vel_.setRobotOrient(req.robot_orient, req.offset_angle);
 	ROS_WARN_STREAM("Robot Orient = " << req.robot_orient << ", Offset Angle = " << req.offset_angle);
 	return true;
 }
@@ -146,18 +146,18 @@ void Driver::sendDirection(double button_move_speed) {
 }
 
 void Driver::setTargetOrientation(const double angle, const bool from_teleop, const double velocity) {
-	robot_orientation_driver_->setTargetOrientation(angle, from_teleop, velocity);
+	robot_orientation_driver_.setTargetOrientation(angle, from_teleop, velocity);
 }
 
-ros::Time Driver::evalateDriverCommands(frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config) {
+ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config) {
 	static ros::Time last_header_stamp = joy_state.header.stamp;
 
-	teleop_cmd_vel_->updateRateLimit(config);
+	teleop_cmd_vel_.updateRateLimit(config);
 	// TODO : make swerve invert the yaw so we can deal in ccw-positive angles
 	// everywhere outside of that code
-	geometry_msgs::Twist cmd_vel = teleop_cmd_vel_->generateCmdVel(joy_state, -robot_orientation_driver_->getCurrentOrientation(), config);
+	geometry_msgs::Twist cmd_vel = teleop_cmd_vel_.generateCmdVel(joy_state, -robot_orientation_driver_.getCurrentOrientation(), config);
 
-	if (robot_orientation_driver_->mostRecentCommandIsFromTeleop() || cmd_vel.linear.x != 0.0 || cmd_vel.linear.y != 0.0 || cmd_vel.angular.z != 0.0) {
+	if (robot_orientation_driver_.mostRecentCommandIsFromTeleop() || cmd_vel.linear.x != 0.0 || cmd_vel.linear.y != 0.0 || cmd_vel.angular.z != 0.0) {
 		double original_angular_z = cmd_vel.angular.z;
 
 		if (original_angular_z == 0.0 && old_angular_z_ != 0.0) {
@@ -175,14 +175,14 @@ ros::Time Driver::evalateDriverCommands(frc_msgs::JoystickState joy_state, const
 				ROS_WARN_STREAM("Old angular z is zero, wierd");
 			}
 			ROS_INFO_STREAM("Locking to current orientation!");
-			robot_orientation_driver_->setTargetOrientation(robot_orientation_driver_->getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
+			robot_orientation_driver_.setTargetOrientation(robot_orientation_driver_.getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
 			sendSetAngle = true;
 		}
 		ROS_INFO_STREAM_THROTTLE(1, "CMD_VEL angular z" << cmd_vel.angular.z);
 
 		if (cmd_vel.angular.z == 0.0)
 		{
-			cmd_vel.angular.z = robot_orientation_driver_->getOrientationVelocityPIDOutput();
+			cmd_vel.angular.z = robot_orientation_driver_.getOrientationVelocityPIDOutput();
 			if (fabs(cmd_vel.angular.z) < config.rotation_epsilon) {
 				// COAST MODE
 				//cmd_vel.angular.z = 0.001 * (cmd_vel.angular.z > 0 ? 1 : -1);
@@ -266,7 +266,7 @@ void TeleopInitializer::set_n(ros::NodeHandle n) {
 	n_= n;
 }
 
-void TeleopInitializer::init(void (*callback)(const ros::MessageEvent<frc_msgs::JoystickState const>&)) {
+void TeleopInitializer::init() {
 	int num_joysticks = 1;
 	if(!n_params_.getParam("num_joysticks", num_joysticks))
 	{
@@ -372,7 +372,7 @@ void TeleopInitializer::init(void (*callback)(const ros::MessageEvent<frc_msgs::
 
 	ddr.publishServicesTopics();
 
-	driver = Driver(n_, config);
+	driver = std::make_unique<Driver>(n_, config);
 
 	const std::map<std::string, std::string> service_connection_header{{"tcp_nodelay", "1"}};
 
@@ -385,7 +385,7 @@ void TeleopInitializer::init(void (*callback)(const ros::MessageEvent<frc_msgs::
 #endif
 	//ros::Subscriber talon_states_sub = n.subscribe("/frcrobot_jetson/talonfxpro_states", 1, &talonFXProStateCallback);
 	ros::Subscriber match_state_sub = n_.subscribe("/frcrobot_rio/match_data", 1, matchStateCallback);
-	ros::ServiceServer robot_orient_service = n_.advertiseService("robot_orient", &Driver::orientCallback, &driver);
+	ros::ServiceServer robot_orient_service = n_.advertiseService("robot_orient", &Driver::orientCallback, driver.get());
 	// Subscribe to arbitrary clients
 
 	auto_mode_select_pub = n_.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
@@ -394,7 +394,7 @@ void TeleopInitializer::init(void (*callback)(const ros::MessageEvent<frc_msgs::
 	const ros::Time startup_start_time = ros::Time::now();
 	ros::Duration startup_wait_time;
 	startup_wait_time = std::max(startup_wait_time_secs - (ros::Time::now() - startup_start_time), ros::Duration(0.1));
-	if(!driver.waitForBrakeSrv(startup_wait_time))
+	if(!driver->waitForBrakeSrv(startup_wait_time))
 	{
 		ROS_ERROR("Wait (15 sec) timed out, for Brake Service in teleop_joystick_comp.cpp");
 	}
@@ -411,14 +411,13 @@ void TeleopInitializer::init(void (*callback)(const ros::MessageEvent<frc_msgs::
 	// happens immediately and tries to use them before they have valid values
 
 	std::vector <ros::Subscriber> subscriber_array;
-	joystick_states_array.resize(num_joysticks);
 	for(int j = 0; j < num_joysticks; j++)
 	{
 		std::stringstream s;
 		s << "/frcrobot_rio/joystick_states";
 		s << (j+1);
 		topic_array.push_back(s.str());
-		subscriber_array.push_back(n_.subscribe(topic_array[j], 1, callback));
+		subscriber_array.push_back(n_.subscribe<frc_msgs::JoystickState>(topic_array[j], 1, boost::bind(evaluateCommands, _1, j)));
 	}
 
 	ROS_WARN("joy_init");
