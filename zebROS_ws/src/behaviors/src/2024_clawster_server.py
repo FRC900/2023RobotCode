@@ -24,7 +24,7 @@ class Clawster2024ActionServer(object):
         pct_out = Float64()
         success = True
         r = rospy.Rate(10)
-        if goal.mode == goal.INTAKE_NOOTER:
+        if goal.mode == goal.INTAKE:
             pct_out.data = intake_speed
             self.claw_pub.publish(pct_out)
             while switch == 0 and (not rospy.is_shutdown()):
@@ -81,13 +81,13 @@ def dyn_rec_callback(config, level):
     return config
 
 if __name__ == '__main__':
-    rospy.init_node('nooter_claw_server_2024')
+    rospy.init_node('clawster_server_2024')
     switch_name = rospy.get_param('switch_name')
 
-    ddynrec = DDynamicReconfigure("nooter_dyn_rec")
-    ddynrec.add_variable("intake_speed", "float/double variable", rospy.get_param("intake_speed"), 0.0, 13.0)
-    ddynrec.add_variable("outtake_speed", "float/double variable", rospy.get_param("outtake_speed"), 0.0, 13.0)
-    ddynrec.add_variable("delay", "float/double variable", rospy.get_param("outtake_stop_delay"), 0.0, 1.0)
+    ddynrec = DDynamicReconfigure(f"{rospy.get_name()}_dyn_rec")
+    ddynrec.add_variable("intake_speed", "float/double variable", rospy.get_param("intake_speed"), -1.0, 1.0)
+    ddynrec.add_variable("outtake_speed", "float/double variable", rospy.get_param("outtake_speed"), -1.0, 1.0)
+    ddynrec.add_variable("delay", "float/double variable", rospy.get_param("outtake_stop_delay"), 0.0, 2.0)
     ddynrec.start(dyn_rec_callback)
     
     server = Clawster2024ActionServer(rospy.get_name())
