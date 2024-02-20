@@ -90,7 +90,7 @@
 		RPY for both cameras is almost certainly not correct
 		Fix it using tagslam calibration data
 	-->
-	<!-- <include file="$(find controller_node)/launch/zed_detection.launch">
+	<include file="$(find controller_node)/launch/zed_detection.launch">
 		<arg name="run_camera"      value="false" if="$(eval hw_or_sim == 'sim')"/>
 		<arg name="zed_name"        value="zed_front" />
 		<arg name="zed_config_dir"  value="zed_objdet" />
@@ -102,7 +102,7 @@
 		<arg name="cam_pitch"            value="-0.27925" />
 		<arg name="cam_yaw"              value="0.0" />
 		<arg name="run_object_detection" value="true" />
-	</include> -->
+	</include>
 
 	<include file="$(find controller_node)/launch/zed_detection.launch">
 		<arg name="run_camera"      value="false" if="$(eval hw_or_sim == 'sim')"/>
@@ -116,6 +116,7 @@
 		<arg name="cam_pitch"            value="-0.27925" />
 		<arg name="cam_yaw"              value="3.14159" />
 		<arg name="run_object_detection" value="false" />
+		<arg name="startup_delay"        value="15.0" />
 	</include>
 
 	<include file="$(find tagslam_launch)/launch/frc9000_tagslam_realtime.launch"/>

@@ -11,6 +11,7 @@ tag_groups_seen = [] #contains
 def callback(tag_msg: ApriltagArrayStamped):
     #  in the callback, for each tag id seen,
     tag_ids_seen = [detection.id for detection in tag_msg.apriltags]
+    print(tag_ids_seen)
 
     for tag_id in tag_ids_seen:
         # set the list entry for that tag to true
@@ -50,7 +51,8 @@ def callback(tag_msg: ApriltagArrayStamped):
                     gindex2=gindex
                     break
         #uses pairs to check for overlap of already seen, sets gindex2. 
-            gindex1 != gindex2
+            if gindex1 == gindex2:
+                continue
             #makes it so both gindexes cannot be the same. 
 
             tag_groups_seen[gindex1]=tag_groups_seen[gindex1].union(tag_groups_seen[gindex2])
@@ -62,7 +64,7 @@ def callback(tag_msg: ApriltagArrayStamped):
 
 def main():
     rospy.init_node('check_tags', anonymous=True)
-    rospy.Subscriber('/tag_detections', ApriltagArrayStamped, callback)
+    rospy.Subscriber('/apriltag_zed_front/apriltag_detection/tags', ApriltagArrayStamped, callback)
 
     # keep track of tags seen
     #  store a list of bool values, one per tag
