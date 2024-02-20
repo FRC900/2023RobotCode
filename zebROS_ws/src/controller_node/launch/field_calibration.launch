@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<include file="$(find controller_node)/launch/zed_detection.launch">
-		<arg name="zed_name"             value="zedx_front" />
+		<arg name="zed_name"             value="zed_front" />
 		<arg name="zed_config_dir"       value="zed_field_calibration" />
 		<arg name="camera_model"         value="zed2" />
 		<!-- <arg name="serial_number"	     value="47067994" /> -->
