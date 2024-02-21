@@ -7,9 +7,12 @@
 #include <image_transport/image_transport.h>
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <sensor_msgs/CameraInfo.h>
 
 #include "apriltag_msgs/ApriltagArrayStamped.h"
+#include "apriltag_msgs/ApriltagPoseStamped.h"
 #include "deeptag_ros/deeptag.h"
 
 namespace deeptag_ros
@@ -24,11 +27,14 @@ private:
     void onInit() override
     {
         nh_ = getMTPrivateNodeHandle();
+        ros::NodeHandle base_nh;
 
+        image_transport::ImageTransport base_it(base_nh);
+        camera_image_sub_ = base_it.subscribe("image_rect_color", 1, &DeeptagRosNodelet::callback, this);
+        camera_info_sub_ = base_nh.subscribe("camera_info", 1, &DeeptagRosNodelet::camera_info_callback, this);
+        pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tags", 2);
+        pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 2);
         image_transport::ImageTransport it(nh_);
-        camera_image_sub_ = it.subscribe("image_rect", 1, &DeeptagRosNodelet::callback, this);
-        camera_info_sub_ = nh_.subscribe("camera_info", 1, &DeeptagRosNodelet::camera_info_callback, this);
-        pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tag_detection_msg", 2);
         pub_debug_image_ = it.advertise("debug_image", 2);
     }
 
@@ -41,6 +47,8 @@ private:
             return;
         image_geometry::PinholeCameraModel model;
         model.fromCameraInfo(*msg);
+        // TODO : this isn't actually used yet
+        // Need a publisher for pose info to make use of this
         double tagSizeInMeter = 0.152;
         if (!nh_.getParam("tag_size_in_meter", tagSizeInMeter))
         {
@@ -110,6 +118,7 @@ private:
 
         apriltag_msgs::ApriltagArrayStamped apriltag_array_msg;
         apriltag_array_msg.header = frameMsg->header;
+
         for (const auto &r: result)
         {
             apriltag_array_msg.apriltags.emplace_back();
@@ -123,6 +132,27 @@ private:
                 msg.corners[i].y = r.m_stage2Corners[i].y;
             }
         }
+
+        apriltag_msgs::ApriltagPoseStamped apriltag_pose_msg;
+        apriltag_pose_msg.header = frameMsg->header;
+        apriltag_pose_msg.apriltags = apriltag_array_msg.apriltags;
+        apriltag_pose_msg.posearray.header = frameMsg->header;
+
+        for (const auto &r: result)
+        {
+            apriltag_pose_msg.posearray.poses.emplace_back();  
+            
+            auto &msg = apriltag_pose_msg.posearray.poses.back();
+            msg.position.x = r.m_tVec.at<double>(0);
+            msg.position.y = r.m_tVec.at<double>(1);
+            msg.position.z = r.m_tVec.at<double>(2);
+            tf2::Quaternion quaternion_tf2;
+            quaternion_tf2.setRPY(r.m_rVec.at<double>(0), r.m_rVec.at<double>(1), r.m_rVec.at<double>(2));
+            msg.orientation = tf2::toMsg(quaternion_tf2);
+        }
+
+        pub_apriltag_detections_.publish(apriltag_array_msg);
+        pub_apriltag_poses_.publish(apriltag_pose_msg);
     }
 
     ros::NodeHandle nh_;
@@ -131,6 +161,7 @@ private:
     ros::Subscriber camera_info_sub_;
     image_transport::Publisher pub_debug_image_;
     ros::Publisher pub_apriltag_detections_;
+    ros::Publisher pub_apriltag_poses_;
 
     std::mutex camera_mutex_;
     std::optional<sensor_msgs::CameraInfo> camera_info_{std::nullopt};
