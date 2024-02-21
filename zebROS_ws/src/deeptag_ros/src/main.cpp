@@ -43,18 +43,18 @@ int main(int argc, char *argv[])
         distCoeffs = (cv::Mat_<double>(1, 8) << -0.0414513, 0.0097052, -0.00014156, 0.000671092, -0.00485765, 0, 0, 0);
     }
 
-    DeepTag deepTag{cpuImg,                     // input image, used for image resolution
-                    true,                       // tiled detection - config item
-                    true,                       // use scaled-down full image in addition to tiles - config item
-                    DeepTagType::APRILTAG_16H5, // tag type - config item
-                    cameraMatrix,               // from camera info
-                    distCoeffs,                 // from camera info
-                    tagSizeInMeter,             // physical tag size - config item
-                    modelPath,                  // use rospkg to find?
-                    detectOnnxModelFileName,    // onnx model filename - config item?
-                    decodeOnnxModelFileName};   // onnx model filename - config item?
+    DeepTag deepTag{cpuImg,                      // input image, used for image resolution
+                    false,                       // tiled detection - config item
+                    true,                        // use scaled-down full image in addition to tiles - config item
+                    DeepTagType::APRILTAG_36H11, // tag type - config item
+                    cameraMatrix,                // from camera info
+                    distCoeffs,                  // from camera info
+                    tagSizeInMeter,              // physical tag size - config item
+                    modelPath,                   // use rospkg to find?
+                    detectOnnxModelFileName,     // onnx model filename - config item?
+                    decodeOnnxModelFileName};    // onnx model filename - config item?
 
-    while(true)
+    // while(true)
     {
     for (int iteration = 0; iteration < 1; iteration++)
     {
@@ -74,8 +74,8 @@ int main(int argc, char *argv[])
         cv::Mat debugImg = cpuImg.clone();
         deepTag.visualize(debugImg, result);
         cv::imshow(inputImage.c_str(), debugImg);
-        cv::imwrite(inputImage + "_out.png", debugImg);
-        cv::waitKey(50);
+        // cv::imwrite(inputImage + "_out.png", debugImg);
+        cv::waitKey(0);
 #endif
     }
     }
