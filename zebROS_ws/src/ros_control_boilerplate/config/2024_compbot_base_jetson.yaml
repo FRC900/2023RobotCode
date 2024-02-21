@@ -225,6 +225,11 @@ note_conveyor_controller:
     dynamic_reconfigure: True
     neutral_mode: Coast
 
+note_intake_controller:
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
+    joint: intake
+    invert: counterclockwise_positive
+
 note_diverter_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter

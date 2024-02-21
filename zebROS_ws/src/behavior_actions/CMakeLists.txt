@@ -108,6 +108,7 @@ add_action_files(
 		Shooter2024.action
 		ShooterPivot2024.action
 		Clawster2024.action
+		intaking_2024.action
 		#GoToColor.action
 		#RotatePanel.action
 		DriveToObject.action

@@ -1,0 +1,7 @@
+uint8 SHOOTER=0
+uint8 CLAW=1
+uint8 destination
+---
+bool success
+---
+float64 percentComplete

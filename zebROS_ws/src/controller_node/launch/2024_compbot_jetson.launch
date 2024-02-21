@@ -62,6 +62,9 @@
 			 orchestra_controller
 			 orchestra_state_controller
 			note_diverter_controller
+
+			note_intake_controller
+
 			 note_conveyor_controller
 			 clawster_controller
 			 arm_controller
@@ -112,7 +115,7 @@
 	
 	<!-- <include file="$(find controller_node)/launch/hold_position.launch"/> -->
 	<include file="$(find controller_node)/launch/path_follower.launch"/>
-	
+	<include file="$(find behaviors)/launch/2024_intaking.launch"/>
 	<!-- <include file="$(find controller_node)/launch/distance_to_pose.launch"/> -->
 	<include file="$(find behaviors)/launch/auto_node.launch"/>
 	<!-- <include file="$(find behaviors)/launch/2024_arm.launch"/> -->
