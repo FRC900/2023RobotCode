@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         distCoeffs = (cv::Mat_<double>(1, 8) << -0.0414513, 0.0097052, -0.00014156, 0.000671092, -0.00485765, 0, 0, 0);
     }
 
-    DeepTag deepTag{cpuImg,                      // input image, used for image resolution
+    DeepTag deepTag{cpuImg.size(),               // input image size, used for image resolution
                     false,                       // tiled detection - config item
                     true,                        // use scaled-down full image in addition to tiles - config item
                     DeepTagType::APRILTAG_36H11, // tag type - config item

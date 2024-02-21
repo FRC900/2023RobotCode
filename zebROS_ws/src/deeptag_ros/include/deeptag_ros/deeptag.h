@@ -63,7 +63,7 @@ struct DeepTagResult
 class DeepTag
 {
     public:
-        explicit DeepTag(const cv::Mat &cpuImg,
+        explicit DeepTag(const cv::Size &cpuImg,
                          const bool tiledDetection,
                          const bool useScaledImage,
                          const DeepTagType dictionaryType,

@@ -14,11 +14,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Ofast -DNDEBUG -Wno-deprecated-de
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  #apriltag_ros_msgs
+  apriltag_msgs
   cv_bridge
   geometry_msgs
   image_geometry
   image_transport
+  nodelet
   roscpp
   sensor_msgs
   std_msgs
@@ -206,6 +207,36 @@ set_property(TARGET run_inference_benchmark PROPERTY CUDA_SEPARABLE_COMPILATION 
 # add_executable(fine_grid_test src/fine_grid_test.cpp)
 # target_link_libraries(fine_grid_test PUBLIC tensorrt_cpp_api)
 # set_target_properties(fine_grid_test PROPERTIES CUDA_ARCHITECTURES "86")
+
+## Declare a C++ executable
+add_executable(deeptag_node
+	src/deeptag_node.cpp
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(deeptag_node
+	${catkin_LIBRARIES}
+)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(deeptag_node
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${catkin_EXPORTED_TARGETS}
+)
+
+add_library(deeptag_nodelet
+	src/deeptag_nodelet.cpp
+)
+
+target_link_libraries(deeptag_nodelet
+	${catkin_LIBRARIES}
+)
+
+add_dependencies(deeptag_nodelet
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${catkin_EXPORTED_TARGETS}
+)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

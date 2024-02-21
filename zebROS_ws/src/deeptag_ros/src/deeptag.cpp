@@ -1,6 +1,6 @@
 #include "deeptag_ros/deeptag_impls.h"
 
-DeepTag::DeepTag(const cv::Mat &cpuImg,
+DeepTag::DeepTag(const cv::Size &imgSize,
                  const bool tiledDetection,
                  const bool useScaledImage,
                  const DeepTagType dictionaryType,
@@ -71,7 +71,7 @@ DeepTag::DeepTag(const cv::Mat &cpuImg,
     {
         makeImpl.operator()<0>();
     }
-    else if (cpuImg.rows <= 720)
+    else if (imgSize.height <= 720)
     {
         makeImpl.operator()<4>();
     }
