@@ -6,6 +6,7 @@ uint8 PLOP_FRONT=3
 uint8 mode
 float64 distance
 bool setup_only # just spin up
+bool leave_spinning
 ---
 # result
 bool success
