@@ -166,8 +166,7 @@ ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState &joy_state
 				cmd_vel.angular.z = 0.0;
 			}
 		}
-		//ROS_WARN_STREAM("2023-Publishing " << cmd_vel.linear.x << " " << cmd_vel.linear.y << " " << cmd_vel.angular.z << " " << original_angular_z);
-		
+
 		/*original_angular_z == 0.0*/ 
 		if((cmd_vel.linear.x == 0.0) && (cmd_vel.linear.y == 0.0) && ( cmd_vel.angular.z == 0.0 ) && !sendRobotZero_)
 		{
@@ -184,6 +183,11 @@ ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState &joy_state
 		// 0.002 is slightly more than the 0.001 we set for coast mode
 		else if((cmd_vel.linear.x != 0.0) || (cmd_vel.linear.y != 0.0) || (fabs(cmd_vel.angular.z) >= 0.002))
 		{
+			if (alliance_color == frc_msgs::MatchSpecificData::ALLIANCE_COLOR_RED) {
+				// because map-relative forward (which we now use) is from blue -> red, we need to invert cmd_vel for red driving.
+				cmd_vel.linear.x *= -1;
+				cmd_vel.linear.y *= -1;
+			}
 			JoystickRobotVel_.publish(cmd_vel);
 			sendRobotZero_ = false;
 			no_driver_input_ = false;

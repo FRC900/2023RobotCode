@@ -447,9 +447,16 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2023ConstPtr &button_box)
 	if(button_box->bottomRightWhiteButton) {
 	}
 	if(button_box->bottomRightWhitePress) {
-		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU to 180");
+		// for zeroing, assuming the robot starts facing away from the speaker (yes this is 2024 but we need to test it)
 		imu_zero_msgs::ImuZeroAngle imu_cmd;
-		imu_cmd.request.angle = 180.0;
+		if (alliance_color == frc_msgs::MatchSpecificData::ALLIANCE_COLOR_RED) {
+			ROS_INFO_STREAM("teleop_joystick_comp_2023 : red alliance");
+			imu_cmd.request.angle = 180.0;
+		} else {
+			ROS_INFO_STREAM("teleop_joystick_comp_2023 : blue or unknown alliance");
+			imu_cmd.request.angle = 0.0;
+		}
+		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU to " << imu_cmd.request.angle);
 		IMUZeroSrv.call(imu_cmd);
 		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing swerve odom");
 		std_srvs::Empty odom_cmd;
