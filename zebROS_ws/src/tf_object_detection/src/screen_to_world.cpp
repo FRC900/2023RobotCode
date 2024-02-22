@@ -52,7 +52,7 @@ private:
 		else
 		{
 			ROS_ERROR_STREAM("Unknown depth algorithm type : " << algorithm_str);
-			return -1;
+			return;
 		}
 
 		// All algorithms require depth info, with the exception of TWO_D_ONLY
@@ -90,18 +90,136 @@ private:
 			obj_depth_sync = std::make_unique<message_filters::Synchronizer<ObjDepthSyncPolicy>>(ObjDepthSyncPolicy(10), *obsub, *depth_sub);
 
 			obj_depth_sync->setMaxIntervalDuration(ros::Duration(timeout));
-			obj_depth_sync->registerCallback(boost::bind(callback, _1, _2));
+			obj_depth_sync->registerCallback(boost::bind(&ScreenToWorld::callback, this, _1, _2));
 		}
 		else
 		{
-			sub = nh.subscribe<field_obj::TFDetection>("obj_detection_msg", 1, boost::bind(callback, _1, dummy_image_ptr));
+			sub = nh.subscribe<field_obj::TFDetection>("obj_detection_msg", 1, boost::bind(&ScreenToWorld::callback, this, _1, dummy_image_ptr));
 		}
 
 		// Set up a simple subscriber to capture camera info
-		ros::Subscriber camera_info_sub_ = nh.subscribe("/zed_objdetect/left/camera_info", 1, camera_info_callback);
+		ros::Subscriber camera_info_sub_ = nh.subscribe("/zed_objdetect/left/camera_info", 1, &ScreenToWorld::camera_info_callback, this);
 
 		// And a publisher to published converted 3d coords
 		pub = private_nh.advertise<field_obj::Detection>("object_detection_world", 1);
-	}
-}
+	};
+	void camera_info_callback(const sensor_msgs::CameraInfoConstPtr &info) {
+		caminfo = *info;
+		caminfovalid = true;
+	};
+	void callback(const field_obj::TFDetectionConstPtr &objDetectionMsg, const sensor_msgs::ImageConstPtr &depthMsg) {
+		if (!caminfovalid)
+		{
+			return;
+		}
+
+		cv_bridge::CvImageConstPtr cvDepth = cv_bridge::toCvShare(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
+
+		// Initialize published message with header info from objDetectionMsg
+		field_obj::Detection out_msg;
+		out_msg.header = objDetectionMsg->header;
+		// Remove _optical_frame from the camera frame ID if present
+		std::string frame_id = objDetectionMsg->header.frame_id;
+		const size_t idx = frame_id.rfind("_optical_frame");
+		if (idx != std::string::npos)
+		{
+			frame_id.erase(idx);
+			frame_id += "_frame";
+		}
+		out_msg.header.frame_id = frame_id;
+		// Create objects needed to convert from 2d screen to 3d world coords
+		const ConvertCoords cc(caminfo);
+		// Iterate over each object. Convert from camera to world coords.
+		for (const auto &camObject : objDetectionMsg->objects)
+		{
+			if (fabs(camObject.br.x - camObject.tl.x) < 1) {
+				ROS_INFO_STREAM("less than 1 x");
+				return;
+			}
+
+			if (fabs(camObject.br.y - camObject.tl.y) < 1) {
+				ROS_INFO_STREAM("less than 1 x");
+				return;
+			}
+			// Create an output object, copy over info from the object detection info
+			field_obj::Object worldObject;
+			worldObject.id = camObject.label;
+			worldObject.confidence = camObject.confidence;
+			// Generate a bounding rect (in camera coords) from the camera object
+			const cv::Point rectTL(camObject.tl.x, camObject.tl.y);
+			const cv::Point rectBR(camObject.br.x, camObject.br.y);
+			const cv::Rect  rect(rectTL, rectBR);
+
+			// Find the center of the detected object
+			const cv::Point2f objRectCenter = 0.5 * (rectTL + rectBR);
+
+			// Get the distance to the object by finding contours within the depth data inside the
+			// object's bounding rectangle.
+			const float objDistance = usefulDepthMat(cvDepth->image, rect, algorithm, false);
+			if (objDistance < 0 || isnan(objDistance))
+			{
+				ROS_ERROR_STREAM_THROTTLE(0.5, "Depth of object at " << objRectCenter << " with bounding rect " << rect << " invalid : " << objDistance);
+				return;
+			}
+			const cv::Point3f world_coord_scaled = cc.screen_to_world(rect, worldObject.id, objDistance);
+
+			// Convert from camera_optical_frame to camera_frame - could do this
+			// using transforms in the future?
+			worldObject.location.x = world_coord_scaled.z;
+			worldObject.location.y = -world_coord_scaled.x;
+			worldObject.location.z = world_coord_scaled.y;
+
+			worldObject.angle = atan2(worldObject.location.y, worldObject.location.x) * 180. / M_PI;
+
+			// Add the 3d object info to the list of objects in the output message
+			out_msg.objects.push_back(worldObject);
+		}
+
+		pub.publish(out_msg);
+
+		if (out_msg.objects.size() > 0)
+		{
+			//Transform between goal frame and odometry/map.
+			static tf2_ros::TransformBroadcaster br;
+			for(size_t i = 0; i < out_msg.objects.size(); i++)
+			{
+				geometry_msgs::TransformStamped transformStamped;
+
+				transformStamped.header.stamp = out_msg.header.stamp;
+				transformStamped.header.frame_id = out_msg.header.frame_id;
+				std::stringstream child_frame;
+				// tf gets messed up if a transform name starts with a number
+				if (isdigit(out_msg.objects[i].id[0])) {
+					child_frame << "obj_";
+				}
+				child_frame << out_msg.objects[i].id;
+				child_frame << "_";
+				child_frame << i;
+				transformStamped.child_frame_id = child_frame.str();
+
+				transformStamped.transform.translation.x = out_msg.objects[i].location.x;
+				transformStamped.transform.translation.y = out_msg.objects[i].location.y;
+				transformStamped.transform.translation.z = out_msg.objects[i].location.z;
+
+				// Can't detect rotation yet, so publish 0 instead
+				tf2::Quaternion q;
+				q.setRPY(0, 0, 0);
+
+				transformStamped.transform.rotation.x = q.x();
+				transformStamped.transform.rotation.y = q.y();
+				transformStamped.transform.rotation.z = q.z();
+				transformStamped.transform.rotation.w = q.w();
+
+				br.sendTransform(transformStamped);
+			}
+		}
+	};
+
+
+	// I don't know how to set default values for these class members
+	DepthCalculationAlgorithm algorithm;
+	ros::Publisher pub;
+	sensor_msgs::CameraInfo caminfo;
+	bool caminfovalid;
+};
 
