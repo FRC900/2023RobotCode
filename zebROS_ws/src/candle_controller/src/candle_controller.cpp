@@ -4,10 +4,8 @@
 #include <realtime_tools/realtime_buffer.h>
 #include <pluginlib/class_list_macros.h>
 
-#include <chrono>
 #include <string>
 #include <mutex>
-#include <optional>
 #include <variant>
 #include <vector>
 
@@ -124,7 +122,7 @@ public:
         this->candle_handle->setBrightness(brightness);
 
         if (!cmd_buf_mutex.try_lock()) { return; }
-        std::lock_guard<std::mutex> lock(cmd_buf_mutex, std::adopt_lock);
+        std::lock_guard lock(cmd_buf_mutex, std::adopt_lock);
 
         for (Command& cmd : command_buffer) {
             if (std::holds_alternative<LEDGroup>(cmd)) {
@@ -147,8 +145,6 @@ private:
     ros::ServiceServer brightness_service;
     ros::ServiceServer animation_service;
 
-    //realtime_tools::RealtimeBuffer<LEDGroupStamped> led_buffer;
-    //realtime_tools::RealtimeBuffer<AnimationStamped> animation_buffer;
     std::vector<Command> command_buffer;
     std::mutex cmd_buf_mutex;
     realtime_tools::RealtimeBuffer<double> brightness_buffer;
@@ -167,8 +163,8 @@ private:
     bool colourCallback(candle_controller_msgs::Colour::Request& req, candle_controller_msgs::Colour::Response&) {
         if (this->isRunning()) { 
             LEDGroup leds = LEDGroup(req.start, req.count, Colour(req.red, req.green, req.blue, req.white));
-            std::lock_guard<std::mutex> lock(cmd_buf_mutex);
-            command_buffer.push_back(Command (leds));
+            std::lock_guard lock(cmd_buf_mutex);
+            command_buffer.emplace_back(leds);
 
             return true;
         } else {
@@ -217,8 +213,8 @@ private:
 
             ROS_INFO_STREAM("Setting CANdle animation to animation with ID " << (int) animation.class_type);
             
-            std::lock_guard<std::mutex> lock(cmd_buf_mutex);
-            command_buffer.push_back(Command (animation));
+            std::lock_guard lock(cmd_buf_mutex);
+            command_buffer.emplace_back(animation);
             
             return true;
         } else {
