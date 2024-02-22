@@ -13,11 +13,23 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
-// TODO: Add 2024 versions
+class AutoModeCalculator2024 : public AutoModeCalculator {
+public:
+	AutoModeCalculator2024() = default;
+	uint8_t calculateAutoMode() override {
+		return auto_mode_;
+	}
+	void set_auto_mode(const uint8_t auto_mode) {
+		auto_mode_ = auto_mode;
+	}
+private:
+	uint8_t auto_mode_{0};
+};
+
+AutoModeCalculator2024 auto_calculator;
+
+// TODO: Add 2024 versions, initialize in main before calling generic inititalizer
 //std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
-//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
-//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
-//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
 {    
