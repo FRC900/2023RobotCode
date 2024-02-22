@@ -1,0 +1,8 @@
+# goal
+---
+# result
+bool success
+---
+# feedback
+bool shooting
+float64 percent_complete
