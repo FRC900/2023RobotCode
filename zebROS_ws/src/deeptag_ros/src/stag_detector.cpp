@@ -16,7 +16,7 @@
 #include "deeptag_ros/stage1_grid_group.h"       // for Stage1GridGroup
 #include "deeptag_ros/stage1_ssd_group.h"        // for Stage1SSDGroup
 #include "deeptag_ros/tag_detect_info.h"
-#define DEBUG
+// #define DEBUG
 #include "deeptag_ros/debug.h"
 
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
@@ -115,7 +115,7 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::generatePriors(const ushort2 &im
     const auto detectInputdim = m_detectEngine->getContextInputDims()[0];
     std::array<ushort2, NUM_TILES> tileOffsets;
     m_detectEngine->getTileOffsets(tileOffsets);
-    std::cout << __PRETTY_FUNCTION__ << " detectInputDim = " << detectInputdim.d[2] << ", " << detectInputdim.d[3] << std::endl;
+    // std::cout << __PRETTY_FUNCTION__ << " detectInputDim = " << detectInputdim.d[2] << ", " << detectInputdim.d[3] << std::endl;
     const ushort2 modelInputDims{static_cast<unsigned short>(detectInputdim.d[3]), static_cast<unsigned short>(detectInputdim.d[2])}; // W, H
     if (m_gridPrior.generate(modelInputDims,
                              8,
@@ -145,8 +145,8 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::generatePriors(const ushort2 &im
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
 void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::runSoftmax()
 {
-    std::cout << "m_gridPrior.size() = " << m_gridPrior.getOutput().size() << std::endl;
-    std::cout << "m_ssdGridPrior.size() = " << m_ssdGridPrior.getOutput().size() << std::endl;
+    // std::cout << "m_gridPrior.size() = " << m_gridPrior.getOutput().size() << std::endl;
+    // std::cout << "m_ssdGridPrior.size() = " << m_ssdGridPrior.getOutput().size() << std::endl;
     m_timing.start("grid_softmax", m_detectEngine->getCudaStream());
     // Here, bg and foreground confidence values are offset by the length of the input,
     // so multiply index by 1 and add len, to read {idx, idx+len}
@@ -205,11 +205,11 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::runGroupers(const ushort2 &imgSi
     const double imageScale = std::max(static_cast<double>(imgSize.x) / inputDim.d[3], static_cast<double>(imgSize.y) / inputDim.d[2]);
 
     m_timing.start("grid_group", m_detectEngine->getCudaStream());
-    printf("m_cornerConfidenceFilter.getOutput().size() = %ld\n", m_cornerConfidenceFilter.getOutput().size());
+    // printf("m_cornerConfidenceFilter.getOutput().size() = %ld\n", m_cornerConfidenceFilter.getOutput().size());
     m_gridGrouper.compute(m_cornerConfidenceFilter.getOutput(), m_gridGrouperSigma * imageScale, 0.9f, m_detectEngine->getCudaStream());
     m_timing.end("grid_group", m_detectEngine->getCudaStream());
 
-    printf("m_ssdConfidenceFilter.getOutput().size() = %ld\n", m_ssdConfidenceFilter.getOutput().size());
+    // printf("m_ssdConfidenceFilter.getOutput().size() = %ld\n", m_ssdConfidenceFilter.getOutput().size());
     m_timing.start("ssd_group", m_ssdCudaStream);
     m_ssdGrouper.compute(m_ssdConfidenceFilter.getOutput(), m_ssdGrouperSigma * imageScale, 0.9f, m_ssdCudaStream);
     m_timing.end("ssd_group", m_ssdCudaStream);

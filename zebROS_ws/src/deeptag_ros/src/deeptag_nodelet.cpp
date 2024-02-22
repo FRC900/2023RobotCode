@@ -33,7 +33,7 @@ private:
         camera_image_sub_ = base_it.subscribe("image_rect_color", 1, &DeeptagRosNodelet::callback, this);
         camera_info_sub_ = base_nh.subscribe("camera_info", 1, &DeeptagRosNodelet::camera_info_callback, this);
         pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tags", 2);
-        pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 2);
+        pub_apriltag_poses_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 2);
         image_transport::ImageTransport it(nh_);
         pub_debug_image_ = it.advertise("debug_image", 2);
     }
@@ -94,15 +94,15 @@ private:
         const cv::Mat distortion_coeffs = (cv::Mat_<double>(1, 8) << model.distortionCoeffs().at<double>(0), model.distortionCoeffs().at<double>(1), model.distortionCoeffs().at<double>(2), model.distortionCoeffs().at<double>(3), model.distortionCoeffs().at<double>(4), 0, 0, 0);
 
         deep_tag_ = std::make_unique<DeepTag>(model.fullResolution(),      // input image, used for image resolution
-                                                false,                       // tiled detection - config item
-                                                true,                        // use scaled-down full image in addition to tiles - config item
-                                                tag_type,                    // tag type - config item
-                                                intrinsic_matrix,            // from camera info
-                                                distortion_coeffs,           // from camera info
-                                                tagSizeInMeter,              // physical tag size - config item
-                                                model_path,                  // use rospkg to find?
-                                                detect_onnx_model_filename,  // onnx model filename - config item?
-                                                decode_onnx_model_filename); // onnx model filename - config item?
+                                              false,                       // tiled detection - config item
+                                              true,                        // use scaled-down full image in addition to tiles - config item
+                                              tag_type,                    // tag type - config item
+                                              intrinsic_matrix,            // from camera info
+                                              distortion_coeffs,           // from camera info
+                                              tagSizeInMeter,              // physical tag size - config item
+                                              model_path,                  // use rospkg to find?
+                                              detect_onnx_model_filename,  // onnx detect model filename - config item?
+                                              decode_onnx_model_filename); // onnx decode model filename - config item?
     }
 
     void callback(const sensor_msgs::ImageConstPtr &frameMsg)
@@ -124,6 +124,7 @@ private:
             apriltag_array_msg.apriltags.emplace_back();
             
             auto &msg = apriltag_array_msg.apriltags.back();
+            msg.id = r.m_tagId;
             msg.center.x = r.m_center.x;
             msg.center.y = r.m_center.y;
             for (size_t i = 0; i < 4; i++)
@@ -151,6 +152,15 @@ private:
             msg.orientation = tf2::toMsg(quaternion_tf2);
         }
 
+        if (pub_debug_image_.getNumSubscribers() > 0)
+        {
+            debug_image_.header = frameMsg->header;
+            debug_image_.encoding = sensor_msgs::image_encodings::BGR8;
+            debug_image_.image = cv_frame->image.clone();
+            deep_tag_->visualize(debug_image_.image, result);
+            pub_debug_image_.publish(debug_image_.toImageMsg());
+        }
+
         pub_apriltag_detections_.publish(apriltag_array_msg);
         pub_apriltag_poses_.publish(apriltag_pose_msg);
     }
@@ -160,6 +170,7 @@ private:
     image_transport::Subscriber camera_image_sub_;
     ros::Subscriber camera_info_sub_;
     image_transport::Publisher pub_debug_image_;
+    cv_bridge::CvImage debug_image_;
     ros::Publisher pub_apriltag_detections_;
     ros::Publisher pub_apriltag_poses_;
 

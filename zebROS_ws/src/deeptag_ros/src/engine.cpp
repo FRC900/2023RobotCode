@@ -480,7 +480,7 @@ bool Engine<CALIBRATOR>::runInference(const std::vector<std::vector<GpuImageWrap
         const auto dims = inputDimsFromInputImage(batchInput[0], m_inputDims[i]);
 
         const nvinfer1::Dims4 inputDims = {batchSize, dims.d[1], dims.d[2], dims.d[3]};
-        printf("setInputShape, dims = %d %d %d %d\n", inputDims.d[0], inputDims.d[1], inputDims.d[2], inputDims.d[3]);
+        // printf("setInputShape, dims = %d %d %d %d\n", inputDims.d[0], inputDims.d[1], inputDims.d[2], inputDims.d[3]);
         if (!m_context->setInputShape(m_inputTensorNames[i].c_str(), inputDims)) // Define the batch size
         {
             std::cout << "===== Error =====" << std::endl;

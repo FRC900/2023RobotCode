@@ -13,7 +13,7 @@
 #include "deeptag_ros/unit_tag_template.h"        // for UnitTagTemplateArucotag
 #include "deeptag_ros/warp_perspective_points.h"  // for warpPerspectivePts
 
-#define DEBUG
+// #define DEBUG
 #include "deeptag_ros/debug.h"
 
 template <class MARKER_DICT, size_t GRID_SIZE>
