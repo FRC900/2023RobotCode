@@ -24,30 +24,21 @@
 
 #include "ddynamic_reconfigure/ddynamic_reconfigure.h"
 
-#include "behavior_actions/AutoMode.h"
-
-#include "path_follower_msgs/holdPositionAction.h"
-
-#include <imu_zero_msgs/ImuZeroAngle.h>
-#include <angles/angles.h>
 #include "teleop_joystick_control/RobotOrientationDriver.h"
-#include <talon_swerve_drive_controller_msgs/SetXY.h>
-#include <talon_state_msgs/TalonFXProState.h>
 #include <std_srvs/SetBool.h>
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
+
+#include "imu_zero_msgs/ImuZeroAngle.h"
+#include "talon_swerve_drive_controller_msgs/SetXY.h"
 
 struct DynamicReconfigVars config;
 
 bool diagnostics_mode = false;
 
-std::vector <std::string> topic_array;
-
 ros::ServiceClient ParkSrv;
 ros::ServiceClient IMUZeroSrv;
 ros::ServiceClient SwerveOdomZeroSrv;
-
-bool sendSetAngle = true;
 
 bool joystick1_left_trigger_pressed = false;
 bool joystick1_right_trigger_pressed = false;
@@ -80,9 +71,9 @@ ros::ServiceClient setCenterSrv;
 
 Driver::Driver(ros::NodeHandle n, DynamicReconfigVars config) 
 	: teleop_cmd_vel_{TeleopCmdVel<DynamicReconfigVars>(config)}
-	, robot_orientation_driver_{RobotOrientationDriver(n)}
-	, BrakeSrv_{n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, {{"tcp_nodelay", "1"}})}
 	, JoystickRobotVel_{n.advertise<geometry_msgs::Twist>("swerve_drive_controller/cmd_vel", 1)}
+	, BrakeSrv_{n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, {{"tcp_nodelay", "1"}})}
+	, robot_orientation_driver_{RobotOrientationDriver(n)}
 {
 	teleop_cmd_vel_.setRobotOrient(false, 0.0);
 	teleop_cmd_vel_.resetCaps();
@@ -149,10 +140,10 @@ ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState joy_state,
 
 		if (original_angular_z == 0.0 && old_angular_z_ != 0.0) {
 			ROS_WARN_STREAM_THROTTLE(1, "Send set angle = false");
-			sendSetAngle = false;
+			sendSetAngle_ = false;
 		}
 
-		if (original_angular_z == 0.0 && !sendSetAngle) {
+		if (original_angular_z == 0.0 && !sendSetAngle_) {
 			ROS_INFO_STREAM("Old angular z " << old_angular_z_ << " signbit " << signbit(old_angular_z_));
 			double multiplier = 1;
 			if (signbit(old_angular_z_)) {
@@ -163,7 +154,7 @@ ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState joy_state,
 			}
 			ROS_INFO_STREAM("Locking to current orientation!");
 			robot_orientation_driver_.setTargetOrientation(robot_orientation_driver_.getCurrentOrientation() + multiplier * config.angle_to_add , true /* from telop */);
-			sendSetAngle = true;
+			sendSetAngle_ = true;
 		}
 		ROS_INFO_STREAM_THROTTLE(1, "CMD_VEL angular z" << cmd_vel.angular.z);
 
@@ -217,8 +208,6 @@ void zero_all_diag_commands(void)
 	// should zero out all diagnostic mode commands
 }
 
-std::unique_ptr<actionlib::SimpleActionClient<path_follower_msgs::holdPositionAction>> distance_ac;
-
 void preemptActionlibServers(void)
 {
 	ROS_WARN_STREAM("Preempting ALL actionlib servers!");
@@ -229,8 +218,6 @@ void buttonBoxCallback(const ros::MessageEvent<std_msgs::Bool const>& event)
 {
 	ROS_WARN("Called unimplemented function \"buttonBoxCallback\"");
 }
-
-bool aligned_to_game_piece = false;
 
 #ifdef NEED_JOINT_STATES
 void jointStateCallback(const sensor_msgs::JointState &joint_state)
@@ -405,8 +392,7 @@ void TeleopInitializer::init() {
 		std::stringstream s;
 		s << "/frcrobot_rio/joystick_states";
 		s << (j+1);
-		topic_array.push_back(s.str());
-		subscriber_array.push_back(n_.subscribe<frc_msgs::JoystickState>(topic_array[j], 1, boost::bind(evaluateCommands, _1, j)));
+		subscriber_array.push_back(n_.subscribe<frc_msgs::JoystickState>(s.str(), 1, boost::bind(evaluateCommands, _1, j)));
 	}
 
 	ROS_WARN("joy_init");

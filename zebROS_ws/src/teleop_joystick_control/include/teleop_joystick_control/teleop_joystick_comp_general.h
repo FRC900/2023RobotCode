@@ -1,25 +1,31 @@
 #ifndef INC_TELEOP_JOYSTICK_COMP_GENERAL_H
 #define INC_TELEOP_JOYSTICK_COMP_GENERAL_H
 
-// TODO: Rename file (is actually general)
 #include "teleop_joystick_control/TeleopCmdVel2023.h"
+
+#include "behavior_actions/AutoMode.h"
+#include "teleop_joystick_control/RobotOrient.h"
+#include "teleop_joystick_control/RobotOrientationDriver.h"
+#include "frc_msgs/MatchSpecificData.h"
 
 // There's gotta be a better name for this
 class AutoModeCalculator {
 public:
 	virtual uint8_t calculateAutoMode() = 0;
 	void register_publisher(ros::NodeHandle n) {
-		auto_mode_select_pub = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
-		ros::Timer timer = n.createTimer(ros::Duration(0.1), &AutoModeCalculator::publisher_callback, this);
+		auto_mode_select_pub_ = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
+		timer_ = n.createTimer(ros::Duration(0.1), &AutoModeCalculator::publisher_callback, this);
 	}	
 	void publisher_callback(const ros::TimerEvent&) {
 		behavior_actions::AutoMode msg;
 		msg.header.stamp = ros::Time::now();
 		msg.auto_mode = calculateAutoMode();
-		auto_mode_select_pub.publish(msg);
+		auto_mode_select_pub_.publish(msg);
 	}
+	virtual ~AutoModeCalculator() = default;
 private:
-	ros::Publisher auto_mode_select_pub;
+	ros::Publisher auto_mode_select_pub_;
+	ros::Timer timer_;
 };
 
 struct DynamicReconfigVars
@@ -55,8 +61,8 @@ public:
 	ros::Time evalateDriverCommands(const frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config);
 	void setTargetOrientation(const double angle, const bool from_teleop, const double velocity = (0.0));
 	bool getNoDriverInput();
-	bool orientCallback(teleop_joystick_control::RobotOrient::Request& req,
-		teleop_joystick_control::RobotOrient::Response&/* res*/);
+	bool orientCallback(teleop_joystick_control::RobotOrient::Request &req,
+						teleop_joystick_control::RobotOrient::Response & /* res*/);
 	bool waitForBrakeSrv(ros::Duration startup_wait_time);
 
 	TeleopCmdVel<DynamicReconfigVars> teleop_cmd_vel_;
@@ -65,12 +71,13 @@ private:
 	
 	ros::ServiceClient BrakeSrv_;
 	RobotOrientationDriver robot_orientation_driver_;
-	int direction_x_;
-	int direction_y_;
-	int direction_z_;
-	bool sendRobotZero_;
-	bool no_driver_input_;
-	double old_angular_z_;
+	int direction_x_{0};
+	int direction_y_{0};
+	int direction_z_{0};
+	bool sendRobotZero_{false};
+	bool no_driver_input_{false};
+	double old_angular_z_{0.0};
+	bool sendSetAngle_{true};
 };
 
 extern bool diagnostics_mode;
@@ -84,7 +91,6 @@ extern ros::ServiceClient setCenterSrv;
 extern ros::Publisher auto_mode_select_pub;
 extern bool joystick1_left_trigger_pressed;
 extern bool joystick1_right_trigger_pressed;
-extern bool sendSetAngle;
 extern uint8_t alliance_color;
 extern bool called_park_endgame;
 
@@ -116,7 +122,6 @@ private:
 	std::vector<DDRVariable> custom_vars;
 	ros::NodeHandle n_;
 	ros::NodeHandle n_params_;
-
 };
 
 #endif

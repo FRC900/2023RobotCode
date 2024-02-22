@@ -7,43 +7,17 @@
 #ifdef NEED_JOINT_STATES
 #include "sensor_msgs/JointState.h"
 #endif
-#include "geometry_msgs/Twist.h"
-#include "std_msgs/Bool.h"
-#include <string>
-#include <cmath>
-
-#include "std_srvs/Empty.h"
-
-#include <vector>
-#include "teleop_joystick_control/RobotOrient.h"
-
-#include "frc_msgs/MatchSpecificData.h"
-
 #include "actionlib/client/simple_action_client.h"
 
-#include "ddynamic_reconfigure/ddynamic_reconfigure.h"
-
-#include "behavior_actions/AutoMode.h"
-
-#include "path_follower_msgs/holdPositionAction.h"
-
-#include <imu_zero_msgs/ImuZeroAngle.h>
-#include <angles/angles.h>
-#include "teleop_joystick_control/RobotOrientationDriver.h"
-#include <talon_swerve_drive_controller_msgs/SetXY.h>
 #include <talon_state_msgs/TalonFXProState.h>
-#include <std_srvs/SetBool.h>
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
-
-//frc_msgs::ButtonBoxState2023 button_box;
-
 // TODO: Add 2024 versions
-//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
-//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
-//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
-//std::shared_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
+//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
+//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Placing2023Action>> placing_ac;
+//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::FourbarElevatorPath2023Action>> pathing_ac;
+//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>> align_and_place_ac;
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
 {    
@@ -478,6 +452,12 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 	}
 }
 
+#if 0
+void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
+{
+}
+#endif
+
 #ifdef NEED_JOINT_STATES
 void jointStateCallback(const sensor_msgs::JointState &joint_state)
 {
@@ -490,11 +470,10 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "Joystick_controller");
 	ros::NodeHandle n;
 	ros::NodeHandle n_params(n, "teleop_params");
-	ros::NodeHandle n_diagnostics_params(n, "teleop_diagnostics_params");
-	ros::NodeHandle n_swerve_params(n, "/frcrobot_jetson/swerve_drive_controller");
 
 	TeleopInitializer initializer;
 	initializer.set_n_params(n_params);
 	initializer.init();
+	// ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 	return 0;
 }
