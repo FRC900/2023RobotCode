@@ -518,7 +518,8 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 	//Only do this for the first joystick
 	if(joystick_id == 0)
 	{
-		static ros::Time last_header_stamp = driver->evalateDriverCommands(*joystick_state, config);
+		static ros::Time last_header_stamp = ros::Time(0);
+		last_header_stamp = driver->evalateDriverCommands(*joystick_state, config);
 
 		if(!diagnostics_mode)
 		{
@@ -1011,8 +1012,6 @@ int main(int argc, char **argv)
 	initializer.add_custom_var( DDRVariable {"cone_tolerance", config2023.cone_tolerance, "cone_tolerance", 0.0, 0.5} );
 	initializer.add_custom_var( DDRVariable {"cube_tolerance", config2023.cube_tolerance, "cube_tolerance", 0.0, 0.5} );
 
-	initializer.init();
-
 	FourbarRezeroSrv = n.serviceClient<std_srvs::Empty>("/frcrobot_jetson/four_bar_controller_2023/rezero_service", false, {{"tcp_nodelay", "1"}});
 
 	ros::Subscriber talon_states_sub = n.subscribe("/frcrobot_jetson/talonfxpro_states", 1, &talonFXProStateCallback);
@@ -1025,5 +1024,8 @@ int main(int argc, char **argv)
 	align_and_place_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::AlignAndPlaceGrid2023Action>>("/align_and_place_grid", true);
 
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
+
+	initializer.init();
+
 	return 0;
 }

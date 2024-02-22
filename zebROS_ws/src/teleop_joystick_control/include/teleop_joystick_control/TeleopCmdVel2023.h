@@ -23,6 +23,10 @@ struct StrafeSpeeds
 };
 
 struct MovementCaps {
+	MovementCaps(double speed_cap, double rotation_cap) {
+		speed_cap_ = speed_cap;
+		rotation_cap_ = rotation_cap;
+	}
 	double speed_cap_{};
 	double rotation_cap_{};
 };
@@ -62,13 +66,12 @@ class TeleopCmdVel
 
 		void setCaps(const double speed_cap, const double rotation_cap)
 		{
-			movement_caps_->speed_cap_ = speed_cap;
-			movement_caps_->rotation_cap_ = rotation_cap;
+			movement_caps_ = MovementCaps(speed_cap, rotation_cap);
 		}
 
 		void resetCaps(void)
 		{
-			movement_caps_ = {};
+			movement_caps_ = std::nullopt;
 		}
 
 		void restoreRobotOrient(void)

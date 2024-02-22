@@ -127,8 +127,7 @@ void Driver::setTargetOrientation(const double angle, const bool from_teleop, co
 	robot_orientation_driver_.setTargetOrientation(angle, from_teleop, velocity);
 }
 
-ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState joy_state, const DynamicReconfigVars& config) {
-	static ros::Time last_header_stamp = joy_state.header.stamp;
+ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState &joy_state, const DynamicReconfigVars& config) {
 
 	teleop_cmd_vel_.updateRateLimit(config);
 	// TODO : make swerve invert the yaw so we can deal in ccw-positive angles
@@ -193,7 +192,7 @@ ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState joy_state,
 		}
 		old_angular_z_ = original_angular_z;
 	}
-	return last_header_stamp;
+	return joy_state.header.stamp;
 }
 
 void publish_diag_cmds(void)
