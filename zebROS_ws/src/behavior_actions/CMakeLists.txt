@@ -105,6 +105,7 @@ add_action_files(
 		FourbarElevatorPath2023.action
 		AlignToSubstation2023.action
 		AlignToSpeaker2024.action
+		AlignToShooterSpeaker2024.action
 		NoteDiverter.action
 		Shooter2024.action
 		ShooterPivot2024.action
