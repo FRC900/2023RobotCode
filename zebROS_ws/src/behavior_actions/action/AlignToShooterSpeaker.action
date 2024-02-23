@@ -1,0 +1,10 @@
+#goal
+unit8 do_nothing = 0
+unit8 align_and_shoot = 1
+unit8 mode
+---
+#result
+bool success
+---
+#feedback
+#no idea...
