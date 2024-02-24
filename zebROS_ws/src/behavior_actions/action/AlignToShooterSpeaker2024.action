@@ -1,7 +1,5 @@
 #goal
-uint8 do_nothing = 0
-uint8 align_and_shoot = 1
-uint8 mode
+
 ---
 #result
 bool success

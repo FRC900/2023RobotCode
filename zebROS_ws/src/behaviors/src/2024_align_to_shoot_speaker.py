@@ -45,84 +45,66 @@ class AlignAndShoot(object):
         self.server.start()
         rospy.loginfo("server started")
 
-    def distance_and_angle_callback(data):
+    def distance_and_angle_callback(self, data):
         global dist_value
         global speaker_angle
 
         dist_value = data.distance
         speaker_angle = data.angle
 
-    def execute_cb(self, goal: AlignToShooterSpeaker2024Goal):
+    def execute_cb(self):
         global dist_value
         global speaker_angle
 
-        r= rospy.Rate(50)
+        r = rospy.Rate(50)
         align_to_speaker_goal = AlignToSpeaker2024Goal()
         shooting_goal = Shooting2024Goal()
 
+        align_to_speaker_goal.align_forever = False #sets the align to speaker thing to true? which should actually enable the stuff to move accordingly?
+        align_to_speaker_done = False
+        rospy.loginfo("set align thing to align")
 
-        while True:
-            if rospy.is_shutdown():
-                break
-            r.sleep()    
+        def align_to_speaker_done_cb(state, result):
+            nonlocal align_to_speaker_done
+            align_to_speaker_done = True
+        self.align_to_speaker_client.send_goal(align_to_speaker_goal, done_cb=align_to_speaker_done_cb)
+        rospy.loginfo("told align to spekaer to begin aligning")
 
-            if goal.mode == goal.align_and_shoot:
-                
-
-                align_to_speaker_goal.align_forever = True #sets the align to speaker thing to true? which should actually enable the stuff to move accordingly?
-                self.align_to_speaker_client.send_goal(align_to_speaker_goal)
-                rospy.loginfo("told align to spekaer to begin aligning")
-
-                
-                shooting_goal.distance = dist_value
-                shooting_goal.distance = 0
-                self.shooting_client.send_goal(shooting_goal)
-                #so send the distance value to the shooting server, by sending this, it shoot activateh shooting server?
-                #also sets the location of where we are trying to shoot
-                rospy.loginfo("sent shooting server shooting distance value")
-
-                self.result.success = True
-                self.server.set_succeeded(self.result)
-                break
-                
-            if goal.mode == goal.do_nothing:
-                rospy.loginfo("set to do nothing")
-                self.result.success = True
-                self.server.set_succeeded(self.result)
-                break
-         
+        while (not (align_to_speaker_done) and not rospy.is_shutdown()):
+            rospy.loginfo_throttle(0.5, "2024_align_and_shoot: aligning")
             if self.server.is_preempt_requested():
-                rospy.loginfo("premept reuqrested")
-                #figure out what we should be doing if we do prempt
-                #maybe turn off the shooting stuff and then break the align feature
-                #so stop shooting:
-                #self.balancer_client.cancel_goals_at_and_before_time(rospy.Time.now())
-                #prempt stuff thingies
-                align_to_speaker_goal.align_forever = False
-                shooting_goal.leave_spinning = False
-                rospy.loginfo("setting up states to send things in")
-                self.shooting_client.send_goal(shooting_goal)
-                self.align_to_speaker_client.send_goal(align_to_speaker_goal)
-                rospy.loginfo("sending goals to the clients so that they respond acordingly")
-
-
-
-
-                #pretty sure the stuff below is just the things that i need in order to cancel the action server
-
-                rospy.loginfo("cancel goals at and before time")
+                rospy.loginfo("2024 align and shoot server preempted")
                 self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
-                rospy.loginfo("cancel speaker server at time")
-                self.shooting_client.cancel_goalts_at_and_before_time(rospy.Time.now())
-                rospy.loginfo("cancet shooting clieant")
-
+                self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 self.server.set_prempted()
-                rospy.loginfo("preempted")
-                break
+                return
+            r.sleep()
 
+        shooting_goal.mode = shooting_goal.SPEAKER
+        shooting_goal.distance = dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
+        rospy.loginfo("set distance value")
+        shooting_send_done = False
 
-        
-    
+        def shooting_send_done_cb(state, result):
+            nonlocal shooting_send_done
+            shooting_send_done = True
+        self.shooting_client.send_goal(shooting_goal, done_cb=shooting_send_done_cb)
+        rospy.loginfo("told shooting client to begin shooting or spinning or something")
+
+        while (not (shooting_send_done) and not rospy.is_shutdown()):
+            rospy.loginfo_throttle(0.5, "2024_align_and_shoot: waiting for shooting server to finish")
+            if self.server.is_preempt_requested():
+                rospy.loginfo("2024 align and shoot server preempted")
+                self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.server.set_prempted()
+                return
+            r.sleep()
+
+        rospy.loginfo("succeeded")
+        self.result.success = True
+        self.server.set_succeeded(self.result)
+
 if __name__ == '__main__':
     rospy.init_node('align_and_shoot_server_2024')
     
