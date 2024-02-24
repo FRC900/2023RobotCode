@@ -77,24 +77,36 @@ public:
              m.header.stamp = time;
 
              // If the buttons are pressed
-             // TODO - these button IDs are from 2023's button box, and need to be updated
-             // Need to add auto mode message, not yet sure how to decode that
-             m.lockingSwitchButton = bbs->getButton(0);
-             m.rightGreenButton = bbs->getButton(1);
-             m.leftGreenButton = bbs->getButton(2);
-             m.topGreenButton = bbs->getButton(3);
-             m.bottomGreenButton = bbs->getButton(4);
-             m.zeroButton = bbs->getButton(5);
-             m.backupButton1Button = bbs->getButton(6);
-             m.redButton = bbs->getButton(7);
-             m.backupButton2Button = bbs->getButton(8);
-             m.speedSwitchUpButton = bbs->getButton(9);
-             m.speedSwitchDownButton = bbs->getButton(10);
-             m.shooterArmUpButton = bbs->getButton(11);
-             m.shooterArmDownButton = bbs->getButton(13);
+             // TODO : test this using a real driver station
+             m.lockingSwitchButton = bbs->getButton(6);
+             m.rightGreenButton = bbs->getButton(16);
+             m.leftGreenButton = bbs->getButton(9);
+             m.topGreenButton = bbs->getButton(15);
+             m.bottomGreenButton = bbs->getButton(8);
+             m.zeroButton = bbs->getButton(1);
+             m.backupButton1Button = bbs->getButton(10);
+             m.redButton = bbs->getButton(11);
+             m.backupButton2Button = bbs->getButton(13);
+             m.speedSwitchUpButton = bbs->getButton(5);
+             m.speedSwitchDownButton = bbs->getButton(4);
+             m.shooterArmUpButton = bbs->getButton(3);
+             m.shooterArmDownButton = bbs->getButton(7);
              // Skip 13 (that's the Arduino LED)
-             m.trapButton = bbs->getButton(14);
-             m.climbButton = bbs->getButton(16);
+             m.trapButton = bbs->getButton(17);
+             m.climbButton = bbs->getButton(0);
+             m.subwooferShootButton = bbs->getButton(2);
+
+            constexpr uint8_t FIRST_AUTO_BUTTON = 19;
+            constexpr uint8_t NUM_AUTO_BUTTONS = 6;
+            m.auto_mode = 0;
+            for (uint8_t i = 0; i < NUM_AUTO_BUTTONS; i++)
+            {
+                if (bbs->getButton(FIRST_AUTO_BUTTON + i))
+                {
+                    m.auto_mode = i + 1;
+                    break;
+                }
+            }
 
              // Creating press booleans by comparing the last publish to the current one
              m.lockingSwitchPress   = !prev_button_box_msg_.lockingSwitchButton   && m.lockingSwitchButton;
@@ -112,6 +124,7 @@ public:
              m.shooterArmDownPress  = !prev_button_box_msg_.shooterArmDownButton  && m.shooterArmDownButton;
              m.trapPress            = !prev_button_box_msg_.trapButton            && m.trapButton;
              m.climbPress           = !prev_button_box_msg_.climbButton           && m.climbButton;
+             m.subwooferShootPress  = !prev_button_box_msg_.subwooferShootButton  && m.subwooferShootButton;
 
              // Creating release booleans by comparing the last publish to the current one
              m.lockingSwitchRelease   = prev_button_box_msg_.lockingSwitchButton   && !m.lockingSwitchButton;
@@ -129,6 +142,7 @@ public:
              m.shooterArmDownRelease  = prev_button_box_msg_.shooterArmDownButton  && !m.shooterArmDownButton;
              m.trapRelease            = prev_button_box_msg_.trapButton            && !m.trapButton;
              m.climbRelease           = prev_button_box_msg_.climbButton           && !m.climbButton;
+             m.subwooferShootRelease  = prev_button_box_msg_.subwooferShootButton  && !m.subwooferShootButton;
 
              realtime_pub_->unlockAndPublish();
              prev_button_box_msg_ = m;

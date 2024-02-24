@@ -557,6 +557,16 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	{
 	}
 
+	if (button_box->subwooferShootButton)
+	{
+	}
+	if (button_box->subwooferShootPress)
+	{
+	}
+	if (button_box->subwooferShootRelease)
+	{
+	}
+
 	if (button_box->speedSwitchUpButton)
 	{
 	}
@@ -574,6 +584,11 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	{
 	}
 	if (button_box->speedSwitchDownRelease)
+	{
+	}
+
+	// Switch in middle position
+	if (!(button_box->speedSwitchDownButton || button_box->speedSwitchUpButton))
 	{
 	}
 
@@ -596,6 +611,12 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	if (button_box->shooterArmDownRelease)
 	{
 	}
+
+	// Switch in middle position
+	if (!(button_box->shooterArmDownButton || button_box->shooterArmUpButton))
+	{
+	}
+
 
 	if (button_box->rightGreenPress)
 	{
