@@ -96,13 +96,26 @@ class AlignAndShoot(object):
                 #figure out what we should be doing if we do prempt
                 #maybe turn off the shooting stuff and then break the align feature
                 #so stop shooting:
-
+                #self.balancer_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                #prempt stuff thingies
                 align_to_speaker_goal.align_forever = False
-                shooting_goal.leave_spinning = True
+                shooting_goal.leave_spinning = False
                 rospy.loginfo("setting up states to send things in")
                 self.shooting_client.send_goal(shooting_goal)
                 self.align_to_speaker_client.send_goal(align_to_speaker_goal)
                 rospy.loginfo("sending goals to the clients so that they respond acordingly")
+
+
+
+
+                #pretty sure the stuff below is just the things that i need in order to cancel the action server
+
+                rospy.loginfo("cancel goals at and before time")
+                self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                rospy.loginfo("cancel speaker server at time")
+                self.shooting_client.cancel_goalts_at_and_before_time(rospy.Time.now())
+                rospy.loginfo("cancet shooting clieant")
+
                 self.server.set_prempted()
                 rospy.loginfo("preempted")
                 break
