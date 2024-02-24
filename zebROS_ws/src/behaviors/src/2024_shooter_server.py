@@ -127,6 +127,7 @@ class ShooterServer2024:
                 self._feedback.bottom_right_percent_complete = 100.0
                 self._feedback.is_shooting_at_speed = True
                 self.server.publish_feedback(self._feedback)
+                self.server.set_succeeded(self._result)
                 r.sleep()
 
 if __name__ == '__main__':
