@@ -7,6 +7,9 @@
 #include "frc_msgs/ButtonBoxState2024.h"
 #include "frc_msgs/JoystickState.h"
 #include "imu_zero_msgs/ImuZeroAngle.h"
+
+#include "behavior_actions/Intaking2024Action.h"
+#include "behavior_actions/DriveObjectIntake2024Action.h"
 //#define NEED_JOINT_STATES
 #ifdef NEED_JOINT_STATES
 #include "sensor_msgs/JointState.h"
@@ -33,7 +36,8 @@ private:
 AutoModeCalculator2024 auto_calculator;
 
 // TODO: Add 2024 versions, initialize in main before calling generic inititalizer
-//std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2023Action>> intaking_ac;
+std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2024Action>> intaking_ac;
+std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>> drive_and_intake_ac;
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
 {    
@@ -105,14 +109,16 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			//Joystick1: bumperLeft
 			if(joystick_state->bumperLeftPress)
 			{
-				
+				behavior_actions::Intaking2024Goal intaking_goal;
+				intaking_goal.destination = intaking_goal.SHOOTER;
+				intaking_ac->sendGoal(intaking_goal);
 			}
 			if(joystick_state->bumperLeftButton)
 			{
 			}
 			if(joystick_state->bumperLeftRelease)
 			{
-				
+				intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 			//Joystick1: bumperRight
@@ -223,7 +229,9 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
-					
+					behavior_actions::DriveObjectIntake2024Goal goal;
+					goal.destination = goal.SHOOTER;
+					drive_and_intake_ac->sendGoal(goal);
 				}
 
 				joystick1_right_trigger_pressed = true;
@@ -232,7 +240,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			{
 				if(joystick1_right_trigger_pressed)
 				{
-
+					drive_and_intake_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
 				joystick1_right_trigger_pressed = false;
@@ -398,7 +406,6 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
-					//zero_all_diag_commands();
 				}
 
 				joystick1_right_trigger_pressed = true;
@@ -512,6 +519,8 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->redPress)
 	{
+		drive_and_intake_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 	if (button_box->redRelease)
 	{
@@ -683,6 +692,9 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "Joystick_controller");
 	ros::NodeHandle n;
 	ros::NodeHandle n_params(n, "teleop_params");
+
+	intaking_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Intaking2024Action>>("/intaking/intaking_server_2024", true);
+	drive_and_intake_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>>("/intaking/drive_object_intake", true);
 
 	TeleopInitializer initializer;
 	initializer.set_n_params(n_params);

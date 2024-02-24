@@ -9,6 +9,7 @@ from behavior_actions.msg import Arm2024Action, Arm2024Feedback, Arm2024Result, 
 from talon_controller_msgs.srv import Command, CommandRequest, CommandResponse
 from talon_state_msgs.msg import TalonFXProState
 
+from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 # Brings in the SimpleActionClient
 import actionlib
 from std_msgs.msg import Float64
@@ -29,6 +30,11 @@ class Intaking2024Server(object):
     # create messages that are used to publish feedback/result
     feedback = Intaking2024Feedback()
     result = Intaking2024Result()
+
+    def dyn_rec_callback(self, config, level):
+        rospy.loginfo("Received reconf call: " + str(config))
+        self.intaking_speed = config["intaking_speed"]
+        return config
 
     def __init__(self, name):
         self.action_name = name
@@ -52,13 +58,34 @@ class Intaking2024Server(object):
         self.shooter_pos_sub = rospy.Subscriber("/frcrobot_jetson/talonfxpro_states", TalonFXProState, shooter_pivot_callback)
         self.intake_client = rospy.ServiceProxy("/frcrobot_jetson/intake_talonfxpro_controller/command", Command)
 
+        ddynrec = DDynamicReconfigure("intaking_dyn_rec")
+        ddynrec.add_variable("intaking_speed", "float/double variable", rospy.get_param("intaking_speed"), 0.0, 1.0)
+        ddynrec.start(self.dyn_rec_callback)
+
         self.intaking_speed = rospy.get_param("intaking_speed")
         self.intaking_timeout = rospy.get_param("intaking_timeout")
         self.safe_shooter_angle = rospy.get_param("safe_shooter_angle")
+        
+        self.intaking_current = 0.0
+        self.intaking_talon_idx = None
+        self.talonfxpro_sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.talonfxpro_states_cb)
 
         self.server = actionlib.SimpleActionServer(self.action_name, Intaking2024Action, execute_cb=self.execute_cb, auto_start = False)
         self.server.start()
-        
+            
+
+    def talonfxpro_states_cb(self, states: TalonFXProState):
+        rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
+        if (self.intaking_talon_idx == None):
+            for i in range(len(states.name)):
+                #rospy.loginfo(data.name[i])
+                if (states.name[i] == "intake"): 
+                    self.intaking_current = states.torque_current[i]
+                    self.intaking_talon_idx = i
+                    break
+        else:
+            self.intaking_current = states.torque_current[self.intaking_talon_idx]
+ 
     def execute_cb(self, goal: Intaking2024Goal):
         r = rospy.Rate(60)
 
@@ -122,6 +149,11 @@ class Intaking2024Server(object):
         # if run until preempt want to just go for the entire auto
         while goal.run_until_preempt or (not (clawster_done or rospy.is_shutdown() or (rospy.Time.now() - start).to_sec() > self.intaking_timeout)):
             rospy.loginfo_throttle(0.5, f"2024_intaking_server: waiting for {'preshooter' if goal.destination == goal.SHOOTER else 'claw'}")
+            if self.intaking_current > 100:
+                rospy.logwarn(f"Intaking current is above 100 and {self.intaking_current}")
+                self.feedback.note_hit_intake = True
+                self.server.publish_feedback(self.feedback)
+                
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024_intaking_server: preempted")
 
