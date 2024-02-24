@@ -68,7 +68,7 @@ class Aligner:
             
             
             if goal.offsetting == True:
-                offset_point.point.y = 1.75
+                offset_point.point.y = 2
             else:
                 offset_point.point.y = 0
 
