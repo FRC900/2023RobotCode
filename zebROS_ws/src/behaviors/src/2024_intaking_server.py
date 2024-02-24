@@ -14,17 +14,16 @@ import actionlib
 from std_msgs.msg import Float64
 
 def shooter_pivot_callback(data):
-    global motion_magic_value
-    global motion_magic_value_index
-    if (motion_magic_value_index == None):
+    global pivot_position
+    global pivot_index
+    if pivot_index is None:
         for i in range(len(data.name)):
-            #rospy.loginfo(data.name[i])
             if (data.name[i] == "shooter_pivot_motionmagic_joint"): 
-                motion_magic_value = data.position[i]
-                motion_magic_value_index = i
+                pivot_position = data.position[i]
+                pivot_index = i
                 break
     else:
-        motion_magic_value = data.position[motion_magic_value_index]
+        pivot_position = data.position[pivot_index]
 
 class Intaking2024Server(object):
     # create messages that are used to publish feedback/result
@@ -63,14 +62,18 @@ class Intaking2024Server(object):
     def execute_cb(self, goal: Intaking2024Goal):
         r = rospy.Rate(60)
 
-        if motion_magic_value > self.safe_shooter_angle:
-            pivot_goal = ShooterPivot2024Goal(pivot_position = self.safe_shooter_angle - 5)
+        if pivot_position > self.safe_shooter_angle:
+            pivot_goal = ShooterPivot2024Goal()
+            pivot_goal.pivot_position = self.safe_shooter_angle
             self.shooter_pivot_client.send_goal(pivot_goal)
-            while motion_magic_value > self.safe_shooter_angle:
+            while pivot_position > self.safe_shooter_angle:
                 if self.server.is_preempt_requested():
                     rospy.loginfo("2024_intaking_server: preempted")
+                    self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time())
                     self.server.set_preempted()
                     return
+        
+            self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time())
 
         self.feedback.state = self.feedback.DIVERTING
         self.server.publish_feedback(self.feedback)
