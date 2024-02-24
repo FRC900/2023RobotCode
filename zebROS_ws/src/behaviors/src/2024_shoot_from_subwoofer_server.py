@@ -14,7 +14,7 @@ from std_msgs.msg import Float64 # Getting Float64
 
 class SubwooferShooterServer(object):
 
-    def __init__(self, name): # "Init"iate variables
+    def __init__(self, name): # 
         self.action_name = name # Ease of use
         self._result = SubShooter2024Result() # This is the result
         self._feedback = SubShooter2024Feedback() # This is the feedback
@@ -35,7 +35,10 @@ class SubwooferShooterServer(object):
         self.top_right_speed_param = rospy.get_param("top_right_speed")
         self.bottom_left_speed = rospy.get_param("bottom_left_speed")
         self.bottom_right_speed = rospy.get_param("bottom_right_speed")
-        self.pivot_position_param = rospy.get_param("pivot_position_param") # Gets the value that we set for the angle that the shooter will shoot from
+        self.pivot_position_param = rospy.get_param("pivot_position_param")
+        self.clawster_destination = 1
+        self.clawster_mode = 1
+         # Gets the value that we set for the angle that the shooter will shoot from
         # We can't shoot immediately after shooting, so we are gonna wait a bit.
         #self.delay_after_shooting = rospy.get_param("delay_after_shooting")
         rospy.loginfo("got params")
@@ -61,12 +64,10 @@ class SubwooferShooterServer(object):
         self.pivot_client.send_goal(pivot_goal, done_cb=pivot_done_cb)
 
         while (not (pivot_done) and not rospy.is_shutdown()):
-            rospy.loginfo_throttle(0.5, "2024_subwoofer_shoot: pivoting")
+            rospy.loginfo_throttle(0.5, "2024_subwoofer_shoot: pivoting in pivot")
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024 subwoofr pivot preempted")
                 self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
-                self.shooter_client.cancel_goals_at_and_before_time(rospy.Time.now())
-                self.clawster_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 self.server.set_preempted()
                 return
             r.sleep()
@@ -91,10 +92,9 @@ class SubwooferShooterServer(object):
             rospy.loginfo(shooter_done)
             #rospy.loginfo_throttle(0.5, "2024_shoot_from_subwoofer_server: waiting for shooter and pivot")
             if self.server.is_preempt_requested():
-                rospy.loginfo("2024_shoot_from_subwoofer_server: preempted")
+                rospy.loginfo("2024_shoot_from_subwoofer_server: preempted in shooter")
                 self.shooter_client.cancel_goals_at_and_before_time(rospy.Time())
                 self.pivot_client.cancel_goals_at_and_before_time(rospy.Time())
-                self.clawster_client.cancel_goals_at_and_beofore_Time(rospy.Time())
                 self.server.set_preempted()
                 return
             r.sleep()
@@ -102,17 +102,22 @@ class SubwooferShooterServer(object):
         rospy.loginfo("2024_shoot_from_subwoofer_server: shooting")
 
         clawster_goal = Clawster2024Goal()
-        clawster_goal.mode = clawster_goal.OUTTAKE
+        clawster_goal.mode = self.clawster_mode
+        clawster_goal.destination = self.clawster_destination
         self.clawster_client.send_goal(clawster_goal)
         clawster_done = False
+        clawster_result: Clawster2024Result = None
+
         def clawster_done_cb(state, result):
-            nonlocal clawster_done
+            nonlocal clawster_done, clawster_result
             clawster_done = True
+            clawster_result = result
         self.clawster_client.send_goal(clawster_goal, done_cb=clawster_done_cb)
         while not clawster_done and not rospy.is_shutdown():
             rospy.loginfo_throttle(0.5, "2024_shoot_from_subwoofer_server: waiting for clawster")
+            rospy.loginfo_throttle(0.5, clawster_done)
             if self.server.is_preempt_requested():
-                rospy.loginfo("2024_shoot_from_subwoofer_server: preempted")
+                rospy.loginfo("2024_shoot_from_subwoofer_server: preempted in clawster")
                 # ensure shooter turned off
                 self.shooter_client.cancel_goals_at_and_before_time(rospy.Time())
                 # ensure pivot stopped
@@ -125,9 +130,11 @@ class SubwooferShooterServer(object):
 
         rospy.loginfo("2024_shoot_from_subwoofer_server: +5 points hopefully")
         
-        self._result.success = True
         rospy.loginfo("2024_shoot_from_subwoofer_server: succeeded")
+
+        self._result.success = True
         self.server.set_succeeded(self._result)
+        return
 
 
 if __name__ == '__main__':

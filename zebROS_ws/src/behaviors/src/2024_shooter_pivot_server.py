@@ -78,7 +78,6 @@ class ShooterPivotServer2024:
                 self._feedback.percent_complete = 100.0
                 self._feedback.is_at_pivot_position = True
                 self.server.publish_feedback(self._feedback)
-                r.sleep()
                 self.server.set_succeeded(self._result)
                 break
                 

@@ -128,7 +128,7 @@ class ShooterServer2024:
                 self._feedback.is_shooting_at_speed = True
                 self.server.publish_feedback(self._feedback)
                 self.server.set_succeeded(self._result)
-                r.sleep()
+                break
 
 if __name__ == '__main__':
     rospy.init_node('shooter_server_2024')
