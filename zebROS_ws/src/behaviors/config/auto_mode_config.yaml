@@ -32,7 +32,7 @@ auto_mode_4: ["four_note_speaker1_ALLIANCE_csv", "pause_half",
               "four_note_speaker5_ALLIANCE_csv", 
               "four_note_speaker6_ALLIANCE_csv"]
 
-auto_mode_5: ["start_intake", "spin_up_shooter", "pause_two", "shoot_center_subwoofer", "pause_two", "shoot_amp_source", "stop_intake", "spin_down_shooter"]
+auto_mode_5: ["start_intake", "spin_up_shooter", "pause_two", "shoot_center_subwoofer", "pause_two", "shoot_diagonal", "stop_intake", "spin_down_shooter"]
 auto_mode_6: ["pause_half"]
 auto_mode_7: ["pause_half"]
 auto_mode_8: ["pause_half"]
@@ -81,7 +81,7 @@ shoot_center_subwoofer:
   distance: 1.0 # meters
 
 # on the diagonal left/right 
-shoot_amp_source:
+shoot_diagonal:
   type: shoot_distance
   distance: 2.0 # meters
 
