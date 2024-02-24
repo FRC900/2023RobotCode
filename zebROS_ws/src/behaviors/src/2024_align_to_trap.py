@@ -62,7 +62,6 @@ class Aligner:
         self.team_subscribe = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.match_data_callback)
 
         self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback)
-        self.pub_cmd_vel = rospy.Publisher("/align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)
 
     def x_command_callback(self, msg: std_msgs.msg.Float64):
         self.x_command = msg.data
