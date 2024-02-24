@@ -29,9 +29,9 @@ class SubwooferShooterServer(object):
         self.preshooter_client.wait_for_server() # Wait for the Clawster server to finish
 
         # Since the robot is autoaligning and is up against the subwoofer, we can find exact values for these variables that the robot can use every time
-        self.left_speed = rospy.get_param("left_speed") # Gets the value that we set for the left motor speed of the shooter
-        self.right_speed = rospy.get_param("right_speed") # Gets the value that we set for the right motor speed of the shooter
-        self.pivot_angle = rospy.get_param("pivot_angle") # Gets the value that we set for the angle that the shooter will shoot from
+        self.left_speed_param = rospy.get_param("left_speed_param") # Gets the value that we set for the left motor speed of the shooter
+        self.right_speed_param = rospy.get_param("right_speed_param") # Gets the value that we set for the right motor speed of the shooter
+        self.pivot_position_param = rospy.get_param("pivot_position_param") # Gets the value that we set for the angle that the shooter will shoot from
 
         # We can't shoot immediately after shooting, so we are gonna wait a bit.
         self.delay_after_shooting = rospy.get_param("delay_after_shooting")
@@ -51,8 +51,8 @@ class SubwooferShooterServer(object):
 
         # ASK Ben if I need to add "left_shooter_speed" and/or "right_shooter_speed" to the goal section of the yaml file. I think I already asked and he said I didn't but I want to make sure
         shooter_goal = SubShooter2024Goal() # Set the goals stuff
-        shooter_goal.left_shooter_speed = self.left_speed # The speed for the left motor is the speed that we set in the yaml file for the left motor (Wow so cool and not self-explanatory at all)
-        shooter_goal.right_shooter_speed = self.right_speed # The speed for the right motor is the speed that we set in the yaml file for the right motor (Wow so cool and not self-explanatory at all) (Definitely didn't copy and paste this, whatttttt)
+        shooter_goal.left_shooter_speed = self.left_speed_param # The speed for the left motor is the speed that we set in the yaml file for the left motor (Wow so cool and not self-explanatory at all)
+        shooter_goal.right_shooter_speed = self.right_speed_param # The speed for the right motor is the speed that we set in the yaml file for the right motor (Wow so cool and not self-explanatory at all) (Definitely didn't copy and paste this, whatttttt)
 
         shooter_done = False # The shooter isn't done.
         def shooter_feedback_cb(feedback: Shooter2024Feedback):
@@ -69,7 +69,7 @@ class SubwooferShooterServer(object):
         self.server.publish_feedback(self.feedback)
 
         pivot_goal = ShooterPivot2024Goal()
-        pivot_goal.pivot_position = pivot_angle
+        pivot_goal.pivot_position = self.pivot_position_param
 
         pivot_done = False
         def pivot_done_cb(state, result):
@@ -153,5 +153,5 @@ class SubwooferShooterServer(object):
 if __name__ == '__main__':
     rospy.init_node('subwoofer_shooter_2024')
     
-    server = ShootingServer(rospy.get_name())
+    server = SubwooferShooterServer(rospy.get_name())
     rospy.spin()
