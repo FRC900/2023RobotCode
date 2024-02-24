@@ -62,6 +62,9 @@ class Intaking2024Server(object):
     def execute_cb(self, goal: Intaking2024Goal):
         r = rospy.Rate(60)
 
+        self.feedback.state = self.feedback.SHOOTERPIVOTING
+        self.server.publish_feedback(self.feedback)
+
         if pivot_position > self.safe_shooter_angle:
             pivot_goal = ShooterPivot2024Goal()
             pivot_goal.pivot_position = self.safe_shooter_angle
@@ -72,6 +75,7 @@ class Intaking2024Server(object):
                     self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time())
                     self.server.set_preempted()
                     return
+                r.sleep()
         
             self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time())
 
