@@ -10,6 +10,7 @@
 
 #include "behavior_actions/Intaking2024Action.h"
 #include "behavior_actions/DriveObjectIntake2024Action.h"
+#include "behavior_actions/Shooting2024Action.h"
 //#define NEED_JOINT_STATES
 #ifdef NEED_JOINT_STATES
 #include "sensor_msgs/JointState.h"
@@ -38,6 +39,8 @@ AutoModeCalculator2024 auto_calculator;
 // TODO: Add 2024 versions, initialize in main before calling generic inititalizer
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2024Action>> intaking_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>> drive_and_intake_ac;
+std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Shooting2024Action>> shooting_ac;
+
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
 {    
@@ -499,15 +502,15 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		// for zeroing, assuming the robot starts facing away from the speaker (yes this is 2024 but we need to test it)
 		imu_zero_msgs::ImuZeroAngle imu_cmd;
 		if (alliance_color == frc_msgs::MatchSpecificData::ALLIANCE_COLOR_RED) {
-			ROS_INFO_STREAM("teleop_joystick_comp_2023 : red alliance");
+			ROS_INFO_STREAM("teleop_joystick_comp_2024 : red alliance");
 			imu_cmd.request.angle = 180.0;
 		} else {
-			ROS_INFO_STREAM("teleop_joystick_comp_2023 : blue or unknown alliance");
+			ROS_INFO_STREAM("teleop_joystick_comp_2024 : blue or unknown alliance");
 			imu_cmd.request.angle = 0.0;
 		}
-		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing IMU to " << imu_cmd.request.angle);
+		ROS_INFO_STREAM("teleop_joystick_comp_2024 : zeroing IMU to " << imu_cmd.request.angle);
 		IMUZeroSrv.call(imu_cmd);
-		ROS_INFO_STREAM("teleop_joystick_comp_2023 : zeroing swerve odom");
+		ROS_INFO_STREAM("teleop_joystick_comp_2024 : zeroing swerve odom");
 		std_srvs::Empty odom_cmd;
 		SwerveOdomZeroSrv.call(odom_cmd);
 	}
@@ -519,6 +522,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->redPress)
 	{
+		ROS_WARN_STREAM("teleop_joystick_comp_2024: PREEMPTING all actions");
 		drive_and_intake_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
