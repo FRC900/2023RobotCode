@@ -89,7 +89,8 @@ class Aligner:
             msg.data = math.pi + self.current_yaw + math.atan2(destination.point.y, destination.point.x)
             dist_ang_msg.angle = math.atan2(destination.point.y, destination.point.x)
 
-            self._feedback.error = math.atan2(destination.point.y, destination.point.x)
+            self._feedback.error = abs(angles.shortest_angular_distance(msg.data, self.current_yaw))
+            self._feedback.aligned = self._feedback.error < self.tolerance
             self._as.publish_feedback(self._feedback)
 
             self.object_publish.publish(msg) 
@@ -105,11 +106,10 @@ class Aligner:
             self.pub_cmd_vel.publish(cmd_vel_msg)
 
             rospy.loginfo_throttle(0.5, f"{self.current_yaw} vs {msg.data}")
-            
-            if abs(angles.shortest_angular_distance(msg.data, self.current_yaw)) < self.tolerance:
-                rospy.loginfo("2024_align_to_speaker: aligned")
+
+            if self._feedback.error < self.tolerance:
+                rospy.loginfo_throttle(0.5, "2024_align_to_speaker: aligned")
                 success = True
-                self._feedback.aligned = True
                 self._as.publish_feedback(self._feedback)
                 if not goal.align_forever: break
 
