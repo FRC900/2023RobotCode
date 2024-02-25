@@ -75,7 +75,7 @@ class ShootingServer(object):
         self.server.publish_feedback(self.feedback)
 
         shooter_goal = Shooter2024Goal()
-        pivot_angle = -1 # default
+        pivot_angle = None # default
         
         if goal.mode != goal.SUBWOOFER:
             # Look up speed and angle to send to shooter and pivot server
