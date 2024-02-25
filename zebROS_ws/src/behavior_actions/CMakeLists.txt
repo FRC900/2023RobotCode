@@ -111,7 +111,6 @@ add_action_files(
 		Clawster2024.action
 		Intaking2024.action
 		DriveObjectIntake2024.action
-		SubShooter2024.action
 		#GoToColor.action
 		#RotatePanel.action
 		DriveToObject.action

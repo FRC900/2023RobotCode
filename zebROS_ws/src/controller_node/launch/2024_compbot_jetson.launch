@@ -123,7 +123,6 @@
 	
 	<include file="$(find behaviors)/launch/2024_align_to_speaker.launch"/>
     <include file="$(find behaviors)/launch/2024_shooter.launch"/>
-	<!-- <include file="$(find behaviors)/launch/2024_shoot_to_subwoofer.launch"/> -->
 	<include file="$(find behaviors)/launch/2024_shooting.launch"/>
 
 	<!-- <node name="candle_node" pkg="candle_node" type="candle_node" respawn="false" output="screen"/> -->

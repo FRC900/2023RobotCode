@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <group ns="shoot_subwoofer">
-        <rosparam command="load" file="$(find behaviors)/config/2024_subwoofer_shooter.yaml"/>
-        <node name="shoot_subwoofer_2024" pkg="behaviors" type="2024_shoot_from_subwoofer_server.py" output="screen"/>
-
-    </group>
-</launch>

@@ -1,9 +1,0 @@
-# goal
----
-# result
-bool success
----
-# feedback
-bool shooting
-bool spinning
-float64 percent_complete
