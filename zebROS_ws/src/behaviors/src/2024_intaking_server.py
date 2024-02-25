@@ -14,18 +14,6 @@ from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 import actionlib
 from std_msgs.msg import Float64
 
-def shooter_pivot_callback(data):
-    global pivot_position
-    global pivot_index
-    if pivot_index is None:
-        for i in range(len(data.name)):
-            if (data.name[i] == "shooter_pivot_motionmagic_joint"): 
-                pivot_position = data.position[i]
-                pivot_index = i
-                break
-    else:
-        pivot_position = data.position[pivot_index]
-
 class Intaking2024Server(object):
     # create messages that are used to publish feedback/result
     feedback = Intaking2024Feedback()
@@ -34,6 +22,7 @@ class Intaking2024Server(object):
     def dyn_rec_callback(self, config, level):
         rospy.loginfo("Received reconf call: " + str(config))
         self.intaking_speed = config["intaking_speed"]
+        self.current_threshold = config["current_threshold"]
         return config
 
     def __init__(self, name):
@@ -44,7 +33,7 @@ class Intaking2024Server(object):
         #self.arm_client.wait_for_server()
         rospy.logerr("ARM CLIENT NOT INITALIZED BECAUSE IT DOESN'T EXIST")
 
-        self.shooter_pivot_client = actionlib.SimpleActionClient('/shooter_pivot/shooter_pivot_server_2024', ShooterPivot2024Action)
+        self.shooter_pivot_client = actionlib.SimpleActionClient('/shooter/set_shooter_pivot', ShooterPivot2024Action)
         rospy.loginfo("2024_intaking_server: waiting for shooter pivot server")
         self.shooter_pivot_client.wait_for_server()
         self.diverter_client = actionlib.SimpleActionClient('/diverter/diverter_server_2024', NoteDiverterAction)
@@ -55,16 +44,22 @@ class Intaking2024Server(object):
         self.clawster_client.wait_for_server()
         rospy.loginfo(f"Clawster client {self.clawster_client}")
 
-        self.shooter_pos_sub = rospy.Subscriber("/frcrobot_jetson/talonfxpro_states", TalonFXProState, shooter_pivot_callback)
+        self.pivot_position = 0
+        self.pivot_index = None
+
+        self.shooter_pos_sub = rospy.Subscriber("/frcrobot_jetson/talonfxpro_states", TalonFXProState, self.shooter_pivot_callback)
         self.intake_client = rospy.ServiceProxy("/frcrobot_jetson/intake_talonfxpro_controller/command", Command)
 
         ddynrec = DDynamicReconfigure("intaking_dyn_rec")
         ddynrec.add_variable("intaking_speed", "float/double variable", rospy.get_param("intaking_speed"), 0.0, 1.0)
+        ddynrec.add_variable("current_threshold", "float/double variable", rospy.get_param("current_threshold"), 0.0, 200.0)
         ddynrec.start(self.dyn_rec_callback)
 
         self.intaking_speed = rospy.get_param("intaking_speed")
         self.intaking_timeout = rospy.get_param("intaking_timeout")
         self.safe_shooter_angle = rospy.get_param("safe_shooter_angle")
+
+        self.current_threshold = rospy.get_param("current_threshold")
         
         self.intaking_current = 0.0
         self.intaking_talon_idx = None
@@ -73,6 +68,15 @@ class Intaking2024Server(object):
         self.server = actionlib.SimpleActionServer(self.action_name, Intaking2024Action, execute_cb=self.execute_cb, auto_start = False)
         self.server.start()
             
+    def shooter_pivot_callback(self, data):
+        if self.pivot_index is None:
+            for i in range(len(data.name)):
+                if (data.name[i] == "shooter_pivot_motionmagic_joint"): 
+                    self.pivot_position = data.position[i]
+                    self.pivot_index = i
+                    break
+        else:
+            self.pivot_position = data.position[self.pivot_index]
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
         rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
@@ -92,11 +96,11 @@ class Intaking2024Server(object):
         self.feedback.state = self.feedback.SHOOTERPIVOTING
         self.server.publish_feedback(self.feedback)
 
-        if pivot_position > self.safe_shooter_angle:
+        if self.pivot_position > self.safe_shooter_angle:
             pivot_goal = ShooterPivot2024Goal()
             pivot_goal.pivot_position = self.safe_shooter_angle
             self.shooter_pivot_client.send_goal(pivot_goal)
-            while pivot_position > self.safe_shooter_angle:
+            while self.pivot_position > self.safe_shooter_angle:
                 if self.server.is_preempt_requested():
                     rospy.loginfo("2024_intaking_server: preempted")
                     self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
@@ -149,8 +153,8 @@ class Intaking2024Server(object):
         # if run until preempt want to just go for the entire auto
         while goal.run_until_preempt or (not (clawster_done or rospy.is_shutdown() or (rospy.Time.now() - start).to_sec() > self.intaking_timeout)):
             rospy.loginfo_throttle(0.5, f"2024_intaking_server: waiting for {'preshooter' if goal.destination == goal.SHOOTER else 'claw'}")
-            if self.intaking_current > 100:
-                rospy.logwarn(f"Intaking current is above 100 and {self.intaking_current}")
+            if self.intaking_current > self.current_threshold:
+                rospy.logwarn(f"Intaking current = {self.intaking_current} is above {self.current_threshold}")
                 self.feedback.note_hit_intake = True
                 self.server.publish_feedback(self.feedback)
                 
@@ -192,7 +196,7 @@ class Intaking2024Server(object):
                 self.server.set_succeeded(self.result)
                 return
 
-        if (rospy.Time.now() - start) > self.intaking_timeout:
+        if (rospy.Time.now() - start).to_sec() > self.intaking_timeout:
             rospy.loginfo("2024_intaking_server: timed out")
             self.result.success = False
             self.server.set_succeeded(self.result)
