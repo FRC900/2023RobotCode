@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <group ns="align_to_shoot_speaker">
-        <node name="align_to_shoot_speaker_2024" pkg="behaviors" type="2024_align_to_shoot_speaker.py" output="screen"/>
-    </group>
-</launch>
