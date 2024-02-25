@@ -345,6 +345,17 @@ void STagDecoder<MARKER_DICT, GRID_SIZE>::fillEmptyIds(std::array<PointsAndIDs, 
     }
 }
 
+template <class MARKER_DICT, size_t GRID_SIZE>
+void STagDecoder<MARKER_DICT, GRID_SIZE>::setMinGridMatchRatio(const double minGridMatchRatio)
+{
+    m_minGridMatchRatio = minGridMatchRatio;
+}
+template <class MARKER_DICT, size_t GRID_SIZE>
+double STagDecoder<MARKER_DICT, GRID_SIZE>::getMinGridMatchRatio(void) const
+{
+    return m_minGridMatchRatio;
+}
+
 #include "deeptag_ros/marker_dict.h"
 template class STagDecoder<ArucoMarkerDict<4>, 4>;
 template class STagDecoder<ArucoMarkerDict<5>, 5>;

@@ -363,16 +363,16 @@ cudaStream_t STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getCudaStream(void)
 }
 
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
-void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::setCornerMinCenterScore(const float cornerMinCenterScore)
+void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::setCornerMinCenterScore(const double cornerMinCenterScore)
 {
-    m_cornerMinCenterScore = std::max(cornerMinCenterScore, 0.01f);
+    m_cornerMinCenterScore = std::max(cornerMinCenterScore, 0.001);
     m_regenCudaGraph = true;
 }
 
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
-void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::setSSDMinCenterScore(const float ssdMinCenterScore)
+void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::setSSDMinCenterScore(const double ssdMinCenterScore)
 {
-    m_ssdMinCenterScore = std::max(ssdMinCenterScore, 0.01f);
+    m_ssdMinCenterScore = std::max(ssdMinCenterScore, 0.001);
     m_regenCudaGraph = true;
 }
 
@@ -391,13 +391,13 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::setSSDGrouperSigma(const int ssd
 }
 
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
-float STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getCornerMinCenterScore(void) const
+double STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getCornerMinCenterScore(void) const
 {
     return m_cornerMinCenterScore;
 }
 
 template<size_t NUM_TILES, bool USE_SCALED_IMAGE>
-float STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getSSDMinCenterScore(void) const
+double STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getSSDMinCenterScore(void) const
 {
     return m_ssdMinCenterScore;
 }

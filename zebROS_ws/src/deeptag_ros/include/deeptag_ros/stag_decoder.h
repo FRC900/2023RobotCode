@@ -43,6 +43,9 @@ public:
 
     virtual ~STagDecoder() = default;
 
+    void   setMinGridMatchRatio(const double minGridMatchRatio);
+    double getMinGridMatchRatio(void) const;
+
 private:
     void runInference(std::vector<std::vector<Stage2KeypointGroup>> &stage2KeypointGroupss,
                       std::vector<std::vector<float2>> &stage2Corners,
@@ -68,7 +71,7 @@ private:
 
     // TODO - not sure how configurable this needs to be
     static constexpr size_t m_maxBatchSize = 4;
-    static constexpr double m_minGridMatchRatio = 0.4;
+    double m_minGridMatchRatio = 0.4;
 };
 
 #include "marker_dict.h"

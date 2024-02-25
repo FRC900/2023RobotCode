@@ -18,6 +18,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Ofast -DNDEBUG -Wno-deprecated-de
 find_package(catkin REQUIRED COMPONENTS
   apriltag_msgs
   cv_bridge
+  ddynamic_reconfigure
   geometry_msgs
   image_geometry
   image_transport

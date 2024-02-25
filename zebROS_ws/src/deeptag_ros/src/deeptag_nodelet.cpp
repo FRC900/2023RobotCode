@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <cv_bridge/cv_bridge.h>
+#include <ddynamic_reconfigure/ddynamic_reconfigure.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
 #include <nodelet/nodelet.h>
@@ -103,6 +104,60 @@ private:
                                               model_path,                  // use rospkg to find?
                                               detect_onnx_model_filename,  // onnx detect model filename - config item?
                                               decode_onnx_model_filename); // onnx decode model filename - config item?
+        double corner_min_center_score(deep_tag_->getCornerMinCenterScore());
+        nh_.param("corner_min_center_score", corner_min_center_score, corner_min_center_score);
+        double ssd_min_center_score(deep_tag_->getSSDMinCenterScore());
+        nh_.param("ssd_min_center_score", ssd_min_center_score, ssd_min_center_score);
+        double grid_grouper_sigma(deep_tag_->getGridGrouperSigma());
+        nh_.param("grid_grouper_sigma", grid_grouper_sigma, grid_grouper_sigma);
+        double ssd_grouper_sigma(deep_tag_->getSSDGrouperSigma());
+        nh_.param("ssd_grouper_sigma", ssd_grouper_sigma, ssd_grouper_sigma);
+
+        double nms_confidence_threshold;
+        nh_.param("nms_confidence_threshold", nms_confidence_threshold, nms_confidence_threshold);
+        double nms_nms_threshold;
+        nh_.param("nms_nms_threshold", nms_nms_threshold, nms_nms_threshold);
+
+        double min_grid_match_ratio;
+        nh_.param("min_grid_match_ratio", min_grid_match_ratio, min_grid_match_ratio);
+
+        ddr_.registerVariable<double>("corner_min_center_score",
+                                      [this]() { return deep_tag_->getCornerMinCenterScore();},
+                                      [this](const double param) { deep_tag_->setCornerMinCenterScore(param);},
+                                      "Corner min center detection score",
+                                      0.0, 1.0);
+        ddr_.registerVariable<double>("ssd_min_center_score",
+                                      [this]() { return deep_tag_->getSSDMinCenterScore();},
+                                      [this](const double param) { deep_tag_->setSSDMinCenterScore(param);},
+                                      "SSD min center detection score",
+                                      0.0, 1.0);
+        ddr_.registerVariable<int>   ("grid_grouper_sigma",
+                                      [this]() { return deep_tag_->getGridGrouperSigma();},
+                                      [this](const double param) { deep_tag_->setGridGrouperSigma(param);},
+                                      "Grid grouper sigma",
+                                      1, 10000);
+        ddr_.registerVariable<int>   ("ssd_grouper_sigma",
+                                      [this]() { return deep_tag_->getSSDGrouperSigma();},
+                                      [this](const double param) { deep_tag_->setSSDGrouperSigma(param);},
+                                      "SSD grouper sigma",
+                                      1, 10000);
+        ddr_.registerVariable<double>("nms_confidence_threshold",
+                                      [this]() { return deep_tag_->getNMSConfidenceThreshold();},
+                                      [this](const double param) { deep_tag_->setNMSConfidenceThreshold(param);},
+                                      "NMS Confidence Threshold",
+                                      0.0, 1.0);
+        ddr_.registerVariable<double>("nms_nms_threshold",
+                                      [this]() { return deep_tag_->getNMSNMSThreshold();},
+                                      [this](const double param) { deep_tag_->setNMSNMSThreshold(param);},
+                                      "NMS NMS Threshold",
+                                      0.0, 1.0);
+        ddr_.registerVariable<double>("min_grid_match_ratio",
+                                      [this]() { return deep_tag_->getMinGridMatchRatio();},
+                                      [this](const double param) { deep_tag_->setMinGridMatchRatio(param);},
+                                      "Stage 2 min grid match ratio",
+                                      0.0, 1.0);
+        ddr_.publishServicesTopics();
+
     }
 
     void callback(const sensor_msgs::ImageConstPtr &frameMsg)
@@ -178,6 +233,8 @@ private:
     std::optional<sensor_msgs::CameraInfo> camera_info_{std::nullopt};
 
     std::unique_ptr<DeepTag> deep_tag_;
+
+    ddynamic_reconfigure::DDynamicReconfigure ddr_;
 };
 }
 

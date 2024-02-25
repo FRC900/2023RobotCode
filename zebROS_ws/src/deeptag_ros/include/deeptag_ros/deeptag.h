@@ -83,6 +83,23 @@ class DeepTag
         std::vector<DeepTagResult> runInference(const cv::Mat &cpuImg);
         void visualize(cv::Mat &image, const std::vector<DeepTagResult> &results) const;
         void setTimingsEnabled(const bool enabled);
+
+        void   setCornerMinCenterScore(const double cornerMinCenterScore);
+        void   setSSDMinCenterScore(const double ssdMinCenterScore);
+        void   setGridGrouperSigma(const int gridGrouperSigma);
+        void   setSSDGrouperSigma(const int ssdGrouperSigma);
+        double getCornerMinCenterScore(void) const;
+        double getSSDMinCenterScore(void) const;
+        int    getGridGrouperSigma(void) const;
+        int    getSSDGrouperSigma(void) const;
+
+        void   setNMSConfidenceThreshold(const double nms_confidence_threshold);
+        void   setNMSNMSThreshold(const double nms_nms_threshold);
+        double getNMSConfidenceThreshold(void) const;
+        double getNMSNMSThreshold(void) const;
+
+        void setMinGridMatchRatio(const double minGridMatchRatio);
+        double getMinGridMatchRatio(void) const;
     private:
         std::unique_ptr<DeepTagImplBase> m_pImpl;
 };

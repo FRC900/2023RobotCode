@@ -97,3 +97,63 @@ void DeepTag::setTimingsEnabled(const bool enabled)
 {
     return m_pImpl->setTimingsEnabled(enabled);
 }
+
+// Expose a bunch of config params for dynamic reconfigure
+void DeepTag::setCornerMinCenterScore(const double cornerMinCenterScore)
+{
+    m_pImpl->setCornerMinCenterScore(cornerMinCenterScore);
+}
+void DeepTag::setSSDMinCenterScore(const double ssdMinCenterScore)
+{
+    m_pImpl->setSSDMinCenterScore(ssdMinCenterScore);
+}
+void DeepTag::setGridGrouperSigma(const int gridGrouperSigma)
+{
+    m_pImpl->setGridGrouperSigma(gridGrouperSigma);
+}
+void DeepTag::setSSDGrouperSigma(const int ssdGrouperSigma)
+{
+    m_pImpl->setSSDGrouperSigma(ssdGrouperSigma);
+}
+double DeepTag::getCornerMinCenterScore(void) const 
+{
+    return m_pImpl->getCornerMinCenterScore();
+}
+double DeepTag::getSSDMinCenterScore(void) const 
+{
+    return m_pImpl->getSSDMinCenterScore();
+}
+int DeepTag::getGridGrouperSigma(void) const 
+{
+    return m_pImpl->getGridGrouperSigma();
+}
+int DeepTag::getSSDGrouperSigma(void) const
+{
+    return m_pImpl->getSSDGrouperSigma();
+}
+
+void DeepTag::setNMSConfidenceThreshold(const double nms_confidence_threshold)
+{
+    return m_pImpl->setNMSConfidenceThreshold(nms_confidence_threshold);
+}
+void DeepTag::setNMSNMSThreshold(const double nms_nms_threshold)
+{
+    return m_pImpl->setNMSNMSThreshold(nms_nms_threshold);
+}
+double DeepTag::getNMSConfidenceThreshold(void) const
+{
+    return m_pImpl->getNMSConfidenceThreshold();
+}
+double DeepTag::getNMSNMSThreshold(void) const
+{
+    return m_pImpl->getNMSNMSThreshold();
+}
+
+void DeepTag::setMinGridMatchRatio(const double minGridMatchRatio)
+{
+    m_pImpl->setMinGridMatchRatio(minGridMatchRatio);
+}
+double DeepTag::getMinGridMatchRatio(void) const
+{
+    return m_pImpl->getMinGridMatchRatio();
+}

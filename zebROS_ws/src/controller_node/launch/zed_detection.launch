@@ -78,11 +78,11 @@
     <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
         Publishes to $(ns)/tag_detection_msgs
     -->
-    <node pkg="tf_object_detection" name="tag_depth" type="tag_depth.py" output="screen">
+    <node pkg="tf_object_detection" name="deeptag_tag_depth" type="tag_depth.py" output="screen">
 			<remap from="tags_in" to="/apriltag_$(arg zed_name)/deeptag_node/tags"/>
     </node>
     <!-- Use depth info to generate apriltag world coords -->
-		<node pkg="tf_object_detection" name="tf_object_screen_to_world_tags" type="tf_object_screen_to_world" output="screen">
+		<node pkg="tf_object_detection" name="tf_object_screen_to_world_deeptags" type="tf_object_screen_to_world" output="screen">
 			<remap from="obj_detection_msg" to="tag_detection_msg"/>
 			<remap from="object_detection_world" to="tag_detection_world"/>
 			<remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
