@@ -41,7 +41,7 @@
 			 br_cancoder_controller
 			 fr_cancoder_controller
 			 latency_compensation_state_controller
-			 swerve_drive_controller
+			 
 			 joint_state_controller_jetson
 			 joint_state_listener_controller_jetson
 			 talon_state_controller_jetson
@@ -54,7 +54,7 @@
 			 top_right_shooter_controller
 			 bottom_left_shooter_controller
 			 bottom_right_shooter_controller
-			 shooter_pivot_motionmagicvoltage_controller
+			 shooter_pivot_controller
 			 pivot_cancoder_controller
 			 clawster_controller
 			 pigeon2_imu_state_controller
@@ -62,6 +62,7 @@
 			 robot_code_ready_controller" />
 			 
 			 <!--
+				swerve_drive_controller
 			 candle_controller
 			 orchestra_controller
 			 orchestra_state_controller
