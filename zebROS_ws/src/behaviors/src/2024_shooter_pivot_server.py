@@ -5,6 +5,7 @@ import actionlib
 import std_msgs.msg
 
 from talon_state_msgs.msg import TalonFXProState
+from controllers_2024_msgs.srv import ShooterPivotSrv, ShooterPivotSrvRequest
 from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Feedback, ShooterPivot2024Result
 
 global motion_magic_value
@@ -42,7 +43,7 @@ class ShooterPivotServer2024:
         #subscribing here so that we can figure out the actual speed of said motor at a given time, talonfxpro_states gives us these values
         #maybe we subscibe to the voltage velocity controller instead of hte fx pro
 
-        self.shooter_pivot_pub = rospy.Publisher("/frcrobot_jetson/shooter_pivot_motionmagicvoltage_controller/command", std_msgs.msg.Float64, queue_size=1)
+        self.shooter_pivot_client = rospy.ServiceProxy("/frcrobot_jetson/shooter_pivot_controller/shooter_pivot_service", ShooterPivotSrv)
    
         self.server.start()
 
@@ -51,7 +52,7 @@ class ShooterPivotServer2024:
         r = rospy.Rate(50)
 
         initial_motion_magic_value = motion_magic_value 
-        self.shooter_pivot_pub.publish(std_msgs.msg.Float64(goal.pivot_position))
+        self.shooter_pivot_client.call(ShooterPivotSrvRequest(goal.pivot_position))
    
         while True:
             if rospy.is_shutdown():
@@ -66,7 +67,7 @@ class ShooterPivotServer2024:
             self.server.publish_feedback(self._feedback)
 
             if self.server.is_preempt_requested():
-                self.shooter_pivot_pub.publish(std_msgs.msg.Float64(motion_magic_value))
+                self.shooter_pivot_client.call(ShooterPivotSrvRequest(motion_magic_value))
                 self.server.set_preempted()
                 break
              
