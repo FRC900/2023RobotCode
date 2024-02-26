@@ -211,8 +211,9 @@ shooter_pivot_motionmagicvoltage_controller:
 pivot_cancoder_controller:
     type:      cancoder_controller/CANCoderController
     joint_name: shooter_pivot_cancoder
+    sensor_direction: Clockwise_Positive
     dynamic_reconfigure: True
-    magnet_offset: 0.0 # FIND ME
+    magnet_offset: 0.039883500485026424
 
 
 # This one creates the /talon_states topic necessary in ROS

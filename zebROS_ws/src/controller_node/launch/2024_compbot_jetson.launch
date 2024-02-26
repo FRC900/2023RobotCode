@@ -55,6 +55,7 @@
 			 bottom_left_shooter_controller
 			 bottom_right_shooter_controller
 			 shooter_pivot_motionmagicvoltage_controller
+			 pivot_cancoder_controller
 			 clawster_controller
 			 pigeon2_imu_state_controller
 			 note_diverter_controller
