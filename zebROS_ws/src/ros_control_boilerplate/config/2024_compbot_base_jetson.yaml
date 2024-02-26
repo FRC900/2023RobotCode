@@ -132,7 +132,7 @@ top_left_shooter_controller:
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.7037
+   sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
@@ -150,7 +150,7 @@ top_right_shooter_controller:
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.7037
+   sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
@@ -168,7 +168,7 @@ bottom_left_shooter_controller:
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.7037
+   sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
@@ -187,7 +187,7 @@ bottom_right_shooter_controller:
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.7037
+   sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
