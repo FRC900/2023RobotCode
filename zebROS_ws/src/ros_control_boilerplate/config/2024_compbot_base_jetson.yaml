@@ -31,7 +31,7 @@ hardware_interface:
    # Identify this as a non-Rio controller using Linux
    # socketCan device can0 to communicate
    run_hal_robot: false
-   can_interface: can0
+   can_interface: slowbro
 
    joints:
        # Swerve drive
@@ -70,7 +70,7 @@ hardware_interface:
        #Claw/Diverter
        # TODO - see if these need to be merged?
        - {name: note_diverter, type: talonfxpro, can_bus: CANivore, can_id: 17, local: true}
-    #    - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
+       - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
 
     #    - {name: claw_limit_switch, type: digital_input, local: false}
     #    - {name: preshooter_limit_switch, type: digital_input, local: false}
