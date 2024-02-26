@@ -52,8 +52,8 @@ hardware_interface:
        - {name: intake, type: talonfxpro, can_bus: CANivore, can_id: 15, local: true}
        
        #arm
-        - {name: arm, type: talonfxpro, can_bus: CANivore, can_id: 31, local: true}
-        - {name: arm, type: cancoder, can_bus: CANivore, can_id: 31, local: true}
+       - {name: arm, type: talonfxpro, can_bus: CANivore, can_id: 31, local: true}
+       - {name: arm, type: cancoder, can_bus: CANivore, can_id: 31, local: true}
 
        #climb
        #- {name: climb_leader, type: talonfxpro, can_bus: CANivore, can_id: 41, local: true}
