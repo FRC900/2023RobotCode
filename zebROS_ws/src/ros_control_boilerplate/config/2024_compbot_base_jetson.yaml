@@ -70,7 +70,7 @@ hardware_interface:
        #Claw/Diverter
        # TODO - see if these need to be merged?
        - {name: note_diverter, type: talonfxpro, can_bus: CANivore, can_id: 17, local: true}
-       - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
+    #    - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
 
     #    - {name: claw_limit_switch, type: digital_input, local: false}
     #    - {name: preshooter_limit_switch, type: digital_input, local: false}
@@ -126,13 +126,13 @@ top_left_shooter_controller:
    joint: top_left_shooter_joint
    invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.3, kI: 0.0, kD: 0.0, kV: 0.07, kS: 0.0}
+      - {kP: 0.5, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.5
+   sensor_to_mechanism_ratio: 0.7037
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
@@ -144,13 +144,13 @@ top_right_shooter_controller:
    joint: top_right_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.3, kI: 0.0, kD: 0.0, kV: 0.07, kS: 0.0}
+      - {kP: 0.5, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.5
+   sensor_to_mechanism_ratio: 0.7037
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
@@ -162,13 +162,13 @@ bottom_left_shooter_controller:
    joint: bottom_left_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.3, kI: 0.0, kD: 0.0, kV: 0.07, kS: 0.0}
+      - {kP: 0.5, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.5
+   sensor_to_mechanism_ratio: 0.7037
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
@@ -181,13 +181,13 @@ bottom_right_shooter_controller:
    joint: bottom_right_shooter_joint
    invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.3, kI: 0.0, kD: 0.0, kV: 0.07, kS: 0.0}
+      - {kP: 0.5, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
    #current_limit_enable: True
    peak_reverse_voltage: 0
-   sensor_to_mechanism_ratio: 0.5
+   sensor_to_mechanism_ratio: 0.7037
    # voltage_closed_loop_ramp_period: 0.10
    dynamic_reconfigure: True
    neutral_mode: Coast
