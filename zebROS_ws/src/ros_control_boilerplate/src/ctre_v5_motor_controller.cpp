@@ -1184,7 +1184,7 @@ void CTREV5MotorController::write(const ros::Time &/*time*/, const ros::Duration
                 }
 
 #if 1 // fix gcc bug
-                ROS_INFO_STREAM("about to call Set(4) on " << getName() <<
+                ROS_INFO_STREAM("USING PERCENT OUTPUT about to call Set(4) on " << getName() <<
                         " out_mode = " << static_cast<int>(out_mode) << " command = " << command <<
                         " demand1_type_phoenix = " << static_cast<int>(demand1_type_phoenix) <<
                         " demand1_value = " << demand1_value);
@@ -1194,10 +1194,10 @@ void CTREV5MotorController::write(const ros::Time &/*time*/, const ros::Duration
                 state_->setDemand1Type(demand1_type_internal);
                 state_->setDemand1Value(demand1_value);
 
-                victor_spx_->Set(out_mode, command, demand1_type_phoenix, demand1_value);
+                victor_spx_->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, command, demand1_type_phoenix, demand1_value);
 
 #if 1 // fix gcc bug
-                ROS_INFO_STREAM("called Set(4) on " << getName() <<
+                ROS_INFO_STREAM("USING PERCENT OUTPUT called Set(4) on " << getName() <<
                         " out_mode = " << static_cast<int>(out_mode) << " command = " << command <<
                         " demand1_type_phoenix = " << static_cast<int>(demand1_type_phoenix) <<
                         " demand1_value = " << demand1_value);
