@@ -213,6 +213,62 @@ shooter_pivot_motionmagicvoltage_controller:
         - {kP: 30.0, kI: 0.0, kD: 0.00, kV: 4.6, kS: 0.0, kG: 0.3, gravity_type: "arm_cosine"}
     dynamic_reconfigure: True
    
+shooter_pivot_controller:
+    type: shooter_pivot_controller_2024/ShooterPivotController_2024
+
+    feed_forward_map:
+        - [0.5276893910326605, 0.15]
+	    - [0.5307573526084318, 0.38]
+	    - [0.5951845456996288, 0.31]
+	    - [0.641203969336198, 0.32]
+	    - [0.6872233929727672, 0.35000000000000003]
+	    - [0.7240389318820226, 0.41000000000000003]
+	    - [0.7884661249732196, 0.34]
+	    - [0.8344855486097889, 0.37]
+	    - [0.880504972246358, 0.38]
+	    - [0.9265243958829272, 0.4]
+	    - [0.9878836273983529, 0.34]
+	    - [1.0400389741864646, 0.34]
+	    - [1.0891263593988052, 0.34]
+	    - [1.1688933603688585, 0.19]
+	    - [1.2026409377023426, 0.28]
+	    - [1.2701360923693108, 0.19]
+	    - [1.3161555160058802, 0.21]
+	    - [1.371378824369763, 0.19]
+	    - [1.4204662095821037, 0.19]
+	    - [1.5278448647340985, 0.15]
+	    - [1.6106798272799232, 0.06]
+
+    shooter_pivot_joint: [ 'shooter_pivot_motionmagic_joint' ]
+    dynamic_reconfigure: True
+    min_angle: 0.5
+    max_angle: 1.66
+
+    motion_magic_velocity: 1.5
+    motion_magic_acceleration: 4.0
+    motion_magic_jerk: 100.0
+
+    shooter_pivot_motionmagic_joint:
+        type: talonfxpro_controllers/TalonFXProControllerInterface
+        joint: shooter_pivot_motionmagic_joint
+        feedback_sensor_source: FusedCANcoder
+        remote_feedback_device_id0: 55
+        motion_magic_cruise_velocity: 1.5
+        motion_magic_acceleration: 4.0
+        motion_magic_jerk: 100.0
+        sensor_to_mechanism_ratio: 1.0
+        rotor_to_sensor_ratio: 35.56
+        softlimit_forward_enable: True
+        softlimit_forward_threshold: 1.66
+        softlimit_reverse_enable: True
+        softlimit_reverse_threshold: 0.5
+        neutral_mode: Brake
+        close_loop_values:
+            # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
+            - {kP: 30.0, kI: 0.0, kD: 0.00, kV: 4.6, kS: 0.0, kG: 0.3, gravity_type: "arm_cosine"}
+        dynamic_reconfigure: True
+
+
 pivot_cancoder_controller:
     type:      cancoder_controller/CANCoderController
     joint_name: shooter_pivot_cancoder
