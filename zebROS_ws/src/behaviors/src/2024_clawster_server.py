@@ -56,7 +56,7 @@ class Clawster2024ActionServer(object):
     def execute_cb(self, goal: Clawster2024Goal):
         pct_out = Float64()
         success = True
-        r = rospy.Rate(10)
+        r = rospy.Rate(60)
         if goal.destination == goal.PRESHOOTER:
             rospy.loginfo("Clawster called with PRESHOOTER")
             intake_speed = self.preshooter_intake_speed
@@ -91,6 +91,7 @@ class Clawster2024ActionServer(object):
             rospy.loginfo("Clawster_server: Outtaking/Shooting!")
             pct_out.data = outtake_speed
             self.claw_pub.publish(pct_out)
+            rospy.loginfo(f"clawster_server: {pct_out}")
             while self.get_current_switch(goal) != 0 and (not rospy.is_shutdown()):
                 if self._as.is_preempt_requested():
                     self._as.set_preempted()

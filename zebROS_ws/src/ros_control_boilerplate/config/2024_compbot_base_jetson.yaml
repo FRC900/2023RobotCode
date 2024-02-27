@@ -73,7 +73,7 @@ hardware_interface:
        - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
 
     #    - {name: claw_limit_switch, type: digital_input, local: false}
-    #    - {name: preshooter_limit_switch, type: digital_input, local: false}
+       - {name: preshooter_limit_switch, type: digital_input, local: false}
        
        #- {name: pcm, type: pcm, pcm_id: 0}
        - {name: pigeon2, type: pigeon2, frame_id: pigeon2_frame, can_bus: CANivore, can_id: 0, local: true}
@@ -110,16 +110,18 @@ intake_talonfxpro_controller:
 note_diverter_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter
-    invert: counterclockwise_positive # MAKE CLOCKWISE ON REAL ROBOT ONCE WE HAVE A SHOOTER
+    invert: clockwise_positive
     dynamic_reconfigure: True
     neutral_mode: Coast
 
 clawster_controller:
     type: talon_controllers/TalonPercentOutputController
     joint: clawster
+    invert_output: True
     dynamic_reconfigure: True
     voltage_compensation_Enable: True
     voltage_compensation_saturation: 10
+    neutral_mode: Brake
 
 top_left_shooter_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
@@ -274,7 +276,7 @@ pivot_cancoder_controller:
     joint_name: shooter_pivot_cancoder
     sensor_direction: Clockwise_Positive
     dynamic_reconfigure: True
-    magnet_offset: 0.039883500485026424
+    magnet_offset: 2.110757564130642
 
 
 # This one creates the /talon_states topic necessary in ROS
