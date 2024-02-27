@@ -467,7 +467,21 @@ if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2024-linux-gnueabi") OR
 		src/sparkmax_sim_device.cpp
 		src/talonfxpro_sim_devices.cpp
 	)
-
+	set_source_files_properties(
+	src/ctre_v5_motor_controller_hw_device.cpp
+	PROPERTIES
+		COMPILE_OPTIONS "-O2"
+	)
+	set_source_files_properties(
+	src/ctre_v5_motor_controller_sim_device.cpp
+	PROPERTIES
+		COMPILE_OPTIONS "-O2"
+	)
+	set_source_files_properties(
+	src/sim_ctre_v5_motor_controller.cpp
+	PROPERTIES
+		COMPILE_OPTIONS "-O2"
+	)
 	target_link_libraries(frcrobot_sim_main
 		frc_robot_interface
 		frc_sim_wpilib
