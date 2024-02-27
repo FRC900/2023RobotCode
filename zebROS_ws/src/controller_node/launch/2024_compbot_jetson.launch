@@ -56,6 +56,7 @@
 			 bottom_right_shooter_controller
 			 pivot_cancoder_controller
 			 shooter_pivot_controller
+			 note_diverter_controller
 			 clawster_controller
 			 pigeon2_imu_state_controller
 			 robot_code_ready_controller" />

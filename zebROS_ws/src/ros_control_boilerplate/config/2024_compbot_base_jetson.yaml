@@ -164,7 +164,7 @@ bottom_left_shooter_controller:
    joint: bottom_left_shooter_joint
    #invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.4, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
+      - {kP: 0.3, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
@@ -183,7 +183,7 @@ bottom_right_shooter_controller:
    joint: bottom_right_shooter_joint
    invert: clockwise_positive
    close_loop_values:
-      - {kP: 0.4, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
+      - {kP: 0.3, kI: 0.0, kD: 0.0, kV: 0.0805, kS: 0.0}
    #current_limit_continuous_amps: 15
    #current_limit_peak_amps: 25
    #current_limit_peak_msec: 50
