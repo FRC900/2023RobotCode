@@ -70,7 +70,7 @@ hardware_interface:
        #Claw/Diverter
        # TODO - see if these need to be merged?
        - {name: note_diverter, type: talonfxpro, can_bus: CANivore, can_id: 17, local: true}
-       - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
+    #    - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
 
     #    - {name: claw_limit_switch, type: digital_input, local: false}
        - {name: preshooter_limit_switch, type: digital_input, local: false}
@@ -122,6 +122,7 @@ clawster_controller:
     voltage_compensation_saturation: 10
     neutral_mode: Brake
     dynamic_reconfigure: False
+    enable_read_thread: False
 
 top_left_shooter_controller:
    type: talonfxpro_controllers/TalonFXProVelocityVoltageController
