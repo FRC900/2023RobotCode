@@ -30,10 +30,10 @@ auto_mode_4: ["shoot_center_subwoofer", "start_intake", "three_note_speaker1_ALL
               "three_note_speaker3_ALLIANCE_csv", "pause_quarter", "relocalize", "shoot_from_stage_note", "stop_intake"]
 
 # 5: two note, speaker side
-auto_mode_5: ["shoot_center_subwoofer", "start_intake", "two_note_speaker1_ALLIANCE_csv", "pause_quarter", "relocalize", "shoot_from_stage_note", "stop_intake"]
+auto_mode_5: ["shoot_center_subwoofer", "start_intake", "two_note_speaker1_ALLIANCE_csv", "pause_quarter", "relocalize", "two_note_speaker2_ALLIANCE_csv", "shoot_from_stage_note", "stop_intake"]
 
 # 6: two note, with the note in front
-auto_mode_6: ["shoot_center_subwoofer", "start_intake", "drive_2_5_m", "shoot_from_stage_note", "stop_intake"]
+auto_mode_6: ["shoot_center_subwoofer", "start_intake", "drive_1_5_m", "shoot_from_stage_note", "stop_intake"]
 
 # 7: shoot preloaded note
 auto_mode_7: ["shoot_center_subwoofer"]
@@ -132,6 +132,14 @@ cmd_vel_1:
 drive_2_5_m:
   type: cmd_vel
   duration: 2.5
+  cmd_vel:
+    x: 1.0
+    y: 0.0
+    z: 0.0
+
+drive_1_5_m:
+  type: cmd_vel
+  duration: 1.5
   cmd_vel:
     x: 1.0
     y: 0.0
