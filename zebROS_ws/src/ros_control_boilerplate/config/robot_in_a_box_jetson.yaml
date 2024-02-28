@@ -24,8 +24,8 @@ hardware_interface:
    joints:
        #- {name: terrance, type: can_talon_fx, can_bus: CANivore, can_id: 1, local: true}
        #- {name: phillip, type: can_talon_fx, can_bus: CANivore, can_id: 2, local: true}
-    #    - {name: candle1, can_id: 5, can_bus: CANivore, type: candle, local: true}
-       - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true}
+       - {name: candle1, can_id: 5, can_bus: CANivore, type: candle, local: true}
+       - {name: clawster, type: can_talon_srx, can_bus: can0, can_id: 16, local: true}
        - {name: robot_code_ready_jetson, local: true, type: ready}
        - {name: robot_code_ready_rio, local: false, type: ready} # Probably not really needed?
        

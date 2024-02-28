@@ -24,15 +24,21 @@ HootLoggerDevices::~HootLoggerDevices() = default;
 void HootLoggerDevices::write(const ros::Time& time, const ros::Duration& period, Tracer &tracer)
 {
     tracer.start_unique("hoot logger");
+    if (!isHALRobot())
+    {
+        return;
+    }
     const auto enabled = isEnabled();
     if (prev_robot_enabled_ != enabled)
     {
-        if (enabled) // switching from enabled to disabled
+        if (prev_robot_enabled_) // switching from enabled to disabled
         {
+            ROS_INFO_STREAM("Stopping SignalLogger on disable");
             safeCall(ctre::phoenix6::SignalLogger::Stop(), "ctre::phoenix6::SignalLogger::Stop()");
         }
         else // switching from disabled to enabled
         {
+            ROS_INFO_STREAM("Starting SignalLogger on enable");
             safeCall(ctre::phoenix6::SignalLogger::Start(), "ctre::phoenix6::SignalLogger::Start()");
         }
     }
