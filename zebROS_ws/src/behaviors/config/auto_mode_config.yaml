@@ -7,10 +7,10 @@
 
 
 auto_mode_1: ["shoot_center_subwoofer", "start_intake", "four_note_source1_ALLIANCE_csv", "pause_half", "relocalize",  
-              "four_note_source2_ALLIANCE_csv", "pause_half", "relocalize", "shoot_inline_subwoofer",
-              "four_note_source3_ALLIANCE_csv", "pause_half", "relocalize", "shoot_diagonal", # not actually diagonal but far
+              "four_note_source2_ALLIANCE_csv", "pause_half", "relocalize", "shoot_inline_subwoofer", "start_intake",
+              "four_note_source3_ALLIANCE_csv", "pause_half", "relocalize", "shoot_diagonal", "start_intake", # not actually diagonal but far
               "four_note_source4_ALLIANCE_csv", "pause_two", "relocalize",
-              "four_note_source5_ALLIANCE_csv",
+              "four_note_source5_ALLIANCE_csv", "pause_two", 
               "stop_intake", "shoot_diagonal"]
 
 auto_mode_2: ["four_note_source1_ALLIANCE_csv", "pause_half", 
