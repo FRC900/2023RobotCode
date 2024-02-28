@@ -8,6 +8,8 @@ from talon_state_msgs.msg import TalonFXProState
 from controllers_2024_msgs.srv import ShooterPivotSrv, ShooterPivotSrvRequest
 from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Feedback, ShooterPivot2024Result
 
+from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
+
 global motion_magic_value
 global motion_magic_value_index
 
@@ -44,8 +46,19 @@ class ShooterPivotServer2024:
         #maybe we subscibe to the voltage velocity controller instead of hte fx pro
 
         self.shooter_pivot_client = rospy.ServiceProxy("/frcrobot_jetson/shooter_pivot_controller/shooter_pivot_service", ShooterPivotSrv)
+
+        ddynrec = DDynamicReconfigure("pivot_dyn_rec")
+        ddynrec.add_variable("pivot_tolerance", "float/double variable", rospy.get_param("pivot_tolerance"), 0.0, 0.2)
+        ddynrec.start(self.dyn_rec_callback)
+
+        self.tolerance = rospy.get_param("pivot_tolerance")
    
         self.server.start()
+
+    def dyn_rec_callback(self, config, level):
+        rospy.loginfo("Received reconf call: " + str(config))
+        self.tolerance = config["pivot_tolerance"]
+        return config
 
     def execute_cb(self, goal):
         global motion_magic_value
@@ -62,8 +75,6 @@ class ShooterPivotServer2024:
                 self._feedback.percent_complete = 100.0
             else:
                 self._feedback.percent_complete = (((motion_magic_value - initial_motion_magic_value) / (goal.pivot_position - initial_motion_magic_value))) * 100
-            percent_difference = (((abs(motion_magic_value - goal.pivot_position)) / ((motion_magic_value + goal.pivot_position))) / 2) * 100
-            tolerance = .9
             self.server.publish_feedback(self._feedback)
 
             if self.server.is_preempt_requested():
@@ -71,7 +82,7 @@ class ShooterPivotServer2024:
                 self.server.set_preempted()
                 break
              
-            elif (percent_difference < tolerance):
+            elif (abs(motion_magic_value - goal.pivot_position) < self.tolerance):
                 self._result.success = True
                 self._feedback.percent_complete = 100.0
                 self._feedback.is_at_pivot_position = True

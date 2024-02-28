@@ -203,6 +203,9 @@ class ShootingServer(object):
                     return
                 r.sleep()
 
+            pivot_goal.pivot_position = 0.5
+            self.pivot_client.send_goal(pivot_goal)
+
             rospy.loginfo("2024_shooting_server: +5 points hopefully")
         
         if not goal.leave_spinning:
@@ -213,7 +216,7 @@ class ShootingServer(object):
             self.shooter_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
             # ensure pivot stopped
-            self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
+            # self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
         # stop preshooter
         self.preshooter_client.cancel_goals_at_and_before_time(rospy.Time.now())
