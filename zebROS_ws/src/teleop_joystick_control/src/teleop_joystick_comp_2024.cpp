@@ -703,9 +703,10 @@ int main(int argc, char **argv)
 	shooting_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Shooting2024Action>>("/shooting/shooting_server_2024", true);
 	drive_and_intake_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>>("/intaking/drive_object_intake", true);
 
+	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
+
 	TeleopInitializer initializer;
 	initializer.set_n_params(n_params);
-	initializer.init();
-	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
+	initializer.init(); // THIS SPINS
 	return 0;
 }
