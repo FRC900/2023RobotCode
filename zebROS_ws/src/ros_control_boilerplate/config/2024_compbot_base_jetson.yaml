@@ -413,7 +413,7 @@ arm_controller:
     type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
     joint: arm
     # DONT SET THIS FOR SIM !!! 
-    #feedback_sensor_source: RemoteCANCoder
+    #feedback_sensor_source: RemoteCANcoder
     #remote_feedback_device_id0: 21
     #neutral_deadband: 0.01
     close_loop_values:
