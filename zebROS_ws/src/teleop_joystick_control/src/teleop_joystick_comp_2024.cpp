@@ -23,26 +23,28 @@
 
 class AutoModeCalculator2024 : public AutoModeCalculator {
 public:
-	AutoModeCalculator2024() = default;
-	uint8_t calculateAutoMode() override {
-		return auto_mode_;
+	explicit AutoModeCalculator2024(ros::NodeHandle &n)
+		: AutoModeCalculator(n)
+	{
 	}
 	void set_auto_mode(const uint8_t auto_mode) {
 		auto_mode_ = auto_mode;
 	}
 private:
-	uint8_t auto_mode_{0};
+	uint8_t calculateAutoMode() override {
+		return auto_mode_;
+	}
+	uint8_t auto_mode_{1};
 };
 
-AutoModeCalculator2024 auto_calculator;
+std::unique_ptr<AutoModeCalculator2024> auto_calculator;
 
 // TODO: Add 2024 versions, initialize in main before calling generic inititalizer
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Intaking2024Action>> intaking_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Shooting2024Action>> shooting_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>> drive_and_intake_ac;
 
-
-void talonFXProStateCallback(const talon_state_msgs::TalonFXProState talon_state)
+void talonFXProStateCallback(const talon_state_msgs::TalonFXProStateConstPtr &talon_state)
 {    
 	ROS_WARN("Calling unimplemented function \"talonFXProStateCallback()\" in teleop_joystick_comp_2024.cpp ");
 }
@@ -495,7 +497,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 
 	// TODO We'll probably want to check the actual value here
-	auto_calculator.set_auto_mode(button_box->auto_mode);
+	auto_calculator->set_auto_mode(button_box->auto_mode);
 
  
 	if(button_box->zeroButton) {
@@ -699,6 +701,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::NodeHandle n_params(n, "teleop_params");
 
+	auto_calculator = std::make_unique<AutoModeCalculator2024>(n);
 	intaking_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Intaking2024Action>>("/intaking/intaking_server_2024", true);
 	shooting_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Shooting2024Action>>("/shooting/shooting_server_2024", true);
 	drive_and_intake_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>>("/intaking/drive_object_intake", true);

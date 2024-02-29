@@ -775,7 +775,7 @@ class AutoNode {
 					ROS_INFO_STREAM_THROTTLE(1, "auto_node: mode auto_mode_" + std::to_string(auto_mode_));
 				} 
 				else {
-					ROS_ERROR_STREAM("COULD NOT FIND AUTO MODE PARAM?");
+					ROS_ERROR_STREAM_THROTTLE(0.5, "COULD NOT FIND AUTO MODE PARAM?");
 				}
 			}
 			if(auto_mode_ > 0){
