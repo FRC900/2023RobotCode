@@ -24,7 +24,7 @@ class Rumble2024Server():
         rospy.loginfo("Rumble server starting")
 
         #self.shooter_pos_sub = rospy.Subscriber("/", TalonFXProState, shooter_pivot_callback)
-        self.rumble_srv = rospy.ServiceProxy("/RUMBLETOPIC", RumbleCommand)
+        self.rumble_srv = rospy.ServiceProxy("/frcrobot_rio/rumble_controller/command", RumbleCommand)
         
         self.intaking_current = 0.0
         self.intaking_talon_idx = None
@@ -34,6 +34,7 @@ class Rumble2024Server():
 
         self.notes_max_distance = rospy.get_param("note_distance_away")
         self.intake_limit_switch_name = rospy.get_param("intake_limit_switch_name")
+        self.rumble_value = rospy.get_param("rumble_on_note")
 
         self.rumble = rospy.Timer(rospy.Duration(1.0/20.0), self.rumble_loop)
         self.closest_note = 900
@@ -42,7 +43,7 @@ class Rumble2024Server():
 
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
-        rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
+        #rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
         if (self.intaking_talon_idx == None):
             for i in range(len(states.name)):
                 #rospy.loginfo(data.name[i])
@@ -68,45 +69,38 @@ class Rumble2024Server():
 
     def limit_switch_cb(self, data):
         # check claw switch
-        if self.claw_switch_name in data.name:
-            self.claw_switch = data.position[data.name.index(self.claw_switch_name)]
-            #rospy.loginfo(f"Found {self.claw_switch_name} with value {self.claw_switch}")
+        if self.intake_limit_switch_name in data.name:
+            if self.touched_note == False:
+                self.touched_note = data.position[data.name.index(self.intake_limit_switch_name)]
+                self.time_touched_note = rospy.Time.now()
         else:
-            rospy.logwarn_throttle(1.0, f'2024_clawster_server: {self.claw_switch_name} not found')
-            pass
-
-        # check preshooter switch
-        if self.preshooter_switch_name in data.name:
-            self.preshooter_switch = data.position[data.name.index(self.preshooter_switch_name)] 
-            #rospy.loginfo(f"Found {self.preshooter_switch_name} with value {self.preshooter_switch}")
-        else:
-            rospy.logwarn_throttle(1.0, f'2024_clawster_server: {self.preshooter_switch_name} not found')
+            rospy.logerr_throttle(1.0, f'2024_rumble_server: {self.intake_limit_switch_name} not found')
             pass
 
     # runs at some hz
     def rumble_loop(self, event):
-        rospy.loginfo("Rumble running")
+        #rospy.loginfo_throttle(1, "Rumble running")
         rumble_srv = RumbleCommandRequest()
         rumble_srv.left = 0
         rumble_srv.right = 0
 
-        if self.closest_note < self.notes_max_distance:
-            rumble_srv.left = 10000 # slight rumble if we can see a note
-            rumble_srv.right = 10000
+        # TODO add for next event
+        # if self.closest_note < self.notes_max_distance:
+        #     rumble_srv.left = 10000 # slight rumble if we can see a note
+        #     rumble_srv.right = 10000
 
         if self.touched_note:
-            rospy.loginfo_throttle(1, "2024 rumble server: touched note")
+            rospy.logerr_throttle(1, "2024 rumble server: touched note")
             # TODO make this a parameter
-            if rospy.time.Now() - self.time_touched_note < rospy.Duration(1.0):
-                rumble_srv.left = 20000
-                rumble_srv.right = 20000
+            # note should be gone after 1 second
+            if rospy.Time.now() - self.time_touched_note < rospy.Duration(1.0):
+                rumble_srv.left = self.rumble_value
+                rumble_srv.right = self.rumble_value
             else:
-                rospy.loginfo("Runble server: note touch time expired")
+                rospy.logwarn("Runble server: note touch time expired")
                 self.touched_note = False
 
         self.rumble_srv.call(rumble_srv)
-
-
 
        
 if __name__ == '__main__':
