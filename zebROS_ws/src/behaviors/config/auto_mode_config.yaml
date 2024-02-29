@@ -95,7 +95,7 @@ shoot_center_subwoofer:
 
 shoot_from_white_tape:
   type: shoot_distance
-  distance: 1.8 # meters
+  distance: 2.0 # meters
 
 shoot_from_stage_note:
   type: shoot_distance

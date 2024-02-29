@@ -59,6 +59,7 @@ swerve_drive_controller:
         forward_limit_enable: False
         reverse_limit_enable: False
         #neutral_deadband: 0.01
+        stator_current_limit: 60
     fr_drive:
         joint: fr_drive
         close_loop_values:
@@ -73,6 +74,7 @@ swerve_drive_controller:
         forward_limit_enable: False
         reverse_limit_enable: False
         #neutral_deadband: 0.01
+        stator_current_limit: 60
     bl_drive:
         joint: bl_drive
         close_loop_values:
@@ -88,6 +90,7 @@ swerve_drive_controller:
         forward_limit_enable: False
         reverse_limit_enable: False
         #neutral_deadband: 0.01
+        stator_current_limit: 60
     br_drive:
         joint: br_drive
         close_loop_values:
@@ -103,6 +106,7 @@ swerve_drive_controller:
         forward_limit_enable: False
         reverse_limit_enable: False
         #neutral_deadband: 0.01
+        stator_current_limit: 60
     fl_angle:
         joint: fl_angle
         feedback_sensor_source: FusedCANcoder
@@ -118,6 +122,7 @@ swerve_drive_controller:
         sensor_to_mechanism_ratio: 1.0
         dynamic_reconfigure: True
         invert: clockwise_positive
+        stator_current_limit: 40
     fr_angle:
         joint: fr_angle
         feedback_sensor_source: FusedCANcoder
@@ -133,6 +138,7 @@ swerve_drive_controller:
         sensor_to_mechanism_ratio: 1.0
         dynamic_reconfigure: True
         invert: clockwise_positive
+        stator_current_limit: 40
     br_angle:
         joint: br_angle
         feedback_sensor_source: FusedCANcoder
@@ -148,6 +154,7 @@ swerve_drive_controller:
         sensor_to_mechanism_ratio: 1.0
         dynamic_reconfigure: True
         invert: clockwise_positive
+        stator_current_limit: 40
     bl_angle:
         joint: bl_angle
         feedback_sensor_source: FusedCANcoder
@@ -163,6 +170,7 @@ swerve_drive_controller:
         sensor_to_mechanism_ratio: 1.0
         dynamic_reconfigure: True
         invert: clockwise_positive
+        stator_current_limit: 40
 
 # Stand-alone controller used to tune PID constants
 swerve_angle_phoenix6_controller:

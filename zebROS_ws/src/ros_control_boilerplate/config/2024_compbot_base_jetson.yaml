@@ -214,6 +214,7 @@ shooter_pivot_motionmagicvoltage_controller:
     close_loop_values:
         # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
         - {kP: 30.0, kI: 0.0, kD: 0.00, kV: 4.6, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
+    stator_current_limit: 60
     dynamic_reconfigure: True
    
 shooter_pivot_controller:
