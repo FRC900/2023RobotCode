@@ -21,8 +21,6 @@
 
 #include "teleop_joystick_control/teleop_joystick_comp_general.h"
 
-ros::Publisher auto_mode_publisher;
-
 class AutoModeCalculator2024 : public AutoModeCalculator {
 public:
 	AutoModeCalculator2024() = default;
@@ -30,11 +28,6 @@ public:
 		return auto_mode_;
 	}
 	void set_auto_mode(const uint8_t auto_mode) {
-		if (auto_mode != auto_mode_) {
-			behavior_actions::AutoMode auto_msg;
-			auto_msg.header.stamp = ros::Time::now();
-			auto_msg.auto_mode = auto_mode;
-		}
 		auto_mode_ = auto_mode;
 	}
 private:
@@ -501,6 +494,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	{
 	}
 
+	// TODO We'll probably want to check the actual value here
 	auto_calculator.set_auto_mode(button_box->auto_mode);
 
  
@@ -708,7 +702,6 @@ int main(int argc, char **argv)
 	intaking_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Intaking2024Action>>("/intaking/intaking_server_2024", true);
 	shooting_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Shooting2024Action>>("/shooting/shooting_server_2024", true);
 	drive_and_intake_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>>("/intaking/drive_object_intake", true);
-	auto_mode_publisher = n.advertise<behavior_actions::AutoMode>("/auto/auto_mode", 1, true);
 
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 
