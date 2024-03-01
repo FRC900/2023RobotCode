@@ -535,6 +535,8 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		ROS_WARN_STREAM("teleop_joystick_comp_2024: PREEMPTING all actions");
 		drive_and_intake_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		aligned_shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 	if (button_box->redRelease)
 	{
