@@ -21,9 +21,9 @@ auto_mode_1: ["shoot_center_subwoofer", "start_intake", "four_note_source1_ALLIA
 
 # 2: four note speaker no rotation
 auto_mode_2: ["relocalize", "shoot_center_subwoofer", "start_intake", "four_note_speaker_no_rotate1_ALLIANCE_csv", "pause_quarter", "relocalize",
-              "four_note_speaker_no_rotate2_ALLIANCE_csv", "pause_quarter", "relocalize", "shoot_dynamic", "start_intake",
-              "four_note_speaker_no_rotate3_ALLIANCE_csv", "pause_quarter", "relocalize", "shoot_dynamic", "start_intake",
-              "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter", "relocalize", 
+              "four_note_speaker_no_rotate2_ALLIANCE_csv", "shoot_dynamic", "start_intake",
+              "four_note_speaker_no_rotate3_ALLIANCE_csv", "shoot_dynamic", "start_intake",
+              "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter", "relocalize",
               "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter", "shoot_dynamic", "stop_intake", "pause_half", "spin_down_shooter"]
 
 # SIM ONLY

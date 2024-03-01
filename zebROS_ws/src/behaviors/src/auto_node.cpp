@@ -990,6 +990,15 @@ class AutoNode {
 
 		intaking_ac_.sendGoal(goal); // just send and can cancel in another action
 		ROS_INFO_STREAM("Auto node - Starting intake");
+
+		// make a std_srvs::Empty request
+		std_srvs::Empty srv;
+		// call the relocalize service
+		if (!tagslam_relocalize_srv_.call(srv)) {
+			shutdownNode(ERROR, "Auto node - relocalize service call failed");
+			return false;
+		}
+
 		return true;
 	}
 

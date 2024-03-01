@@ -89,31 +89,33 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			
 			}
 
-			//Joystick1: buttonX
+			//Joystick1: buttonX (button Y on controller with replaced white buttons)
+			// this is the top button on the ABXY set
 			if(joystick_state->buttonXPress)
 			{
-
+				behavior_actions::Shooting2024Goal goal;
+				goal.mode = goal.SUBWOOFER;
+				shooting_ac->sendGoal(goal);
 			}
 			if(joystick_state->buttonXButton)
 			{
 			}
 			if(joystick_state->buttonXRelease)
 			{
+				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 			//Joystick1: buttonY
 			if(joystick_state->buttonYPress)
 			{
-				behavior_actions::Shooting2024Goal goal;
-				goal.mode = goal.SUBWOOFER;
-				shooting_ac->sendGoal(goal);
+				
 			}
 			if(joystick_state->buttonYButton)
 			{
 			}
 			if(joystick_state->buttonYRelease)
 			{
-				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				
 			}
 
 			//Joystick1: bumperLeft
