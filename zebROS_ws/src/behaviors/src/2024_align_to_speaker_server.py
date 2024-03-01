@@ -118,7 +118,7 @@ class Aligner:
             self.pub_dist_and_ang_vel.publish(dist_ang_msg)
             
             cmd_vel_msg = geometry_msgs.msg.Twist()
-            cmd_vel_msg.angular.x = 0 # todo, tune me
+            cmd_vel_msg.angular.x = 0
             cmd_vel_msg.angular.y = 0
             cmd_vel_msg.angular.z = self.current_orient_effort
             cmd_vel_msg.linear.x = 0
@@ -128,11 +128,20 @@ class Aligner:
 
             rospy.loginfo_throttle(0.5, f"{self.current_yaw} vs {msg.data}")
 
-            if self._feedback.error < self.tolerance:
+            if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.tolerance:
                 rospy.loginfo_throttle(0.5, "2024_align_to_speaker: aligned")
                 success = True
                 self._as.publish_feedback(self._feedback)
-                if not goal.align_forever: break
+                if not goal.align_forever:
+                    cmd_vel_msg = geometry_msgs.msg.Twist()
+                    cmd_vel_msg.angular.x = 0
+                    cmd_vel_msg.angular.y = 0
+                    cmd_vel_msg.angular.z = 0.0
+                    cmd_vel_msg.linear.x = 0
+                    cmd_vel_msg.linear.y = 0
+                    cmd_vel_msg.linear.z = 0
+                    self.pub_cmd_vel.publish(cmd_vel_msg)
+                    break
 
             rate.sleep()
         if success:
