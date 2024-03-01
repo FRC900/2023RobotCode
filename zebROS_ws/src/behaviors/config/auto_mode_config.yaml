@@ -12,12 +12,26 @@ auto_mode_1: ["shoot_center_subwoofer", "start_intake", "four_note_source1_ALLIA
               "four_note_source5_ALLIANCE_csv", "shoot_dynamic", "stop_intake"]
 
 # 2: four note speaker NO TIME TO TEST
-auto_mode_2: ["shoot_center_subwoofer", "start_intake", "four_note_speaker1_ALLIANCE_csv",
-              "four_note_speaker2_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
-              "four_note_speaker3_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
-              "four_note_speaker4_ALLIANCE_csv", "pause_quarter", "relocalize", 
-              "four_note_speaker5_ALLIANCE_csv", "pause_quarter", "relocalize", 
-              "four_note_speaker6_ALLIANCE_csv", "stop_intake", "shoot_dynamic"]
+#auto_mode_2: ["shoot_center_subwoofer", "start_intake", "four_note_speaker1_ALLIANCE_csv",
+#              "four_note_speaker2_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
+#              "four_note_speaker3_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
+#              "four_note_speaker4_ALLIANCE_csv", "pause_quarter", "relocalize", 
+#              "four_note_speaker5_ALLIANCE_csv", "pause_quarter", "relocalize", 
+#              "four_note_speaker6_ALLIANCE_csv", "stop_intake", "shoot_dynamic"]
+
+# 2.5: four note speaker no ROTATE
+auto_mode_2: ["shoot_center_subwoofer", "start_intake", "four_note_speaker_no_rotate1_ALLIANCE_csv",
+              "four_note_speaker_no_rotate2_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
+              "four_note_speaker_no_rotate3_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
+              "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter", "relocalize", 
+              "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter", "stop_intake", "shoot_dynamic", "spin_down_shooter"]
+
+# SIM ONLY
+#auto_mode_2: ["four_note_speaker_no_rotate1_ALLIANCE_csv",
+#              "four_note_speaker_no_rotate2_ALLIANCE_csv", "pause_quarter",
+#              "four_note_speaker_no_rotate3_ALLIANCE_csv", "pause_quarter",
+#              "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter",              
+#              "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter"]
 
 # 3: three note source
 auto_mode_3: ["shoot_center_subwoofer", "start_intake", "three_note_source1_ALLIANCE_csv", "pause_quarter", "relocalize",  
