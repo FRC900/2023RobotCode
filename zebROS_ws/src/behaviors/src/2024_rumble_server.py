@@ -29,7 +29,7 @@ class Rumble2024Server():
         self.intaking_current = 0.0
         self.intaking_talon_idx = None
         self.talonfxpro_sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.talonfxpro_states_cb)
-        self.norfair_sub = rospy.Subscriber('/norfair/output', Detections, self.notes_callback)
+        #self.norfair_sub = rospy.Subscriber('/norfair/output', Detections, self.notes_callback)
         self.limit_switch_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, self.limit_switch_cb)
 
         self.notes_max_distance = rospy.get_param("note_distance_away")
@@ -68,9 +68,11 @@ class Rumble2024Server():
         self.closest_note = closest_dist
 
     def limit_switch_cb(self, data):
+        #rospy.loginfo_throttle(1, "2024_rumble_server: limit switch callback")
         # check claw switch
         if self.intake_limit_switch_name in data.name:
             if self.touched_note == False:
+                #rospy.loginfo(f'2024_rumble_server: {self.intake_limit_switch_name} found')
                 self.touched_note = data.position[data.name.index(self.intake_limit_switch_name)]
                 self.time_touched_note = rospy.Time.now()
         else:
