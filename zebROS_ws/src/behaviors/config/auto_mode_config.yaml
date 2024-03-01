@@ -4,20 +4,20 @@
 
 # ALLIANCE will be replaced with whatever alliance we are "red" or "blue"
 
-# 1: four note source
+# 1: four note source WORKS ON RED AND BLUE
 auto_mode_1: ["shoot_center_subwoofer", "start_intake", "four_note_source1_ALLIANCE_csv", "relocalize",  
               "four_note_source2_ALLIANCE_csv", "pause_quarter", "relocalize", "shoot_dynamic", "start_intake",
               "four_note_source3_ALLIANCE_csv", "pause_half", "shoot_dynamic", "relocalize", "start_intake", # not actually diagonal but far
               "four_note_source4_ALLIANCE_csv", "pause_quarter", "relocalize",
               "four_note_source5_ALLIANCE_csv", "shoot_dynamic", "stop_intake"]
 
-# 2: four note speaker
+# 2: four note speaker NO TIME TO TEST
 auto_mode_2: ["shoot_center_subwoofer", "start_intake", "four_note_speaker1_ALLIANCE_csv",
-              "four_note_speaker2_ALLIANCE_csv", "relocalize", "shoot_from_white_tape", "start_intake",
-              "four_note_speaker3_ALLIANCE_csv", "relocalize", "shoot_from_stage_note", "start_intake",
+              "four_note_speaker2_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
+              "four_note_speaker3_ALLIANCE_csv", "relocalize", "shoot_dynamic", "start_intake",
               "four_note_speaker4_ALLIANCE_csv", "pause_quarter", "relocalize", 
               "four_note_speaker5_ALLIANCE_csv", "pause_quarter", "relocalize", 
-              "four_note_speaker6_ALLIANCE_csv", "stop_intake", "shoot_from_stage_note"]
+              "four_note_speaker6_ALLIANCE_csv", "stop_intake", "shoot_dynamic"]
 
 # 3: three note source
 auto_mode_3: ["shoot_center_subwoofer", "start_intake", "three_note_source1_ALLIANCE_csv", "pause_quarter", "relocalize",  
@@ -32,13 +32,13 @@ auto_mode_4: ["shoot_center_subwoofer", "start_intake", "three_note_speaker1_ALL
 # 5: two note, speaker side
 auto_mode_5: ["shoot_center_subwoofer", "start_intake", "two_note_speaker1_ALLIANCE_csv", "pause_quarter", "relocalize", "two_note_speaker2_ALLIANCE_csv", "shoot_from_stage_note", "stop_intake"]
 
-# 6: two note, with the note in front
+# 6: two note, with the note in front TESTED AND WORKED
 auto_mode_6: ["shoot_center_subwoofer", "start_intake", "drive_1_5_m", "shoot_from_stage_note", "stop_intake"]
 
-# 7: shoot preloaded note
+# 7: shoot preloaded note SHOULD WORK
 auto_mode_7: ["shoot_center_subwoofer"]
 
-# 8: shoot preloaded note, drive back
+# 8: shoot preloaded note, drive back TESTED AND WORKS
 auto_mode_8: ["shoot_center_subwoofer", "drive_2_5_m"]
 
 # 9: no-op
