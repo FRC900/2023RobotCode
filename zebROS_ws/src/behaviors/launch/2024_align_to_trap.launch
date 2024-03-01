@@ -20,7 +20,11 @@
         <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag14" args="5.321 4.105 1.321 0 0 0 1 map blue_trap_14" />
         <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag15" args="4.641 4.498 1.321 0 0 0.8660254 0.5 map blue_trap_15" />
         <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag16" args="4.641 3.713 1.321 0 0 -0.8660254 0.5 map blue_trap_16" />
-        
+
+        <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag6" args="1.841 8.204 1.356 0 0 -0.7071068, 0.7071068 map blue_amp_6" />
+        <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag5" args="14.701 8.204 1.356 0 0 -0.7071068, 0.7071068 map red_amp_5" />
+
+
         <node name="x_position_pid" pkg="pid" type="controller" >
             <param name="node_name" value="x_position_pid" />
             <param name="Kp" value="2.0" />

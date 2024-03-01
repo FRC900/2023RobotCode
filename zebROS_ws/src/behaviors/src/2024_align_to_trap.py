@@ -26,6 +26,10 @@ class Aligner:
 
     RED_TAGS = ["red_trap_11", "red_trap_12", "red_trap_13"]
     BLUE_TAGS = ["blue_trap_14", "blue_trap_15", "blue_trap_16"]
+    
+    BLUE_AMP = "blue_amp_6"
+    RED_AMP = "red_amp_5"
+
 
     def __init__(self, name):   
         self._action_name = name
@@ -36,6 +40,9 @@ class Aligner:
         self.x_offset = rospy.get_param("x_offset")
         self.y_offset = rospy.get_param("y_offset")
 
+        self.x_amp_offset = rospy.get_param("x_offset_amp")
+        self.y_amp_offset = rospy.get_param("y_offset_amp")
+        
         self.color = 0
         self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.AlignToTrap2024Action, execute_cb=self.aligner_callback, auto_start = False)
         self._as.start()
@@ -88,16 +95,25 @@ class Aligner:
 
         closest_frame = None
         closest_distance = float("inf")
-        for frame in (self.RED_TAGS if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_TAGS):
-            trans: geometry_msgs.msg.TransformStamped = self.tfBuffer.lookup_transform('base_link', frame, rospy.Time())
-            distance = math.hypot(trans.transform.translation.x, trans.transform.translation.y)
-            if distance < closest_distance:
-                closest_frame = frame
-                closest_distance = distance
+        if goal.destination == goal.AMP:
+            rospy.loginfo("2024_align_to_trap: Aligning to amp")
+            closest_frame = self.RED_AMP if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_AMP
+        else:
+            rospy.loginfo("2024_align_to_trap: Aligning to trap")
+            for frame in (self.RED_TAGS if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_TAGS):
+                trans: geometry_msgs.msg.TransformStamped = self.tfBuffer.lookup_transform('base_link', frame, rospy.Time())
+                distance = math.hypot(trans.transform.translation.x, trans.transform.translation.y)
+                if distance < closest_distance:
+                    closest_frame = frame
+                    closest_distance = distance
 
         trans = self.tfBuffer.lookup_transform(closest_frame, "map", rospy.Time())
-        trans.transform.translation.x -= self.x_offset
-        trans.transform.translation.y -= self.y_offset
+        if goal.destination == goal.TRAP:
+            trans.transform.translation.x -= self.x_offset
+            trans.transform.translation.y -= self.y_offset
+        elif goal.destination == goal.AMP:
+            trans.transform.translation.x -= self.x_amp_offset
+            trans.transform.translation.y -= self.y_amp_offset
 
         transform = t.concatenate_matrices(t.translation_matrix([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]), t.quaternion_matrix([trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w]))
         inverted_transform = t.inverse_matrix(transform)

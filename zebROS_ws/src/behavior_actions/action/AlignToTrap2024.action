@@ -1,4 +1,8 @@
 # goal
+uint8 AMP=0
+uint8 TRAP=1
+uint8 SUBWOOFER=2
+uint8 destination 
 ---
 # result
 bool success
