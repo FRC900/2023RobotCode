@@ -4,6 +4,7 @@
 
 import rospy
 import actionlib
+import time
 
 from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 
@@ -103,7 +104,7 @@ class Clawster2024ActionServer(object):
                     return
                 r.sleep()
 
-            rospy.Rate(self.outtake_delay).sleep()
+            time.sleep(self.outtake_delay)
             pct_out.data = 0
             self.claw_client.call(CommandRequest(pct_out.data))
             if success:

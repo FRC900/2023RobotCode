@@ -36,6 +36,8 @@
 #include <behavior_actions/Intaking2024Action.h>
 #include <behavior_actions/Shooting2024Action.h>
 
+#include <behavior_actions/AutoAlignSpeaker.h>
+
 
 enum AutoStates {
 			NOT_READY,
@@ -76,6 +78,9 @@ class AutoNode {
 		ros::Subscriber enable_auto_in_teleop_sub_;
 		ros::Subscriber orientation_effort_sub_; 
 		ros::Subscriber current_yaw_sub_;
+
+		ros::Subscriber dist_ang_sub_;
+		double speaker_dist;
 
 		// auto mode and state
 		signed char auto_mode_ = -1; //-1 if nothing selected
@@ -153,6 +158,8 @@ class AutoNode {
 		auto_mode_sub_ = nh_.subscribe("auto_mode", 1, &AutoNode::updateAutoMode, this); //TODO get correct topic name (namespace)
 		enable_auto_in_teleop_sub_ = nh_.subscribe("/enable_auto_in_teleop", 1, &AutoNode::enable_auto_in_teleop, this);
 		orientation_effort_sub_ = nh_.subscribe("/teleop/orient_strafing/control_effort", 1, &AutoNode::orientation_effort_callback, this, ros::TransportHints().tcpNoDelay());
+
+		dist_ang_sub_ = nh_.subscribe("/speaker_align/dist_and_ang", 1, &AutoNode::distance_callback, this, ros::TransportHints().tcpNoDelay());
 
 		// Used to pass in dynamic paths from other nodes
 		path_finder_ = nh_.advertiseService("dynamic_path", &AutoNode::dynamic_path_storage, this);
@@ -241,6 +248,10 @@ class AutoNode {
 
 	void yaw_callback(const std_msgs::Float64::ConstPtr& msg) {
 		current_yaw_ = msg->data; 
+	}
+
+	void distance_callback(const behavior_actions::AutoAlignSpeaker::ConstPtr& msg) {
+		speaker_dist = msg->distance;
 	}
 
 	//subscriber callback for match data
@@ -943,6 +954,10 @@ class AutoNode {
 		goal.leave_spinning = true; // want to keep going after this shot
 		goal.setup_only = false; // actually shoot something
 		goal.distance = distance; 
+		if (distance == 0) {
+			goal.distance = speaker_dist;
+			ROS_INFO_STREAM("Auto node - shooting from actual distance " << speaker_dist);
+		}
 		goal.mode = goal.SPEAKER;
 		shooting_ac_.sendGoal(goal); 
 		
