@@ -80,13 +80,19 @@ void updateMapOdomTf() {
       return;
     }
 
+    bool invalid = false;
+
     if ((ros::Time::now() - base_link_to_odom_tf.header.stamp) > ros::Duration(transform_timeout)) {
-      ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: odom transform too old!");
-      return;
+      ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: odom transform too old! " << base_link_to_odom_tf.header.stamp << " delta " << (ros::Time::now() - base_link_to_odom_tf.header.stamp));
+      invalid = true;
     }
 
     if ((ros::Time::now() - base_link_to_map_tf.header.stamp) > ros::Duration(transform_timeout)) {
-      ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: tagslam transform too old!");
+      ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: tagslam transform too old! " << base_link_to_map_tf.header.stamp << " delta " << (ros::Time::now() - base_link_to_map_tf.header.stamp));
+      invalid = true;
+    }
+
+    if (invalid) {
       return;
     }
 
