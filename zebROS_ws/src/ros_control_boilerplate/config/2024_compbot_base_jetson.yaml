@@ -104,14 +104,14 @@ intake_talonfxpro_controller:
     type: talonfxpro_controllers/TalonFXProDutyCycleOutController
     joint: intake
     invert: counterclockwise_positive
-    dynamic_reconfigure: True
+    # dynamic_reconfigure: True
     neutral_mode: Coast
 
 note_diverter_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: note_diverter
     invert: clockwise_positive
-    dynamic_reconfigure: True
+    # dynamic_reconfigure: True
     neutral_mode: Coast
 
 clawster_controller:
@@ -137,7 +137,7 @@ top_left_shooter_controller:
    peak_reverse_voltage: 0
    sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
-   dynamic_reconfigure: True
+#    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
    reverse_limit_enable: False
@@ -155,7 +155,7 @@ top_right_shooter_controller:
    peak_reverse_voltage: 0
    sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
-   dynamic_reconfigure: True
+#    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
    reverse_limit_enable: False
@@ -173,7 +173,7 @@ bottom_left_shooter_controller:
    peak_reverse_voltage: 0
    sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
-   dynamic_reconfigure: True
+#    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
    reverse_limit_enable: False
@@ -192,7 +192,7 @@ bottom_right_shooter_controller:
    peak_reverse_voltage: 0
    sensor_to_mechanism_ratio: 0.6923076923076923
    # voltage_closed_loop_ramp_period: 0.10
-   dynamic_reconfigure: True
+#    dynamic_reconfigure: True
    neutral_mode: Coast
    forward_limit_enable: False
    reverse_limit_enable: False
@@ -247,32 +247,10 @@ shooter_pivot_controller:
         - [1.5278448647340985, 0.15]
         - [1.6106798272799232, 0.06]
 
-        # - [0.5276893910326605, 0.15]
-        # - [0.5307573526084318, 0.38]
-        # - [0.5951845456996288, 0.31]
-        # - [0.641203969336198, 0.32]
-        # - [0.6872233929727672, 0.35000000000000003]
-        # - [0.7240389318820226, 0.41000000000000003]
-        # - [0.7884661249732196, 0.34]
-        # - [0.8344855486097889, 0.37]
-        # - [0.880504972246358, 0.38]
-        # - [0.9265243958829272, 0.4]
-        # - [0.9878836273983529, 0.34]
-        # - [1.0400389741864646, 0.34]
-        # - [1.0891263593988052, 0.34]
-        # - [1.1688933603688585, 0.19]
-        # - [1.2026409377023426, 0.28]
-        # - [1.2701360923693108, 0.19]
-        # - [1.3161555160058802, 0.21]
-        # - [1.371378824369763, 0.19]
-        # - [1.4204662095821037, 0.19]
-        # - [1.5278448647340985, 0.15]
-        # - [1.6106798272799232, 0.06]
-
     shooter_pivot_joint: [ 'shooter_pivot_motionmagic_joint' ]
     dynamic_reconfigure: True
     min_angle: 0.45
-    max_angle: 1.19
+    max_angle: 1.0
 
     motion_magic_velocity: 3.0
     motion_magic_acceleration: 4.0
@@ -295,7 +273,7 @@ shooter_pivot_controller:
         neutral_mode: Brake
         close_loop_values:
             # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
-            - {kP: 60.0, kI: 0.0, kD: 1.0, kV: 4.6, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
+            - {kP: 80.0, kI: 0.0, kD: 1.2, kV: 4.6, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
 
@@ -304,8 +282,12 @@ pivot_cancoder_controller:
     joint_name: shooter_pivot_cancoder
     sensor_direction: Clockwise_Positive
     dynamic_reconfigure: True
-    magnet_offset: 1.6505633277649499
-    enable_read_thread: False
+    magnet_offset: 1.6413594430376361
+    enable_read_thread: True
+
+cancoder_state_controller:
+    type:     cancoder_state_controller/CANCoderStateController
+    publish_rate: 100
 
 
 # This one creates the /talon_states topic necessary in ROS

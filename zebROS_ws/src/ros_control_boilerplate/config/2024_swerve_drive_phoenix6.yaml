@@ -54,7 +54,7 @@ swerve_drive_controller:
         #current_limit_peak_msec: 50
         #current_limit_enable: True
         voltage_closed_loop_ramp_period: 0.25
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         neutral_mode: Brake
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -71,7 +71,7 @@ swerve_drive_controller:
         #current_limit_peak_msec: 50
         #current_limit_enable: True
         voltage_closed_loop_ramp_period: 0.25
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         neutral_mode: "Brake"
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -89,7 +89,7 @@ swerve_drive_controller:
         #current_limit_peak_msec: 50
         #current_limit_enable: True
         voltage_closed_loop_ramp_period: 0.25
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         neutral_mode: "Brake"
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -107,7 +107,7 @@ swerve_drive_controller:
         #current_limit_peak_msec: 50
         #current_limit_enable: True
         voltage_closed_loop_ramp_period: 0.25
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         neutral_mode: "Brake"
         forward_limit_enable: False
         reverse_limit_enable: False
@@ -128,7 +128,7 @@ swerve_drive_controller:
         reverse_limit_enable: False
         rotor_to_sensor_ratio: 12.8
         sensor_to_mechanism_ratio: 1.0
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         invert: clockwise_positive
         stator_current_limit: 40
         stator_current_limit_enable: True
@@ -146,7 +146,7 @@ swerve_drive_controller:
         reverse_limit_enable: False
         rotor_to_sensor_ratio: 12.8
         sensor_to_mechanism_ratio: 1.0
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         invert: clockwise_positive
         stator_current_limit: 40
         stator_current_limit_enable: True
@@ -164,7 +164,7 @@ swerve_drive_controller:
         reverse_limit_enable: False
         rotor_to_sensor_ratio: 12.8
         sensor_to_mechanism_ratio: 1.0
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         invert: clockwise_positive
         stator_current_limit: 40
         stator_current_limit_enable: True
@@ -182,7 +182,7 @@ swerve_drive_controller:
         reverse_limit_enable: False
         rotor_to_sensor_ratio: 12.8
         sensor_to_mechanism_ratio: 1.0
-        dynamic_reconfigure: True
+        # dynamic_reconfigure: True
         invert: clockwise_positive
         stator_current_limit: 40
         stator_current_limit_enable: True

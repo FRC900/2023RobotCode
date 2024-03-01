@@ -56,6 +56,7 @@
 			 shooter_pivot_controller
 			 note_diverter_controller
 			 pigeon2_imu_state_controller
+			 cancoder_state_controller
 			 robot_code_ready_controller" />
 			 
 			 <!--
@@ -133,6 +134,8 @@
 
 	<include file="$(find drive_to_object)/launch/drive_to_object.launch"/>
 	<include file="$(find behaviors)/launch/2024_drive_to_object_and_intake.launch"/>
+	<include file="$(find norfair_ros)/launch/norfair_node.launch">
+	</include>
 
 
 	<include file="$(find tagslam_launch)/launch/2024_compbot_tagslam.launch"/>

@@ -98,7 +98,7 @@ class Intaking2024Server(object):
 
         if self.pivot_position > self.safe_shooter_angle:
             pivot_goal = ShooterPivot2024Goal()
-            pivot_goal.pivot_position = self.safe_shooter_angle
+            pivot_goal.pivot_position = self.safe_shooter_angle - 0.2
             self.shooter_pivot_client.send_goal(pivot_goal)
             while self.pivot_position > self.safe_shooter_angle:
                 if self.server.is_preempt_requested():
