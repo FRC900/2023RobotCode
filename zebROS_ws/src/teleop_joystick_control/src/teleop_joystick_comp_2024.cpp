@@ -546,15 +546,18 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 
 	if (button_box->backupButton1Button)
 	{
+		driver->sendDirection(config.button_move_speed);
 	}
 	if (button_box->backupButton1Press)
 	{
+		driver->moveDirection(-1, 0, 0, config.button_move_speed);
 		behavior_actions::Intaking2024Goal intaking_goal;
 		intaking_goal.destination = intaking_goal.OUTTAKE;
 		intaking_ac->sendGoal(intaking_goal);
 	}
 	if (button_box->backupButton1Release)
 	{
+		driver->moveDirection(1, 0, 0, config.button_move_speed);
 		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 
