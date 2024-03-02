@@ -549,9 +549,13 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->backupButton1Press)
 	{
+		behavior_actions::Intaking2024Goal intaking_goal;
+		intaking_goal.destination = intaking_goal.OUTTAKE;
+		intaking_ac->sendGoal(intaking_goal);
 	}
 	if (button_box->backupButton1Release)
 	{
+		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 
 	if (button_box->backupButton2Button)
@@ -589,9 +593,13 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->subwooferShootPress)
 	{
+		behavior_actions::Shooting2024Goal goal;
+		goal.mode = goal.SUBWOOFER;
+		shooting_ac->sendGoal(goal);
 	}
 	if (button_box->subwooferShootRelease)
 	{
+		shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 
 	if (button_box->speedSwitchUpButton)
