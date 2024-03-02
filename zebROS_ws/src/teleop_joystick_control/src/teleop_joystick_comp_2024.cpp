@@ -65,7 +65,9 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			//Joystick1: buttonA
 			if(joystick_state->buttonAPress)
 			{
-
+				behavior_actions::Shooting2024Goal goal;
+				goal.mode = goal.AMP;
+				shooting_ac->sendGoal(goal);
 			}
 			if(joystick_state->buttonAButton)
 			{
@@ -73,7 +75,8 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			}
 			if(joystick_state->buttonARelease)
 			{
-				
+				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+
 			}
 
 			//Joystick1: buttonB
@@ -136,16 +139,17 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			//Joystick1: bumperRight
 			if(joystick_state->bumperRightPress)
 			{
-				behavior_actions::Shooting2024Goal goal;
-				goal.mode = goal.AMP;
-				shooting_ac->sendGoal(goal);
+				driver->teleop_cmd_vel_.setCaps(config.max_speed_slow, config.max_rot_slow);
+				//behavior_actions::Shooting2024Goal goal;
+				//goal.mode = goal.AMP;
+				//shooting_ac->sendGoal(goal);
 			}
 			if(joystick_state->bumperRightButton)
 			{
 			}
 			if(joystick_state->bumperRightRelease)
 			{
-				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				driver->teleop_cmd_vel_.resetCaps();
 			}
 
 

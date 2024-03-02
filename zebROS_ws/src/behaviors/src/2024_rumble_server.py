@@ -13,6 +13,7 @@ import actionlib
 from std_msgs.msg import Float64
 from norfair_ros.msg import Detections, Detection
 from frc_msgs.srv import RumbleCommand, RumbleCommandRequest, RumbleCommandResponse
+from frc_msgs.msg import MatchSpecificData
 import math
 import time
 
@@ -44,6 +45,7 @@ class Rumble2024Server():
         self.note_left = False
 
         self.already_touched_note = False
+        self.auto = True
 
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
@@ -71,6 +73,13 @@ class Rumble2024Server():
             #rospy.loginfo(f"Note detection at {x, y}")
         self.closest_note = closest_dist
 
+
+    def match_data_cb(self, data: MatchSpecificData):
+        if data.Autonomous and data.Enabled:
+            self.should_run_loop = False
+        else:
+            self.should_run_loop = True
+
     def limit_switch_cb(self, data):
         #rospy.loginfo_throttle(1, "2024_rumble_server: limit switch callback")
         # check claw switch
@@ -94,6 +103,9 @@ class Rumble2024Server():
         rumble_srv = RumbleCommandRequest()
         rumble_srv.left = 0
         rumble_srv.right = 0
+
+        if not self.should_run_loop:
+            return
 
         # TODO add for next event
         # if self.closest_note < self.notes_max_distance:
@@ -125,9 +137,9 @@ class Rumble2024Server():
         self.rumble_srv.call(rumble_srv)
         
         
-
-       
 if __name__ == '__main__':
-    rospy.init_node('intaking_server_2024')
+    time.sleep(20)
+    rospy.logwarn("STARTING RUMBLE SERVER")
+    rospy.init_node('rumble_server_2024')
     server = Rumble2024Server(rospy.get_name())
     rospy.spin()
