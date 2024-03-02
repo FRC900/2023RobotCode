@@ -33,11 +33,12 @@ class Rumble2024Server():
         self.talonfxpro_sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.talonfxpro_states_cb)
         #self.norfair_sub = rospy.Subscriber('/norfair/output', Detections, self.notes_callback)
         self.limit_switch_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, self.limit_switch_cb)
-
+        
         self.notes_max_distance = rospy.get_param("note_distance_away")
         self.intake_limit_switch_name = rospy.get_param("intake_limit_switch_name")
         self.rumble_value = rospy.get_param("rumble_on_note")
 
+        self.match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.match_data_cb) 
         self.rumble = rospy.Timer(rospy.Duration(1.0/20.0), self.rumble_loop)
         self.closest_note = 900
         self.time_touched_note = rospy.Time.now()
@@ -45,7 +46,8 @@ class Rumble2024Server():
         self.note_left = False
 
         self.already_touched_note = False
-        self.auto = True
+
+        self.should_run_loop = True
 
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
@@ -105,6 +107,8 @@ class Rumble2024Server():
         rumble_srv.right = 0
 
         if not self.should_run_loop:
+            rospy.loginfo("NOT RUNNING RUMBLE LOOP")
+            self.rumble_srv.call(rumble_srv)
             return
 
         # TODO add for next event
