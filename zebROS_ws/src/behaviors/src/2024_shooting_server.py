@@ -2,7 +2,7 @@
 
 import rospy
 import actionlib
-
+import time
 from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 
 from behavior_actions.msg import Shooting2024Goal, Shooting2024Feedback, Shooting2024Result, Shooting2024Action
@@ -148,7 +148,8 @@ class ShootingServer(object):
             nonlocal pivot_done
             pivot_done = True
         self.pivot_client.send_goal(pivot_goal, done_cb=pivot_done_cb)
-
+        rospy.loginfo("Sleeping for 0.25")
+        time.sleep(0.25)
         r = rospy.Rate(60.0)
 
         while not (shooter_done and pivot_done):
