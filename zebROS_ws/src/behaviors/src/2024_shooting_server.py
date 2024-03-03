@@ -108,7 +108,7 @@ class ShootingServer(object):
             shooter_goal.bottom_right_speed = self.subwoofer_bottom_right_speed
             pivot_angle = self.subwoofer_pivot_position
 
-            rospy.loginfo(f"2024_shooting_server: spinning up for subwoofer")
+            rospy.loginfo(f"2024_shooting_server: spinning up for subwoofer angle")
         
         elif goal.mode == goal.AMP:
             shooter_goal.top_left_speed = self.amp_top_left_speed
