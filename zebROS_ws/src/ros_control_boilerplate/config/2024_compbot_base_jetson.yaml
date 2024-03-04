@@ -264,7 +264,7 @@ shooter_pivot_controller:
         neutral_mode: Brake
         close_loop_values:
             # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
-            - {kP: 80.0, kI: 0.0, kD: 1.2, kV: 8.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
+            - {kP: 70.0, kI: 0.0, kD: 1.2, kV: 8.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
 

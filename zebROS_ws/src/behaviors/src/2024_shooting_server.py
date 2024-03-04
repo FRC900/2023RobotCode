@@ -118,7 +118,14 @@ class ShootingServer(object):
             pivot_angle = self.amp_pivot_position
 
             rospy.loginfo(f"2024_shooting_server: spinning up for amp")
-        
+        elif goal.mode == goal.PODIUM:
+            shooter_goal.top_left_speed = 500
+            shooter_goal.top_right_speed = 500
+            shooter_goal.bottom_left_speed = 500
+            shooter_goal.bottom_right_speed = 500
+            pivot_angle = 0.58
+
+            rospy.loginfo(f"2024_shooting_server: spinning up for amp")
         else:
             # Look up speed and angle to send to shooter and pivot server
             shooter_goal.top_left_speed = self.top_left_map[goal.distance]
