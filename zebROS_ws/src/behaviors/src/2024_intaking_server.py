@@ -47,7 +47,6 @@ class Intaking2024Server(object):
         self.pivot_position = 0
         self.pivot_index = None
 
-        self.shooter_pos_sub = rospy.Subscriber("/frcrobot_jetson/talonfxpro_states", TalonFXProState, self.shooter_pivot_callback)
         self.intake_client = rospy.ServiceProxy("/frcrobot_jetson/intake_talonfxpro_controller/command", Command)
 
         ddynrec = DDynamicReconfigure("intaking_dyn_rec")
@@ -70,16 +69,6 @@ class Intaking2024Server(object):
 
         self.server = actionlib.SimpleActionServer(self.action_name, Intaking2024Action, execute_cb=self.execute_cb, auto_start = False)
         self.server.start()
-            
-    def shooter_pivot_callback(self, data):
-        if self.pivot_index is None:
-            for i in range(len(data.name)):
-                if (data.name[i] == "shooter_pivot_motionmagic_joint"): 
-                    self.pivot_position = data.position[i]
-                    self.pivot_index = i
-                    break
-        else:
-            self.pivot_position = data.position[self.pivot_index]
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
         rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
@@ -92,6 +81,15 @@ class Intaking2024Server(object):
                     break
         else:
             self.intaking_current = states.torque_current[self.intaking_talon_idx]
+
+        if self.pivot_index is None:
+            for i in range(len(states.name)):
+                if (states.name[i] == "shooter_pivot_motionmagic_joint"): 
+                    self.pivot_position = states.position[i]
+                    self.pivot_index = i
+                    break
+        else:
+            self.pivot_position = states.position[self.pivot_index]
  
     def execute_cb(self, goal: Intaking2024Goal):
         r = rospy.Rate(60)
