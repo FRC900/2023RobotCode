@@ -5,7 +5,6 @@ from behavior_actions.msg import Intaking2024Action, Intaking2024Goal, Intaking2
 from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Feedback, ShooterPivot2024Result
 from behavior_actions.msg import NoteDiverterAction, NoteDiverterFeedback, NoteDiverterResult, NoteDiverterGoal
 from behavior_actions.msg import Clawster2024Action, Clawster2024Feedback, Clawster2024Result, Clawster2024Goal
-from behavior_actions.msg import Arm2024Action, Arm2024Feedback, Arm2024Result, Arm2024Goal
 from talon_controller_msgs.srv import Command, CommandRequest, CommandResponse
 from talon_state_msgs.msg import TalonFXProState
 
@@ -27,12 +26,6 @@ class Intaking2024Server(object):
 
     def __init__(self, name):
         self.action_name = name
-        
-        #self.arm_client = actionlib.SimpleActionClient('/arm/move_arm_server_2024', Arm2024Action)
-        #rospy.loginfo("2024_intaking_server: waiting for arm server")
-        #self.arm_client.wait_for_server()
-        rospy.logerr("ARM CLIENT NOT INITALIZED BECAUSE IT DOESN'T EXIST")
-
         self.shooter_pivot_client = actionlib.SimpleActionClient('/shooter/set_shooter_pivot', ShooterPivot2024Action)
         rospy.loginfo("2024_intaking_server: waiting for shooter pivot server")
         self.shooter_pivot_client.wait_for_server()
