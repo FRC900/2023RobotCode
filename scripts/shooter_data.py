@@ -134,7 +134,6 @@ if start_time is not None:
                 csv_rows.append(row)
             last_limit_state = limit_state 
 
-    with open(f'shooter_{bagfile_name}.csv', 'w', newline='') as csvfile:
+    with open(f'{bagfile_name}_shooter.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',')
         csvwriter.writerows(csv_rows)
-
