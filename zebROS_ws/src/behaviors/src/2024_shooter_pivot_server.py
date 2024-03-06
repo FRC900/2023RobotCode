@@ -57,6 +57,11 @@ class ShooterPivotServer2024:
         ddynrec.start(self.dyn_rec_callback)
 
         self.tolerance = rospy.get_param("pivot_tolerance")
+
+        self.num_samples_required = rospy.get_param("num_samples_required")
+
+        # debouncing!
+        self.valid_samples = 0
    
         self.server.start()
 
@@ -91,6 +96,12 @@ class ShooterPivotServer2024:
                 break
              
             elif (abs(motion_magic_value - goal.pivot_position) < self.tolerance) and (abs(vel) < 0.05):
+                self.valid_samples += 1
+            else:
+                self.valid_samples = 0
+            
+            if self.valid_samples >= self.num_samples_required:
+                self.valid_samples = 0
                 self._result.success = True
                 self._feedback.percent_complete = 100.0
                 self._feedback.is_at_pivot_position = True
