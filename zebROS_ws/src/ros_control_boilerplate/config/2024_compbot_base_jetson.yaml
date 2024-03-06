@@ -73,6 +73,7 @@ hardware_interface:
     #    - {name: clawster, type: can_talon_srx, can_bus: slowbro, can_id: 16, local: true} # may need to change can_bus to slowbro
 
     #    - {name: claw_limit_switch, type: digital_input, local: false}
+       - {name: diverter_limit_switch, type: digital_input, local: false}
        - {name: preshooter_limit_switch, type: digital_input, local: false}
        
        #- {name: pcm, type: pcm, pcm_id: 0}

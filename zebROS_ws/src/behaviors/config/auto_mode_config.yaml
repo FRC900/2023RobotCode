@@ -61,7 +61,7 @@ auto_mode_9: ["pause_quarter"]
 # 10: drive back
 auto_mode_10: ["drive_2_5_m"]
 
-auto_mode_11: ["four_note_speaker_no_rotate_ALLIANCE_csv"]
+auto_mode_11: ["pause_two", "four_note_speaker_no_rotate_ALLIANCE_csv"]
 
 #auto_mode_4_blue: ["map_rel_four_note_grid_right1_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_blue_csv"]
 #auto_mode_4_red: ["map_rel_four_note_grid_right1_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_red_csv"]
@@ -77,7 +77,7 @@ auto_mode_11: ["four_note_speaker_no_rotate_ALLIANCE_csv"]
 # must have a value for "type", other stuff varies
 
 four_note_speaker_no_rotate_red_csv:
-  waypoint_actions: [[1, "pause_path", "pause_half", "unpause_path"]]
+  waypoint_actions: [[2, "pause_path", "pause_half", "unpause_path"], [3, "pause_path", "pause_two", "unpause_path"]]
   type: path
   goal:
     points:
