@@ -27,11 +27,11 @@ auto_mode_2: ["relocalize", "shoot_center_subwoofer", "start_intake", "four_note
               "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter", "shoot_dynamic", "stop_intake", "pause_half", "spin_down_shooter"]
 
 # SIM ONLY
-# auto_mode_2: ["four_note_speaker_no_rotate1_ALLIANCE_csv", "pause_quarter",
-#              "four_note_speaker_no_rotate2_ALLIANCE_csv", "pause_quarter",
-#              "four_note_speaker_no_rotate3_ALLIANCE_csv", "pause_quarter",
-#              "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter",              
-#              "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter"]
+auto_mode_2: ["four_note_speaker_no_rotate1_ALLIANCE_csv", "pause_quarter",
+             "four_note_speaker_no_rotate2_ALLIANCE_csv", "pause_quarter",
+             "four_note_speaker_no_rotate3_ALLIANCE_csv", "pause_quarter",
+             "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter",              
+             "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter"]
 
 # 3: three note source
 auto_mode_3: ["shoot_center_subwoofer", "start_intake", "three_note_source1_ALLIANCE_csv", "pause_quarter", "relocalize",  
@@ -76,6 +76,21 @@ auto_mode_11: ["four_note_speaker_new1_ALLIANCE_csv", "four_note_speaker_new2_AL
 
 # ACTIONS ------------------------------------------------------------------------
 # must have a value for "type", other stuff varies
+
+four_note_speaker_no_rotate_red_csv:
+  waypoint_actions: [[1, "pause_path", "pause_half", "unpause_path"]]
+  type: path
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+
+pause_path:
+  type: pause_path
+  pause: true
+
+unpause_path:
+  type: pause_path
+  pause: false
 
 pause_quarter:
   type: pause
