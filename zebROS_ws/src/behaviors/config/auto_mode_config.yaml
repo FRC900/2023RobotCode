@@ -27,11 +27,11 @@ auto_mode_2: ["relocalize", "shoot_center_subwoofer", "start_intake", "four_note
               "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter", "shoot_dynamic", "stop_intake", "pause_half", "spin_down_shooter"]
 
 # SIM ONLY
-# auto_mode_2: ["four_note_speaker_no_rotate1_ALLIANCE_csv", "pause_quarter",
-#              "four_note_speaker_no_rotate2_ALLIANCE_csv", "pause_quarter",
-#              "four_note_speaker_no_rotate3_ALLIANCE_csv", "pause_quarter",
-#              "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter",              
-#              "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter"]
+auto_mode_2: ["four_note_speaker_no_rotate1_ALLIANCE_csv", "pause_quarter",
+             "four_note_speaker_no_rotate2_ALLIANCE_csv", "pause_quarter",
+             "four_note_speaker_no_rotate3_ALLIANCE_csv", "pause_quarter",
+             "four_note_speaker_no_rotate4_ALLIANCE_csv", "pause_quarter",              
+             "four_note_speaker_no_rotate5_ALLIANCE_csv", "pause_quarter"]
 
 # 3: three note source
 auto_mode_3: ["shoot_center_subwoofer", "start_intake", "three_note_source1_ALLIANCE_csv", "pause_quarter", "relocalize",  
@@ -61,6 +61,8 @@ auto_mode_9: ["pause_quarter"]
 # 10: drive back
 auto_mode_10: ["drive_2_5_m"]
 
+auto_mode_11: ["four_note_speaker_no_rotate_ALLIANCE_csv"]
+
 #auto_mode_4_blue: ["map_rel_four_note_grid_right1_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_blue_csv"]
 #auto_mode_4_red: ["map_rel_four_note_grid_right1_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_red_csv"]
 #auto_mode_5: ["map_rel_four_note_grid1_csv", "map_rel_four_note_grid2_csv", "map_rel_four_note_grid3_csv", "map_rel_four_note_grid4_csv"]
@@ -73,6 +75,21 @@ auto_mode_10: ["drive_2_5_m"]
 
 # ACTIONS ------------------------------------------------------------------------
 # must have a value for "type", other stuff varies
+
+four_note_speaker_no_rotate_red_csv:
+  waypoint_actions: [[1, "pause_path", "pause_half", "unpause_path"]]
+  type: path
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+
+pause_path:
+  type: pause_path
+  pause: true
+
+unpause_path:
+  type: pause_path
+  pause: false
 
 pause_quarter:
   type: pause
