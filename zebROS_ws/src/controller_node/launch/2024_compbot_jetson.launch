@@ -117,7 +117,7 @@
 	<!-- Add 2024 actionlib servers here -->
 	<include file="$(find behaviors)/launch/2024_arm.launch"/>
 	<include file="$(find behaviors)/launch/2024_diverter.launch"/>
-	<include file="$(find behaviors)/launch/2024_preshooter_and_claw.launch"/>
+	<include file="$(find behaviors)/launch/2024_clawster.launch"/>
 	
 	<include file="$(find behaviors)/launch/2024_align_to_speaker.launch"/>
     <include file="$(find behaviors)/launch/2024_shooter.launch"/>
