@@ -251,10 +251,9 @@ shooter_pivot_controller:
         softlimit_forward_threshold: 1.66
         softlimit_reverse_enable: False
         softlimit_reverse_threshold: 0.4
-        neutral_mode: Brake # trying coast mode, we'll see how it goes
+        neutral_mode: Brake
         close_loop_values:
             # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
-            # kP 110, kD 2.0
             - {kP: 90.0, kI: 0.0, kD: 2.0, kV: 8.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
