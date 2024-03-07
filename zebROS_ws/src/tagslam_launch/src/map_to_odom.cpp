@@ -70,11 +70,11 @@ void updateMapOdomTf() {
     // lookup map->base_link transform
     geometry_msgs::TransformStamped base_link_to_map_tf;
     try {
-      // dest source?
-      base_link_to_odom_tf = tf_buffer.lookupTransform("base_link", odom_frame_id, ros::Time(0));
       // invert base_link to odom
-      // 
       base_link_to_map_tf = tf_buffer.lookupTransform(tagslam_baselink, map_frame_id, ros::Time(0));
+      // get base_link -> odom transform at the timestamp of the tagslam transform
+      // maybe this allows us to relocalize while moving, since we know where we were?
+      base_link_to_odom_tf = tf_buffer.lookupTransform("base_link", odom_frame_id, base_link_to_map_tf.header.stamp);
     } catch (const tf2::TransformException &ex) {
       ROS_ERROR_STREAM_THROTTLE(5, "map to odom : transform from base_link to " << odom_frame_id << " failed in map->odom broadcaser : " << ex.what());
       return;
