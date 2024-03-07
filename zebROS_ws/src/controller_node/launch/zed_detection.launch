@@ -45,7 +45,7 @@
       <arg name="camera_params_file"   value="$(find controller_node)/config/$(arg zed_config_dir)/$(arg camera_model).yaml" />
     </include>
 
-    <node pkg="nodelet" type="nodelet" name="tf_object_screen_to_world" args="load tf_object_detection/ScreenToWorld $(arg nodelet_manager_name)" if="$(eval run_object_detection)">
+    <node pkg="nodelet" type="nodelet" name="tf_object_screen_to_world" args="load tf_object_detection::ScreenToWorld $(arg nodelet_manager_name)" if="$(eval run_object_detection)">
 			<remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
 			<remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
 			<param name="depth_algorithm" type="string" value="$(arg depth_algorithm)" />
