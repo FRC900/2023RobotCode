@@ -23,6 +23,8 @@ class Aligner:
     def __init__(self, name):   
         self._action_name = name
         self.tolerance = rospy.get_param("tolerance")
+        self.velocity_tolerance = rospy.get_param("velocity_tolerance")
+        self.min_samples = rospy.get_param("min_samples")
         self.color = 0
         self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.AlignToSpeaker2024Action, execute_cb=self.aligner_callback, auto_start = False)
         self._as.start()
@@ -41,6 +43,8 @@ class Aligner:
         self.pub_dist_and_ang_vel = rospy.Publisher("/speaker_align/dist_and_ang", behavior_actions.msg.AutoAlignSpeaker, queue_size=1) #distance and angle
 
         self._feedback.aligned = False
+
+        self.valid_samples = 0
 
     def imu_callback(self, imu_msg):
         q = imu_msg.orientation
@@ -78,6 +82,8 @@ class Aligner:
         success = True
         rospy.loginfo(f"Auto Aligning Actionlib called with goal {goal}")
         rate = rospy.Rate(60.0)
+
+        self.valid_samples = 0
 
         while not rospy.is_shutdown():
             # check that preempt has not been requested by the client
@@ -127,7 +133,12 @@ class Aligner:
 
             rospy.loginfo(f"Align to speaker {abs(angles.shortest_angular_distance(msg.data, self.current_yaw))}")
 
-            if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.tolerance:
+            if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.velocity_tolerance:
+                self.valid_samples += 1
+            else:
+                self.valid_samples = 0
+
+            if self.valid_samples >= self.min_samples:
                 self._feedback.aligned = True
                 rospy.loginfo_throttle(0.5, "2024_align_to_speaker: aligned")
                 success = True
