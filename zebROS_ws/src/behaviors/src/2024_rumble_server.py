@@ -27,6 +27,9 @@ class Rumble2024Server():
 
         #self.shooter_pos_sub = rospy.Subscriber("/", TalonFXProState, shooter_pivot_callback)
         self.rumble_srv = rospy.ServiceProxy("/frcrobot_rio/rumble_controller/command", RumbleCommand)
+
+        self.previous_intake_switch = 0
+        self.previous_preshooter_switch = 0
         
         self.intaking_current = 0.0
         self.intaking_talon_idx = None
@@ -43,9 +46,6 @@ class Rumble2024Server():
         self.rumble = rospy.Timer(rospy.Duration(1.0/20.0), self.rumble_loop)
         self.closest_note = 900
         self.time_touched_note = rospy.Time.now()
-        
-        self.previous_intake_switch = 0
-        self.previous_preshooter_switch = 0
 
         self.intaking_rumble = False
         self.shot_note = False
