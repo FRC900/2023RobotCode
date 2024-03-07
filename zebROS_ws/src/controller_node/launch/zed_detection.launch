@@ -22,7 +22,7 @@
   <!-- Name of the Nodelet Manager -->
   <arg name="nodelet_manager_name"  default="$(arg zed_name)_nodelet_manager" />
 
-  <group ns="$(arg camera_name)">
+  <group ns="$(arg zed_name)">
     <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)"  args="manager" output="screen" />
 
     <include file="$(find zed_wrapper)/launch/include/zed_camera.launch.xml" if="$(eval run_camera)">
