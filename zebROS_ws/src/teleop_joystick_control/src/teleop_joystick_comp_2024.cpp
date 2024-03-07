@@ -533,7 +533,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	catch (tf2::TransformException &ex)
 	{
-		ROS_WARN("%s", ex.what());
+		ROS_WARN_STREAM_THROTTLE(1, ex.what());
 	}
 
 	ROS_INFO_STREAM_THROTTLE(1, "teleop_joystick_comp_2024 : robot_pose: " << robot_pose.pose.position.x << " " << robot_pose.pose.position.y);
