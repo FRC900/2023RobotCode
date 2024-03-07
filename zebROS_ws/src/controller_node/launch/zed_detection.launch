@@ -20,7 +20,7 @@
   <arg name="run_pub_video"        default="false" />
   <arg name="startup_delay"        default="0.0" />
   <!-- Name of the Nodelet Manager -->
-  <arg name="nodelet_manager_name"  default="$(arg camera_name)_nodelet_manager" />
+  <arg name="nodelet_manager_name"  default="$(arg zed_name)_nodelet_manager" />
 
   <group ns="$(arg camera_name)">
     <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)"  args="manager" output="screen" />
