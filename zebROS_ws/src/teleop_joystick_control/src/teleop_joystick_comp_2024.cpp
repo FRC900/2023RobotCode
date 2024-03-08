@@ -144,7 +144,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			}
 			if(joystick_state->bumperLeftRelease)
 			{
-				intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				//intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 			//Joystick1: bumperRight
@@ -639,6 +639,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->backupButton1Press)
 	{
+		intaking_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		driver->moveDirection(-1, 0, 0, config.button_move_speed);
 		behavior_actions::Intaking2024Goal intaking_goal;
 		intaking_goal.destination = intaking_goal.OUTTAKE;
