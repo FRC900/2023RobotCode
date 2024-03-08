@@ -72,6 +72,11 @@ class Aligner:
             self.pub_dist_and_ang_vel.publish(dist_ang_msg)
         except Exception as e:
             rospy.logwarn_throttle(1, f"align_to_speaker: can't publish distance {e}")
+
+        if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.velocity_tolerance:
+            self.valid_samples += 1
+        else:
+            self.valid_samples = 0
         
     def data_callback(self, data_msg):
         self.color = data_msg.allianceColor
@@ -131,12 +136,7 @@ class Aligner:
             cmd_vel_msg.linear.z = 0
             self.pub_cmd_vel.publish(cmd_vel_msg)
 
-            rospy.loginfo(f"Align to speaker {abs(angles.shortest_angular_distance(msg.data, self.current_yaw))}")
-
-            if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.velocity_tolerance:
-                self.valid_samples += 1
-            else:
-                self.valid_samples = 0
+            rospy.loginfo_throttle(0.5, f"Align to speaker {abs(angles.shortest_angular_distance(msg.data, self.current_yaw))}")
 
             if self.valid_samples >= self.min_samples:
                 self._feedback.aligned = True
