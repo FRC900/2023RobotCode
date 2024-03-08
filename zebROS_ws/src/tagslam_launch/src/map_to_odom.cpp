@@ -59,6 +59,7 @@ ros::Time last_tf_pub = ros::Time(0);
 double transform_timeout;
 double maximum_jump;
 double cmd_vel_threshold;
+double ang_vel_threshold;
 double time_stopped;
 double publish_frequency;
 bool localize_while_stopped;
@@ -184,10 +185,10 @@ bool service_cb(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*
 
 void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
   if (localize_while_stopped) {
-    if (hypot(msg->twist.linear.x, msg->twist.linear.y) > cmd_vel_threshold) {
+    if (hypot(msg->twist.linear.x, msg->twist.linear.y) > cmd_vel_threshold && fabs(msg->twist.angular.z) > ang_vel_threshold) {
       last_tf_pub = ros::Time::now() + ros::Duration(time_stopped);
     }
-    if (hypot(msg->twist.linear.x, msg->twist.linear.y) < cmd_vel_threshold) {
+    if (hypot(msg->twist.linear.x, msg->twist.linear.y) < cmd_vel_threshold && fabs(msg->twist.angular.z) < ang_vel_threshold) {
       updateMapOdomTf();
       if (map_odom_tf.header.frame_id == map_frame_id && (ros::Time::now() - last_tf_pub).toSec() > (1./publish_frequency)) {
         ROS_INFO_STREAM_THROTTLE(2, "RELOCALIZING"); 
@@ -226,6 +227,12 @@ int main(int argc, char **argv) {
   if (!nh_.getParam("cmd_vel_threshold", cmd_vel_threshold))
   {
     ROS_ERROR_STREAM("map_to_odom: could not find cmd_vel_threshold, exiting");
+    return -1;
+  }
+
+  if (!nh_.getParam("ang_vel_threshold", ang_vel_threshold))
+  {
+    ROS_ERROR_STREAM("map_to_odom: could not find ang_vel_threshold, exiting");
     return -1;
   }
 
