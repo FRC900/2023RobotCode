@@ -9,6 +9,7 @@
 
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <std_msgs/Bool.h>
 
 
 namespace tf2
@@ -51,6 +52,8 @@ std::string map_frame_id = "map";
 std::string tagslam_baselink = "frc_robot";
 
 std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tfbr;
+ros::Publisher last_relocalized_pub;
+
 tf2_ros::Buffer tf_buffer;
 geometry_msgs::TransformStamped map_odom_tf;
 
@@ -167,19 +170,14 @@ void updateMapOdomTf() {
     }
 }
 
-void timerCallback(const ros::TimerEvent &event) {
-  updateMapOdomTf();
-  // map_odom_tf.header.stamp = ros::Time::now();
-  if (map_odom_tf.header.frame_id == map_frame_id) {
-    tfbr->sendTransform(map_odom_tf);
-  }
-  ROS_WARN_STREAM_THROTTLE(2, "Publishing map odom tf in timer");
-}
 
 bool service_cb(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*res*/) {
   updateMapOdomTf();
   if (map_odom_tf.header.frame_id == map_frame_id && (ros::Time::now() - last_tf_pub).toSec() > (1./publish_frequency)) {
     tfbr->sendTransform(map_odom_tf);
+    std_msgs::Header msg;
+    msg.stamp = ros::Time::now();
+    last_relocalized_pub.publish(msg);
     last_tf_pub = ros::Time::now();
   }
   else {
@@ -193,12 +191,16 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
   if (localize_while_stopped) {
     if (hypot(msg->twist.linear.x, msg->twist.linear.y) > cmd_vel_threshold && fabs(msg->twist.angular.z) > ang_vel_threshold) {
       last_tf_pub = ros::Time::now() + ros::Duration(time_stopped);
+      
     }
     if (hypot(msg->twist.linear.x, msg->twist.linear.y) < cmd_vel_threshold && fabs(msg->twist.angular.z) < ang_vel_threshold) {
       updateMapOdomTf();
       if (map_odom_tf.header.frame_id == map_frame_id && (ros::Time::now() - last_tf_pub).toSec() > (1./publish_frequency)) {
         ROS_INFO_STREAM_THROTTLE(2, "RELOCALIZING"); 
         tfbr->sendTransform(map_odom_tf);
+        std_msgs::Header msg;
+        msg.stamp = ros::Time::now();
+        last_relocalized_pub.publish(msg);
         last_tf_pub = ros::Time::now();
       }
     }
@@ -261,13 +263,17 @@ int main(int argc, char **argv) {
   }
 
   // write a timer that gets called at 25Hz
-  // ros::Timer timer = nh_.createTimer(ros::Duration(0.004), timerCallback);
   // write a service that takes in an empty message and publishes the tf
   ros::ServiceServer service = nh_.advertiseService("tagslam_pub_map_to_odom", service_cb);
   ros::Subscriber cmd_vel_sub = nh_.subscribe("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, cmdVelCallback);
+  last_relocalized_pub = nh_.advertise<std_msgs::Bool>("/last_relocalize", 1, true);
   updateMapOdomTf();
   if (map_odom_tf.header.frame_id == map_frame_id) {
     tfbr->sendTransform(map_odom_tf);
+    std_msgs::Header msg;
+    msg.stamp = ros::Time::now();
+    last_relocalized_pub.publish(msg);
+    last_tf_pub = ros::Time::now();
   }
   ros::spin();
 

@@ -14,6 +14,7 @@ from tf.transformations import euler_from_quaternion # may look like tf1 but is 
 from frc_msgs.msg import MatchSpecificData
 import std_srvs.srv
 import angles
+import numpy
 
 class Aligner:
     # create messages that are used to publish feedback/result
@@ -33,11 +34,11 @@ class Aligner:
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
         self.object_publish = rospy.Publisher("/teleop/orientation_command", std_msgs.msg.Float64, queue_size =1)
-        self.object_subscribe = rospy.Subscriber("/imu/zeroed_imu", sensor_msgs.msg.Imu ,self.imu_callback)
+        self.object_subscribe = rospy.Subscriber("/imu/zeroed_imu", sensor_msgs.msg.Imu, self.imu_callback, tcp_nodelay=True)
 
         self.team_subscribe = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.data_callback)
 
-        self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback)
+        self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback, tcp_nodelay=True)
         self.pub_cmd_vel = rospy.Publisher("/speaker_align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)
 
         self.pub_dist_and_ang_vel = rospy.Publisher("/speaker_align/dist_and_ang", behavior_actions.msg.AutoAlignSpeaker, queue_size=1) #distance and angle
@@ -55,7 +56,6 @@ class Aligner:
         offset_point = tf2_geometry_msgs.PointStamped()
         offset_point.header.frame_id = 'bluespeaker' if self.color == 1 else 'redspeaker'
         offset_point.header.stamp = rospy.get_rostime()
-
         offset_point.point.y = 0
 
         try:
@@ -83,6 +83,7 @@ class Aligner:
         
     def robot_orientation_effort_callback(self, msg):
         self.current_orient_effort = msg.data
+    
     def aligner_callback(self, goal: behavior_actions.msg.AlignToSpeaker2024Goal):
         success = True
         rospy.loginfo(f"Auto Aligning Actionlib called with goal {goal}")
@@ -130,7 +131,7 @@ class Aligner:
             cmd_vel_msg = geometry_msgs.msg.Twist()
             cmd_vel_msg.angular.x = 0
             cmd_vel_msg.angular.y = 0
-            cmd_vel_msg.angular.z = self.current_orient_effort
+            cmd_vel_msg.angular.z = self.current_orient_effort + 0.5 * numpy.sign(self.current_orient_effort)
             cmd_vel_msg.linear.x = 0
             cmd_vel_msg.linear.y = 0
             cmd_vel_msg.linear.z = 0
@@ -141,8 +142,9 @@ class Aligner:
             if self.valid_samples >= self.min_samples:
                 self._feedback.aligned = True
                 rospy.loginfo_throttle(0.5, "2024_align_to_speaker: aligned")
-                success = True
                 if not goal.align_forever:
+                    # moved down here because we don't want to exit if align forever is true
+                    success = True
                     cmd_vel_msg = geometry_msgs.msg.Twist()
                     cmd_vel_msg.angular.x = 0
                     cmd_vel_msg.angular.y = 0
