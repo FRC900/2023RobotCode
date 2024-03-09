@@ -90,7 +90,7 @@ class AlignAndShoot:
             r.sleep()
 
         rospy.loginfo("2024_align_and_shoot: done aligning")
-        
+        self.half_field_timer.shutdown()
         shooting_goal.mode = shooting_goal.SPEAKER
         shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
         shooting_goal.setup_only = False
@@ -116,7 +116,8 @@ class AlignAndShoot:
         rospy.loginfo("2024_align_and_shoot: succeeded")
         self.result.success = True
         self.server.set_succeeded(self.result)
-        self.
+        self.half_field_timer = rospy.Timer(rospy.Duration(1.0/5.0), self.half_field_timer_cb)
+
 
 if __name__ == '__main__':
     rospy.init_node('align_and_shoot_2024')
