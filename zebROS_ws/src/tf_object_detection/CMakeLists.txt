@@ -145,7 +145,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 
 ## screen_to_world.cpp isn't a dependency, but I don't know how else to build it FIXME
-add_executable(tf_object_screen_to_world src/screen_to_world_node.cpp src/depth_algorithms.cpp src/screen_to_world.cpp)
+add_executable(tf_object_screen_to_world src/depth_algorithms.cpp src/screen_to_world_node.cpp)
 add_executable(test_depth_detection src/test_depth_detection.cpp src/depth_algorithms.cpp)
 add_executable(cargo_detection_filter src/cargo_filter.cpp)
 add_executable(dummy_camerainfo src/dummy_camerainfo.cpp)
@@ -162,6 +162,19 @@ add_dependencies(tf_object_screen_to_world ${${PROJECT_NAME}_EXPORTED_TARGETS} $
 add_dependencies(test_depth_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(cargo_detection_filter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(dummy_camerainfo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_library(screen_to_world_nodelet
+  src/screen_to_world.cpp
+)
+
+target_link_libraries(screen_to_world_nodelet
+	${catkin_LIBRARIES}
+)
+
+add_dependencies(screen_to_world_nodelet
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(tf_object_screen_to_world
