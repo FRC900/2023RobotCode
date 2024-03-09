@@ -226,7 +226,8 @@ shooter_pivot_controller:
         #- [0.9541360500648688, -0.21]
         #- [1.57, 0.0]
 
-        - [0.0, 0.0]
+        - [0.5, 0.23]
+        - [0.944932165337555, 0.01]
 
 
     shooter_pivot_joint: [ 'shooter_pivot_motionmagic_joint' ]
@@ -234,8 +235,8 @@ shooter_pivot_controller:
     min_angle: 0.45
     max_angle: 1.5
 
-    motion_magic_velocity: 3.0
-    motion_magic_acceleration: 4.0
+    motion_magic_velocity: 3.5
+    motion_magic_acceleration: 7.0
     motion_magic_jerk: 100.0
 
     shooter_pivot_motionmagic_joint:
@@ -243,8 +244,8 @@ shooter_pivot_controller:
         joint: shooter_pivot_motionmagic_joint
         feedback_sensor_source: FusedCANcoder
         remote_feedback_device_id0: 55
-        motion_magic_cruise_velocity: 3.0
-        motion_magic_acceleration: 4.0
+        motion_magic_cruise_velocity: 3.5
+        motion_magic_acceleration: 7.0
         motion_magic_jerk: 100.0
         sensor_to_mechanism_ratio: 1.0
         rotor_to_sensor_ratio: 35.56
@@ -255,7 +256,7 @@ shooter_pivot_controller:
         neutral_mode: Brake
         close_loop_values:
             # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
-            - {kP: 90.0, kI: 0.0, kD: 2.0, kV: 8.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
+            - {kP: 40.0, kI: 0.0, kD: 0.0, kV: 5.5, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
 cancoder_state_controller:

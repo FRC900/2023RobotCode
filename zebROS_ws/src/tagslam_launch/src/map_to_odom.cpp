@@ -266,7 +266,7 @@ int main(int argc, char **argv) {
   // write a service that takes in an empty message and publishes the tf
   ros::ServiceServer service = nh_.advertiseService("tagslam_pub_map_to_odom", service_cb);
   ros::Subscriber cmd_vel_sub = nh_.subscribe("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, cmdVelCallback);
-  last_relocalized_pub = nh_.advertise<std_msgs::Bool>("/last_relocalize", 1, true);
+  last_relocalized_pub = nh_.advertise<std_msgs::Header>("/last_relocalize", 1, true);
   updateMapOdomTf();
   if (map_odom_tf.header.frame_id == map_frame_id) {
     tfbr->sendTransform(map_odom_tf);

@@ -32,18 +32,16 @@ class AlignAndShoot:
         
         self.server = actionlib.SimpleActionServer(self.action_name, AlignAndShoot2024Action, execute_cb=self.execute_cb, auto_start = False)
         rospy.loginfo("2024_align_and_shoot: starting server")
-        self.dist_angle_sub = rospy.Subscriber("/speaker_align/dist_and_ang", behavior_actions.msg.AutoAlignSpeaker, self.dist_angle_cb, tcp_nodelay=True, queue_size=1)
         
         self.last_relocalize_sub = rospy.Subscriber("/last_relocalize", Header, self.relocalized_cb, tcp_nodelay=True, queue_size=1)
 
-        self.has_relocalized_service = rospy.Service("/align_and_shoot_has_relocalized", std_srvs.srv.Empty, self.relocalized_srv)
         self.last_relocalized = rospy.Time()
 
         self.server.start()
         rospy.loginfo("2024_align_and_shoot: server started")
 
     def relocalized_cb(self, msg: Header):
-        rospy.loginfo("2024_align_and_shoot : relocalized")
+        rospy.loginfo_throttle(0.5, "2024_align_and_shoot : relocalized")
         self.last_relocalized = msg.stamp
 
     def distance_and_angle_callback(self, msg: AutoAlignSpeaker):
