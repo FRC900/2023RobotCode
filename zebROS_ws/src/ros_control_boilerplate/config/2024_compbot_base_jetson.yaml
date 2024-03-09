@@ -226,8 +226,29 @@ shooter_pivot_controller:
         #- [0.9541360500648688, -0.21]
         #- [1.57, 0.0]
 
-        - [0.5, 0.23]
-        - [0.944932165337555, 0.01]
+        - [0.4387185053352934, 0.6]
+        - [0.49394181369917645, 0.58]
+        - [0.500077736850719, 0.55]
+        - [0.5460971604872883, 0.58]
+        - [0.5951845456996288, 0.53]
+        - [0.6473398924877406, 0.48]
+        - [0.6964272777000811, 0.48]
+        - [0.7485826244881929, 0.45]
+        - [0.7976700097005334, 0.44]
+        - [0.8467573949128739, 0.43]
+        - [0.8958447801252144, 0.42]
+        - [0.944932165337555, 0.39]
+        - [0.9909515889741242, 0.38]
+        - [1.043106935762236, 0.35000000000000003]
+        - [1.0891263593988052, 0.34]
+        - [1.1290098598838318, 0.38]
+        - [1.184233168247715, 0.32]
+        - [1.2241166687327416, 0.36]
+        - [1.2793399770966247, 0.28]
+        - [1.325359400733194, 0.3]
+        - [1.368310862793992, 0.31]
+        - [1.4173982480063325, 0.28]
+
 
 
     shooter_pivot_joint: [ 'shooter_pivot_motionmagic_joint' ]
@@ -255,8 +276,8 @@ shooter_pivot_controller:
         softlimit_reverse_threshold: 0.4
         neutral_mode: Brake
         close_loop_values:
-            # note: kG derived by finding voltage needed to hold at position theta, then do voltage / cos(theta)
-            - {kP: 40.0, kI: 0.0, kD: 0.0, kV: 5.5, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
+            # Tried kI of around 12, it did help but was very slow and higher caused a bit of windup
+            - {kP: 30.0, kI: 0.0, kD: 1.0, kV: 6.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
 cancoder_state_controller:
