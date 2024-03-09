@@ -94,6 +94,7 @@ protected:
   double velocity_ramp_time_{0.5}; // time to transition from current command velocity to full PID control
   double distance_to_hold_angle_{0.5};
   double timeout_{0.25};
+  double z_threshold_{0.06};
 
   std::map<std::string, AlignActionAxisStatePosition> axis_states_;
   ros::Publisher cmd_vel_pub_;
@@ -142,6 +143,10 @@ public:
 
     if(!nh_.getParam("timeout", timeout_)) {
       ROS_ERROR_STREAM("Could not read timeout_ in align_server");
+    }
+    
+    if(!nh_.getParam("z_threshold", z_threshold_)) {
+      ROS_ERROR_STREAM("Could not read z_threshold in align_server");
     }
     // geometry_msgs::Twist t1;
     // t1.linear.x = 1.0;
@@ -205,6 +210,12 @@ public:
       if (obj.points.size() > 1) {
         ROS_ERROR_STREAM("SHOULD ONLY CONTAIN ONE POINT");
       }
+      
+      if (base_link_point.point.z > z_threshold_) {
+        ROS_WARN_STREAM("NOTE IN ANOTHER ROBOT");
+        continue;
+      }
+
       if (tracked_object_id == -1) {
         ROS_WARN_STREAM("First frame, finding closest object");
         // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
@@ -316,7 +327,7 @@ public:
       tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
       // ROS_WARN_STREAM("Base link pt " << base_);
 
-      ROS_INFO_STREAM("Object is at x,y " << base_link_point.point.x << "," << base_link_point.point.y);
+      ROS_INFO_STREAM("Object is at x,y,z " << base_link_point.point.x << "," << base_link_point.point.y "," << base_link_point.point.z);
       ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
       ROS_INFO_STREAM("Distance away " << goal->distance_away);
       x_axis.setState(-base_link_point.point.x);
