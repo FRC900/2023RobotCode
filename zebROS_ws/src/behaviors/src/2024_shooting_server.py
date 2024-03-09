@@ -140,6 +140,8 @@ class ShootingServer(object):
         def shooter_feedback_cb(feedback: Shooter2024Feedback):
             nonlocal shooter_done
             shooter_done = feedback.is_shooting_at_speed
+        
+        shooter_goal.leave_spinning = goal.leave_spinning
         self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb)
 
         rospy.loginfo("2024_shooting_server: pivoting")

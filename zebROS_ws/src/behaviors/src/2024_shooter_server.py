@@ -107,7 +107,7 @@ class ShooterServer2024:
 
             self.server.publish_feedback(self._feedback)
 
-            if self.server.is_preempt_requested():
+            if self.server.is_preempt_requested() and not goal.leave_spinning:
                 rospy.loginfo("2024_shooter_server: preempted")
                 self.top_left_client.call(CommandRequest(command=0))
                 self.top_right_client.call(CommandRequest(command=0))

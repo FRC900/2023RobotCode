@@ -37,6 +37,8 @@ class AlignAndShoot:
 
         self.last_relocalized = rospy.Time()
 
+        self.half_field_timer = rospy.Timer(rospy.Duration(1.0/5.0), self.half_field_timer_cb)
+
         self.server.start()
         rospy.loginfo("2024_align_and_shoot: server started")
 
@@ -47,6 +49,14 @@ class AlignAndShoot:
     def distance_and_angle_callback(self, msg: AutoAlignSpeaker):
         self.dist_value = msg.distance
 
+    def half_field_timer_cb(self, event):
+        self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())        
+        shooting_goal = Shooting2024Goal()
+        shooting_goal.mode = shooting_goal.SPEAKER # should use the dist and angle topic to keep adjusting speeds
+        shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
+        shooting_goal.setup_only = True
+        shooting_goal.leave_spinning = True
+        self.shooting_client.send_goal(shooting_goal)
 
     def execute_cb(self, goal: AlignAndShoot2024Goal):
         r = rospy.Rate(20)
