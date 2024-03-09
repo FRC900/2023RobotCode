@@ -10,9 +10,6 @@ from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, S
 
 from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 
-global motion_magic_value
-global motion_magic_value_index
-
 
 class ShooterPivotServer2024:
     _result = ShooterPivot2024Result()
@@ -36,9 +33,9 @@ class ShooterPivotServer2024:
                     self.control_pos = data.control_position[i]
                     break
         else:
-            self.motion_magic_value = data.position[motion_magic_value_index]
-            self.vel = data.velocity[motion_magic_value_index]
-            self.control_pos = data.control_position[motion_magic_value_index]
+            self.motion_magic_value = data.position[self.motion_magic_value_index]
+            self.vel = data.velocity[self.motion_magic_value_index]
+            self.control_pos = data.control_position[self.motion_magic_value_index]
 
         if (abs(self.motion_magic_value - self.control_pos) < self.tolerance) and (abs(self.vel) < self.velocity_tolerance):
                 self.valid_samples += 1

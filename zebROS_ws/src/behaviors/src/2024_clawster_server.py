@@ -19,7 +19,6 @@ class Clawster2024ActionServer(object):
 
     def __init__(self, name):
         self.claw_client = rospy.ServiceProxy(f"/frcrobot_rio/{rospy.get_param('controller_name')}/command", Command)
-        self.switch_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, self.callback)
         self._action_name = name
         '''
             intake_speed: 0.4
@@ -44,6 +43,8 @@ class Clawster2024ActionServer(object):
         self.diverter_switch_name = rospy.get_param("diverter_switch_name")
         self.diverting_timeout = rospy.get_param("diverting_timeout")
 
+        self.switch_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, self.callback)
+
         self.last_touched_diverter = rospy.Time()
 
         rospy.loginfo(f"Claw: switch name {self.claw_switch_name} claw intake speed {self.claw_intake_speed}")
@@ -63,7 +64,7 @@ class Clawster2024ActionServer(object):
     def execute_cb(self, goal: Clawster2024Goal):
         pct_out = Float64()
         success = True
-        r = rospy.Rate(60)
+        r = rospy.Rate(250)
         if goal.destination == goal.PRESHOOTER:
             rospy.loginfo("Clawster called with PRESHOOTER")
             intake_speed = self.preshooter_intake_speed
