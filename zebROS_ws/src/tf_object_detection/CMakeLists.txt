@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   apriltag_msgs
+  pluginlib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -235,8 +236,9 @@ target_link_libraries(dummy_camerainfo
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-install(FILES nodelet_plugins.xml ../controller_node/launch/zed_detection.launch 
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(FILES nodelet_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 #############
 ## Testing ##
