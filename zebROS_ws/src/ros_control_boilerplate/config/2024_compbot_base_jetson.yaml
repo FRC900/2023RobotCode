@@ -258,15 +258,6 @@ shooter_pivot_controller:
             - {kP: 90.0, kI: 0.0, kD: 2.0, kV: 8.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
-
-pivot_cancoder_controller:
-    type:      cancoder_controller/CANCoderController
-    joint_name: shooter_pivot_cancoder
-    sensor_direction: Clockwise_Positive
-    dynamic_reconfigure: True
-    magnet_offset: 1.5953400194010667
-    enable_read_thread: True
-
 cancoder_state_controller:
     type:     cancoder_state_controller/CANCoderStateController
     publish_rate: 100
@@ -343,35 +334,6 @@ candle_controller:
 latency_compensation_state_controller:
   type: latency_compensation_state_controller/LatencyCompensationStateController
   publish_rate: 250
-
-swerve_drive_state_controller:
-    type: talon_swerve_drive_controller/SwerveDriveStateController
-
-    publish_rate: 250
-
-    latency_compensation_group: latency_compensation # joint name
-
-    # These joint names must match the joint names declared for the latency compensation group
-    speed: ['fl_drive', 'fr_drive', 'bl_drive', 'br_drive']
-    steering: ['fl_angle', 'fr_angle', 'bl_angle', 'br_angle']
-
-    wheel_radius: 0.0475 # m
-    cmd_vel_timout: 0.5
-    max_speed: 7 # Potentially raise, otherwise swerve math will limit max motor speed
-
-    # TODO : move this into sensor_to_mechanism_ratio for Falcons
-    ratio_encoder_to_rotations: 0.148148148 # Test me, will show up in odom results
-
-    wheel_coords: [[-0.250825, 0.250825], [0.250825, 0.250825], [-0.250825, -0.250825], [0.250825, -0.250825]]
-
-    bl_angle:
-        offset: 7.53
-    br_angle:
-        offset: 9.041
-    fl_angle:
-        offset: 6.000
-    fr_angle:
-        offset: 12.9
 
 arm_controller:
     type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
