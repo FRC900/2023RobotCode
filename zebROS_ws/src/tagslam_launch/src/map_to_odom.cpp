@@ -58,6 +58,7 @@ ros::Time last_tf_pub = ros::Time(0);
 
 double transform_timeout;
 double maximum_jump;
+double max_z;
 double cmd_vel_threshold;
 double ang_vel_threshold;
 double time_stopped;
@@ -154,6 +155,11 @@ void updateMapOdomTf() {
         return;
       }
 
+      if (fabs(transformStamped.transform.translation.z) > max_z) {
+        ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: z value too high! " << transformStamped.transform.translation.z << " Not saving transofrm");
+        return;
+      }
+
       map_odom_tf = transformStamped;
       //tfbr->sendTransform(transformStamped);
     } catch (const tf2::TransformException &ex) {
@@ -215,6 +221,12 @@ int main(int argc, char **argv) {
   if (!nh_.getParam("maximum_jump", maximum_jump))
   {
     ROS_ERROR_STREAM("map_to_odom: could not find maximum_jump, exiting");
+    return -1;
+  }
+
+  if (!nh_.getParam("max_z", max_z))
+  {
+    ROS_ERROR_STREAM("map_to_odom: could not find max_z, exiting");
     return -1;
   }
 
