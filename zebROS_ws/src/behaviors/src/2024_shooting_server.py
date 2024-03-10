@@ -176,11 +176,10 @@ class ShootingServer(object):
             
             r.sleep()
 
+        self.feedback.current_stage = self.feedback.SHOOTING
+        self.server.publish_feedback(self.feedback)
         if not goal.setup_only:
             rospy.loginfo("2024_shooting_server: shooting")
-
-            self.feedback.current_stage = self.feedback.SHOOTING
-            self.server.publish_feedback(self.feedback)
 
             preshooter_goal = Clawster2024Goal()
             preshooter_goal.mode = preshooter_goal.OUTTAKE

@@ -24,6 +24,7 @@ class ShooterServer2024:
 
     def __init__(self):
         self.server = actionlib.SimpleActionServer('set_shooter_speed', Shooter2024Action, self.execute_cb, auto_start = False)
+        self.tolerance = rospy.get_param("tolerance")
 
         self.talon_states_sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.callback, tcp_nodelay=True, queue_size=1) # subscribing here so that we can figure out the actual speed of said motor at a given time, talonfxpro_states gives us these values
         
@@ -38,7 +39,6 @@ class ShooterServer2024:
         self.bottom_left_client.wait_for_service()
         self.bottom_right_client.wait_for_service()
 
-        self.tolerance = rospy.get_param("tolerance")
 
         rospy.loginfo("2024_shooter_server: starting up")
 
@@ -124,6 +124,8 @@ class ShooterServer2024:
                 self._feedback.bottom_right_percent_complete = 100.0
                 self._feedback.is_shooting_at_speed = True
                 self.server.publish_feedback(self._feedback)
+                self.server.set_succeeded(self._result)
+                return
             
             r.sleep()
 

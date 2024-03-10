@@ -28,6 +28,7 @@ class AlignAndShoot:
         # self.shooting_client.wait_for_server()
 
         self.dist_sub = rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, self.distance_and_angle_callback, tcp_nodelay=True, queue_size=1) #use this to find the distance that we are from the spaerk thing
+        self.dist_value = 1
         if self.dist_sub.get_num_connections() > 0: rospy.loginfo("2024_align_and_shoot: distance and angle topic being published to")
         
         self.server = actionlib.SimpleActionServer(self.action_name, AlignAndShoot2024Action, execute_cb=self.execute_cb, auto_start = False)
@@ -38,7 +39,8 @@ class AlignAndShoot:
         self.last_relocalized = rospy.Time()
         self.align_to_speaker_done = False
         self.half_field_timer = rospy.Timer(rospy.Duration(1.0/5.0), self.half_field_timer_cb)
-
+        self.dont_run_timer = False 
+        self.shooting_done = False
         self.server.start()
         rospy.loginfo("2024_align_and_shoot: server started")
 
@@ -53,18 +55,19 @@ class AlignAndShoot:
         self.align_to_speaker_done = feedback.aligned
         rospy.loginfo("2024 Align and shoot: Align to speaker")
     
-    def shooting_done_cb(self, result: Shooting2024Result):
-        self.shooting_done = result.success
+    def shooting_feedback_cb(self, feedback: Shooting2024Feedback):
+        self.shooting_done = (feedback.current_stage == feedback.SHOOTING)
         rospy.logwarn("2024 Align and shoot: Shooting done!")
 
     def half_field_timer_cb(self, event):
-        self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())        
-        shooting_goal = Shooting2024Goal()
-        shooting_goal.mode = shooting_goal.SPEAKER # should use the dist and angle topic to keep adjusting speeds
-        shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
-        shooting_goal.setup_only = True
-        shooting_goal.leave_spinning = True
-        self.shooting_client.send_goal(shooting_goal, done_cb=self.shooting_done_cb)
+        if not self.dont_run_timer:
+            rospy.logwarn_throttle(0.1, "Shooting half field")
+            shooting_goal = Shooting2024Goal()
+            shooting_goal.mode = shooting_goal.SPEAKER # should use the dist and angle topic to keep adjusting speeds
+            shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
+            shooting_goal.setup_only = True
+            shooting_goal.leave_spinning = True
+            self.shooting_client.send_goal(shooting_goal, feedback_cb=self.shooting_feedback_cb)
 
     def execute_cb(self, goal: AlignAndShoot2024Goal):
         r = rospy.Rate(20)
@@ -75,7 +78,7 @@ class AlignAndShoot:
 
         align_to_speaker_goal.align_forever = goal.align_forever
         align_to_speaker_goal.offsetting = goal.offsetting
-
+        self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
         self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
         rospy.loginfo("2024_align_and_shoot: align goal sent")
 
@@ -90,11 +93,11 @@ class AlignAndShoot:
             r.sleep()
 
         rospy.loginfo("2024_align_and_shoot: done aligning")
-        self.half_field_timer.shutdown()
+        self.dont_run_timer = True
         shooting_goal.mode = shooting_goal.SPEAKER
         shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
         shooting_goal.setup_only = False
-        shooting_goal.leave_spinning = goal.leave_spinning
+        shooting_goal.leave_spinning = False
         shooting_done = False
 
         def shooting_done_cb(state, result):
@@ -110,13 +113,14 @@ class AlignAndShoot:
                 self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 self.server.set_preempted()
+                self.dont_run_timer = False
                 return
             r.sleep()
 
         rospy.loginfo("2024_align_and_shoot: succeeded")
         self.result.success = True
         self.server.set_succeeded(self.result)
-        self.half_field_timer = rospy.Timer(rospy.Duration(1.0/5.0), self.half_field_timer_cb)
+        self.dont_run_timer = False
 
 
 if __name__ == '__main__':
