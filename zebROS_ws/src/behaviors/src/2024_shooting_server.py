@@ -79,6 +79,8 @@ class ShootingServer(object):
         self.server = actionlib.SimpleActionServer(self.action_name, Shooting2024Action, execute_cb=self.execute_cb, auto_start = False)
         self.server.start()
 
+        rospy.loginfo("2024_shooting_server: initialized")
+
     def dyn_rec_callback(self, config, level):
         rospy.loginfo("Received reconf call: " + str(config))
         self.subwoofer_top_left_speed = config["subwoofer_top_left_speed"]
@@ -149,6 +151,16 @@ class ShootingServer(object):
         rospy.loginfo(f"2024_shooting_server: sending shooter goal {shooter_goal}")
         # TODO UNCOMMENT THIS IS FOR SIM
         # self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb)
+
+        # NEXT SEVEN LINES ARE SIM ONLY
+        time.sleep(0.5)
+        self.feedback.current_stage = self.feedback.SHOOTING
+        self.server.publish_feedback(self.feedback)
+        self.result.success = True
+        rospy.loginfo("2024_shooting_server: succeeded")
+        self.server.set_succeeded(self.result)
+        return
+
 
         rospy.loginfo(f"2024_shooting_server: pivoting to angle {pivot_angle}")
 
