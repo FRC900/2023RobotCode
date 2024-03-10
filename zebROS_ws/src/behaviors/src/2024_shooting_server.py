@@ -21,14 +21,17 @@ class ShootingServer(object):
         self.shooter_client = actionlib.SimpleActionClient('/shooter/set_shooter_speed', Shooter2024Action)
         rospy.loginfo("2024_shooting_server: waiting for shooter")
         # this will block forever if something lower level fails to come up
-        self.shooter_client.wait_for_server()
+        # TODO UNCOMMENT THIS IS FOR SIM
+        # self.shooter_client.wait_for_server()
         self.pivot_client = actionlib.SimpleActionClient('/shooter/set_shooter_pivot', ShooterPivot2024Action)
         rospy.loginfo("2024_shooting_server: waiting for pivot")
-        self.pivot_client.wait_for_server()
+        # TODO UNCOMMENT THIS IS FOR SIM
+        # self.pivot_client.wait_for_server()
         # The preshooter and claw are very similar (drive motor until limit switch pressed). They'll probably be the same server.
         self.preshooter_client = actionlib.SimpleActionClient('/clawster/clawster_server_2024', Clawster2024Action)
         rospy.loginfo("2024_shooting_server: waiting for clawster")
-        self.preshooter_client.wait_for_server()
+        # TODO UNCOMMENT THIS IS FOR SIM
+        # self.preshooter_client.wait_for_server()
 
         # speeds_map: [[distance: [top_left_speed, top_right_speed, bottom_left_speed, bottom_right_speed]], ...]
         speeds_map_param = rospy.get_param("speeds_map")
@@ -89,8 +92,9 @@ class ShootingServer(object):
     def execute_cb(self, goal: Shooting2024Goal):
         if goal.cancel_movement:
             rospy.logwarn("2024_shooting_server: CANCELING SPIN UP")
-            self.shooter_client.cancel_goals_at_and_before_time(rospy.Time.now())
-            self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
+            # TODO UNCOMMENT THIS IS FOR SIM
+            # self.shooter_client.cancel_goals_at_and_before_time(rospy.Time.now())
+            # self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
             self.result.success = True
             self.server.set_succeeded(self.result)
             return
@@ -142,9 +146,11 @@ class ShootingServer(object):
             shooter_done = feedback.is_shooting_at_speed
         
         shooter_goal.leave_spinning = goal.leave_spinning
-        self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb)
+        rospy.loginfo(f"2024_shooting_server: sending shooter goal {shooter_goal}")
+        # TODO UNCOMMENT THIS IS FOR SIM
+        # self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb)
 
-        rospy.loginfo("2024_shooting_server: pivoting")
+        rospy.loginfo(f"2024_shooting_server: pivoting to angle {pivot_angle}")
 
         self.feedback.current_stage = self.feedback.PIVOTING
         self.server.publish_feedback(self.feedback)

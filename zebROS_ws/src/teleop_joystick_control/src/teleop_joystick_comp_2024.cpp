@@ -514,72 +514,9 @@ bool aligning = false;
 
 void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 {
-
-	// Check if we're behind half field (the field is 16.54 meters long, so half is 8.27 meters)
-	// (we're using the x coordinate of the robot in the odom frame to determine this)
-	// This is alliance-relative; the red interval is (8.27, 16.54) and the blue interval is (0.0, 8.27)
-
-	static bool past_half_field = false;
-
-	static geometry_msgs::PoseStamped robot_pose;
-
-	// get map -> base_link and store it in robot_pose
-	try
-	{
-		geometry_msgs::TransformStamped transformStamped = tf_buffer->lookupTransform("map", "base_link", ros::Time(0));
-		robot_pose.header = transformStamped.header;
-		robot_pose.pose.position.x = transformStamped.transform.translation.x;
-		robot_pose.pose.position.y = transformStamped.transform.translation.y;
-	}
-	catch (tf2::TransformException &ex)
-	{
-		ROS_WARN_STREAM_THROTTLE(1, ex.what());
-	}
-
-	ROS_INFO_STREAM_THROTTLE(1, "teleop_joystick_comp_2024 : robot_pose: " << robot_pose.pose.position.x << " " << robot_pose.pose.position.y);
-
-	if (alliance_color == frc_msgs::MatchSpecificData::ALLIANCE_COLOR_RED)
-	{
-		if (robot_pose.pose.position.x > 8.27)
-		{
-			past_half_field = true;
-		}
-		else
-		{
-			if (past_half_field) {
-				// Stop aligning to speaker
-				align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-				aligning = false;
-			}
-			past_half_field = false;
-		}
-	}
-	else
-	{
-		if (robot_pose.pose.position.x < 8.27)
-		{
-			past_half_field = true;
-		}
-		else
-		{
-			if (past_half_field) {
-				// Stop aligning to speaker
-				align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-				aligning = false;
-			}
-			past_half_field = false;
-		}
-	}
-
 	if (button_box->lockingSwitchButton)
 	{
-		if (!aligning && past_half_field) {
-			// Align to speaker if past half field and not aligning
-			behavior_actions::AlignToSpeaker2024Goal goal;
-			goal.align_forever = true;
-			align_to_speaker_ac->sendGoal(goal);
-			aligning = true;
-		}
+		// @TODO ADD THE SERVICE FOR AUTO ALIGN AND SHOOT  
 	}
 	if (button_box->lockingSwitchPress)
 	{
@@ -587,9 +524,10 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->lockingSwitchRelease)
 	{
+		// TODO ADD SAFE VS NOT SAFE
 		// Stop aligning to speaker
-		align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-		aligning = false;
+		// align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		// aligning = false;
 	}
 
 	// TODO We'll probably want to check the actual value here
