@@ -145,7 +145,6 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-## screen_to_world.cpp isn't a dependency, but I don't know how else to build it FIXME
 add_executable(tf_object_screen_to_world src/depth_algorithms.cpp src/screen_to_world_node.cpp)
 add_executable(test_depth_detection src/test_depth_detection.cpp src/depth_algorithms.cpp)
 add_executable(cargo_detection_filter src/cargo_filter.cpp)
@@ -166,6 +165,7 @@ add_dependencies(dummy_camerainfo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_E
 
 add_library(screen_to_world_nodelet
   src/screen_to_world.cpp
+  src/depth_algorithms.cpp
 )
 
 target_link_libraries(screen_to_world_nodelet
@@ -179,17 +179,17 @@ add_dependencies(screen_to_world_nodelet
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(tf_object_screen_to_world
- ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES}
 )
 target_link_libraries(test_depth_detection
- ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES}
 )
 target_link_libraries(cargo_detection_filter
- ${catkin_LIBRARIES}
- )
+  ${catkin_LIBRARIES}
+)
 target_link_libraries(dummy_camerainfo
- ${catkin_LIBRARIES}
- )
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##

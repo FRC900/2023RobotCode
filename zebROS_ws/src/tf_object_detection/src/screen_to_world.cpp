@@ -21,18 +21,22 @@ namespace tf_object_detection
 {
 	class ScreenToWorld : public nodelet::Nodelet {
 	public:
+		ScreenToWorld() = default;
+		virtual ~ScreenToWorld() = default;
 	private:
-		virtual void onInit() {
-			ros::NodeHandle nh_ = getMTPrivateNodeHandle();
-			image_transport::ImageTransport it(nh_);
+		void onInit() override {
+			NODELET_INFO("********** Starting nodelet '%s' **********", getName().c_str());
+            ros::NodeHandle nh = getNodeHandle();
+			ros::NodeHandle nhp = getMTPrivateNodeHandle();
+			image_transport::ImageTransport it(nh);
 
 			std::string algorithm_str;
 			double timeout;
 
-			nh_.param<std::string>("depth_algorithm", algorithm_str, "CONTOURS");
-			nh_.param<double>("timeout", timeout, 0.05);
+			nhp.param<std::string>("depth_algorithm", algorithm_str, "CONTOURS");
+			nhp.param<double>("timeout", timeout, 0.05);
 
-			ROS_INFO_STREAM("[screen_to_world] algorithm=" << algorithm_str << ", timeout=" << timeout);
+			NODELET_INFO_STREAM("[screen_to_world] algorithm=" << algorithm_str << ", timeout=" << timeout);
 
 			if (algorithm_str == "CONTOURS")
 			{
@@ -52,63 +56,59 @@ namespace tf_object_detection
 			}
 			else
 			{
-				ROS_ERROR_STREAM("Unknown depth algorithm type : " << algorithm_str);
+				NODELET_ERROR_STREAM("Unknown depth algorithm type : " << algorithm_str);
 				return;
 			}
 
 			// All algorithms require depth info, with the exception of TWO_D_ONLY
 			// For the depth algorithms, create a ROS synchronizer to collect
 			// image + depth into a single callback
-			std::unique_ptr<image_transport::SubscriberFilter> depth_sub;
-			std::unique_ptr<message_filters::Subscriber<field_obj::TFDetection>> obsub;
-			typedef message_filters::sync_policies::ApproximateTime<field_obj::TFDetection, sensor_msgs::Image> ObjDepthSyncPolicy;
-			std::unique_ptr<message_filters::Synchronizer<ObjDepthSyncPolicy>> obj_depth_sync;
-
 			// For the 2-D only mode, just pass in a dummy image ptr - this should never
 			// be used so hopefully just a default initialized sensor img will work as a placeholder
-			ros::Subscriber sub;
-			boost::shared_ptr<sensor_msgs::Image> dummy_image_ptr(new sensor_msgs::Image());
+			dummy_image_ptr_.reset(new sensor_msgs::Image());
 
-			cv::Mat img(cv::Size(720, 1280), CV_32FC1, cv::Scalar(0));
+			img_ = cv::Mat(cv::Size(720, 1280), CV_32FC1, cv::Scalar(0));
 
 			std_msgs::Header header;		 // empty header
 			header.seq = 0;					 // user defined counter
 			header.stamp = ros::Time::now(); // time
-			cv_bridge::CvImage img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, img);
-			img_bridge.toImageMsg(*dummy_image_ptr); // from cv_bridge to sensor_msgs::Image
+			img_bridge_ = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, img_);
+			img_bridge_.toImageMsg(*dummy_image_ptr_); // from cv_bridge to sensor_msgs::Image
 
 			if (algorithm != TWO_D_ONLY)
 			{
 				// Create a filter subscriber to camera depth info
-				depth_sub = std::make_unique<image_transport::SubscriberFilter>(it, "/zed_objdetect/depth/depth_registered", 1);
+				depth_sub_ = std::make_unique<image_transport::SubscriberFilter>(it, "/zed_objdetect/depth/depth_registered", 1);
 
 				// And another filer subscriber to the TF object detection
-				obsub = std::make_unique<message_filters::Subscriber<field_obj::TFDetection>>(nh_, "obj_detection_msg", 1);
+				obsub_ = std::make_unique<message_filters::Subscriber<field_obj::TFDetection>>(nh, "obj_detection_msg", 1);
 
 				// Create a synchronizer which combines the two - it calls the callback function when it matches
 				// up a message from each subscriber which have the (approximately) same timestamps
 				// TODO - try this with an exact synchronizer?
-				obj_depth_sync = std::make_unique<message_filters::Synchronizer<ObjDepthSyncPolicy>>(ObjDepthSyncPolicy(10), *obsub, *depth_sub);
+				obj_depth_sync_ = std::make_unique<message_filters::Synchronizer<ObjDepthSyncPolicy>>(ObjDepthSyncPolicy(10), *obsub_, *depth_sub_);
 
-				obj_depth_sync->setMaxIntervalDuration(ros::Duration(timeout));
-				obj_depth_sync->registerCallback(boost::bind(&ScreenToWorld::callback, this, _1, _2));
+				obj_depth_sync_->setMaxIntervalDuration(ros::Duration(timeout));
+				obj_depth_sync_->registerCallback(boost::bind(&ScreenToWorld::callback, this, _1, _2));
 			}
 			else
 			{
-				sub = nh_.subscribe<field_obj::TFDetection>("obj_detection_msg", 1, boost::bind(&ScreenToWorld::callback, this, _1, dummy_image_ptr));
+				sub_ = nh.subscribe<field_obj::TFDetection>("obj_detection_msg", 1, boost::bind(&ScreenToWorld::callback, this, _1, dummy_image_ptr_));
 			}
 
 			// Set up a simple subscriber to capture camera info
-			ros::Subscriber camera_info_sub_ = nh_.subscribe("/zed_objdetect/left/camera_info", 1, &ScreenToWorld::camera_info_callback, this);
+			camera_info_sub_ = nh.subscribe("/zed_objdetect/left/camera_info", 1, &ScreenToWorld::camera_info_callback, this);
 
 			// And a publisher to published converted 3d coords
-			pub = nh_.advertise<field_obj::Detection>("object_detection_world", 1);
+			pub_ = nhp.advertise<field_obj::Detection>("object_detection_world", 1);
 		};
 		void camera_info_callback(const sensor_msgs::CameraInfoConstPtr &info) {
+			std::scoped_lock l(cam_info_mutex_);
 			caminfo = *info;
 			caminfovalid = true;
 		};
 		void callback(const field_obj::TFDetectionConstPtr &objDetectionMsg, const sensor_msgs::ImageConstPtr &depthMsg) {
+			std::scoped_lock l(cam_info_mutex_);
 			if (!caminfovalid)
 			{
 				return;
@@ -134,12 +134,12 @@ namespace tf_object_detection
 			for (const auto &camObject : objDetectionMsg->objects)
 			{
 				if (fabs(camObject.br.x - camObject.tl.x) < 1) {
-					ROS_INFO_STREAM("less than 1 x");
+					NODELET_INFO_STREAM("less than 1 x");
 					return;
 				}
 
 				if (fabs(camObject.br.y - camObject.tl.y) < 1) {
-					ROS_INFO_STREAM("less than 1 x");
+					NODELET_INFO_STREAM("less than 1 x");
 					return;
 				}
 				// Create an output object, copy over info from the object detection info
@@ -159,7 +159,7 @@ namespace tf_object_detection
 				const float objDistance = usefulDepthMat(cvDepth->image, rect, algorithm, false);
 				if (objDistance < 0 || isnan(objDistance))
 				{
-					ROS_ERROR_STREAM_THROTTLE(0.5, "Depth of object at " << objRectCenter << " with bounding rect " << rect << " invalid : " << objDistance);
+					NODELET_ERROR_STREAM_THROTTLE(0.5, "Depth of object at " << objRectCenter << " with bounding rect " << rect << " invalid : " << objDistance);
 					return;
 				}
 				const cv::Point3f world_coord_scaled = cc.screen_to_world(rect, worldObject.id, objDistance);
@@ -176,7 +176,7 @@ namespace tf_object_detection
 				out_msg.objects.push_back(worldObject);
 			}
 
-			pub.publish(out_msg);
+			pub_.publish(out_msg);
 
 			if (out_msg.objects.size() > 0)
 			{
@@ -216,12 +216,24 @@ namespace tf_object_detection
 			}
 		};
 
+		std::unique_ptr<image_transport::SubscriberFilter> depth_sub_;
+		std::unique_ptr<message_filters::Subscriber<field_obj::TFDetection>> obsub_;
+		using ObjDepthSyncPolicy = message_filters::sync_policies::ApproximateTime<field_obj::TFDetection, sensor_msgs::Image>;
+		std::unique_ptr<message_filters::Synchronizer<ObjDepthSyncPolicy>> obj_depth_sync_;
 
+		boost::shared_ptr<sensor_msgs::Image> dummy_image_ptr_;
+		cv::Mat img_;
+		cv_bridge::CvImage img_bridge_;
+
+		ros::Subscriber sub_;
+		ros::Publisher pub_;
+		ros::Subscriber camera_info_sub_;
 		// I don't know how to set default values for these class members
 		DepthCalculationAlgorithm algorithm;
 		ros::Publisher pub;
 		sensor_msgs::CameraInfo caminfo;
-		bool caminfovalid;
+		bool caminfovalid{false};
+		std::mutex cam_info_mutex_;
 	};
 }
 
