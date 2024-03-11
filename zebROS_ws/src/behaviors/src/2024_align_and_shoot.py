@@ -66,6 +66,8 @@ class AlignAndShoot:
         self.align_to_speaker_done = False
         self.shooting_done = False
         self.server.start()
+        rospy.loginfo("2024_align_and_shoot: starting timer")
+        self.half_field_timer.start()
         rospy.loginfo("2024_align_and_shoot: server started")
 
     def match_data_cb(self, msg: MatchSpecificData):
@@ -99,7 +101,8 @@ class AlignAndShoot:
     def rio_callback(self, data):
         # check diverter_switch
         if "preshooter_limit_switch" in data.name:
-            if self.preshooter_switch and not data.position[data.name.index("preshooter_limit_switch")]:
+            # if this is in auto, this sees that the note left (we shot), cancels shooter movement, and we're sad in the auto node
+            if self.preshooter_switch and not data.position[data.name.index("preshooter_limit_switch")] and self.is_teleop_and_enabled:
                 self.preempt()
             self.preshooter_switch = data.position[data.name.index("preshooter_limit_switch")]
         else:
@@ -114,7 +117,7 @@ class AlignAndShoot:
         self.aligning = False
 
     def half_field_timer_cb(self, event):
-        # rospy.loginfo("Half field timer called")
+        rospy.loginfo("Half field timer called")
         # If we are behind half field:
         # - If it's the first time: call align to speaker (continous)
         # - Call shooting server with leave_spinning=True and setup_only=True with the correct distance
@@ -124,47 +127,51 @@ class AlignAndShoot:
         # If we were not in safe mode but now are:
         # - Stop aligning to speaker
         # - Stop shooting
-        trans: geometry_msgs.msg.TransformStamped = self.tfBuffer.lookup_transform("map", "base_link", rospy.Time())
-        
-        x_pos = trans.transform.translation.x
+        try:
+            trans: geometry_msgs.msg.TransformStamped = self.tfBuffer.lookup_transform("map", "base_link", rospy.Time())
+            
+            x_pos = trans.transform.translation.x
 
-        if self.alliance_color == MatchSpecificData.ALLIANCE_COLOR_RED:
-            if x_pos > 8.27:
-                self.past_half_field = True
-            elif self.past_half_field:
-                self.preempt()
-                self.aligning = False
-                self.past_half_field = False
-        # ON BLUE
-        else:
-            if x_pos < 8.27:
-                self.past_half_field = True
+            if self.alliance_color == MatchSpecificData.ALLIANCE_COLOR_RED:
+                if x_pos > 8.27:
+                    self.past_half_field = True
+                elif self.past_half_field:
+                    self.preempt()
+                    self.aligning = False
+                    self.past_half_field = False
+            # ON BLUE
+            else:
+                if x_pos < 8.27:
+                    self.past_half_field = True
 
-            elif self.past_half_field:
-                self.preempt()
-                self.aligning = False
-                self.past_half_field = False
-        
-        # rospy.loginfo(f"checks: {self.enable_continuous_autoalign} and {self.is_teleop_and_enabled} and {self.preshooter_switch} and {self.past_half_field} and not {self.aligning} and not {self.dont_send_shooting_goal}")
+                elif self.past_half_field:
+                    self.preempt()
+                    self.aligning = False
+                    self.past_half_field = False
+            
+            rospy.loginfo(f"checks: {self.enable_continuous_autoalign} and {self.is_teleop_and_enabled} and {self.preshooter_switch} and {self.past_half_field} and not {self.aligning} and not {self.dont_send_shooting_goal}")
 
-        if self.enable_continuous_autoalign and self.is_teleop_and_enabled and self.preshooter_switch and self.past_half_field and not self.aligning:
-            rospy.loginfo_throttle(1.0, "2024 align and shoot: Auto aligning")
-            # self.align_to_speaker_client 
-            align_to_speaker_goal = AlignToSpeaker2024Goal()
-            align_to_speaker_goal.align_forever = True
-            align_to_speaker_goal.offsetting = False
-            # self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
-            self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
-            self.aligning = True
-   
-        if self.enable_continuous_autoalign and self.is_teleop_and_enabled and self.preshooter_switch and self.past_half_field and not self.dont_send_shooting_goal:
-            rospy.loginfo_throttle(1.0, "2024 align and shoot: Spinning up")
-            shooting_goal = Shooting2024Goal()
-            shooting_goal.mode = shooting_goal.SPEAKER # should use the dist and angle topic to keep adjusting speeds
-            shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
-            shooting_goal.setup_only = True
-            shooting_goal.leave_spinning = True
-            self.shooting_client.send_goal(shooting_goal, feedback_cb=self.shooting_feedback_cb)
+            if self.enable_continuous_autoalign and self.is_teleop_and_enabled and self.preshooter_switch and self.past_half_field and not self.aligning:
+                rospy.loginfo_throttle(1.0, "2024 align and shoot: Auto aligning")
+                # self.align_to_speaker_client 
+                align_to_speaker_goal = AlignToSpeaker2024Goal()
+                align_to_speaker_goal.align_forever = True
+                align_to_speaker_goal.offsetting = False
+                # self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
+                self.aligning = True
+    
+            if self.enable_continuous_autoalign and self.is_teleop_and_enabled and self.preshooter_switch and self.past_half_field and not self.dont_send_shooting_goal:
+                rospy.loginfo_throttle(1.0, "2024 align and shoot: Spinning up")
+                shooting_goal = Shooting2024Goal()
+                shooting_goal.mode = shooting_goal.SPEAKER # should use the dist and angle topic to keep adjusting speeds
+                shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
+                shooting_goal.setup_only = True
+                shooting_goal.leave_spinning = True
+                self.shooting_client.send_goal(shooting_goal, feedback_cb=self.shooting_feedback_cb)
+        except Exception as e:
+            # probably TransformException if localization isn't up yet
+            rospy.logerr_throttle(0.5, f"2024_align_and_shoot: {e}")
 
     def execute_cb(self, goal: AlignAndShoot2024Goal):
         r = rospy.Rate(20)
