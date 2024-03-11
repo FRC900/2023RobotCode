@@ -144,8 +144,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-
-add_executable(tf_object_screen_to_world src/depth_algorithms.cpp src/screen_to_world_node.cpp)
+add_executable(tf_object_screen_to_world src/screen_to_world_node.cpp)
 add_executable(test_depth_detection src/test_depth_detection.cpp src/depth_algorithms.cpp)
 add_executable(cargo_detection_filter src/cargo_filter.cpp)
 add_executable(dummy_camerainfo src/dummy_camerainfo.cpp)
