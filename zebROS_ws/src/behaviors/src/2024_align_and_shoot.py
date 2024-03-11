@@ -176,14 +176,12 @@ class AlignAndShoot:
         self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
         rospy.loginfo("2024_align_and_shoot: align goal sent")
 
-        # TRUE OR IS FOR SIM
-        relocalized_recently = True or (rospy.Time.now() - self.last_relocalized) < rospy.Duration(self.localization_timeout)
+        relocalized_recently = (rospy.Time.now() - self.last_relocalized) < rospy.Duration(self.localization_timeout)
 
         # We want to run this loop while rospy is not shutdown, and:
         # we have not relocalized recently OR we have not aligned to speaker OR we are not done shooting
         while not (relocalized_recently and self.align_to_speaker_done and self.shooting_done) and not rospy.is_shutdown():
-            # TRUE OR IS FOR SIM
-            relocalized_recently = True or (rospy.Time.now() - self.last_relocalized) < rospy.Duration(self.localization_timeout)
+            relocalized_recently = (rospy.Time.now() - self.last_relocalized) < rospy.Duration(self.localization_timeout)
             rospy.loginfo_throttle(0.1, f"2024_align_and_shoot: aligning waiting on {'speaker' if not self.align_to_speaker_done else ''} {'shooting' if not self.shooting_done else ''} {'localization' if not relocalized_recently else ''}")
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024_align_and_shoot: preempted")
