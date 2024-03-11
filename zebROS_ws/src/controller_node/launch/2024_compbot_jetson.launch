@@ -127,6 +127,9 @@
 	<include file="$(find behaviors)/launch/2024_align_and_shoot.launch"/>
 	<include file="$(find behaviors)/launch/2024_rumble_server.launch"/> 
 
+	<include file="$(find behaviors)/launch/2024_align_to_trap.launch">
+	</include>
+
 	<!-- <node name="candle_node" pkg="candle_node" type="candle_node" respawn="false" output="screen"/> -->
 	<include file="$(find behaviors)/launch/2024_intaking.launch"/>
 

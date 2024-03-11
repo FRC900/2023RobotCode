@@ -30,6 +30,9 @@ class Aligner:
     BLUE_AMP = "blue_amp_6"
     RED_AMP = "red_amp_5"
 
+    BLUE_SUBWOOFER = "blue_subwoofer_7"
+    RED_SUBWOOFER = "red_subwoofer_4"
+
 
     def __init__(self, name):   
         self._action_name = name
@@ -42,6 +45,8 @@ class Aligner:
 
         self.x_amp_offset = rospy.get_param("x_offset_amp")
         self.y_amp_offset = rospy.get_param("y_offset_amp")
+
+        self.x_subwoofer_offset = rospy.get_param("x_offset_subwoofer")
         
         self.color = 0
         self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.AlignToTrap2024Action, execute_cb=self.aligner_callback, auto_start = False)
@@ -67,6 +72,8 @@ class Aligner:
         # self.y_command_sub = rospy.Publisher("y_position_pid/y_command", std_msgs.msg.Float64, self.y_command_callback, tcp_nodelay=True)
 
         self.team_subscribe = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.match_data_callback)
+
+        self.enable_pub = rospy.Publisher("align_to_trap_pid/pid_enable", std_msgs.msg.Bool, queue_size=1, tcp_nodelay=True)
 
         self.sub_effort = rospy.Subscriber("/teleop/orient_strafing/control_effort", std_msgs.msg.Float64, self.robot_orientation_effort_callback)
 
@@ -98,6 +105,9 @@ class Aligner:
         if goal.destination == goal.AMP:
             rospy.loginfo("2024_align_to_trap: Aligning to amp")
             closest_frame = self.RED_AMP if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_AMP
+        elif goal.destination == goal.SUBWOOFER:
+            rospy.loginfo("2024_align_to_trap: Aligning to subwoofer")
+            closest_frame = self.RED_SUBWOOFER if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_SUBWOOFER
         else:
             rospy.loginfo("2024_align_to_trap: Aligning to trap")
             for frame in (self.RED_TAGS if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_TAGS):
@@ -114,6 +124,8 @@ class Aligner:
         elif goal.destination == goal.AMP:
             trans.transform.translation.x -= self.x_amp_offset
             trans.transform.translation.y -= self.y_amp_offset
+        elif goal.destination == goal.SUBWOOFER:
+            trans.transform.translation.x -= self.x_subwoofer_offset
 
         transform = t.concatenate_matrices(t.translation_matrix([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]), t.quaternion_matrix([trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w]))
         inverted_transform = t.inverse_matrix(transform)
@@ -128,6 +140,7 @@ class Aligner:
 
         self.x_enable_pub.publish(std_msgs.msg.Bool(True))
         self.y_enable_pub.publish(std_msgs.msg.Bool(True))
+        self.enable_pub.publish(std_msgs.msg.Bool(True))
 
         while not rospy.is_shutdown():
             # check that preempt has not been requested by the client
@@ -173,6 +186,7 @@ class Aligner:
 
         self.x_enable_pub.publish(std_msgs.msg.Bool(False))
         self.y_enable_pub.publish(std_msgs.msg.Bool(False))
+        self.enable_pub.publish(std_msgs.msg.Bool(False))
         
 if __name__ == '__main__':
     rospy.init_node('aligner')
