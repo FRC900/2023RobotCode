@@ -93,6 +93,10 @@ void DeepTag::visualize(cv::Mat &image, const std::vector<DeepTagResult> &result
     return m_pImpl->visualize(image, results);
 }
 
+void DeepTag::visualizeStage1Grid(cv::Mat &image)
+{
+    return m_pImpl->visualizeStage1Grid(image);
+}
 void DeepTag::setTimingsEnabled(const bool enabled)
 {
     return m_pImpl->setTimingsEnabled(enabled);

@@ -55,6 +55,7 @@ public:
     double getSSDMinCenterScore(void) const;
     int    getGridGrouperSigma(void) const;
     int    getSSDGrouperSigma(void) const;
+    void   visualizeGrid(cv::Mat &image);
 
 private:
     ushort2 generateInputs(const cv::Mat &cpuImg);

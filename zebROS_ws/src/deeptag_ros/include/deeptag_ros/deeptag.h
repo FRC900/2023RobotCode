@@ -82,6 +82,7 @@ class DeepTag
 
         std::vector<DeepTagResult> runInference(const cv::Mat &cpuImg);
         void visualize(cv::Mat &image, const std::vector<DeepTagResult> &results) const;
+        void visualizeStage1Grid(cv::Mat &image);
         void setTimingsEnabled(const bool enabled);
 
         void   setCornerMinCenterScore(const double cornerMinCenterScore);

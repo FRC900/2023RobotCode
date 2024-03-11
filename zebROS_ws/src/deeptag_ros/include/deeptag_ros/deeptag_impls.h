@@ -22,6 +22,7 @@ class DeepTagImplBase
 
         virtual std::vector<DeepTagResult> runInference(const cv::Mat &cpuImg) = 0;
         virtual void visualize(cv::Mat &image, const std::vector<DeepTagResult> &results) const = 0;
+        virtual void visualizeStage1Grid(cv::Mat &image) = 0;
 
         void setTimingsEnabled(const bool enabled);
 
@@ -69,6 +70,7 @@ class DeepTagImpl : public DeepTagImplBase
 
         std::vector<DeepTagResult> runInference(const cv::Mat &cpuImg) override;
         void visualize(cv::Mat &image, const std::vector<DeepTagResult> &results) const override;
+        void visualizeStage1Grid(cv::Mat &image) override;
 
         void   setCornerMinCenterScore(const double cornerMinCenterScore) override;
         void   setSSDMinCenterScore(const double ssdMinCenterScore) override;

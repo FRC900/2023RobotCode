@@ -414,6 +414,20 @@ int STagDetector<NUM_TILES, USE_SCALED_IMAGE>::getSSDGrouperSigma(void) const
     return m_ssdGrouperSigma;
 }
 
+template <size_t NUM_TILES, bool USE_SCALED_IMAGE>
+void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::visualizeGrid(cv::Mat &image)
+{
+    const tcb::span<const Stage1GridGroup<NUM_TILES + NUM_SCALED_IMAGES>> hstage1GridGroup = m_gridGrouper.getOutput();
+    for (size_t i = 0; i < hstage1GridGroup.size(); i++)
+    {
+        const auto &g = hstage1GridGroup[i];
+        cv::circle(image, cv::Point2d(g.m_corner.x, g.m_corner.y), 5, cv::Scalar(0, 0, 128));
+        std::stringstream s;
+        s << i;
+        cv::putText(image, s.str().c_str(), cv::Point2f(g.m_corner.x, g.m_corner.y - 10), 0, 0.75, cv::Scalar(128, 128, 0), 1);
+    }
+}
+
 #include "deeptag_ros/detection_engine.h"
 template class STagDetector<0, true>;
 

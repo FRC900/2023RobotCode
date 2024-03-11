@@ -37,6 +37,7 @@ private:
         pub_apriltag_poses_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 2);
         image_transport::ImageTransport it(nh_);
         pub_debug_image_ = it.advertise("debug_image", 2);
+        pub_stage1_grid_debug_image_ = it.advertise("stage1_grid_debug_image", 2);
     }
 
     void camera_info_callback(const sensor_msgs::CameraInfo::ConstPtr &msg)
@@ -220,6 +221,14 @@ private:
             deep_tag_->visualize(debug_image_.image, result);
             pub_debug_image_.publish(debug_image_.toImageMsg());
         }
+        if (pub_stage1_grid_debug_image_.getNumSubscribers() > 0)
+        {
+            stage1_grid_debug_image_.header = frameMsg->header;
+            stage1_grid_debug_image_.encoding = sensor_msgs::image_encodings::BGR8;
+            stage1_grid_debug_image_.image = cv_frame->image.clone();
+            deep_tag_->visualizeStage1Grid(stage1_grid_debug_image_.image);
+            pub_stage1_grid_debug_image_.publish(stage1_grid_debug_image_.toImageMsg());
+        }
 
         pub_apriltag_detections_.publish(apriltag_array_msg);
         pub_apriltag_poses_.publish(apriltag_pose_msg);
@@ -230,7 +239,9 @@ private:
     image_transport::Subscriber camera_image_sub_;
     ros::Subscriber camera_info_sub_;
     image_transport::Publisher pub_debug_image_;
+    image_transport::Publisher pub_stage1_grid_debug_image_;
     cv_bridge::CvImage debug_image_;
+    cv_bridge::CvImage stage1_grid_debug_image_;
     ros::Publisher pub_apriltag_detections_;
     ros::Publisher pub_apriltag_poses_;
 
