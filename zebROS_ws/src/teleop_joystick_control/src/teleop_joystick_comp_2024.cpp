@@ -3,6 +3,7 @@
 
 #include "ros/ros.h"
 #include "std_srvs/Empty.h"
+#include "std_srvs/SetBool.h"
 
 #include "frc_msgs/ButtonBoxState2024.h"
 #include "frc_msgs/JoystickState.h"
@@ -52,9 +53,7 @@ std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignAndShoot202
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action>> drive_and_intake_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToSpeaker2024Action>> align_to_speaker_ac;
 
-// Set up transform listener using unique pointers
-std::unique_ptr<tf2_ros::TransformListener> tf_listener;
-std::unique_ptr<tf2_ros::Buffer> tf_buffer;
+ros::ServiceClient enable_continuous_autoalign_client;
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProStateConstPtr &talon_state)
 {    
@@ -516,18 +515,20 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 {
 	if (button_box->lockingSwitchButton)
 	{
-		// @TODO ADD THE SERVICE FOR AUTO ALIGN AND SHOOT  
 	}
 	if (button_box->lockingSwitchPress)
 	{
-		
+		std_srvs::SetBool srv;
+		srv.request.data = true;
+		enable_continuous_autoalign_client.call(srv);
+		ROS_INFO_STREAM("teleop_joystick_comp_2024 : enabling continuous autoalign");
 	}
 	if (button_box->lockingSwitchRelease)
 	{
-		// TODO ADD SAFE VS NOT SAFE
-		// Stop aligning to speaker
-		// align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-		// aligning = false;
+		std_srvs::SetBool srv;
+		srv.request.data = false;
+		enable_continuous_autoalign_client.call(srv);
+		ROS_INFO_STREAM("teleop_joystick_comp_2024 : disabling continuous autoalign");
 	}
 
 	// TODO We'll probably want to check the actual value here
@@ -759,9 +760,7 @@ int main(int argc, char **argv)
 
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 
-	// initialize tf listener
-	tf_buffer = std::make_unique<tf2_ros::Buffer>();
-	tf_listener = std::make_unique<tf2_ros::TransformListener>(*tf_buffer);
+	enable_continuous_autoalign_client = n.serviceClient<std_srvs::SetBool>("/align_and_shoot/enable_autoalign", false, {{"tcp_nodelay", "1"}});
 
 	TeleopInitializer initializer;
 	initializer.set_n_params(n_params);
