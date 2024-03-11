@@ -91,6 +91,14 @@ class ShootingServer(object):
     def execute_cb(self, goal: Shooting2024Goal):
         if goal.cancel_movement:
             rospy.logwarn("2024_shooting_server: CANCELING SPIN UP")
+            shooter_goal = Shooter2024Goal()
+            shooter_goal.top_left_speed = 0.0
+            shooter_goal.top_right_speed = 0.0
+            shooter_goal.bottom_left_speed = 0.0
+            shooter_goal.bottom_right_speed = 0.0
+            shooter_goal.leave_spinning = False
+            self.shooter_client.send_goal(shooter_goal)
+            time.sleep(0.25)
             self.shooter_client.cancel_goals_at_and_before_time(rospy.Time.now())
             self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
             self.result.success = True
