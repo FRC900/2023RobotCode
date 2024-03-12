@@ -147,10 +147,10 @@ class ShootingServer(object):
             rospy.loginfo(f"2024_shooting_server: spinning up to distance {goal.distance}")
 
         shooter_done = False
-        def shooter_feedback_cb(feedback: Shooter2024Feedback):
-            nonlocal shooter_done
-            rospy.loginfo(f"2024_shooting_server: shooter feedback is {feedback.is_shooting_at_speed}")
-            shooter_done = feedback.is_shooting_at_speed
+        # def shooter_feedback_cb(feedback: Shooter2024Feedback):
+        #     nonlocal shooter_done
+        #     rospy.loginfo(f"2024_shooting_server: shooter feedback is {feedback.is_shooting_at_speed}")
+        #     shooter_done = feedback.is_shooting_at_speed
 
         def shooter_done_cb(state, result):
             nonlocal shooter_done
@@ -159,7 +159,11 @@ class ShootingServer(object):
         
         shooter_goal.leave_spinning = goal.leave_spinning
         rospy.loginfo(f"2024_shooting_server: sending shooter goal {shooter_goal}")
-        self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb, done_cb=shooter_done_cb)
+        self.shooter_client.send_goal(shooter_goal, done_cb=shooter_done_cb) # there was a feedback callback here too, but I believe it contributes to a race condition
+        # what likely happens is feedback that we're not done yet is sent, then the result that we are done is sent as well as the feedback that we are done
+        # we then receive that we are done (setting shooter_done=True) slightly *before* the second to last feedback message (saying we're not done) is received
+        # this leads to shooter_done being set to False. we then don't receive the final feedback message, because SimpleActionClient ignores feedback sent after
+        # the goal is done (source: https://github.com/ros/actionlib/blob/23acb6e7364dda9380f823e03284536574764c6a/actionlib/src/actionlib/action_client.py#L416)
 
         rospy.loginfo(f"2024_shooting_server: pivoting to angle {pivot_angle}")
 
