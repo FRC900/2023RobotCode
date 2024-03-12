@@ -154,6 +154,7 @@ class ShootingServer(object):
 
         def shooter_done_cb(state, result):
             nonlocal shooter_done
+            rospy.loginfo(f"2024_shooting_server: shooter DONE called")
             shooter_done = True
         
         shooter_goal.leave_spinning = goal.leave_spinning

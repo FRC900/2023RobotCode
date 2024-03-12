@@ -92,6 +92,8 @@ class ShooterServer2024:
                 self._feedback.bottom_right_percent_complete = 100.0
                 self._feedback.is_shooting_at_speed = True
                 self.server.publish_feedback(self._feedback)
+                rospy.loginfo("SHOOTER SERVER, publishing feedback ALL ZEROS")
+                r.sleep()
                 self.server.set_succeeded(self._result)
                 return
         
@@ -124,6 +126,8 @@ class ShooterServer2024:
                 self._feedback.bottom_right_percent_complete = 100.0
                 self._feedback.is_shooting_at_speed = True
                 self.server.publish_feedback(self._feedback)
+                rospy.loginfo("SHOOTER SERVER, publishing feedback and setting succeeded")
+                r.sleep()
                 self.server.set_succeeded(self._result)
                 return
             
