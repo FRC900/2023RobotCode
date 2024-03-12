@@ -24,8 +24,8 @@ amp_bottom_right_speed: 150.0 # rad/s
 amp_pivot_position: 0.98 # rad
 
 # trap 
-trap_top_left_speed: 495.0 # rad/s
-trap_top_right_speed: 495.0 # rad/s
-trap_bottom_left_speed: 495.0 # rad/s
-trap_bottom_right_speed: 495.0 # rad/s
-trap_pivot_position: 1.0 # rad
+trap_top_left_speed: 300.0 # rad/s
+trap_top_right_speed: 300.0 # rad/s
+trap_bottom_left_speed: 300.0 # rad/s
+trap_bottom_right_speed: 300.0 # rad/s
+trap_pivot_position: 1.01 # rad

@@ -136,7 +136,7 @@ class Aligner:
 
         inverted_rotation = t.quaternion_from_matrix(inverted_transform)
 
-        trap_yaw = t.euler_from_quaternion(inverted_rotation)[2] + math.pi
+        trap_yaw = t.euler_from_quaternion(inverted_rotation)[2]
 
         self.x_enable_pub.publish(std_msgs.msg.Bool(True))
         self.y_enable_pub.publish(std_msgs.msg.Bool(True))
