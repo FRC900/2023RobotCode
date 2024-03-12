@@ -99,13 +99,13 @@ class ShooterServer2024:
         
             else:
                 self._feedback.top_left_percent_complete = (((self.top_left_joint_velocity - initial_top_left_speed) / (goal.top_left_speed - initial_top_left_speed))) * 100
-                top_left_percent_difference = (((abs(self.top_left_joint_velocity - goal.top_left_speed)) / ((self.top_left_joint_velocity + goal.top_left_speed))) / 2) * 100
+                top_left_percent_difference = abs((((abs(self.top_left_joint_velocity - goal.top_left_speed)) / ((self.top_left_joint_velocity + goal.top_left_speed))) / 2) * 100)
                 self._feedback.top_right_percent_complete = (((self.top_right_joint_velocity - initial_top_right_speed) / (goal.top_right_speed - initial_top_right_speed))) * 100
-                top_right_percent_difference = (((abs(self.top_right_joint_velocity - goal.top_right_speed)) / ((self.top_right_joint_velocity + goal.top_right_speed))) / 2) * 100
+                top_right_percent_difference = abs((((abs(self.top_right_joint_velocity - goal.top_right_speed)) / ((self.top_right_joint_velocity + goal.top_right_speed))) / 2) * 100)
                 self._feedback.bottom_left_percent_complete = (((self.bottom_left_joint_velocity - initial_bottom_left_speed) / (goal.bottom_left_speed - initial_bottom_left_speed))) * 100
-                bottom_left_percent_difference = (((abs(self.bottom_left_joint_velocity - goal.bottom_left_speed)) / ((self.bottom_left_joint_velocity + goal.bottom_left_speed))) / 2) * 100
+                bottom_left_percent_difference = abs((((abs(self.bottom_left_joint_velocity - goal.bottom_left_speed)) / ((self.bottom_left_joint_velocity + goal.bottom_left_speed))) / 2) * 100)
                 self._feedback.bottom_right_percent_complete = (((self.bottom_right_joint_velocity - initial_bottom_right_speed) / (goal.bottom_right_speed - initial_bottom_right_speed))) * 100
-                bottom_right_percent_difference = (((abs(self.bottom_right_joint_velocity - goal.bottom_right_speed)) / ((self.bottom_right_joint_velocity + goal.bottom_right_speed))) / 2) * 100
+                bottom_right_percent_difference = abs((((abs(self.bottom_right_joint_velocity - goal.bottom_right_speed)) / ((self.bottom_right_joint_velocity + goal.bottom_right_speed))) / 2) * 100)
 
             self.server.publish_feedback(self._feedback)
 
