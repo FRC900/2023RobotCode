@@ -117,7 +117,7 @@ class AlignAndShoot:
         self.aligning = False
 
     def half_field_timer_cb(self, event):
-        rospy.loginfo("Half field timer called")
+        # rospy.loginfo("Half field timer called")
         # If we are behind half field:
         # - If it's the first time: call align to speaker (continous)
         # - Call shooting server with leave_spinning=True and setup_only=True with the correct distance
@@ -149,7 +149,7 @@ class AlignAndShoot:
                     self.aligning = False
                     self.past_half_field = False
             
-            rospy.loginfo(f"checks: {self.enable_continuous_autoalign} and {self.is_teleop_and_enabled} and {self.preshooter_switch} and {self.past_half_field} and not {self.aligning} and not {self.dont_send_shooting_goal}")
+            rospy.loginfo_throttle(0.5, f"checks: {self.enable_continuous_autoalign} and {self.is_teleop_and_enabled} and {self.preshooter_switch} and {self.past_half_field} and not {self.aligning} and not {self.dont_send_shooting_goal}")
 
             if self.enable_continuous_autoalign and self.is_teleop_and_enabled and self.preshooter_switch and self.past_half_field and not self.aligning:
                 rospy.loginfo_throttle(1.0, "2024 align and shoot: Auto aligning")

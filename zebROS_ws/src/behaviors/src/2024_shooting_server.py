@@ -149,11 +149,16 @@ class ShootingServer(object):
         shooter_done = False
         def shooter_feedback_cb(feedback: Shooter2024Feedback):
             nonlocal shooter_done
+            rospy.loginfo(f"2024_shooting_server: shooter feedback is {feedback.is_shooting_at_speed}")
             shooter_done = feedback.is_shooting_at_speed
+
+        def shooter_done_cb(state, result):
+            nonlocal shooter_done
+            shooter_done = True
         
         shooter_goal.leave_spinning = goal.leave_spinning
         rospy.loginfo(f"2024_shooting_server: sending shooter goal {shooter_goal}")
-        self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb)
+        self.shooter_client.send_goal(shooter_goal, feedback_cb=shooter_feedback_cb, done_cb=shooter_done_cb)
 
         rospy.loginfo(f"2024_shooting_server: pivoting to angle {pivot_angle}")
 
@@ -173,7 +178,7 @@ class ShootingServer(object):
         r = rospy.Rate(60.0)
 
         while not (shooter_done and pivot_done):
-            rospy.loginfo_throttle(0.5, "2024_shooting_server: waiting for shooter and pivot")
+            rospy.loginfo_throttle(0.5, f"2024_shooting_server: waiting for {'shooter' if not shooter_done else ''} and {'pivot' if not pivot_done else ''}")
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024_shooting_server: preempted")
 
