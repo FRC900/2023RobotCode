@@ -127,7 +127,7 @@ class Rumble2024Server():
         rumble_srv.left = 0
         rumble_srv.right = 0
         
-        rospy.loginfo_throttle(1, "Rumble loop")
+        #rospy.loginfo_throttle(1, "Rumble loop")
         # TODO make this a parameter
         # note should be gone after 1 second
         if self.intaking_rumble:

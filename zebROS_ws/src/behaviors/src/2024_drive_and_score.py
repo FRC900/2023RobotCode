@@ -51,34 +51,86 @@ class DriveAndScore:
         self.clawster_client = actionlib.SimpleActionClient('/clawster/clawster_server_2024', Clawster2024Action)
         rospy.loginfo("2024_intaking_server: waiting for clawster server")
         self.clawster_client.wait_for_server()
+        self.align_done = False
+        self.arm_done = False
 
         self._as = actionlib.SimpleActionServer(self._action_name, DriveAndScore2024Action, execute_cb=self.score_cb, auto_start = False)
         self._as.start()
     
     def align_done_cb(self, status, result):
         rospy.loginfo("2024 drive and score, align server done")
+        self.align_done = True
+
+    def arm_done_cb(self, status, result):
+        rospy.loginfo("2024 drive and score, arm server done")
+        self.arm_done = True
 
     def score_cb(self, goal: DriveAndScore2024Goal):
         self.feed_forward = True
         success = True
+        self.align_done = False
+        self.arm_done = False
+
         rospy.loginfo(f"Drive and score 2024 - called with goal {goal}")
         r = rospy.Rate(60.0)
+        align_goal = behavior_actions.msg.AlignToTrap2024Goal()
 
         if goal.destination == goal.AMP:
-            rospy.loginfo(f"Drive and score 2024 - called with goal {goal}")
-            align_goal = behavior_actions.msg.AlignToTrap2024Goal()
+            rospy.loginfo(f"Drive and score 2024 - going amp")
             align_goal.destination = align_goal.AMP
-            self.align_client.send_goal(align_goal )
-        
+            self.align_client.send_goal(align_goal, done_cb=self.align_done_cb)
+            # also start moving arm
+            arm_goal = Arm2024Goal() 
+            arm_goal.path = arm_goal.AMP
+            self.arm_client.send_goal(arm_goal, done_cb=self.arm_done_cb)
+        elif goal.destination == goal.TRAP:
+            rospy.loginfo(f"Drive and score 2024 - going trap")
+            align_goal.destination = align_goal.TRAP
+            self.align_client.send_goal(align_goal, done_cb=self.align_done_cb)
+            # for this case we just wait until we are done and then send shooting
 
+        # for telling if we hvae 
+        shooting = False
         while not rospy.is_shutdown():
             # check that preempt has not been requested by the client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self._as.set_preempted()
+                self.arm_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.align_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.clawster_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 success = False
                 break
             
+            # should be good to outake
+            if goal.destination == goal.AMP and self.align_done and self.arm_done:
+                rospy.loginfo("Drive and score 2024 - align and arm done")
+                # want to outtake from claw 
+                clawster_goal = Clawster2024Goal()
+                clawster_goal.mode = clawster_goal.OUTTAKE
+                clawster_goal.destination = clawster_goal.CLAW
+                self.clawster_client.send_goal(clawster_goal)
+                # we have fired the note at this point so we are done
+                self._result.success = True
+                self._as.set_succeeded(self._result)
+                return
+
+            if goal.destination == goal.TRAP and self.align_done and not shooting:
+                rospy.loginfo("2024 drive and score - trap aligned, shooting")
+                # need to shoot 
+                shooting = True
+                shooting_goal = behavior_actions.msg.Shooting2024Goal()
+                shooting_goal.destination = shooting_goal.TRAP
+                self.shooting_client.send_goal(shooting_goal)
+            
+            if goal.destination == goal.TRAP and self.shooting_done:
+                # have sent note so we are done
+                self._result.success = True
+                self._as.set_succeeded(self._result)
+                rospy.loginfo('%s: Succeeded Trap (hopefully)' % self._action_name)
+                return
+
             self._as.publish_feedback(self._feedback)
             r.sleep()
 
