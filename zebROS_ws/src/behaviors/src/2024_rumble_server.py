@@ -39,6 +39,8 @@ class Rumble2024Server():
         
         self.notes_max_distance = rospy.get_param("note_distance_away")
         self.preshooter_limit_switch_name = rospy.get_param("preshooter_limit_switch_name")
+        self.claw_limit_switch_name = rospy.get_param("claw_limit_switch_name")
+
         self.intake_limit_switch_name = rospy.get_param("intake_limit_switch_name")
         self.rumble_value = rospy.get_param("rumble_on_note")
 

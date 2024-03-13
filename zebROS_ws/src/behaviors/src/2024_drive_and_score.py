@@ -48,7 +48,7 @@ class DriveAndScore:
         self.clawster_client.wait_for_server()
         self.align_done = False
         self.arm_done = False
-
+        self.shooting_done = False 
         self._as = actionlib.SimpleActionServer(self._action_name, DriveAndScore2024Action, execute_cb=self.score_cb, auto_start = False)
         self._as.start()
     
@@ -59,12 +59,17 @@ class DriveAndScore:
     def arm_done_cb(self, status, result):
         rospy.loginfo("2024 drive and score, arm server done")
         self.arm_done = True
+    
+    def shooting_done_cb(self, status, result):
+        rospy.loginfo("2024 drive and score, shooting server done")
+        self.shooting_done = True
 
     def score_cb(self, goal: DriveAndScore2024Goal):
         self.feed_forward = True
         success = True
         self.align_done = False
         self.arm_done = False
+        self.shooting_done = False
 
         rospy.loginfo(f"Drive and score 2024 - called with goal {goal}")
         r = rospy.Rate(60.0)
@@ -97,7 +102,8 @@ class DriveAndScore:
                 self.clawster_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 success = False
                 break
-            
+            rospy.loginfo_throttle(0.1, f"2024_align_and_SCORE: waiting on {'aligning' if not self.align_done else ''} {'arm' if not self.arm_done and goal.destination == goal.AMP else ''} {'shooting' if not self.shooting_done  and goal.destination == goal.TRAP else ''}")
+
             # should be good to outake
             if goal.destination == goal.AMP and self.align_done and self.arm_done:
                 rospy.loginfo("Drive and score 2024 - align and arm done")
@@ -116,8 +122,8 @@ class DriveAndScore:
                 # need to shoot 
                 shooting = True
                 shooting_goal = behavior_actions.msg.Shooting2024Goal()
-                shooting_goal.destination = shooting_goal.TRAP
-                self.shooting_client.send_goal(shooting_goal)
+                shooting_goal.mode = shooting_goal.TRAP
+                self.shooting_client.send_goal(shooting_goal, done_cb=self.shooting_done_cb)
             
             if goal.destination == goal.TRAP and self.shooting_done:
                 # have sent note so we are done
