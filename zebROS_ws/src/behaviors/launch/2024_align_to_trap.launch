@@ -27,10 +27,11 @@
         <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag7" args="-0.013 5.548 1.451 0 0 0 1 map blue_subwoofer_7" />
         <node pkg="tf2_ros" type="static_transform_publisher" name="link_tag4" args="16.579 5.548 1.451 0 0 1 0 map red_subwoofer_4" />
 
+        <!-- lower kP -> slower movement -> relocalization possible -> more accurate -->
 
         <node name="x_position_pid" pkg="pid" type="controller" >
             <param name="node_name" value="x_position_pid" />
-            <param name="Kp" value="2.0" />
+            <param name="Kp" value="1.0" />
             <param name="Ki" value="0.0" />
             <param name="Kd" value="0.0" />
             <param name="upper_limit" value="2.0" />
@@ -47,7 +48,7 @@
 
         <node name="y_position_pid" pkg="pid" type="controller" >
             <param name="node_name" value="y_position_pid" />
-            <param name="Kp" value="2.0" />
+            <param name="Kp" value="1.0" />
             <param name="Ki" value="0.0" />
             <param name="Kd" value="0.0" />
             <param name="upper_limit" value="2.0" />
