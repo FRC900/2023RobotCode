@@ -152,6 +152,18 @@ class ShootingServer(object):
         self.trap_bottom_left_speed = config["trap_bottom_left_speed"]
         self.trap_bottom_right_speed = config["trap_bottom_right_speed"]
         self.trap_pivot_position = config["trap_pivot_position"]
+
+        self.lob_top_left_speed = config["lob_top_left_speed"]
+        self.lob_top_right_speed = config["lob_top_right_speed"]
+        self.lob_bottom_left_speed = config["lob_bottom_left_speed"]
+        self.lob_bottom_right_speed = config["lob_bottom_right_speed"]
+        self.lob_pivot_position = config["lob_pivot_position"]
+
+        self.shot_top_left_speed = config["shot_top_left_speed"]
+        self.shot_top_right_speed = config["shot_top_right_speed"]
+        self.shot_bottom_left_speed = config["shot_bottom_left_speed"]
+        self.shot_bottom_right_speed = config["shot_bottom_right_speed"]
+        self.shot_pivot_position = config["shot_pivot_position"]
         return config
 
     def execute_cb(self, goal: Shooting2024Goal):
