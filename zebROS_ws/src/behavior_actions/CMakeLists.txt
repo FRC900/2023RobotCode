@@ -120,6 +120,7 @@ add_action_files(
 		ShooterPivot2024.action
 		Shooting2024.action
 		AlignToTrap2024.action
+		DriveAndScore2024.action
 )
 
 generate_messages(DEPENDENCIES actionlib_msgs nav_msgs std_msgs geometry_msgs)
