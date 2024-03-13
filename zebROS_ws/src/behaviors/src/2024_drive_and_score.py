@@ -30,19 +30,14 @@ class DriveAndScore:
     def __init__(self, name):   
         self.valid_samples = 0
         self._action_name = name
-        self.tolerance = rospy.get_param("tolerance")
-        self.velocity_tolerance = rospy.get_param("velocity_tolerance")
-        self.min_samples = rospy.get_param("min_samples")
-        self.color = 0
-
         # get us to right spot
         self.align_client = actionlib.SimpleActionClient('/align_to_trap/align_to_trap_2024', behavior_actions.msg.AlignToTrap2024Action)
         rospy.loginfo("2024_intaking_server: waiting for shooter pivot server")
         self.align_client.wait_for_server()
         # shoot trap
-        self.shooting_client = actionlib.SimpleActionClient('shooting/shooting_server_2024', behavior_actions.msg.Shooting2024Action)
+        self.shooting_client = actionlib.SimpleActionClient('/shooting/shooting_server_2024', behavior_actions.msg.Shooting2024Action)
+        rospy.loginfo("2024_intaking_server: waiting for shooting server")
         self.shooting_client.wait_for_server()
-        
         
         self.arm_client = actionlib.SimpleActionClient('/arm/move_arm_server_2024', Arm2024Action)
         rospy.loginfo("2024_intaking_server: waiting for arm server")

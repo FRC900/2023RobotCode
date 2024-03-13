@@ -99,7 +99,7 @@ class Intaking2024Server(object):
             self.pivot_position = data.position[self.pivot_index]
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
-        rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
+        #rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")
         if (self.intaking_talon_idx == None):
             for i in range(len(states.name)):
                 #rospy.loginfo(data.name[i])
@@ -166,21 +166,22 @@ class Intaking2024Server(object):
                     self.arm_client.cancel_goals_at_and_before_time(rospy.Time.now())
                     self.server.set_preempted()
                     return
-                
                 r.sleep()
                 rospy.loginfo_throttle(0.5, "2024_intaking_server: waiting for arm")
+            rospy.logwarn("2024_intaking_server: ARM DONE")
 
         if self.pivot_position > self.safe_shooter_angle:
             pivot_goal = ShooterPivot2024Goal()
             pivot_goal.pivot_position = self.safe_shooter_angle - 0.2
             self.shooter_pivot_client.send_goal(pivot_goal)
-            while self.pivot_position > self.safe_shooter_angle:
+            while self.pivot_position > self.safe_shooter_angle and not rospy.is_shutdown():
                 if self.server.is_preempt_requested():
                     rospy.loginfo("2024_intaking_server: preempted")
                     self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
                     self.server.set_preempted()
                     return
                 r.sleep()
+                rospy.loginfo_throttle(0.5, "2024_intaking_server: waiting for shooter pivot")
         
             self.shooter_pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
