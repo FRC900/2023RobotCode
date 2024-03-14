@@ -1,6 +1,6 @@
-x_tolerance: 0.05
-y_tolerance: 0.05
-angle_tolerance: 0.05
+x_tolerance: 0.03
+y_tolerance: 0.03
+angle_tolerance: 0.03
 
 x_offset: 0.65
 y_offset: 0.0
