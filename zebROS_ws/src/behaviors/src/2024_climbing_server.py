@@ -5,6 +5,8 @@ import actionlib
 from behavior_actions.msg import Climb2024Action, Climb2024Goal, Climb2024Result, Climb2024Feedback
 from talon_state_msgs.msg import TalonFXProState
 from controllers_2024_msgs.srv import Climb, ClimbRequest
+from behavior_actions.msg import ShooterPivot2024Action, ShooterPivot2024Goal, ShooterPivot2024Result, ShooterPivot2024Feedback
+import time
 
 class ClimbAction():
     feedback = Climb2024Feedback()
@@ -15,8 +17,12 @@ class ClimbAction():
         # using service here so that our calls are guaranteed to arrive
         self.climb_client = rospy.ServiceProxy("/frcrobot_jetson/climb_controller/command", Climb)
         self.climb_client.wait_for_service()
-        self.talon_state_sub = rospy.Subscriber("/frcrobot_jetson/talonfxpro_states", TalonFXProState, callback=self.talon_state_cb)
         self.server = actionlib.SimpleActionServer(self.action_name, Climb2024Action, execute_cb=self.execute_cb, auto_start=False)
+
+        self.pivot_client = actionlib.SimpleActionClient('/shooter/set_shooter_pivot', ShooterPivot2024Action)
+        rospy.loginfo("2024_climbing_server: waiting for pivot")
+        self.pivot_client.wait_for_server()
+        rospy.loginfo("2024_climbing_server: done waiting")
 
         self.extend_speed = rospy.get_param("extend_speed")
         self.extend_acceleration = rospy.get_param("extend_acceleration")
@@ -31,6 +37,9 @@ class ClimbAction():
         self.trap_height = rospy.get_param("trap_height")
         self.fast_height = rospy.get_param("fast_height")
 
+        self.pivot_angle = rospy.get_param("pivot_angle")
+        self.min_pivot_angle = rospy.get_param("min_pivot_angle")
+
         self.joint_name = rospy.get_param("joint_name")
         self.joint_index = None
         self.joint_position = 0.0
@@ -44,7 +53,12 @@ class ClimbAction():
 
         self.tolerance = rospy.get_param("tolerance") # positional tolerance for exit
 
+        self.pivot_position = 0.0
+        self.pivot_index = None
+
         self.success = True
+
+        self.talon_state_sub = rospy.Subscriber("/frcrobot_jetson/talonfxpro_states", TalonFXProState, callback=self.talon_state_cb)
 
         self.server.start()
 
@@ -59,6 +73,16 @@ class ClimbAction():
             exit(-1)
         self.joint_position = msg.position[self.joint_index]
         self.joint_control_position = msg.control_position[self.joint_index]
+
+        if self.pivot_index is None:
+            for i in range(len(msg.name)):
+                if msg.name[i] == "shooter_pivot_motionmagic_joint":
+                    self.pivot_index = i
+        if self.pivot_index is None:
+            # if it's still None, we haven't found the joint (which we need to monitor position). exit!
+            rospy.logerr(f"2024_climbing_server: joint shooter_pivot_motionmagic_joint not found. Exiting.")
+            exit(-1)
+        self.pivot_position = msg.position[self.pivot_index]
 
     def cleanup(self, goal: Climb2024Goal):
         rospy.loginfo("2024_climbing_server: cleaning up, setting to zero velocity and resetting state")
@@ -76,6 +100,10 @@ class ClimbAction():
 
         self.climb_client.call(req)
 
+        pivot_goal = ShooterPivot2024Goal()
+        pivot_goal.pivot_position = self.pivot_angle
+        self.pivot_client.send_goal(pivot_goal)
+
         while not rospy.is_shutdown():
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024_climbing_server: preempted")
@@ -84,11 +112,16 @@ class ClimbAction():
                 self.success = False
                 break
                 
-            if abs(req.position - self.joint_position) < self.tolerance:
+            if abs(req.position - self.joint_position) < self.tolerance and self.pivot_position > self.min_pivot_angle:
                 rospy.loginfo("2024_climbing_server: got to position, continuing")
                 break
             
             self.rate.sleep()
+
+        time.sleep(0.5)
+
+        rospy.loginfo("2024_climbing_server: canceling pivot goal")
+        self.pivot_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
     def lowering_arms(self, goal: Climb2024Goal):
         req = ClimbRequest()
