@@ -421,45 +421,51 @@ arm_cancoder_controller:
     magnet_offset: 0
     enble_read_thread: False
 
+# climb_controller:
+    # type: climb_controller/ClimbController
+    # joint: ['climb_leader']
+
+    # zeroing_percent_output: -0.2 # TODO : tune me
+    # # If there are no negative velocity readings while zeroing
+    # # for this amount of time, assume the dynamic arm is stuck
+    # # or has hit bottom and the limit switch is broken.  Stop
+    # # trying to drive down to prevent killing the motor
+    # zeroing_timeout: 60.0
+
+    # # TODO fix these
+    # max_current_iterations: 10
+    # current_threshold: 100.0
+
 climb_controller:
-    type: climb_controller/ClimbController
-    joint: ['climb_leader']
+    type: talonfxpro_controllers/TalonFXProMotionMagicVoltageController
+    joint: climb_leader
+    close_loop_values:
+        - {kP: 1.0, kI: 0.0, kD: 0.0, kV: 3.9}
 
-    zeroing_percent_output: -0.2 # TODO : tune me
-    # If there are no negative velocity readings while zeroing
-    # for this amount of time, assume the dynamic arm is stuck
-    # or has hit bottom and the limit switch is broken.  Stop
-    # trying to drive down to prevent killing the motor
-    zeroing_timeout: 60.0
+    invert: counterclockwise_positive
 
-    # TODO fix these
-    max_current_iterations: 10
-    current_threshold: 100.0
+    feedback_sensor_source: RotorSensor
 
-    climb_leader:
-        type: talonfxpro_controllers/TalonFXProControllerInterface
-        joint: climb_leader
-        close_loop_values:
-            - {p: 0.00, i: 0, d: 0.0, f: 3.9, i_zone: 0}
+    forward_limit_enable: false
 
-        invert: counterclockwise_positive
+    reverse_limit_switch_source: LimitSwitchPin
+    reverse_limit_switch_type: NormallyOpen
+    reverse_limit_enable: true
 
-        feedback_sensor_source: RotorSensor
+    # Remember these are in centemeters per ...
 
-        forward_limit_enable: false
+    # 20 cm = climbed
+    # 55 cm = all the way up, ready to climb
+    # NEED ZERO STUFF, this is hacky
+    motion_magic_cruise_velocity: 20.0
+    motion_magic_acceleration: 40.0
+    motion_magic_jerk: 9999.0
 
-        reverse_limit_switch_source: LimitSwitchPin
-        reverse_limit_switch_type: NormallyOpen
-        reverse_limit_enable: true
-
-        # Remember these are in centemeters per ...
-        motion_magic_cruise_velocity: 2500.0
-        motion_magic_acceleration: 5000.0
-        motion_magic_jerk: 9999.0
+    # maximum: 55cm
 
 
-        sensor_to_mechanism_ratio: 32.37 # TODO get actual sensor to mechanism ratio
-        rotor_to_sensor_ratio: 1.0
-        neutral_mode: Brake
+    sensor_to_mechanism_ratio: 32.37
+    rotor_to_sensor_ratio: 1.0
+    neutral_mode: Brake
 
-        dynamic_reconfigure: True
+    dynamic_reconfigure: True

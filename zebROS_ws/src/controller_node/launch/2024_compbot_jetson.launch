@@ -60,7 +60,6 @@
 			 arm_cancoder_controller
 			 note_diverter_controller
 			 climb_controller
-			 arm_cancoder_controller
 			 pigeon2_imu_state_controller
 			 cancoder_state_controller
 			 robot_code_ready_controller" />
