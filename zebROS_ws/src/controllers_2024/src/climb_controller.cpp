@@ -138,9 +138,8 @@ bool ClimbController::init(hardware_interface::RobotHW *hw,
 
 void ClimbController::starting(const ros::Time &time)
 {
-    zeroed_ = true; // TODO CHANGE TO FALSE ONCE WE HAVE A LIMIT SWITCH
-    last_zeroed_  = true; // TODO CHANGE TO FALSE ONCE WE HAVE A LIMIT SWITCH
-    ROS_ERROR_STREAM("******************************* CLIMB CONTROLLER ZEROING DISABLED *******************************");
+    zeroed_ = false;
+    last_zeroed_  = false;
     last_time_down_ = ros::Time::now();
     command_buffer_.writeFromNonRT(ClimbCommand());
     current_iterations_ = 0;

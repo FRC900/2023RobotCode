@@ -17,11 +17,11 @@ subwoofer_pivot_position: 0.97 # rad
 
 # amp
 # (starting out with 575 rpm, 76 degrees which worked in the lab)
-amp_top_left_speed: 90.0 # rad/s
-amp_top_right_speed: 90.0 # rad/s
-amp_bottom_left_speed: 150.0 # rad/s
-amp_bottom_right_speed: 150.0 # rad/s
-amp_pivot_position: 0.98 # rad
+amp_top_left_speed: 60.0 # rad/s
+amp_top_right_speed: 60.0 # rad/s
+amp_bottom_left_speed: 100.0 # rad/s
+amp_bottom_right_speed: 100.0 # rad/s
+amp_pivot_position: 1.0 # rad
 
 # trap 
 trap_top_left_speed: 325.0 # rad/s
