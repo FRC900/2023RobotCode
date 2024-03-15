@@ -25,6 +25,8 @@
 
 #include "behavior_actions/AlignAndShoot2024Action.h"
 #include "behavior_actions/AlignToTrap2024Action.h"
+#include "behavior_actions/DriveAndScore2024Action.h"
+
 
 #include "behavior_actions/Climb2024Action.h"
 

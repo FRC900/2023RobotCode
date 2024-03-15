@@ -5,6 +5,7 @@ angle_tolerance: 0.03
 x_offset: 0.65
 y_offset: 0.0
 
+# CHECK THESE OFFSETS
 x_offset_amp: 0.0
 y_offset_amp: 0.0
 
