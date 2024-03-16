@@ -580,6 +580,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		align_to_trap_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		climb_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		driver->setJoystickOverride(false);
 	}
 	if (button_box->redRelease)
 	{
