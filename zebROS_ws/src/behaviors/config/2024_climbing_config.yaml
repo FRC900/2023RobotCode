@@ -5,8 +5,8 @@ trap_retract_speed: 20.0
 fast_retract_acceleration: 40.0
 trap_retract_acceleration: 40.0
 extend_height: 55.0
-trap_height: 20.0
-fast_height: 20.0
+trap_height: 15.0
+fast_height: 15.0
 joint_name: climb_leader
 loop_rate: 50.0
 tolerance: 10.0
