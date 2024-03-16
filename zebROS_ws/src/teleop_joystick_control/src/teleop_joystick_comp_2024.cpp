@@ -95,7 +95,6 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			if(joystick_state->buttonARelease)
 			{
 				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
-
 			}
 
 			//Joystick1: buttonB

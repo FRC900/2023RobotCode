@@ -7,7 +7,7 @@ amp_y_tolerance: 0.05
 amp_angle_tolerance: 0.05
 
 
-x_offset: 0.65
+x_offset: 0.85
 y_offset: 0.0
 
 # CHECK THESE OFFSETS
