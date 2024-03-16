@@ -19,6 +19,8 @@ import angles
 import numpy
 import geometry_msgs.msg
 
+# While the snap to angle button is held, spin up the shooter for amp and override driver
+# Once amp shot button is pressed, call shooting server with goal=AMP. make shooting server drive backwards for amp.
 
 # Used for anytime we need to drive to a position and then score, (amp/trap) as opposed to shooting where we just need to align (2024_align_to_speaker_server.py and other)
 

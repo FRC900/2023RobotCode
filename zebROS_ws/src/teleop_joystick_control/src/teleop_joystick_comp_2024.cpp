@@ -646,12 +646,23 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 
 	if (button_box->subwooferShootButton)
 	{
+		driver->setJoystickOverride(true);
+		driver->setTargetOrientation(angles::from_degrees(270), true);
 	}
 	if (button_box->subwooferShootPress)
 	{
+		// actually align to amp
+		behavior_actions::Shooting2024Goal goal;
+		goal.mode = goal.AMP;
+		goal.leave_spinning = true;
+		goal.setup_only = true;
+		shooting_ac->sendGoal(goal);
+
+		driver->setTargetOrientation(angles::from_degrees(270), true);
 	}
 	if (button_box->subwooferShootRelease)
 	{
+		driver->setJoystickOverride(false);
 	}
 
 	if (button_box->speedSwitchUpButton)
