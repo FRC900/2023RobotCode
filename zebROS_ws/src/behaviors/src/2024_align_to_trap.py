@@ -36,9 +36,13 @@ class Aligner:
 
     def __init__(self, name):   
         self._action_name = name
-        self.x_tolerance = rospy.get_param("x_tolerance")
-        self.y_tolerance = rospy.get_param("y_tolerance")
-        self.angle_tolerance = rospy.get_param("angle_tolerance")
+        self.trap_x_tolerance = rospy.get_param("x_tolerance")
+        self.trap_y_tolerance = rospy.get_param("y_tolerance")
+        self.trap_angle_tolerance = rospy.get_param("angle_tolerance")
+
+        self.amp_x_tolerance = rospy.get_param("amp_x_tolerance")
+        self.amp_y_tolerance = rospy.get_param("amp_y_tolerance")
+        self.amp_angle_tolerance = rospy.get_param("amp_angle_tolerance")
 
         self.x_offset = rospy.get_param("x_offset")
         self.y_offset = rospy.get_param("y_offset")
@@ -131,6 +135,9 @@ class Aligner:
             self.y_cmd_pub = self.amp_y_cmd_pub 
             self.y_enable_pub = self.amp_y_enable_pub 
             self.y_command = self.amp_y_command 
+            self.x_tolerance = self.amp_x_tolerance
+            self.y_tolerance = self.amp_y_tolerance
+            self.angle_tolerance = self.amp_angle_tolerance
 
         elif goal.destination == goal.SUBWOOFER:
             rospy.loginfo("2024_align_to_trap: Aligning to subwoofer")
@@ -146,6 +153,9 @@ class Aligner:
             self.y_cmd_pub = self.amp_y_cmd_pub 
             self.y_enable_pub = self.amp_y_enable_pub 
             self.y_command = self.amp_y_command 
+            self.x_tolerance = self.amp_x_tolerance
+            self.y_tolerance = self.amp_y_tolerance
+            self.angle_tolerance = self.amp_angle_tolerance
 
         else:
             rospy.loginfo("2024_align_to_trap: Aligning to trap")
@@ -166,6 +176,9 @@ class Aligner:
             self.y_cmd_pub = self.trap_y_cmd_pub 
             self.y_enable_pub = self.trap_y_enable_pub 
             self.y_command = self.trap_y_command 
+            self.x_tolerance = self.trap_x_tolerance
+            self.y_tolerance = self.trap_y_tolerance
+            self.angle_tolerance = self.trap_angle_tolerance
 
 
         trans = self.tfBuffer.lookup_transform(closest_frame, "map", rospy.Time())

@@ -619,6 +619,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	if (button_box->trapPress)
 	{
 		// align to trap
+		// MAKE ENTIRE ALIGN AND TRAP
 		behavior_actions::AlignToTrap2024Goal goal;
 		goal.destination = goal.TRAP;
 		align_to_trap_ac->sendGoal(goal);
@@ -648,14 +649,9 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->subwooferShootPress)
 	{
-		// this is now trap shoot
-		behavior_actions::Shooting2024Goal goal;
-		goal.mode = goal.TRAP;
-		shooting_ac->sendGoal(goal);
 	}
 	if (button_box->subwooferShootRelease)
 	{
-		shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 
 	if (button_box->speedSwitchUpButton)

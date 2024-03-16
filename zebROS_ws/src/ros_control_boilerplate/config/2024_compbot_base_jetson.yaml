@@ -445,8 +445,8 @@ climb_controller:
     type: climb_controller/ClimbController
     joint: ['climb_leader']
 
-    zeroing_percent_output: -0.1 # TODO SET TO AN ACTUAL VALUE ONCE WE HAVE A LIMIT SWITCH
-    zeroing_timeout: 5.0
+    zeroing_percent_output: -0.2 # TODO SET TO AN ACTUAL VALUE ONCE WE HAVE A LIMIT SWITCH
+    zeroing_timeout: 10.0
 
     # TODO fix these
     max_current_iterations: 10

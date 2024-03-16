@@ -17,6 +17,8 @@ from frc_msgs.msg import MatchSpecificData
 import std_srvs.srv
 import angles
 import numpy
+import geometry_msgs.msg
+
 
 # Used for anytime we need to drive to a position and then score, (amp/trap) as opposed to shooting where we just need to align (2024_align_to_speaker_server.py and other)
 
@@ -36,8 +38,9 @@ class DriveAndScore:
         self.shooting_client = actionlib.SimpleActionClient('/shooting/shooting_server_2024', behavior_actions.msg.Shooting2024Action)
         rospy.loginfo("2024_intaking_server: waiting for shooting server")
         self.shooting_client.wait_for_server()
-
+        self.pub_cmd_vel = rospy.Publisher("/align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)        
         self.align_done = False
+        
         self.shooting_done = False 
         self._as = actionlib.SimpleActionServer(self._action_name, DriveAndScore2024Action, execute_cb=self.score_cb, auto_start = False)
         self._as.start()
@@ -46,12 +49,15 @@ class DriveAndScore:
         rospy.loginfo("2024 drive and score, align server done")
         self.align_done = True
     
+    def shooting_done_cb(self, status, result):
+        self.shooting_done = True
+    
     def score_cb(self, goal: DriveAndScore2024Goal):
         self.feed_forward = True
         success = True
         self.align_done = False
         self.shooting_done = False
-
+        have_shot = False 
         rospy.loginfo(f"Drive and score 2024 - called with goal {goal}")
         r = rospy.Rate(60.0)
         align_goal = behavior_actions.msg.AlignToTrap2024Goal()
@@ -90,15 +96,45 @@ class DriveAndScore:
             rospy.loginfo_throttle(0.1, f"2024_align_and_SCORE: waiting on {'aligning' if not self.align_done else ''} {'shooting' if not self.shooting_done  and goal.destination == goal.TRAP else ''}")
 
             # should be good to outake
-            if goal.destination == goal.AMP and self.align_done:
+            if goal.destination == goal.AMP and self.align_done and not have_shot:
                 rospy.loginfo("Drive and score 2024 - align and amp done")
+                cmd_vel_msg = geometry_msgs.msg.Twist()
+                start = rospy.Time.now()
+
+                while (rospy.Time.now() - start < rospy.Duration(0.5)):
+                    cmd_vel_msg.angular.x = 0
+                    cmd_vel_msg.angular.y = 0
+                    cmd_vel_msg.angular.z = 0
+                    cmd_vel_msg.linear.x = -1.0
+                    cmd_vel_msg.linear.y = 0
+                    cmd_vel_msg.linear.z = 0
+                    self.pub_cmd_vel.publish(cmd_vel_msg)
+                    r.sleep()
                 shooting_goal = behavior_actions.msg.Shooting2024Goal()
                 shooting_goal.mode = shooting_goal.AMP
-                self.shooting_client.send_goal(shooting_goal)
-                # we have fired the note at this point so we are done
+                shooting_goal.leave_spinning = False
+                self.shooting_client.send_goal(shooting_goal, done_cb=self.shooting_done_cb)
+                have_shot = True
+
+            if goal.destination == goal.AMP and self.align_done and self.shooting_done:
+                rospy.loginfo("DRIVE AND SCORE, shooting and align done")
+                # drive back
+                cmd_vel_msg = geometry_msgs.msg.Twist()
+                start = rospy.Time.now()
+
+                while (rospy.Time.now() - start < rospy.Duration(0.25)):
+                    cmd_vel_msg.angular.x = 0
+                    cmd_vel_msg.angular.y = 0
+                    cmd_vel_msg.angular.z = 0
+                    cmd_vel_msg.linear.x = 2.0
+                    cmd_vel_msg.linear.y = 0
+                    cmd_vel_msg.linear.z = 0
+                    self.pub_cmd_vel.publish(cmd_vel_msg)
+                    r.sleep()
+
                 self._result.success = True
                 self._as.set_succeeded(self._result)
-                return
+                return 
 
             if goal.destination == goal.TRAP and self.align_done:
                 rospy.loginfo("2024 drive and score - trap aligned, shooting")
