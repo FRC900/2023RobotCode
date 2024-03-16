@@ -608,9 +608,13 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->backupButton2Press)
 	{
+		behavior_actions::Shooting2024Goal goal;
+		goal.mode = goal.SHOT_PASS;
+		shooting_ac->sendGoal(goal);
 	}
 	if (button_box->backupButton2Release)
 	{
+		shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 
 	if (button_box->trapButton)
