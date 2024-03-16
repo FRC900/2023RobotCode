@@ -59,6 +59,9 @@ std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveObjectIntak
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToSpeaker2024Action>> align_to_speaker_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToTrap2024Action>> align_to_trap_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Climb2024Action>> climb_ac;
+std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>> drive_and_score_ac;
+
+
 bool reset_climb = true;
 
 ros::ServiceClient enable_continuous_autoalign_client;
@@ -625,13 +628,17 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	{
 		// align to trap
 		// MAKE ENTIRE ALIGN AND TRAP
-		behavior_actions::AlignToTrap2024Goal goal;
+		// behavior_actions::AlignToTrap2024Goal goal;
+		// goal.destination = goal.TRAP;
+		// align_to_trap_ac->sendGoal(goal);
+		behavior_actions::DriveAndScore2024Goal goal;
 		goal.destination = goal.TRAP;
-		align_to_trap_ac->sendGoal(goal);
+		drive_and_score_ac->sendGoal(goal);
 	}
+	
 	if (button_box->trapRelease)
 	{
-		align_to_trap_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		drive_and_score_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 	}
 
 	if (button_box->climbButton)
@@ -795,6 +802,7 @@ int main(int argc, char **argv)
 	align_to_speaker_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::AlignToSpeaker2024Action>>("/align_to_speaker/align_to_speaker_2024", true);
 	align_to_trap_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::AlignToTrap2024Action>>("/align_to_trap/align_to_trap_2024", true);
 	climb_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Climb2024Action>>("/climbing/climbing_server_2024", true);
+	drive_and_score_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>>("/drive_and_score/drive_and_score_2024", true);
 
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 
