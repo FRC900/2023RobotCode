@@ -87,7 +87,7 @@ public:
 
 	bool isJoystickOverridden() const;
 
-	void setJoystickOverride(bool override);
+	void setJoystickOverride(bool should_override);
 	
 
 private:

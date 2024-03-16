@@ -187,6 +187,6 @@ bool RobotOrientationDriver::isJoystickOverridden() const {
 	return joystick_overridden_;
 }
 
-void RobotOrientationDriver::setJoystickOverride(bool override) {
-	joystick_overridden_ = override;
+void RobotOrientationDriver::setJoystickOverride(bool should_override) {
+	joystick_overridden_ = should_override;
 }
