@@ -35,6 +35,7 @@
 #include <behavior_actions/AlignToSpeaker2024Action.h>
 #include <behavior_actions/Intaking2024Action.h>
 #include <behavior_actions/Shooting2024Action.h>
+#include <behavior_actions/DriveToObjectAction.h>
 
 #include <behavior_actions/AutoAlignSpeaker.h>
 
@@ -142,6 +143,7 @@ class AutoNode {
 		, align_to_speaker_ac_("/align_to_speaker/align_to_speaker_2024", true)
 		, intaking_ac_("/intaking/intaking_server_2024", true)
 		, shooting_ac_("/shooting/shooting_server_2024", true)
+
 
 	// Constructor
 	{
@@ -891,6 +893,8 @@ class AutoNode {
 		}
 		return true;
 	}
+
+	
 
 	bool alignToSpeakerfn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
 		if(!align_to_speaker_ac_.waitForServer(ros::Duration(5))){
