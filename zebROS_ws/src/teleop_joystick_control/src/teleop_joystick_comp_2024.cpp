@@ -269,6 +269,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			{
 				if(!joystick1_right_trigger_pressed)
 				{
+					driver->set_deadzone(config.large_deadzone);
 					behavior_actions::AlignAndShoot2024Goal goal;
 					aligned_shooting_ac->sendGoal(goal);
 				}
@@ -279,6 +280,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			{
 				if(joystick1_right_trigger_pressed)
 				{
+					driver->set_deadzone(0.05);
 					aligned_shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 				}
 
@@ -583,6 +585,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		align_to_trap_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		climb_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		driver->setJoystickOverride(false);
+		driver->set_deadzone(0.05);
 	}
 	if (button_box->redRelease)
 	{

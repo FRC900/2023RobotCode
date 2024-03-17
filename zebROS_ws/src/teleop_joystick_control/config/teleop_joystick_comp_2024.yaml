@@ -10,6 +10,7 @@ teleop_params:
     joystick_pow: 1.5
     rotation_pow: 1.0   #Scaling factors used in teleop_joystick_comp
     joystick_deadzone: 0.05
+    large_deadzone: 0.25
     radial_deadzone: 0.05
     drive_rate_limit_time: 200
     rotate_rate_limit_time: 100
