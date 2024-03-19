@@ -46,7 +46,7 @@ class Rumble2024Server():
         self.intake_limit_switch_name = rospy.get_param("intake_limit_switch_name")
         self.rumble_value = rospy.get_param("rumble_on_note")
 
-        # self.candle_srv = rospy.ServiceProxy('/frcrobot_jetson/candle_controller/animation', Animation)
+        #self.candle_srv = rospy.ServiceProxy('/frcrobot_jetson/candle_controller/animation', Animation)
 
         '''
 rosservice call /frcrobot_jetson/candle_controller/animation "{speed: -0.5, start: 8, count: 18, animation_type: 2, red: 255, green: 0, blue: 0, white: 0,
@@ -90,14 +90,14 @@ rosservice call /frcrobot_jetson/candle_controller/animation "{speed: -0.5, star
 
 
     def match_data_cb(self, data: MatchSpecificData):
-        # if not data.Enabled:
-        #     rospy.loginfo_throttle(5, "TERMINATING")
-        #     candle_req = AnimationRequest()
-        #     candle_req.animation_type = candle_req.ANIMATION_TYPE_LARSON 
-        #     candle_req.red = 255
-        #     candle_req.start = 8
-        #     candle_req.count = 18
-        #     self.candle_srv.call(candle_req)
+        #if not data.Enabled:
+        #    rospy.loginfo_throttle(5, "TERMINATING")
+        #    candle_req = AnimationRequest()
+        #    candle_req.animation_type = candle_req.ANIMATION_TYPE_LARSON 
+        #    candle_req.red = 255
+        #    candle_req.start = 8
+        #    candle_req.count = 18
+        #    self.candle_srv.call(candle_req)
         
         if data.Autonomous and data.Enabled:
             self.should_run_loop = False
