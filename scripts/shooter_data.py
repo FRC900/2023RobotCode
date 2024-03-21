@@ -125,7 +125,9 @@ if start_time is not None:
             if last_limit_state and not limit_state:
                 row = [to_match_time(teleop_start_time, start_time, this_time, last_match["Autonomous"])]
                 row += [f'{last_cmd_vel["linear"]["x"]}', f'{last_cmd_vel["linear"]["y"]}', f"{last_cmd_vel['angular']['z']}"]
-                row += [f'{last_talon_states["control_position"][13]}', f'{last_talon_states["position"][13]}',f'{last_talon_states["velocity"][13]}']
+                for i in range(len(last_talon_states["name"])):
+                    if last_talon_states['name'][i] == "shooter_pivot_motionmagic_joint":
+                        row += [f'{last_talon_states["control_position"][i]}', f'{last_talon_states["position"][i]}',f'{last_talon_states["velocity"][i]}']
                 for motor in ["top_left_shooter_joint", "top_right_shooter_joint", "bottom_left_shooter_joint", "bottom_right_shooter_joint"]:
                     for i in range(len(last_talon_states["name"])):
                         if last_talon_states['name'][i] == motor:
