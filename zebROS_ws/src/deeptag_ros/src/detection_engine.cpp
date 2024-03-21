@@ -175,9 +175,12 @@ nvinfer1::Dims DetectionEngine<NUM_TILES, USE_SCALED_IMAGE>::inputDimsFromInputI
     constexpr int stride = 64;
     auto imageH = static_cast<double>(gpuImg.rows());
     auto imageW = static_cast<double>(gpuImg.cols());
+    // std::cout << "imageH = " << imageH << " imageW = " << imageW << std::endl;
+    // std::cout << "modelInputDims = "<< modelInputDims.d[0] << " " << modelInputDims.d[1] << " " << modelInputDims.d[2] << " " << modelInputDims.d[3] << std::endl;
 
     // Input image needs to be resized to fit in the fixed model input height (d[2])
-    const double detectScale = std::min(static_cast<double>(modelInputDims.d[2]), std::min(imageH, imageW)) / std::min(imageH, imageW);
+    const double detectScale = std::max(static_cast<double>(modelInputDims.d[2]), std::min(static_cast<double>(modelInputDims.d[2]), std::min(imageH, imageW))) / std::min(imageH, imageW);
+    // std::cout << "detectScale = " << detectScale << std::endl;
 
     // Resize so the image is the correct size
     imageH *= detectScale;
