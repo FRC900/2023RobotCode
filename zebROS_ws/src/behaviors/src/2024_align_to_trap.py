@@ -84,8 +84,16 @@ class Aligner:
 
         self.team_subscribe = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.match_data_callback)
 
+    def match_data_callback(self, data_msg):
+        self.color = data_msg.allianceColor
+
+    def imu_callback(self, imu_msg):
+        q = imu_msg.orientation
+        euler = euler_from_quaternion([q.x, q.y, q.z, q.w]) 
+        self.current_yaw = euler[2]
+
     def tracked_objects_callback(self, msg: norfair_ros.msg.Detections):
-        self.visible_objects = [detection.id for detection in msg.detections]
+        self.visible_objects = [detection.label for detection in msg.detections]
 
     def aligner_callback(self, goal: behavior_actions.msg.AlignToTrap2024Goal):
         success = True
@@ -94,18 +102,29 @@ class Aligner:
 
         closest_tag = None
         closest_distance = float("inf")
-        yaw = 0
+        yaws = []
         if goal.destination == goal.AMP:
             rospy.loginfo("2024_align_to_trap: Aligning to amp")
             amp_tags = self.RED_AMP if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_AMP
-            while True:
+            while not rospy.is_shutdown():
+                # check that preempt has not been requested by the client
+                if self._as.is_preempt_requested():
+                    rospy.logerr('%s: Preempted' % self._action_name)
+                    self._as.set_preempted()
+                    self.drive_to_object_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                    success = False
+                    self._result.success = False
+                    return   
                 rate.sleep()
                 rospy.loginfo_throttle(0.5, "align_to_trap: waiting for amp tag to become visible")
-                visible_amp_tags = filter(lambda tag: tag in self.visible_objects, amp_tags)
+                visible_amp_tags = list(filter(lambda tag: f"tag_{tag}" in self.visible_objects, amp_tags))
+                rospy.loginfo(f"visible_amp_tags {visible_amp_tags}")
+                rospy.loginfo(f"self.visible_amp_tags {self.visible_objects}")
+                rospy.loginfo(f"amp_tags {amp_tags}")
                 if len(visible_amp_tags) > 0:
                     closest_tag = visible_amp_tags[0]
                     break
-            yaw = self.AMP_YAW
+            yaws = self.AMP_YAW
             self.x_tolerance = self.amp_x_tolerance
             self.y_tolerance = self.amp_y_tolerance
             self.angle_tolerance = self.amp_angle_tolerance
@@ -117,14 +136,22 @@ class Aligner:
         elif goal.destination == goal.SUBWOOFER:
             rospy.loginfo("2024_align_to_trap: Aligning to subwoofer")
             subwoofer_tags = self.RED_SUBWOOFER if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_SUBWOOFER
-            while True:
+            while not rospy.is_shutdown():
+                # check that preempt has not been requested by the client
+                if self._as.is_preempt_requested():
+                    rospy.logerr('%s: Preempted' % self._action_name)
+                    self._as.set_preempted()
+                    self.drive_to_object_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                    success = False
+                    self._result.success = False
+                    return                    
                 rate.sleep()
                 rospy.loginfo_throttle(0.5, "align_to_trap: waiting for subwoofer tag to become visible")
-                visible_subwoofer_tags = filter(lambda tag: tag in self.visible_objects, subwoofer_tags)
+                visible_subwoofer_tags = list(filter(lambda tag: f"tag_{tag}" in self.visible_objects, subwoofer_tags))
                 if len(visible_subwoofer_tags) > 0:
                     closest_tag = visible_subwoofer_tags[0]
                     break
-            yaw = self.RED_SUBWOOFER_YAW if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_SUBWOOFER_YAW
+            yaws = self.RED_SUBWOOFER_YAW if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_SUBWOOFER_YAW
             self.x_tolerance = self.amp_x_tolerance
             self.y_tolerance = self.amp_y_tolerance
             self.angle_tolerance = self.amp_angle_tolerance
@@ -133,18 +160,25 @@ class Aligner:
             self.fast_zone = self.amp_fast_zone
             self.frame = self.subwoofer_frame
 
-
         else:
             rospy.loginfo("2024_align_to_trap: Aligning to trap")
             trap_tags = self.RED_TAGS if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_TAGS
-            while True:
+            while not rospy.is_shutdown():
+                # check that preempt has not been requested by the client
+                if self._as.is_preempt_requested():
+                    rospy.logerr('%s: Preempted' % self._action_name)
+                    self._as.set_preempted()
+                    self.drive_to_object_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                    success = False
+                    self._result.success = False
+                    return                 
                 rate.sleep()
                 rospy.loginfo_throttle(0.5, "align_to_trap: waiting for trap tag to become visible")
-                visible_trap_tags = filter(lambda tag: tag in self.visible_objects, trap_tags)
+                visible_trap_tags = list(filter(lambda tag: f"tag_{tag}" in self.visible_objects, trap_tags))
                 if len(visible_trap_tags) > 0:
                     closest_tag = visible_trap_tags[0]
                     break
-            yaw = self.RED_TRAP_YAW if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_TRAP_YAW
+            yaws = self.RED_TRAP_YAW if self.color == MatchSpecificData.ALLIANCE_COLOR_RED else self.BLUE_TRAP_YAW
             self.x_tolerance = self.trap_x_tolerance
             self.y_tolerance = self.trap_y_tolerance
             self.angle_tolerance = self.trap_angle_tolerance
@@ -153,14 +187,17 @@ class Aligner:
             self.fast_zone = self.trap_fast_zone
             self.frame = self.trap_frame
 
+        yaw = min(yaws, key=lambda y: abs(self.current_yaw - y))
+
         drive_to_object_done = False
 
         def done_callback(state, result):
+            nonlocal drive_to_object_done
             rospy.loginfo(f"Drive to object actionlib finished with state {state} and result {result}")
             drive_to_object_done = True
 
         drive_to_object_goal = behavior_actions.msg.DriveToObjectGoal()
-        drive_to_object_goal.id = closest_tag
+        drive_to_object_goal.id = f"tag_{closest_tag}"
         drive_to_object_goal.x_tolerance = self.x_tolerance
         drive_to_object_goal.y_tolerance = self.y_tolerance
         drive_to_object_goal.transform_to_drive = self.frame
