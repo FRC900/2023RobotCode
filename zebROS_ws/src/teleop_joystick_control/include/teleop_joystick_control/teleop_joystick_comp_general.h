@@ -59,7 +59,6 @@ struct DynamicReconfigVars
 	double angle_to_add{0.135};
 	double angle_threshold{angles::from_degrees(1)};
 	double match_time_to_park{20}; // enable auto-parking after the 0.75 second timeout if the match time left < this value
-	double large_deadzone{0.25}; // stopping controller drift
 }; 
 
 class Driver {
@@ -75,7 +74,6 @@ public:
 						teleop_joystick_control::RobotOrient::Response & /* res*/);
 	bool waitForBrakeSrv(ros::Duration startup_wait_time);
 	void setJoystickOverride(bool override);
-	void set_deadzone(double dead);
 
 	TeleopCmdVel<DynamicReconfigVars> teleop_cmd_vel_;
 private:

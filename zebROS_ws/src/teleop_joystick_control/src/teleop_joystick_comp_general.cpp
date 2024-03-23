@@ -47,7 +47,6 @@ std::unique_ptr<Driver> driver;
 
 uint8_t alliance_color{};
 bool called_park_endgame = false;
-bool auto_last = false; 
 
 void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 {
@@ -65,15 +64,6 @@ void matchStateCallback(const frc_msgs::MatchSpecificData &msg)
 			called_park_endgame = true;
 			ROS_INFO("ParkSrv called");
 		}
-	}
-	if (msg.Autonomous) {
-		driver->set_deadzone(config.large_deadzone);
-		auto_last = true;
-	}
-	else if (auto_last) {
-		ROS_INFO_STREAM("RESETTING JOYSTICK OUT OF AUTO");
-		driver->set_deadzone(0.05);
-		auto_last = false;
 	}
 }
 
@@ -210,11 +200,6 @@ ros::Time Driver::evalateDriverCommands(const frc_msgs::JoystickState &joy_state
 	return joy_state.header.stamp;
 }
 
-void Driver::set_deadzone(double dead) {
-	ROS_INFO_STREAM("SETTING DEADZONE to " << dead);
-	config.joystick_deadzone = dead;
-}
-
 void publish_diag_cmds(void)
 {
 	ROS_WARN("Called unimplemented function \"publish_diag_cmds\"");
@@ -261,11 +246,6 @@ void TeleopInitializer::set_n(ros::NodeHandle n) {
 
 void TeleopInitializer::init() {
 	int num_joysticks = 1;
-	
-	if(!n_params_.getParam("large_deadzone", config.large_deadzone))
-	{
-		ROS_ERROR("Could not read large_deadzone in teleop_joystick_comp");
-	}
 	if(!n_params_.getParam("num_joysticks", num_joysticks))
 	{
 		ROS_ERROR("Could not read num_joysticks in teleop_joystick_comp");
@@ -349,7 +329,6 @@ void TeleopInitializer::init() {
 
 	ddynamic_reconfigure::DDynamicReconfigure ddr(n_params_);
 
-	ddr.registerVariable<double>("large_deadzone", &config.large_deadzone, "Joystick deadzone when shooting", 0., 1.);
 	ddr.registerVariable<double>("joystick_deadzone", &config.joystick_deadzone, "Joystick deadzone, in percent", 0., 1.);
 	ddr.registerVariable<double>("radial_deadzone", &config.radial_deadzone, "Radial deadzone, in radians", 0., M_PI/4);
 	ddr.registerVariable<double>("min_speed", &config.min_speed, "Min linear speed to get robot to overcome friction, in m/s", 0, 1);
