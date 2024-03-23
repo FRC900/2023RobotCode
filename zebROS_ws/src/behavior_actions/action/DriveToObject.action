@@ -1,8 +1,12 @@
 # goal
 string id
 #float64 distance_away
-float64 tolerance
+float64 x_tolerance
+float64 y_tolerance
 string transform_to_drive 
+bool use_y
+# only respected when use_y is true
+float64 field_relative_angle     
 ---
 # result
 bool success

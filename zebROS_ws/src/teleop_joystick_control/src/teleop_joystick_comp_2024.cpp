@@ -11,6 +11,8 @@
 
 #include "behavior_actions/Intaking2024Action.h"
 #include "behavior_actions/DriveObjectIntake2024Action.h"
+#include "behavior_actions/DriveToObjectAction.h"
+
 #include "behavior_actions/Shooting2024Action.h"
 #include "behavior_actions/AlignToSpeaker2024Action.h"
 //#define NEED_JOINT_STATES
@@ -60,6 +62,7 @@ std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToSpeaker20
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToTrap2024Action>> align_to_trap_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Climb2024Action>> climb_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>> drive_and_score_ac;
+std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>> drive_to_object_ac;
 
 
 bool reset_climb = true;
@@ -802,6 +805,7 @@ int main(int argc, char **argv)
 	align_to_trap_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::AlignToTrap2024Action>>("/align_to_trap/align_to_trap_2024", true);
 	climb_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Climb2024Action>>("/climbing/climbing_server_2024", true);
 	drive_and_score_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>>("/drive_and_score/drive_and_score_2024", true);
+	// drive_to_object_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveToObjectAction>>("/drive_and_score/drive_and_score_2024", true);
 
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 

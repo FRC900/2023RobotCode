@@ -7,6 +7,8 @@ converter_subscribers:
     topic: "/apriltag_zedx_back/tag_detection_world"
   tag_to_world_front:
     topic: "/apriltag_zedx_front/tag_detection_world"
+  sim_screen_to_world:  
+    topic: "/tf_object_detection/object_detection_world"
 
 converter_publishers:
   output:
