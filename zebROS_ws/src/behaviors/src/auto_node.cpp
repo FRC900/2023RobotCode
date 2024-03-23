@@ -37,6 +37,11 @@
 #include <behavior_actions/Shooting2024Action.h>
 
 #include <behavior_actions/AutoAlignSpeaker.h>
+#include <behavior_actions/DriveObjectIntake2024Action.h>
+
+// include tf listener/tf buffer
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 
 enum AutoStates {
@@ -108,6 +113,10 @@ class AutoNode {
 		std::unordered_map<std::string, bool(AutoNode::*)(XmlRpc::XmlRpcValue, const std::string&)> functionMap_;
 		ros::ServiceServer path_finder_;
 
+		// transform listener and buffer
+		tf2_ros::Buffer tf_buffer_;
+		tf2_ros::TransformListener tf_listener_;
+
 		// ---------------- END probably not changing year to year ---------------- 
 
 		// START probably changing year to year, mostly year specific actions but also custom stuff based on what is needed
@@ -117,6 +126,7 @@ class AutoNode {
 
 		actionlib::SimpleActionClient<behavior_actions::Intaking2024Action> intaking_ac_;
 		actionlib::SimpleActionClient<behavior_actions::Shooting2024Action> shooting_ac_;
+		actionlib::SimpleActionClient<behavior_actions::DriveObjectIntake2024Action> auto_intake_ac_;
 
 
 		// path follower and feedback
@@ -142,6 +152,8 @@ class AutoNode {
 		, align_to_speaker_ac_("/align_to_speaker/align_to_speaker_2024", true)
 		, intaking_ac_("/intaking/intaking_server_2024", true)
 		, shooting_ac_("/shooting/shooting_server_2024", true)
+		, auto_intake_ac_("/intaking/drive_object_intake", true)
+		, tf_listener_(tf_buffer_)
 
 	// Constructor
 	{
@@ -210,9 +222,12 @@ class AutoNode {
 		functionMap_["align_to_speaker"] = &AutoNode::alignToSpeakerfn;
 		functionMap_["start_intake"] = &AutoNode::startIntakingfn;
 		functionMap_["stop_intake"] = &AutoNode::stopIntakingfn;
+		functionMap_["auto_intake"] = &AutoNode::autoIntakefn;
 		functionMap_["spin_up_shooter"] = &AutoNode::spinUpShooterfn;
 		functionMap_["spin_down_shooter"] = &AutoNode::spinDownShooterfn;
 		functionMap_["shoot_distance"] = &AutoNode::shootDistancefn;
+		functionMap_["run_closest_path"] = &AutoNode::runClosestPathfn;
+		functionMap_["counter_auto_source"] = &AutoNode::counterAutofn;
 		// cool trick to bring all class variables into scope of lambda
 		preemptAll_ = [this](){ // must include all actions called
 			path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
@@ -775,6 +790,15 @@ class AutoNode {
 		// a few seconds here
 		ros::Duration(2.5).sleep();
 
+		// preload auto mode 90 paths
+		auto_mode_ = 90;
+		if(nh_.getParam("auto_mode_" + std::to_string(auto_mode_), auto_steps_)) {
+			if (!preLoadPath()) {
+				return false;
+			}
+			ROS_INFO_STREAM_THROTTLE(1, "auto_node: mode auto_mode_" + std::to_string(auto_mode_));
+		} 
+
 		//wait for auto period to start
 		while( ros::ok() && !auto_stopped_ )
 		{
@@ -931,6 +955,12 @@ class AutoNode {
 		goal.setup_only = true; // don't actually shoot anything
 		goal.distance = distance;
 		goal.mode = goal.SPEAKER;
+		if (action_data.hasMember("mode")) {
+			if (action_data["mode"] == "slide") {
+				ROS_INFO_STREAM("Auto node - Spinning up shooter for slide");
+				goal.mode = goal.SLIDE;
+			}
+		}
 		shooting_ac_.sendGoal(goal); // this goal will succeed almost right away, don't cancel
 		return true; 
 	}
@@ -962,6 +992,12 @@ class AutoNode {
 			ROS_INFO_STREAM("Auto node - shooting from actual distance " << speaker_dist);
 		}
 		goal.mode = goal.SPEAKER;
+		if (action_data.hasMember("mode")) {
+			if (action_data["mode"] == "slide") {
+				ROS_INFO_STREAM("Auto node - shooting slide shot");
+				goal.mode = goal.SLIDE;
+			}
+		}
 		shooting_ac_.sendGoal(goal); 
 		
 		waitForActionlibServer(shooting_ac_, 10, "Shooting!");
@@ -1013,6 +1049,55 @@ class AutoNode {
 
 		intaking_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now()); // cancel goal sent from start intaking, probably never needed but could be helpful in a pinch
 		ROS_WARN_STREAM("Auto node - STOPPING INTAKE in auto");
+		return true;
+	}
+
+	bool counterAutofn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		// auto_mode_12: ["zoom_mid_ALLIANCE_csv", "spin_up_slide_shooter", "auto_intake", "closest_note_path"]
+		// spin up shooter slide async
+		// start zoom to mid
+		// auto intake
+		// closest note path forever 
+		
+		// spin up shooter slide async
+		runStep("spin_up_slide_shooter");
+
+		// zoom to mid
+		std::string path = "zoom_mid_ALLIANCE_csv";
+		const std::string ALLIANCE = "ALLIANCE"; 
+		boost::replace_all(path, ALLIANCE, getAllianceColorString());
+		runStep(path);
+
+		// auto intake
+		runStep("auto_intake");
+
+		// closest note path forever
+		runStep("closest_note_path");
+		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
+
+		runStep("closest_note_path");
+		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
+
+		return true;
+	}
+
+	bool autoIntakefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		if(!auto_intake_ac_.waitForServer(ros::Duration(5))){
+			shutdownNode(ERROR,"Auto node - couldn't find auto intake actionlib server");
+			return false;
+		}
+
+		behavior_actions::DriveObjectIntake2024Goal goal;
+		goal.destination = goal.SHOOTER;
+
+		auto_intake_ac_.sendGoal(goal); // just send and can cancel in another action
+		ROS_INFO_STREAM("Auto node - Starting intake");
+
+		// preempt path follower (cancel action client)
+		path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+
+		waitForActionlibServer(auto_intake_ac_, 10, "autointaking a note");
+
 		return true;
 	}
 
@@ -1099,15 +1184,20 @@ class AutoNode {
 			shutdownNode(ERROR, "Couldn't find path server");
 			return false;
 		}
+		path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now() - ros::Duration(0.1));
 		int iteration_value = 1;
+		bool wait_for_path = true;
 		if (action_data.hasMember("goal"))
 			// could this fail?
 			readIntParam("iterations", action_data["goal"], iteration_value);
 		
+		if (action_data.hasMember("wait_for_path"))
+			readBoolParam("wait_for_path", action_data, wait_for_path);
+
 		std::map<int, std::vector<std::string>> waypoint_actions;
 		if (action_data.hasMember("waypoint_actions")) {
 			XmlRpc::XmlRpcValue wpas = action_data["waypoint_actions"];
-			ROS_INFO_STREAM("Waypoint actions exist! Type is " << wpas.getType());
+			ROS_INFO_STREAM("Waypoint actions exist! Type is " << wpas.getType() << " iterations value " << iteration_value);
 			if (wpas.getType() == wpas.TypeArray) {
 				for (int i = 0; i < wpas.size(); i++) {
 					std::vector<std::string> actions_at_waypoint;
@@ -1137,14 +1227,16 @@ class AutoNode {
 			goal.waypointsIdx = waypointsIdxs_[auto_step];
 
 			int last_waypoint = -1;
+			ROS_INFO_STREAM("Auto node - sending path goal for path " << auto_step);
 			path_ac_.sendGoal(goal, NULL, NULL, [&](const path_follower_msgs::PathFeedbackConstPtr& feedback){
 				int waypoint = feedback->current_waypoint;
 				if (last_waypoint != waypoint) {
-					ROS_INFO_STREAM_THROTTLE(0.1, "**** WAYPOINT " << std::to_string(waypoint) << " ****");
+					ROS_INFO_STREAM_THROTTLE(0.1, "CHANGED**** WAYPOINT " << std::to_string(waypoint) << " ****");
 					if (waypoint_actions.find(waypoint) == waypoint_actions.end()) {
 						// not found
 						ROS_INFO_STREAM("No waypoint action");
 					} else {
+						ROS_INFO_STREAM("FOUND WAYPOINT ACTION len of waypoint_actions[waypoint] " << waypoint_actions[waypoint].size());
 						// found
 						for (std::string action_name : waypoint_actions[waypoint]) {
 							ROS_INFO_STREAM("********** WAYPOINT ACTION " << action_name << " EXISTS!!!");
@@ -1155,11 +1247,85 @@ class AutoNode {
 				}
 				last_waypoint = waypoint;
 			});
+			ROS_INFO_STREAM("Auto node - sent path goal");
 
 			// wait for actionlib server to finish
-			waitForActionlibServer(path_ac_, 100, "running path");
+			if (wait_for_path) {
+				waitForActionlibServer(path_ac_, 100, "running path");
+			}
 			iteration_value--;
 		}
+		return true;
+	}
+
+	bool runClosestPathfn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		// Takes a list of paths in action_data["paths"]
+		// Runs the path with a starting point that is closest to the robot's current position
+
+		if(!path_ac_.waitForServer(ros::Duration(5))){
+			shutdownNode(ERROR, "Couldn't find path server");
+			return false;
+		}
+
+		// Get the list of paths
+		if (!action_data.hasMember("paths")) {
+			ROS_ERROR_STREAM("Auto action " << auto_step << " missing 'paths' field");
+			return false;
+		}
+
+		XmlRpc::XmlRpcValue paths_ = action_data["paths"];
+		if (paths_.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+			ROS_ERROR_STREAM("Auto action " << auto_step << " 'paths' field is not an array");
+			return false;
+		}
+
+		// Replace "ALLIANCE" with "red" or "blue" depending on the alliance color
+		std::vector<std::string> paths;
+		for (int i = 0; i < paths_.size(); i++) {
+			std::string path = static_cast<std::string>(paths_[i]);
+			const std::string ALLIANCE = "ALLIANCE"; 
+			boost::replace_all(path, ALLIANCE, getAllianceColorString());
+			paths.push_back(path);
+		}
+
+		// Get the robot's current position using the tf buffer
+		// This is the transform from the map frame to the base_link frame
+		geometry_msgs::TransformStamped transformStamped;
+		try {
+			transformStamped = tf_buffer_.lookupTransform("map", "base_link", ros::Time(0));
+		} catch (tf2::TransformException &ex) {
+			ROS_ERROR_STREAM("Auto node - " << ex.what());
+			return false;
+		}
+		geometry_msgs::PoseStamped current_pose;
+		current_pose.pose.position.x = transformStamped.transform.translation.x;
+		current_pose.pose.position.y = transformStamped.transform.translation.y;
+
+		// Find the path that is closest to the robot's current position
+		double closest_distance = std::numeric_limits<double>::max();
+		std::string closest_path;
+		for (int i = 0; i < paths.size(); i++) {
+			std::string path = static_cast<std::string>(paths[i]);
+			if (premade_position_paths_.find(path) == premade_position_paths_.end()) {
+				shutdownNode(ERROR, "Can't find premade path " + path);
+			}
+			nav_msgs::Path path_msg = premade_position_paths_[path];
+			geometry_msgs::PoseStamped first_pose = path_msg.poses[0];
+			double distance = hypot(first_pose.pose.position.x - current_pose.pose.position.x,
+									first_pose.pose.position.y - current_pose.pose.position.y);
+			if (distance < closest_distance) {
+				closest_distance = distance;
+				closest_path = path;
+			}
+		}
+
+		nav_msgs::Path path_msg = premade_position_paths_[closest_path];
+		geometry_msgs::PoseStamped first_pose = path_msg.poses[0];
+		// Log selected path
+		ROS_INFO_STREAM("Auto node - Closest path is " << closest_path << " relocalizing to point " << first_pose.pose.position.x << ", " << first_pose.pose.position.y);
+		// TODO, add reloclaize 
+		runStep(closest_path);
+
 		return true;
 	}
 

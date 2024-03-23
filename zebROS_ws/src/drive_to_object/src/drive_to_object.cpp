@@ -307,6 +307,10 @@ public:
         break;
       }
     }
+    // set feedback that we found an object
+    feedback_.tracking_obj = true;
+    as_.publishFeedback(feedback_);
+    ROS_INFO_STREAM("Drive to object: Feedback Tracked object is true  " << tracked_object_id);
 
     geometry_msgs::TransformStamped requested_to_baselink = tf_buffer_.lookupTransform("base_link", goal->transform_to_drive, ros::Time::now(), ros::Duration(0.1));
     double requested_to_baselink_angle = getYaw(requested_to_baselink.transform.rotation);

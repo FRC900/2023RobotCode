@@ -8,8 +8,11 @@
 #include <vector>
 
 #include <std_srvs/Empty.h>
+#include <std_srvs/SetBool.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Bool.h>
+#include "behavior_actions/RelocalizePoint.h"
+
 
 
 namespace tf2
@@ -206,6 +209,30 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
   }
 }
 
+bool toggle_service_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
+  ROS_WARN_STREAM("Disabling cmd_vel relocalization");
+  localize_while_stopped = req.data;
+}
+
+// MIGHT NOT WORK, TEST ME2
+bool relocalize_to_point_cb(behavior_actions::RelocalizePoint::Request &req, behavior_actions::RelocalizePoint::Response &/*res*/) {
+  ROS_INFO_STREAM("map_to_odom: relocalizing to a point at x,y " << req.pose.position.x << ", " << req.pose.position.y);
+  geometry_msgs::TransformStamped relocalized_point_tf;
+  relocalized_point_tf.header.stamp = ros::Time::now();
+  relocalized_point_tf.header.frame_id = map_frame_id;
+  relocalized_point_tf.child_frame_id = odom_frame_id;
+  relocalized_point_tf.transform.rotation = req.pose.orientation;
+  relocalized_point_tf.transform.translation.x = req.pose.position.x;
+  relocalized_point_tf.transform.translation.y = req.pose.position.y;
+
+  tfbr->sendTransform(relocalized_point_tf);
+  std_msgs::Header msg;
+  msg.stamp = relocalized_point_tf.header.stamp;
+  last_relocalized_pub.publish(msg);
+  last_tf_pub = ros::Time::now();
+  return true;
+}
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "map_to_odom_node");
   ros::NodeHandle nh_;
@@ -264,6 +291,8 @@ int main(int argc, char **argv) {
   // write a timer that gets called at 25Hz
   // write a service that takes in an empty message and publishes the tf
   ros::ServiceServer service = nh_.advertiseService("tagslam_pub_map_to_odom", service_cb);
+  ros::ServiceServer relocalize_point_srv = nh_.advertiseService("relocalize_point", relocalize_to_point_cb);
+
   ros::Subscriber cmd_vel_sub = nh_.subscribe("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, cmdVelCallback);
   last_relocalized_pub = nh_.advertise<std_msgs::Header>("/last_relocalize", 1, true);
   updateMapOdomTf();
