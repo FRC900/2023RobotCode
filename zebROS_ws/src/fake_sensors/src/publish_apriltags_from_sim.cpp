@@ -109,7 +109,7 @@ class SimAprilTagPub
 
 				transformStamped.header.stamp = msgIn->header.stamp;
 				transformStamped.header.frame_id = msgIn->header.frame_id;
-				transformStamped.child_frame_id = "36h11" + std::to_string(msgIn->markers[i].ids[0]-100);
+				transformStamped.child_frame_id = "obj_" + std::to_string(msgIn->markers[i].ids[0]-100);
 
 				transformStamped.transform.translation.x = p.x;
 				transformStamped.transform.translation.y = p.y;

@@ -20,6 +20,8 @@ ros::Publisher pub;
 sensor_msgs::CameraInfo caminfo;
 bool caminfovalid {false};
 
+bool add_unique_id_to_tf;
+
 DepthCalculationAlgorithm algorithm = CONTOURS;
 
 // Capture camera info published about the camera - needed for screen to world to work
@@ -118,8 +120,10 @@ void callback(const field_obj::TFDetectionConstPtr &objDetectionMsg, const senso
 				child_frame << "obj_";
 			}
 			child_frame << out_msg.objects[i].id;
-			child_frame << "_";
-			child_frame << i;
+			if (add_unique_id_to_tf) {
+				child_frame << "_";
+				child_frame << i;
+			}
 			transformStamped.child_frame_id = child_frame.str();
 
 			transformStamped.transform.translation.x = out_msg.objects[i].location.x;
@@ -152,6 +156,7 @@ int main (int argc, char **argv)
 
 	nh_param.param<std::string>("depth_algorithm", algorithm_str, "CONTOURS");
 	nh_param.param<double>("timeout", timeout, 0.05);
+	nh_param.param<bool>("add_unique_id_to_tf", add_unique_id_to_tf, true);
 
 	ROS_INFO_STREAM("[screen_to_world] algorithm=" << algorithm_str << ", timeout=" << timeout);
 

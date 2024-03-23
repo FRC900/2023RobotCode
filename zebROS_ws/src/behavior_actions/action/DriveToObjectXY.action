@@ -1,0 +1,16 @@
+# goal
+string object_id
+float64 x_offset # relative to tag, x is forward/away from tag
+float64 y_offset
+float64 angle
+
+float64 x_tolerance
+float64 y_tolerance
+---
+# result
+bool success
+---
+# feedback
+float64 x_error
+float64 y_error
+float64 angle_error

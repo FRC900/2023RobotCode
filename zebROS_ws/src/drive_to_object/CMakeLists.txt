@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   frc_msgs
   geometry_msgs
   norfair_ros
+  field_obj
   sensor_msgs
   std_msgs
   std_srvs
@@ -142,6 +143,10 @@ include_directories(
 add_executable(drive_to_object_node src/drive_to_object.cpp)
 target_link_libraries(drive_to_object_node ${catkin_LIBRARIES})
 add_dependencies(drive_to_object_node ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(drive_to_object_xy_node src/drive_to_object_xy.cpp)
+target_link_libraries(drive_to_object_xy_node ${catkin_LIBRARIES})
+add_dependencies(drive_to_object_xy_node ${behaviors_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

@@ -122,6 +122,7 @@ add_action_files(
 		AlignToTrap2024.action
 		DriveAndScore2024.action
 		Climb2024.action
+		DriveToObjectXY.action
 )
 
 generate_messages(DEPENDENCIES actionlib_msgs nav_msgs std_msgs geometry_msgs)
