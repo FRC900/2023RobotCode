@@ -14,6 +14,7 @@ from tf import transformations as t
 from frc_msgs.msg import MatchSpecificData
 import std_srvs.srv
 import norfair_ros.msg
+import angles
 
 # Logic:
 # - find closest trap alignment spot to current position (idea: just store distance from tag and use tf2 since we have all the tag transforms)
@@ -186,8 +187,9 @@ class Aligner:
             self.min_y_vel = self.trap_min_y_vel
             self.fast_zone = self.trap_fast_zone
             self.frame = self.trap_frame
-
-        yaw = min(yaws, key=lambda y: abs(self.current_yaw - y))
+        
+        yaw = min(yaws, key=lambda y: abs(angles.shortest_angular_distance(self.current_yaw, y)))
+        rospy.loginfo(f"current yaw {self.current_yaw}, yaws {yaws} selected {yaw}")
 
         drive_to_object_done = False
 
