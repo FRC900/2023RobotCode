@@ -78,9 +78,9 @@ class Converter:
             p.point.y = detection.location.y
             
             res = tf2_geometry_msgs.do_transform_point(p, transform)
-            if detection.id == "note":
-                #print(f"\ninital point {detection.location}\ntransformed point {res.point}")
-                pass
+            if detection.id.isdigit():
+                detection.id = "tag_" + detection.id
+
             detections.append(
                 DetectionMsg(
                     id=0,
@@ -105,10 +105,16 @@ class Converter:
         subscribers = rospy.get_param("converter_subscribers")
         publishers = rospy.get_param("converter_publishers")
         screen_to_world_det = subscribers["screen_to_world"]
+        tag_to_world_back = subscribers["tag_to_world_back"]
+        tag_to_world_front = subscribers["tag_to_world_front"]
+
         output = publishers["output"]
 
         # ROS subscriber definition
         rospy.Subscriber(screen_to_world_det["topic"], FieldDet, self.screen_to_world)
+        rospy.Subscriber(tag_to_world_back["topic"], FieldDet, self.screen_to_world)
+        rospy.Subscriber(tag_to_world_front["topic"], FieldDet, self.screen_to_world)
+
         self.converter_publisher = rospy.Publisher(
             output["topic"], DetectionsMsg, queue_size=output["queue_size"]
         )

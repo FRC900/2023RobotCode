@@ -1,7 +1,8 @@
 # goal
 string id
-float64 distance_away
+#float64 distance_away
 float64 tolerance
+string transform_to_drive 
 ---
 # result
 bool success

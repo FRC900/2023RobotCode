@@ -186,10 +186,10 @@ public:
     return true;
   }
 
-  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id, const int &tracked_object_id) {
+  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id, const int &tracked_object_id, const std::string &transform_to_drive) {
     double minDistance = std::numeric_limits<double>::max();
     ROS_INFO_STREAM("\nFinding closest object");
-    auto map_to_baselink = tf_buffer_.lookupTransform("odom", "base_link", ros::Time::now(), ros::Duration(0.1));
+    auto map_to_baselink = tf_buffer_.lookupTransform("odom", transform_to_drive, ros::Time::now(), ros::Duration(0.1));
     double map_x = map_to_baselink.transform.translation.x;
     double map_y = map_to_baselink.transform.translation.y;
     // ROS_INFO_STREAM("HERE");
@@ -262,7 +262,6 @@ public:
   void executeCB(const behavior_actions::DriveToObjectGoalConstPtr &goal)
   {
     // Probably should add a timeout 
-
     // just to make sure to go through the loop once
     int tracked_object_id = -1;
     x_error_ = 900;
@@ -283,7 +282,7 @@ public:
         x_axis.setEnable(false);
         return;
       }
-      closestObject = findClosestObject(latest_, goal->id, tracked_object_id);
+      closestObject = findClosestObject(latest_, goal->id, tracked_object_id, goal->transform_to_drive);
       if (closestObject == std::nullopt) {
         ROS_WARN_THROTTLE(0.5, "Drive to object: No object found, waiting for next frame");
       } else {
@@ -319,7 +318,7 @@ public:
         return;
       }
       try { 
-        closestObject = findClosestObject(latest_, goal->id, tracked_object_id);
+        closestObject = findClosestObject(latest_, goal->id, tracked_object_id, goal->transform_to_drive);
       }
       // catch everything and print it out
       catch (const std::exception &e) {
@@ -341,20 +340,21 @@ public:
       }
 
       x_axis.setEnable(true);
-      auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "odom", ros::Time::now(), ros::Duration(0.1));
+      auto map_to_baselink = tf_buffer_.lookupTransform(goal->transform_to_drive, "odom", ros::Time::now(), ros::Duration(0.1));
       tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
       // ROS_WARN_STREAM("Base link pt " << base_);
 
       ROS_INFO_STREAM("Object is at x,y " << base_link_point.point.x << "," << base_link_point.point.y);
       ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
-      ROS_INFO_STREAM("Distance away " << goal->distance_away);
+      // ROS_INFO_STREAM("Distance away " << goal->distance_away);
       x_axis.setState(-base_link_point.point.x);
 
-      x_axis.setCommand(-goal->distance_away);
+      x_axis.setCommand(0.0);
 
-      x_error_ = fabs(goal->distance_away - base_link_point.point.x);
+      x_error_ = fabs(base_link_point.point.x);
+      // ROS_INFO_STREAM("Angle offset " << angle_offset << " distance away " << fabs(goal->distance_away - base_link_point.point.x));
       // checking if it is 900, we only want to set this value once and then keep it. 
-      if (x_error_ > distance_to_hold_angle_ || field_relative_object_angle > 899) {
+      if (fabs(x_error_) > distance_to_hold_angle_ || field_relative_object_angle > 899) {
         field_relative_object_angle = latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
         ROS_INFO_STREAM("SETTING ANGLE TO " << field_relative_object_angle);
       }
