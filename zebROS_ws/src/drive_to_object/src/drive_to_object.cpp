@@ -415,6 +415,14 @@ public:
       y_eff_ *= goal->use_y;
       pid_twist.linear.x = x_eff_ * cos(angle_multipler) - y_eff_ * sin(angle_multipler);
       pid_twist.linear.y = x_eff_ * sin(angle_multipler) + y_eff_ * cos(angle_multipler);
+      
+      if (abs(x_error_) > goal->fast_zone) {
+        pid_twist.linear.x = copysign(std::max(fabs(goal->min_x_vel), fabs(pid_twist.linear.x)), pid_twist.linear.x);
+      } 
+      if (abs(y_error_) > goal->fast_zone) {
+        pid_twist.linear.y = copysign(std::max(fabs(goal->min_y_vel), fabs(pid_twist.linear.y)), pid_twist.linear.y);
+      }
+
       pid_twist.angular.z = orient_effort_;
 
       double timeDelta = (ros::Time::now() - start).toSec();
