@@ -154,6 +154,7 @@
 	<include file="$(find controller_node)/launch/record_2024_compbot.launch" if="$(arg record)" />
 
 	<include file="$(find drive_to_object)/launch/drive_to_object.launch"/>
+	<include file="$(find drive_to_object)/launch/drive_to_object_xy.launch"/>
 	<include file="$(find behaviors)/launch/2024_drive_to_object_and_intake.launch"/>
 	<include file="$(find norfair_ros)/launch/norfair_node.launch">
 	</include>

@@ -26,6 +26,7 @@
 #include "behavior_actions/AlignAndShoot2024Action.h"
 #include "behavior_actions/AlignToTrap2024Action.h"
 #include "behavior_actions/DriveAndScore2024Action.h"
+#include "behavior_actions/DriveToObjectXYAction.h"
 
 
 #include "behavior_actions/Climb2024Action.h"
@@ -60,6 +61,7 @@ std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToSpeaker20
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::AlignToTrap2024Action>> align_to_trap_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::Climb2024Action>> climb_ac;
 std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>> drive_and_score_ac;
+std::unique_ptr<actionlib::SimpleActionClient<behavior_actions::DriveToObjectXYAction>> drive_to_object_xy_ac;
 
 
 bool reset_climb = true;
@@ -81,7 +83,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 		if(!diagnostics_mode)
 		{
 			//Joystick1: buttonA
-			//Joystick1: buttonA
+			//Joystick1: buttonA ()
 			if(joystick_state->buttonAPress)
 			{
 				behavior_actions::Shooting2024Goal goal;
@@ -100,14 +102,23 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			//Joystick1: buttonB
 			if(joystick_state->buttonBPress)
 			{
+				// align to the amp (red: tag id 5, blue: tag id 6)
+				behavior_actions::DriveToObjectXYGoal goal;
+				goal.object_id = alliance_color == frc_msgs::MatchSpecificData::ALLIANCE_COLOR_RED ? "5" : "6";
+				goal.angle = M_PI / 2;
+				goal.x_tolerance = 0.1;
+				goal.y_tolerance = 0.1;
+				goal.x_offset = 0.6;
+				goal.y_offset = 0.0;
 
+				drive_to_object_xy_ac->sendGoal(goal);
 			}
 			if(joystick_state->buttonBButton)
 			{	
 			}
 			if(joystick_state->buttonBRelease)
 			{
-			
+				drive_to_object_xy_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 			//Joystick1: buttonX (button Y on controller with replaced white buttons)
@@ -582,6 +593,8 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		align_to_speaker_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		align_to_trap_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		climb_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		drive_and_score_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+		drive_to_object_xy_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 		driver->setJoystickOverride(false);
 	}
 	if (button_box->redRelease)
@@ -802,6 +815,7 @@ int main(int argc, char **argv)
 	align_to_trap_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::AlignToTrap2024Action>>("/align_to_trap/align_to_trap_2024", true);
 	climb_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::Climb2024Action>>("/climbing/climbing_server_2024", true);
 	drive_and_score_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveAndScore2024Action>>("/drive_and_score/drive_and_score_2024", true);
+	drive_to_object_xy_ac = std::make_unique<actionlib::SimpleActionClient<behavior_actions::DriveToObjectXYAction>>("/drive_to_object_xy/drive_to_object_xy", true);
 
 	ros::Subscriber button_box_sub = n.subscribe("/frcrobot_rio/button_box_states", 1, &buttonBoxCallback);
 
