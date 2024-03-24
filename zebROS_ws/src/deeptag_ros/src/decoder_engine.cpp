@@ -2,11 +2,8 @@
 #include <cuda_runtime.h>                  // for cudaFreeHost, cudaMallocHost
 #include <opencv2/core/hal/interface.h>    // for CV_64FC1
 #include <algorithm>                       // for min
-#include <iostream>                        // for operator<<, endl, basic_ostream
 #include <opencv2/calib3d.hpp>             // for findHomography
-#include <opencv2/core/cvstd.inl.hpp>      // for operator<<
 #include <opencv2/core/mat.inl.hpp>        // for Mat::at, _InputArray::_Input...
-#include <opencv2/highgui.hpp>             // for imshow, waitKey
 #include "deeptag_ros/cuda_utils.h"        // for cudaSafeCall
 #include "deeptag_ros/gpu_image_wrapper.h" // for GpuImageWrapper
 #include "deeptag_ros/image_format.h"      // for imageFormat
@@ -15,6 +12,9 @@
 
 // #define DEBUG
 #ifdef DEBUG
+#include <iostream>                        // for operator<<, endl, basic_ostream
+#include <opencv2/core/cvstd.inl.hpp>      // for operatoro<
+#include <opencv2/highgui.hpp>             // for imshow, waitKey
 static void showDebugImage(cv::Mat &hR, cv::Mat &hG, cv::Mat &hB, const std::string &windowName)
 {
     std::vector<cv::Mat> channels;

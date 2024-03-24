@@ -1,6 +1,5 @@
 #include "deeptag_ros/detection_engine.h"
 #include <algorithm>           // for min
-#include "NvInferLegacyDims.h" // for Dims3
 #include "deeptag_ros/cuda_image_tile.h"
 #include "deeptag_ros/cuda_ssd_preprocess.h" // for cudaSSDPreprocessRGB
 #include "deeptag_ros/gpu_image_wrapper.h"   // for GpuImageWrapper
