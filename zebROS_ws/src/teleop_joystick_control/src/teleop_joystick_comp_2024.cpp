@@ -86,10 +86,14 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			//Joystick1: buttonA
 			//Joystick1: buttonA
 			if(joystick_state->buttonAPress)
-			{
-				behavior_actions::Shooting2024Goal goal;
-				goal.mode = goal.AMP;
-				shooting_ac->sendGoal(goal);
+			{	
+				// now just auto score 
+				// behavior_actions::Shooting2024Goal goal;
+				// goal.mode = goal.AMP;
+				// shooting_ac->sendGoal(goal);
+				behavior_actions::DriveAndScore2024Goal goal;
+				goal.destination = goal.AMP;
+				drive_and_score_ac->sendGoal(goal);
 			}
 			if(joystick_state->buttonAButton)
 			{
@@ -97,7 +101,8 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			}
 			if(joystick_state->buttonARelease)
 			{
-				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				//shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
+				drive_and_score_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
 			//Joystick1: buttonB
