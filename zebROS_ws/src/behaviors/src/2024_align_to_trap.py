@@ -63,7 +63,9 @@ class Aligner:
         self.subwoofer_min_y_vel = rospy.get_param("subwoofer_min_y_vel")
         self.subwoofer_fast_zone = rospy.get_param("subwoofer_fast_zone")
 
-        self.trap_frame = rospy.get_param("trap_frame")
+        self.stage_1_trap_frame = rospy.get_param("stage_1_trap_frame")
+        self.stage_2_trap_frame = rospy.get_param("stage_2_trap_frame")
+
         self.amp_frame = rospy.get_param("amp_frame")
         self.subwoofer_frame = rospy.get_param("subwoofer_frame")
         
@@ -100,7 +102,7 @@ class Aligner:
         success = True
         rospy.loginfo(f"Auto Aligning Actionlib called with goal {goal}")
         rate = rospy.Rate(50.0)
-
+        stage_2_trap = False
         closest_tag = None
         closest_distance = float("inf")
         yaws = []
@@ -186,7 +188,7 @@ class Aligner:
             self.min_x_vel = self.trap_min_x_vel
             self.min_y_vel = self.trap_min_y_vel
             self.fast_zone = self.trap_fast_zone
-            self.frame = self.trap_frame
+            self.frame = self.stage_1_trap_frame
         
         yaw = min(yaws, key=lambda y: abs(angles.shortest_angular_distance(self.current_yaw, y)))
         rospy.loginfo(f"current yaw {self.current_yaw}, yaws {yaws} selected {yaw}")
@@ -220,6 +222,24 @@ class Aligner:
                 self._result.success = False
                 break
             if drive_to_object_done:
+                if goal.destination == goal.TRAP and not stage_2_trap:
+                    rospy.loginfo("Moving to stage 2 trap aligment")
+                    drive_to_object_done = False
+                    stage_2_trap = True
+                    drive_to_object_goal = behavior_actions.msg.DriveToObjectGoal()
+                    drive_to_object_goal.id = f"tag_{closest_tag}"
+                    drive_to_object_goal.x_tolerance = 0.03
+                    drive_to_object_goal.y_tolerance = 0.03
+                    drive_to_object_goal.transform_to_drive = self.stage_2_trap_frame
+                    drive_to_object_goal.use_y = True
+                    drive_to_object_goal.min_x_vel = self.min_x_vel
+                    drive_to_object_goal.min_y_vel = self.min_y_vel
+                    drive_to_object_goal.field_relative_angle = yaw
+                    drive_to_object_goal.fast_zone = self.fast_zone
+                    self.drive_to_object_client.send_goal(drive_to_object_goal, done_cb=done_callback)
+                    continue
+                elif goal.destination == goal.TRAP and stage_2_trap:
+                    rospy.loginfo("Align to trap: stage 2 trap complete")
                 success = self.drive_to_object_client.get_result().success
                 break
             rate.sleep()
