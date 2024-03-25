@@ -10,13 +10,8 @@
             <param name="Kp" value="1.0" />
             <param name="Ki" value="0.0" />
             <param name="Kd" value="0.0" />
-<<<<<<< HEAD
             <param name="upper_limit" value="1.0" /> <!-- was 4.5 and good -->
             <param name="lower_limit" value="-1.0" />
-=======
-            <param name="upper_limit" value="4.5" />
-            <param name="lower_limit" value="-4.5" />
->>>>>>> a51c36c6f (gi# This is a combination of 6 commits.)
             <param name="windup_limit" value="10" />
             <param name="max_loop_frequency" value="250.0" />
             <param name="min_loop_frequency" value="250.0" />
