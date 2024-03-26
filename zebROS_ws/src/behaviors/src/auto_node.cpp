@@ -223,6 +223,7 @@ class AutoNode {
 		functionMap_["start_intake"] = &AutoNode::startIntakingfn;
 		functionMap_["stop_intake"] = &AutoNode::stopIntakingfn;
 		functionMap_["auto_intake"] = &AutoNode::autoIntakefn;
+		functionMap_["wait_for_action"] = &AutoNode::waitForActionfn;
 		functionMap_["spin_up_shooter"] = &AutoNode::spinUpShooterfn;
 		functionMap_["spin_down_shooter"] = &AutoNode::spinDownShooterfn;
 		functionMap_["shoot_distance"] = &AutoNode::shootDistancefn;
@@ -1098,6 +1099,45 @@ class AutoNode {
 
 		waitForActionlibServer(auto_intake_ac_, 10, "autointaking a note");
 
+		return true;
+	}
+
+	bool waitForActionfn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+		// Read the action to wait for from action_data
+		// It can be "auto_intake" or "shooting"
+		std::string action_to_wait_for;
+		if (!action_data.hasMember("action"))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " missing 'action' field");
+			return false;
+		}
+		if (!readStringParam("action", action_data, action_to_wait_for))
+		{
+			shutdownNode(ERROR, "Auto node - action is not a string in wait for action");
+			return false;
+		}
+
+		// Wait for the action to finish
+		if (action_to_wait_for == "auto_intake") {
+			// Wait for client to be active first but not succeeded with a timeout of 10 seconds
+			ros::Time start_time = ros::Time::now();
+			while (auto_intake_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED && (ros::Time::now() - start_time).toSec() < 10) {
+				ros::spinOnce();
+				r_.sleep();
+			}
+			waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
+		} else if (action_to_wait_for == "shooting") {
+			ros::Time start_time = ros::Time::now();
+			while (shooting_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED && (ros::Time::now() - start_time).toSec() < 10) {
+				ros::spinOnce();
+				r_.sleep();
+			}
+			waitForActionlibServer(shooting_ac_, 10, "shooting");
+		} else {
+			ROS_ERROR_STREAM("Auto node - unknown action to wait for: " << action_to_wait_for);
+			return false;
+		}
+		
 		return true;
 	}
 

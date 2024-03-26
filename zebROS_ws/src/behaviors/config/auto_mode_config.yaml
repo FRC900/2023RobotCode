@@ -61,7 +61,7 @@ auto_mode_9: ["pause_quarter"]
 auto_mode_11: ["pause_two", "four_note_speaker_no_rotate_ALLIANCE_csv"]
 
 # TODO stop localize
-auto_mode_12: ["zoom_mid_ALLIANCE_csv", "spin_up_slide_shooter", "closest_note_path", "closest_note_path", "closest_note_path"]
+auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_ALLIANCE_csv", "auto_intake", "shoot_slide", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_shooting", "spin_down_shooter"]
 
 auto_mode_10: ["counter_auto_source"]
 
@@ -94,17 +94,17 @@ zoom_mid_blue_csv:
   goal:
     points:
       - [0.0, 0.0, 0.0]
-  wait_for_path: false
+  wait_for_path: true
 
 zoom_mid_red_csv:
   type: path
   goal:
     points:
       - [0.0, 0.0, 0.0]
-  wait_for_path: false
+  wait_for_path: true
 
 one_to_two_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -112,7 +112,7 @@ one_to_two_red_csv:
   wait_for_path: false
 
 two_to_three_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -120,7 +120,7 @@ two_to_three_red_csv:
   wait_for_path: false
 
 three_to_four_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -128,7 +128,7 @@ three_to_four_red_csv:
   wait_for_path: false
 
 four_to_five_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -136,7 +136,7 @@ four_to_five_red_csv:
   wait_for_path: false
 
 one_to_two_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -144,7 +144,7 @@ one_to_two_blue_csv:
   wait_for_path: false
 
 two_to_three_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -152,7 +152,7 @@ two_to_three_blue_csv:
   wait_for_path: false
 
 three_to_four_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -160,7 +160,7 @@ three_to_four_blue_csv:
   wait_for_path: false
 
 four_to_five_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
   type: path
   goal:
     points:
@@ -222,6 +222,14 @@ stop_intake:
 
 auto_intake:
   type: auto_intake
+
+wait_for_auto_intake:
+  type: wait_for_action
+  action: "auto_intake"
+
+wait_for_shooting:
+  type: wait_for_action
+  action: "shooting"
 
 spin_up_shooter: 
   type: spin_up_shooter
