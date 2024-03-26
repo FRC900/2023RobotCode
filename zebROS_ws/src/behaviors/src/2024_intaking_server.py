@@ -15,7 +15,7 @@ from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 import actionlib
 from std_msgs.msg import Float64
 
-SIM = True
+SIM = False
 
 class Intaking2024Server(object):
     # create messages that are used to publish feedback/result
@@ -84,8 +84,8 @@ class Intaking2024Server(object):
         # check diverter_switch
         if "diverter_limit_switch" in data.name:
             if self.feedback.note_hit_intake != data.position[data.name.index("diverter_limit_switch")]:
-                rospy.loginfo("Intaking, note hit (or left) diverter")
-                self.feedback.note_hit_intake = data.position[data.name.index("diverter_limit_switch")]
+                rospy.loginfo(f'Intaking, note hit (or left) diverter self.feedback.note_hit_intake {self.feedback.note_hit_intake} data.position[data.name.index("diverter_limit_switch")] {data.position[data.name.index("diverter_limit_switch")]}')
+                self.feedback.note_hit_intake = bool(data.position[data.name.index("diverter_limit_switch")])
                 self.server.publish_feedback(self.feedback)
 
             if self.diverter_switch and not data.position[data.name.index("diverter_limit_switch")]:

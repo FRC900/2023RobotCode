@@ -56,19 +56,19 @@ auto_mode_8: ["shoot_center_subwoofer", "drive_2_5_m", "spin_down_shooter"]
 auto_mode_9: ["pause_quarter"]
 
 # 10: drive back
-auto_mode_10: ["drive_2_5_m"]
+# auto_mode_10: ["drive_2_5_m"]
 
 auto_mode_11: ["pause_two", "four_note_speaker_no_rotate_ALLIANCE_csv"]
 
 # TODO stop localize
 auto_mode_12: ["zoom_mid_ALLIANCE_csv", "spin_up_slide_shooter", "closest_note_path", "closest_note_path", "closest_note_path"]
 
-auto_mode_13: ["counter_auto_source"]
+auto_mode_10: ["counter_auto_source"]
 
 
 # preload note paths
 # (90 is a special case that does preload only)
-auto_mode_90: ["one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
+auto_mode_90: ["zoom_mid_blue_csv", "zoom_mid_red_csv", "one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
 
 #auto_mode_4_blue: ["map_rel_four_note_grid_right1_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_blue_csv"]
 #auto_mode_4_red: ["map_rel_four_note_grid_right1_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_red_csv"]
@@ -88,6 +88,20 @@ auto_mode_90: ["one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_
 counter_auto_source:
   type: counter_auto_source
 
+
+zoom_mid_blue_csv:
+  type: path
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: false
+
+zoom_mid_red_csv:
+  type: path
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: false
 
 one_to_two_red_csv:
   waypoint_actions: [[1, "shoot_slide", "auto_intake"]]

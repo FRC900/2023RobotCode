@@ -1060,7 +1060,7 @@ class AutoNode {
 		// closest note path forever 
 		
 		// spin up shooter slide async
-		runStep("spin_up_slide_shooter");
+		// runStep("spin_up_slide_shooter");
 
 		// zoom to mid
 		std::string path = "zoom_mid_ALLIANCE_csv";
@@ -1072,11 +1072,11 @@ class AutoNode {
 		runStep("auto_intake");
 
 		// closest note path forever
-		runStep("closest_note_path");
-		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
+		// runStep("closest_note_path");
+		// waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
 
-		runStep("closest_note_path");
-		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
+		// runStep("closest_note_path");
+		// waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
 
 		return true;
 	}
@@ -1179,6 +1179,9 @@ class AutoNode {
 		return true;
 	}
 
+	int last_waypoint = -1;
+	std::map<int, std::vector<std::string>> waypoint_actions;
+
 	bool pathfn(XmlRpc::XmlRpcValue action_data, const std::string&  auto_step) {
 		if(!path_ac_.waitForServer(ros::Duration(5))){
 			shutdownNode(ERROR, "Couldn't find path server");
@@ -1194,7 +1197,7 @@ class AutoNode {
 		if (action_data.hasMember("wait_for_path"))
 			readBoolParam("wait_for_path", action_data, wait_for_path);
 
-		std::map<int, std::vector<std::string>> waypoint_actions;
+		waypoint_actions.clear();
 		if (action_data.hasMember("waypoint_actions")) {
 			XmlRpc::XmlRpcValue wpas = action_data["waypoint_actions"];
 			ROS_INFO_STREAM("Waypoint actions exist! Type is " << wpas.getType() << " iterations value " << iteration_value);
@@ -1218,7 +1221,7 @@ class AutoNode {
 		{
 			path_follower_msgs::PathGoal goal;
 			if (premade_position_paths_.find(auto_step) == premade_position_paths_.end()) {
-				shutdownNode(ERROR, "Can't find premade path " + auto_step);
+				shutdownNode(ERROR, "1221: Can't find premade path " + auto_step);
 			}
 			goal.position_path = premade_position_paths_[auto_step];
 			goal.position_waypoints = premade_position_waypoints_[auto_step];
@@ -1226,7 +1229,7 @@ class AutoNode {
 			goal.velocity_waypoints = premade_velocity_waypoints_[auto_step];
 			goal.waypointsIdx = waypointsIdxs_[auto_step];
 
-			int last_waypoint = -1;
+			last_waypoint = -1;
 			ROS_INFO_STREAM("Auto node - sending path goal for path " << auto_step);
 			path_ac_.sendGoal(goal, NULL, NULL, [&](const path_follower_msgs::PathFeedbackConstPtr& feedback){
 				int waypoint = feedback->current_waypoint;
@@ -1234,9 +1237,9 @@ class AutoNode {
 					ROS_INFO_STREAM_THROTTLE(0.1, "CHANGED**** WAYPOINT " << std::to_string(waypoint) << " ****");
 					if (waypoint_actions.find(waypoint) == waypoint_actions.end()) {
 						// not found
-						ROS_INFO_STREAM("No waypoint action");
+						ROS_ERROR_STREAM("No waypoint action");
 					} else {
-						ROS_INFO_STREAM("FOUND WAYPOINT ACTION len of waypoint_actions[waypoint] " << waypoint_actions[waypoint].size());
+						ROS_ERROR_STREAM("FOUND WAYPOINT ACTION len of waypoint_actions[waypoint] " << waypoint_actions[waypoint].size());
 						// found
 						for (std::string action_name : waypoint_actions[waypoint]) {
 							ROS_INFO_STREAM("********** WAYPOINT ACTION " << action_name << " EXISTS!!!");
@@ -1251,6 +1254,7 @@ class AutoNode {
 
 			// wait for actionlib server to finish
 			if (wait_for_path) {
+				
 				waitForActionlibServer(path_ac_, 100, "running path");
 			}
 			iteration_value--;

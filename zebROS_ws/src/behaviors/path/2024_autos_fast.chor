@@ -315,7 +315,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "one_to_two": {
             "waypoints": [
@@ -741,7 +741,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": 1.343295584829649,
+                    "targetTimestamp": null,
                     "offset": 0,
                     "command": {
                         "type": "named",
@@ -751,7 +751,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "two_to_three": {
             "waypoints": [
@@ -776,7 +776,7 @@
                 {
                     "x": 6.161070346832275,
                     "y": 3.862250804901123,
-                    "heading": -0.41822463552513767,
+                    "heading": -0.20869906988607848,
                     "isInitialGuess": false,
                     "translationConstrained": true,
                     "headingConstrained": true,
@@ -1233,7 +1233,7 @@
                 {
                     "name": "shoot",
                     "target": 2,
-                    "targetTimestamp": 1.3391586754036349,
+                    "targetTimestamp": null,
                     "offset": 0,
                     "command": {
                         "type": "named",
@@ -1243,7 +1243,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "three_to_four": {
             "waypoints": [
@@ -1669,7 +1669,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": 1.2293563766592424,
+                    "targetTimestamp": null,
                     "offset": 0,
                     "command": {
                         "type": "named",
@@ -1679,7 +1679,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "four_to_five": {
             "waypoints": [
@@ -2024,7 +2024,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": 1.2592675363197168,
+                    "targetTimestamp": null,
                     "offset": 0,
                     "command": {
                         "type": "named",
@@ -2034,7 +2034,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         }
     },
     "splitTrajectoriesAtStopPoints": true,

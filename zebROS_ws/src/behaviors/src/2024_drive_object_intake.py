@@ -47,6 +47,18 @@ class DriveObjectIntakeServer(object):
         # stop intaking
         self.intaking_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
+    def intaking_result(self, state, intaking_result: Intaking2024Result):
+        rospy.loginfo(f"Intaking server finished with {intaking_result.success} ")
+        # *Think* no race condition because done is set after success
+        self.intake_server_success = intaking_result.success
+        self.intake_server_done = True
+
+    def intaking_feedback(self, intaking_feedback: Intaking2024Feedback):
+        if intaking_feedback.note_hit_intake and not self.has_hit_note:
+            self.has_hit_note = True
+            rospy.loginfo("Drive object intake: Note hit intake, cancelling drive to object")
+            self.drive_to_object_client.cancel_goals_at_and_before_time(rospy.Time.now())
+
     def execute_cb(self, goal: DriveObjectIntake2024Goal):
         self.intake_server_done = False
         self.has_hit_note = False
@@ -55,20 +67,9 @@ class DriveObjectIntakeServer(object):
         intaking_goal = Intaking2024Goal()
         intaking_goal.destination = goal.destination
         
-        def intaking_result(state, intaking_result: Intaking2024Result):
-            rospy.loginfo(f"Intaking server finished with {intaking_result.success} ")
-            # *Think* no race condition because done is set after success
-            self.intake_server_success = intaking_result.success
-            self.intake_server_done = True
-
-        def intaking_feedback(intaking_feedback: Intaking2024Feedback):
-            if intaking_feedback.note_hit_intake and not self.has_hit_note:
-                self.has_hit_note = True
-                rospy.loginfo("Drive object intake: Note hit intake, cancelling drive to object")
-                self.drive_to_object_client.cancel_goals_at_and_before_time(rospy.Time.now())
 
 
-        self.intaking_client.send_goal(intaking_goal, feedback_cb=intaking_feedback, done_cb=intaking_result)
+        self.intaking_client.send_goal(intaking_goal, feedback_cb=self.intaking_feedback, done_cb=self.intaking_result)
         rospy.loginfo("2024_drive_object_intake: Sending intaking goal")
         
         drive_to_object_goal = DriveToObjectGoal()
