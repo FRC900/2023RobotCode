@@ -7,7 +7,6 @@
 #include "vector_types.h"                    // for float2
 #include "deeptag_ros/cuda_utils.h"
 
-#include <iostream>
 #ifdef DEBUG
 #include <fstream>                  // for operator>>, basic_istream, ifstream
 #include <opencv2/core.hpp>         // for merge
