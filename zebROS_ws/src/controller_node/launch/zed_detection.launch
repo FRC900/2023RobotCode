@@ -17,6 +17,7 @@
   <arg name="run_apriltag"         default="true" />
   <arg name="run_gpu_apriltag"     default="false" />
   <arg name="run_deeptag"          default="false" />
+  <arg name="run_deeptag_node"     default="$(arg run_deeptag)" />
   <arg name="run_object_detection" default="true" />
   <arg name="run_pub_video"        default="false" />
   <arg name="startup_delay"        default="0.0" />
@@ -54,7 +55,7 @@
     <remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
     <remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
     <param name="depth_algorithm" type="string" value="$(arg depth_algorithm)" />
-    <param name="timeout" type="double" value="0.2" /> 
+    <param name="timeout"         type="double" value="0.2" /> 
   </node>
 
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_apriltag)">
@@ -63,9 +64,9 @@
     wouldn't otherwise?  Maybe color is better, at least for the
     ZEDs also running object detection -->
     <include file="$(find apriltag_launch)/launch/apriltag_continuous_detection.launch">
-      <arg name="camera_name"            value="/$(arg zed_name)/left" />
-      <arg name="image_topic"            value="/image_rect_gray" />
-      <arg name="tag_type"               value="36h11" />
+      <arg name="camera_name" value="/$(arg zed_name)/left" />
+      <arg name="image_topic" value="/image_rect_gray" />
+      <arg name="tag_type"    value="36h11" />
     </include>
 
     <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
@@ -106,14 +107,10 @@
     <param name="timeout" type="double" value="0.2" /> 
   </node>
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_deeptag)">
-		<!-- <node pkg="nodelet" type="nodelet" name="deeptag_ros" args="load deeptag_ros/DeeptagRosNodelet /$(arg nodelet_manager_name)" output="screen"> -->
-    <node pkg="deeptag_ros" name="deeptag_ros" type="deeptag_node" output="screen">
-      <remap from="image_rect_color"    to="/$(arg zed_name)/left/image_rect_color" />
-      <remap from="camera_info"         to="/$(arg zed_name)/left/camera_info" />
-      <param name="tag_type"            value="36h11" />
-      <param name="tag_size_in_meter"   value="0.152" />
-      <param name="use_tiled_detection" value="true" />
-      <param name="use_scaled_image"    value="false" />
+    <!-- Run the actual deeptag ode if run_deeptag_node is true
+         This option allows the deeptag node itself to be run on a different jetson if needed-->
+    <include file="$(find deeptag_ros)/launch/include/deeptag.launch" if="$(eval run_deeptag_node)">
+      <arg name="zed_name" value="$(arg zed_name)" />
     </node>
 
     <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
@@ -146,12 +143,11 @@
   -->
 	<group ns="tf_object_detection_$(arg zed_name)" if="$(eval run_pub_video)">
     <node pkg="tf_object_detection" name="pub_video" type="pub_video.py" output="screen">
-      <param name="pub_topic" type="string" value="/$(arg zed_name)/left/image_rect_color" />
-      <param name="framerate" type="int" value="10" />
-      <param name="show_video" type="bool" value="true" />
-      <!-- Instead of displaying a video, send an empty 1080p image, mainly useful for triggering trtdetect.py to start initializing -->
-      <param name="empty_video" type="bool" value="true" />  
-      <param name="filename" type="string" value="1678.mp4" />
+      <param name="pub_topic"   type="string" value="/$(arg zed_name)/left/image_rect_color" />
+      <param name="framerate"   type="int" value="10" />
+      <param name="show_video"  type="bool" value="true" />
+      <param name="empty_video" type="bool" value="true" />  <!-- Instead of displaying a video, send an empty 1080p image, mainly useful for triggering trtdetect.py to start initializing -->
+      <param name="filename"    type="string" value="1678.mp4" />
     </node>
   </group>
 
