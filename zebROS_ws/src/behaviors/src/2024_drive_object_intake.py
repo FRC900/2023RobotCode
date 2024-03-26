@@ -107,7 +107,13 @@ class DriveObjectIntakeServer(object):
 
         start = rospy.Time.now()
         r = rospy.Rate(50)
-        while not (self.has_hit_note or drive_object_done or rospy.is_shutdown() or (rospy.Time.now() - start).to_sec() > self.drive_timeout_):
+        if goal.drive_timeout:
+            rospy.loginfo(f"2024 drive object intake: setting drive timeout to {goal.drivetimout}")
+            drive_timeout = goal.drive_timeout 
+        else:
+            drive_timeout = self.drive_timeout_ 
+            
+        while not (self.has_hit_note or drive_object_done or rospy.is_shutdown() or (rospy.Time.now() - start).to_sec() > drive_timeout):
             if self.server.is_preempt_requested():
                 self.preempt_servers() # preempts all actionlib servers
                 self.server.set_preempted()

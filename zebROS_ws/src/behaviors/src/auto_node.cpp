@@ -238,7 +238,7 @@ class AutoNode {
 				std_srvs::SetBool srv;
 				srv.request.data = false;
 				if (!park_srv_.call(srv)) {
-					ROS_INFO_STREAM("Failed to call park service in auto node! :(");
+					ROS_INFO_STREAM_THROTTLE(5, "Failed to call park service in auto node! :(");
 				} else {
 					ROS_INFO_STREAM("Swerve will now not park during teleop when stopped");
 					park_enabled = false;
@@ -293,7 +293,7 @@ class AutoNode {
 				std_srvs::SetBool srv;
 				srv.request.data = true;
 				if (!park_srv_.call(srv)) {
-					ROS_INFO_STREAM("Failed to call park service in auto node! :(");
+					ROS_INFO_STREAM_THROTTLE(5, "Failed to call park service in auto node! :(");
 				} else {
 					ROS_INFO_STREAM("Swerve will now park during auto when stopped");
 					park_enabled = true;
@@ -436,7 +436,7 @@ class AutoNode {
 			std_srvs::SetBool srv;
 			srv.request.data = false;
 			if (!park_srv_.call(srv)) {
-				ROS_INFO_STREAM("Failed to call park service in auto node! :(");
+				ROS_INFO_STREAM_THROTTLE(5, "Failed to call park service in auto node! :(");
 			} else {
 				ROS_INFO_STREAM("Swerve will now not park during teleop when stopped");
 				park_enabled = false;
@@ -1070,10 +1070,10 @@ class AutoNode {
 
 		// auto intake
 		runStep("auto_intake");
+		waitForActionlibServer(auto_intake_ac_, 20, "auto intaking");
 
 		// closest note path forever
 		// runStep("closest_note_path");
-		// waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
 
 		// runStep("closest_note_path");
 		// waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");

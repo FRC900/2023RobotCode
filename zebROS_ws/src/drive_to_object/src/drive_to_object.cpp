@@ -200,7 +200,7 @@ public:
 
   std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id, const int &tracked_object_id, const std::string &transform_to_drive) {
     double minDistance = std::numeric_limits<double>::max();
-    ROS_INFO_STREAM("\nFinding closest object");
+    // ROS_INFO_STREAM("\nFinding closest object");
     auto map_to_baselink = tf_buffer_.lookupTransform("odom", transform_to_drive, ros::Time::now(), ros::Duration(0.1));
     double map_x = map_to_baselink.transform.translation.x;
     double map_y = map_to_baselink.transform.translation.y;
@@ -214,10 +214,10 @@ public:
     // ROS_INFO_STREAM("BEFORE LOOP");
     for (const norfair_ros::Detection &obj : detections.detections) {
       // print out size of points
-      ROS_INFO_STREAM("Object with name " << obj.label << " has " << obj.points.size() << " points");
+      // ROS_INFO_STREAM("Object with name " << obj.label << " has " << obj.points.size() << " points");
       // print size of first point
 
-      ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
+      // ROS_INFO_STREAM("Object with name " << obj.label << " at x,y " << obj.points[0].point[0] << "," << obj.points[0].point[1]);
       // ROS_INFO_STREAM("LOOP");
       if (obj.points.size() > 1) {
         ROS_ERROR_STREAM("SHOULD ONLY CONTAIN ONE POINT");

@@ -13,7 +13,7 @@ from std_msgs.msg import Float64
 from interpolating_map import InterpolatingMap
 from geometry_msgs.msg import Twist
 
-SIM = False
+SIM = True
 
 class ShootingServer(object):
 
