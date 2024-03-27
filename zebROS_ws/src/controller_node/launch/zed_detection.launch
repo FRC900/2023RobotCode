@@ -115,6 +115,7 @@
       <arg name="image_transport" value="$(arg deeptag_image_transport)" />
     </include>
 
+  <group ns="apriltag_$(arg zed_name)" if="$(eval run_deeptag)">
     <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
         Publishes to $(ns)/tag_detection_msgs -->
     <node pkg="tf_object_detection" name="deeptag_tag_depth" type="tag_depth.py" output="screen">
@@ -134,6 +135,8 @@
   </node>
 
 	<group ns="tf_object_detection_$(arg zed_name)" if="$(eval run_object_detection)">
+  <!-- TODO: if we're using compressed images, create an image_transport republisher to subscribe to that compressed topic and
+  republish it as raw for tf_object_detection. This was the ZED node isn't publishing both raw and compressed images? See if it helps perf to do so -->
 		<node pkg="tf_object_detection" name="tf_object_detection" type="fastYOLO.py" output="screen">
 			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color" />
 			<param name="min_confidence" type="double" value="0.05" />
