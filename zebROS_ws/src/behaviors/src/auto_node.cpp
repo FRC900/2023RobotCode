@@ -44,6 +44,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 
+#include <sensor_msgs/Imu.h>
+
 
 enum AutoStates {
 			NOT_READY,
@@ -90,6 +92,8 @@ class AutoNode {
 		ros::Subscriber enable_auto_in_teleop_sub_;
 		ros::Subscriber orientation_effort_sub_; 
 		ros::Subscriber current_yaw_sub_;
+		ros::Subscriber imu_sub_;
+		sensor_msgs::Imu latest_imu_;
 
 		ros::Subscriber dist_ang_sub_;
 		double speaker_dist;
@@ -175,6 +179,8 @@ class AutoNode {
 		
 		pause_srv_ = nh_.serviceClient<std_srvs::SetBool>("/path_follower/pause_path", false, service_connection_header);
 
+		imu_sub_ = nh_.subscribe("/imu/zeroed_imu", 1, &AutoNode::imuCallback, this);
+
 		//subscribers
 		//rio match data (to know if we're in auto period)
 		match_data_sub_ = nh_.subscribe("/frcrobot_rio/match_data", 1, &AutoNode::matchDataCallback, this);
@@ -257,6 +263,10 @@ class AutoNode {
 			}
 		};
 		// END change year to year
+	}
+
+	void imuCallback(const sensor_msgs::Imu &msg) {
+		latest_imu_ = msg;
 	}
 
 	//FUNCTIONS -------
@@ -1078,7 +1088,7 @@ class AutoNode {
 		// closest note path forever 
 		
 		// spin up shooter slide async
-		// runStep("spin_up_slide_shooter");
+		runStep("spin_up_slide_shooter");
 		
 		// zoom to mid
 		std::string path = "zoom_mid_source_ALLIANCE_csv";
@@ -1086,13 +1096,33 @@ class AutoNode {
 		boost::replace_all(path, ALLIANCE, getAllianceColorString());
 		runStep(path);
 
+		ros::Duration(0.25).sleep();
+
 		// auto intake
-		runStep("auto_intake");
-	
-		waitForActionlibServer(auto_intake_ac_, 20, "auto intaking");
+		std::string auto_intake = "auto_intake_first_ALLIANCE";
+		boost::replace_all(auto_intake, ALLIANCE, getAllianceColorString());
+		runStep(auto_intake);
+
+		ros::Time start_time = ros::Time::now();
+		while (auto_intake_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED && (ros::Time::now() - start_time).toSec() < 10) {
+			ros::spinOnce();
+			r_.sleep();
+		}
+		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking first note");
 
 		// closest note path forever
 		path = "one_to_two_ALLIANCE_csv";
+		boost::replace_all(path, ALLIANCE, getAllianceColorString());
+		runStep(path);
+
+		start_time = ros::Time::now();
+		while (auto_intake_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED && (ros::Time::now() - start_time).toSec() < 10) {
+			ros::spinOnce();
+			r_.sleep();
+		}
+		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking second note");
+
+		path = "two_to_three_ALLIANCE_csv";
 		boost::replace_all(path, ALLIANCE, getAllianceColorString());
 		runStep(path);
 
@@ -1124,6 +1154,32 @@ class AutoNode {
 		behavior_actions::DriveObjectIntake2024Goal goal;
 		goal.destination = goal.SHOOTER;
 		goal.drive_timeout = 20;
+
+		double min_y_pos = 0;
+		if (!action_data.hasMember("min_y_pos"))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " missing 'distance' field");
+		}
+		else if (!readFloatParam("min_y_pos", action_data, min_y_pos))
+		{
+			shutdownNode(ERROR, "Auto node - min_y_pos is not a double or int in pause action");
+			return false;
+		}
+
+		double max_y_pos = 0;
+		if (!action_data.hasMember("max_y_pos"))
+		{
+			ROS_ERROR_STREAM("Auto action " << auto_step << " missing 'distance' field");
+		}
+		else if (!readFloatParam("max_y_pos", action_data, max_y_pos))
+		{
+			shutdownNode(ERROR, "Auto node - max_y_pos is not a double or int in pause action");
+			return false;
+		}
+
+		goal.min_y_pos = min_y_pos;
+		goal.max_y_pos = max_y_pos;
+
 		have_canceled = false;
 		auto_intake_ac_.sendGoal(goal, NULL, NULL, boost::bind(&AutoNode::autoIntakeFeedback, this, _1));
 		ROS_INFO_STREAM("Auto node - Starting intake");
@@ -1311,10 +1367,7 @@ class AutoNode {
 				geometry_msgs::PoseStamped first_pose = goal.position_path.poses[0];
 				ROS_WARN_STREAM("FORCING RELOCALZE TO THE START OF THE PATH======= AT POINT X,Y " << first_pose.pose.position.x << ", " << first_pose.pose.position.y);
 				behavior_actions::RelocalizePoint inital_point;
-				inital_point.request.pose.orientation.w = 1;
-				inital_point.request.pose.orientation.x = 0;
-				inital_point.request.pose.orientation.y = 0;
-				inital_point.request.pose.orientation.z = 0;
+				inital_point.request.pose.orientation = latest_imu_.orientation;
 				inital_point.request.pose.position.x = first_pose.pose.position.x;
 				inital_point.request.pose.position.y = first_pose.pose.position.y;
 				if (!relocalize_point_srv_.call(inital_point)) {

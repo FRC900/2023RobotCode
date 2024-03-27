@@ -14,7 +14,8 @@ from std_msgs.msg import Float64
 from norfair_ros.msg import Detections, Detection
 from frc_msgs.srv import RumbleCommand, RumbleCommandRequest, RumbleCommandResponse
 from frc_msgs.msg import MatchSpecificData
-from candle_controller_msgs.srv import AnimationRequest, AnimationResponse, Animation
+from candle_controller_msgs.srv import AnimationRequest, AnimationResponse, Animation, Colour, ColourRequest, ColourResponse
+from behavior_actions.msg import *
 
 import math
 import time
@@ -38,7 +39,11 @@ class Rumble2024Server():
         self.talonfxpro_sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.talonfxpro_states_cb)
         #self.norfair_sub = rospy.Subscriber('/norfair/output', Detections, self.notes_callback)
         self.limit_switch_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, self.limit_switch_cb)
-        
+
+        self.drive_object_intake_sub = rospy.Subscriber("/drive_to_object/drive_to_object/feedback", DriveToObjectActionFeedback, self.drive_object_cb)
+        self.last_tracking = False
+        self.drive_object_intake_done_sub = rospy.Subscriber("/drive_to_object/drive_to_object/result", DriveToObjectActionResult, self.drive_object_intake_done_cb)
+
         self.notes_max_distance = rospy.get_param("note_distance_away")
         self.preshooter_limit_switch_name = rospy.get_param("preshooter_limit_switch_name")
         self.claw_limit_switch_name = rospy.get_param("claw_limit_switch_name")
@@ -63,6 +68,31 @@ rosservice call /frcrobot_jetson/candle_controller/animation "{speed: -0.5, star
         self.shot_note = False
 
         self.current_rumble_state = 0
+
+    def drive_object_intake_done_cb(self, data: DriveToObjectActionResult):
+        self.last_tracking = False
+        # turn off LEDs
+        if rospy.wait_for_service('/frcrobot_jetson/candle_controller/colour', timeout=0.001):
+            candle_req = ColourRequest()
+            candle_req.red = 0
+            candle_req.green = 0
+            candle_req.blue = 0
+            candle_req.white = 0
+            candle_req.start = 8
+            candle_req.count = 18
+            self.candle_srv.call(candle_req)
+
+    def drive_object_cb(self, feedback: DriveToObjectActionFeedback):
+        if not self.last_tracking and feedback.feedback.tracking_obj:
+            if rospy.wait_for_service('/frcrobot_jetson/candle_controller/animation', timeout=0.001):
+                candle_req = AnimationRequest()
+                candle_req.animation_type = candle_req.ANIMATION_TYPE_RAINBOW
+                candle_req.speed = 1.0
+                candle_req.start = 8
+                candle_req.count = 18
+                self.candle_srv.call(candle_req)
+                self.set_disable_leds = False
+        self.last_tracking = feedback.feedback.tracking_obj
 
     def talonfxpro_states_cb(self, states: TalonFXProState):
         #rospy.loginfo_throttle(5, "Intaking node recived talonfx pro states")

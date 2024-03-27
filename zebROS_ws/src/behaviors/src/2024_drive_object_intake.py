@@ -34,7 +34,7 @@ class DriveObjectIntakeServer(object):
         self.intake_timeout_ = rospy.get_param("intake_timeout")
         self.drive_back_time_ = rospy.get_param("drive_back_time")
         self.drive_back_speed_ = rospy.get_param("drive_back_speed")
-        self.low_priority_cmd_vel_pub = rospy.Publisher("/align/cmd_vel", Twist, queue_size=1)
+        self.cmd_vel_pub = rospy.Publisher("/auto_note_align/cmd_vel", Twist, queue_size=1, tcp_nodelay=True)
         self.intake_server_done = False
         self.intake_server_success = False
         self.server = actionlib.SimpleActionServer(self.action_name, DriveObjectIntake2024Action, execute_cb=self.execute_cb, auto_start = False)
@@ -82,10 +82,12 @@ class DriveObjectIntakeServer(object):
         drive_to_object_goal.id = self.note_name_ 
         drive_to_object_goal.transform_to_drive = "intake"
         drive_to_object_goal.min_x_vel = 3.0 # this is faster than before
-        drive_to_object_goal.min_y_vel = 2.0 # TURN THIS OFF
+        drive_to_object_goal.min_y_vel = 0.5 # TURN THIS OFF
         drive_to_object_goal.use_y = True # use 
         drive_to_object_goal.override_goal_angle = True # used for aligning in y and rotating at the same time 
-        drive_to_object_goal.fast_zone = 0.5
+        drive_to_object_goal.fast_zone = 0.0
+        drive_to_object_goal.min_y_pos = goal.min_y_pos # -5 for first blue
+        drive_to_object_goal.max_y_pos = goal.max_y_pos # 0.1 for first blue
 
 
         drive_object_done = False
@@ -142,10 +144,10 @@ class DriveObjectIntakeServer(object):
                 self.preempt_servers() # preempts all actionlib servers
                 self.server.set_preempted()
                 twist.linear.x = 0
-                self.low_priority_cmd_vel_pub.publish(twist)
+                self.cmd_vel_pub.publish(twist)
                 return
             twist.linear.x = -self.drive_back_speed_
-            self.low_priority_cmd_vel_pub.publish(twist)
+            self.cmd_vel_pub.publish(twist)
             r.sleep()
        
 if __name__ == '__main__':

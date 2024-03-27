@@ -96,6 +96,10 @@ class Converter:
                 if detection.id.isdigit():
                     detection.id = "tag_" + detection.id
 
+                if detection.confidence < 0.3: # arbitrary
+                    rospy.logwarn(f"DROPPING DETECTION {detection.id}@{detection.confidence}")
+                    continue
+
                 detections_msg.detections.append(
                     DetectionMsg(
                         id=0,

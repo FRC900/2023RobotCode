@@ -198,7 +198,7 @@ public:
     return true;
   }
 
-  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id, const int &tracked_object_id, const std::string &transform_to_drive) {
+  std::optional<norfair_ros::Detection> findClosestObject(const norfair_ros::Detections &detections, const std::string &object_id, const int &tracked_object_id, const std::string &transform_to_drive, double min_y_pos = 0, double max_y_pos = 0) {
     double minDistance = std::numeric_limits<double>::max();
     // ROS_INFO_STREAM("\nFinding closest object");
     auto map_to_baselink = tf_buffer_.lookupTransform("odom", transform_to_drive, ros::Time::now(), ros::Duration(0.1));
@@ -228,6 +228,26 @@ public:
         double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
 
         if (d < minDistance && obj.label == object_id) {
+          if (min_y_pos != 0.0 || max_y_pos != 0.0) {
+            geometry_msgs::PointStamped base_link_point;
+
+            geometry_msgs::PointStamped latest_map_relative_detection;
+
+            geometry_msgs::PointStamped object_point;
+            object_point.point.x = obj.points[0].point[0];
+            object_point.point.y = obj.points[0].point[1];
+            object_point.header = latest_.header;
+            // will go map to map but copies
+            tf_buffer_.transform(object_point, latest_map_relative_detection, "odom");
+
+            auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "odom", ros::Time::now(), ros::Duration(0.1));
+            tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
+
+            if (!(min_y_pos <= base_link_point.point.y && base_link_point.point.y <= max_y_pos)) {
+              ROS_INFO_STREAM("drive_to_object: ignoring object " << obj.label << "_" << obj.id << " because its y of " << base_link_point.point.y << " is not within [" << min_y_pos << ", " << max_y_pos << "]");
+              continue;
+            }
+          }
           minDistance = d;
           closestObject = obj;
         }
@@ -301,7 +321,7 @@ public:
         y_axis.setEnable(false);
         return;
       }
-      closestObject = findClosestObject(latest_, goal->id, tracked_object_id, goal->transform_to_drive);
+      closestObject = findClosestObject(latest_, goal->id, tracked_object_id, goal->transform_to_drive, goal->min_y_pos, goal->max_y_pos);
       if (closestObject == std::nullopt) {
         ROS_WARN_THROTTLE(0.5, "Drive to object: No object found, waiting for next frame");
       } else {
@@ -366,7 +386,6 @@ public:
         geometry_msgs::PointStamped object_point;
         object_point.point.x = closestObject->points[0].point[0];
         object_point.point.y = closestObject->points[0].point[1];
-        object_point.point.z = closestObject->points[0].point[2];
         object_point.header = latest_.header;
         // will go map to map but copies
         tf_buffer_.transform(object_point, latest_map_relative_detection, "odom");
@@ -416,6 +435,10 @@ public:
       // could try to do the math, but i'm not sure how we'd calculate that.
       // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)
       // seems like the correct way to do it is just based on how far we've turned since the last vision update:
+
+      if (goal->use_y) {
+        angle_multipler = 0;
+      }
 
       geometry_msgs::Twist pid_twist;
       // t.linear.x = x_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::cos(orient_effort_);

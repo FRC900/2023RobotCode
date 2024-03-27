@@ -61,7 +61,7 @@ auto_mode_9: ["one_to_two_blue_csv"]
 auto_mode_11: ["pause_two", "four_note_speaker_no_rotate_ALLIANCE_csv"]
 
 # TODO stop localize
-auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_source_ALLIANCE_csv", "auto_intake", "shoot_slide", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_shooting", "spin_down_shooter"]
+auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_source_ALLIANCE_csv", "auto_intake_first_ALLIANCE", "shoot_slide", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_shooting", "spin_down_shooter"]
 
 auto_mode_10: ["counter_auto_source"]
 
@@ -153,7 +153,7 @@ one_to_two_blue_csv:
   wait_for_path: false
 
 two_to_three_blue_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -197,8 +197,6 @@ four_note_speaker_no_rotate_blue_csv:
     points:
       - [0.0, 0.0, 0.0]
 
-
-
 pause_path:
   type: pause_path
   pause: true
@@ -234,6 +232,16 @@ stop_intake:
 
 auto_intake:
   type: auto_intake
+
+auto_intake_first_red: # left
+  type: auto_intake
+  min_y_pos: -1.0
+  max_y_pos: 5.0
+
+auto_intake_first_blue: # right
+  type: auto_intake
+  min_y_pos: -5.0
+  max_y_pos: 1.0
 
 wait_for_auto_intake:
   type: wait_for_action

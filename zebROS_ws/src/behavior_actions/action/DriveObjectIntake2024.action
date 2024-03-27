@@ -3,6 +3,8 @@ uint8 CLAW=1
 uint8 destination
 bool intake_only
 int64 drive_timeout
+float64 min_y_pos
+float64 max_y_pos
 ---
 bool success
 ---

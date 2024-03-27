@@ -73,7 +73,7 @@ class Intaking2024Server(object):
         self.intaking_talon_idx = None
         self.talonfxpro_sub = rospy.Subscriber('/frcrobot_jetson/talonfxpro_states', TalonFXProState, self.talonfxpro_states_cb)
 
-        self.joint_state_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, callback=self.rio_callback)
+        self.joint_state_sub = rospy.Subscriber("/frcrobot_rio/joint_states", JointState, callback=self.rio_callback, tcp_nodelay=True)
         self.diverter_switch = False
         self.run_intake_backwards = None
         self.arm_done = False

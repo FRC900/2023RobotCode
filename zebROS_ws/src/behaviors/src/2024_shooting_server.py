@@ -328,7 +328,7 @@ class ShootingServer(object):
         # time.sleep(0.25)
         r = rospy.Rate(60.0)
 
-        while not (shooter_done and pivot_done):
+        while not (shooter_done and (pivot_done if goal.mode != goal.SLIDE else True)):
             rospy.loginfo_throttle(0.5, f"2024_shooting_server: waiting for {'shooter' if not shooter_done else ''} and {'pivot' if not pivot_done else ''}")
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024_shooting_server: preempted")
