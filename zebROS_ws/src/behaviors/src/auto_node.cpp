@@ -1137,6 +1137,15 @@ class AutoNode {
 		boost::replace_all(path, ALLIANCE, getAllianceColorString());
 		runStep(path);
 
+		start_time = ros::Time::now();
+		while (auto_intake_ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED && (ros::Time::now() - start_time).toSec() < 10) {
+			ros::spinOnce();
+			r_.sleep();
+		}
+		waitForActionlibServer(auto_intake_ac_, 10, "auto intaking fourth note");
+
+		runStep("shoot_slide");
+
 		// runStep("closest_note_path");
 		// waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
 
