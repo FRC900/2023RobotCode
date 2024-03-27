@@ -21,7 +21,8 @@
   <arg name="run_pub_video"        default="false" />
   <arg name="startup_delay"        default="0.0" />
   <!-- Name of the Nodelet Manager -->
-  <arg name="nodelet_manager_name"  default="$(arg zed_name)_nodelet_manager" />
+  <arg name="nodelet_manager_name" default="$(arg zed_name)_nodelet_manager" />
+  <arg name="deeptag_image_transport" default="raw" />
 
   <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" />
     <include file="$(find zed_wrapper)/launch/include/zed_camera_nodelet.launch" if="$(eval run_camera)">
@@ -79,7 +80,7 @@
        Nodelets run in their own namespace so run this outside the ns block below
   -->
   <node pkg="nodelet" type="nodelet" name="apriltag_$(arg zed_name)" args="load tf_object_detection/ScreenToWorld /$(arg nodelet_manager_name)" if="$(eval run_deeptag)" output="screen" >
-    <remap from="obj_detection_msg" to="/apriltzebROS_ws/src/deeptag_ros/src/detection_engine.cppag_$(arg zed_name)/tag_detection_msg"/>
+    <remap from="obj_detection_msg" to="/apriltag_$(arg zed_name)/tag_detection_msg"/>
     <remap from="/apriltag_$(arg zed_name)/object_detection_world" to="/apriltag_$(arg zed_name)/tag_detection_world"/>
     <remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
     <remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
@@ -90,9 +91,10 @@
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_deeptag)">
     <!-- Run the actual deeptag ode if run_deeptag_node is true
          This option allows the deeptag node itself to be run on a different jetson if needed-->
-    <include file="$(find deeptag_ros)/launch/include/deeptag.launch" if="$(eval run_deeptag_node)">
-      <arg name="zed_name" value="$(arg zed_name)" />
-    </node>
+    <include file="$(find deeptag_ros)/launch/deeptag.launch" if="$(eval run_deeptag_node)">
+      <arg name="zed_name"        value="$(arg zed_name)" />
+      <arg name="image_transport" value="$(arg deeptag_image_transport)" />
+    </include>
 
     <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
          Publishes to $(ns)/tag_detection_msgs -->
