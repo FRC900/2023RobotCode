@@ -32,16 +32,17 @@ private:
         base_nh_ = getNodeHandle();
 
         base_it_ = std::make_unique<image_transport::ImageTransport>(base_nh_);
-        image_transport::TransportHints th("compressed");
-        camera_sub_ = base_it_->subscribeCamera("image_rect_color", 1, &DeeptagRosNodelet::callback, this, th);
+        camera_sub_ = base_it_->subscribeCamera("image_rect_color", 2, &DeeptagRosNodelet::callback, this);
         pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tags", 2);
         pub_apriltag_poses_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 2);
         it_ = std::make_unique<image_transport::ImageTransport>(nh_);
-        pub_debug_image_ = it_->advertise("debug_image", 2);
-        pub_stage1_grid_debug_image_ = it_->advertise("stage1_grid_debug_image", 2);
-        pub_stage1_ssd_debug_image_ = it_->advertise("stage1_ssd_debug_image", 2);
+        pub_debug_image_ = it_->advertise("debug_image", 1);
+        pub_stage1_grid_debug_image_ = it_->advertise("stage1_grid_debug_image", 1);
+        pub_stage1_ssd_debug_image_ = it_->advertise("stage1_ssd_debug_image", 1);
+        pub_stage2_debug_image_ = it_->advertise("stage2_debug_image", 1);
         save_input_image_srv_ = base_nh_.advertiseService("save_input_image", &DeeptagRosNodelet::saveInputImageCallback, this);
     }
+
     void callback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& camera_info)
     {
         if (!deep_tag_)
@@ -60,21 +61,22 @@ private:
             std::string decode_onnx_model_filename = "arucotag_decoder.onnx";
             nh_.param("detect_onnx_model_filename", detect_onnx_model_filename, detect_onnx_model_filename);
             nh_.param("decode_onnx_model_filename", decode_onnx_model_filename, decode_onnx_model_filename);
-            auto tag_type = DeepTagType::APRILTAG_36H11;
+            using enum DeepTagType;
+            auto tag_type = APRILTAG_36H11;
             if (std::string tag_type_str;
                 nh_.getParam("tag_type", tag_type_str))
             {
                 if (tag_type_str == "16h11")
                 {
-                    tag_type = DeepTagType::APRILTAG_16H5;
+                    tag_type = APRILTAG_16H5;
                 }
                 else if (tag_type_str == "25h9")
                 {
-                    tag_type = DeepTagType::APRILTAG_25H9;
+                    tag_type = APRILTAG_25H9;
                 }
                 else if (tag_type_str == "36h10")
                 {
-                    tag_type = DeepTagType::APRILTAG_36H10;
+                    tag_type = APRILTAG_36H10;
                 }
                 else if (tag_type_str == "36h11")
                 {
@@ -99,15 +101,15 @@ private:
             nh_.param("use_scaled_image", use_scaled_image, use_scaled_image);
 
             deep_tag_ = std::make_unique<DeepTag>(model.fullResolution(),      // input image, used for image resolution
-                                                use_tiled_detection,         // use tiled detection - config item
-                                                use_scaled_image,            // use scaled-down full image in addition to tiles - config item
-                                                tag_type,                    // tag type - config item
-                                                intrinsic_matrix,            // from camera info
-                                                distortion_coeffs,           // from camera info
-                                                tagSizeInMeter,              // physical tag size - config item
-                                                model_path,                  // use rospkg to find?
-                                                detect_onnx_model_filename,  // onnx detect model filename - config item?
-                                                decode_onnx_model_filename); // onnx decode model filename - config item?
+                                                  use_tiled_detection,         // use tiled detection - config item
+                                                  use_scaled_image,            // use scaled-down full image in addition to tiles - config item
+                                                  tag_type,                    // tag type - config item
+                                                  intrinsic_matrix,            // from camera info
+                                                  distortion_coeffs,           // from camera info
+                                                  tagSizeInMeter,              // physical tag size - config item
+                                                  model_path,                  // use rospkg to find?
+                                                  detect_onnx_model_filename,  // onnx detect model filename - config item?
+                                                  decode_onnx_model_filename); // onnx decode model filename - config item?
             double corner_min_center_score(deep_tag_->getCornerMinCenterScore());
             nh_.param("corner_min_center_score", corner_min_center_score, corner_min_center_score);
             double ssd_min_center_score(deep_tag_->getSSDMinCenterScore());
@@ -126,40 +128,40 @@ private:
             nh_.param("min_grid_match_ratio", min_grid_match_ratio, min_grid_match_ratio);
 
             ddr_.registerVariable<double>("corner_min_center_score",
-                                        [this]() { return deep_tag_->getCornerMinCenterScore();},
-                                        [this](const double param) { deep_tag_->setCornerMinCenterScore(param);},
-                                        "Corner min center detection score",
-                                        0.0, 1.0);
+                                          [this]() { return deep_tag_->getCornerMinCenterScore();},
+                                          [this](const double param) { deep_tag_->setCornerMinCenterScore(param);},
+                                          "Corner min center detection score",
+                                          0.0, 1.0);
             ddr_.registerVariable<double>("ssd_min_center_score",
-                                        [this]() { return deep_tag_->getSSDMinCenterScore();},
-                                        [this](const double param) { deep_tag_->setSSDMinCenterScore(param);},
-                                        "SSD min center detection score",
-                                        0.0, 1.0);
+                                          [this]() { return deep_tag_->getSSDMinCenterScore();},
+                                          [this](const double param) { deep_tag_->setSSDMinCenterScore(param);},
+                                          "SSD min center detection score",
+                                          0.0, 1.0);
             ddr_.registerVariable<int>   ("grid_grouper_sigma",
-                                        [this]() { return deep_tag_->getGridGrouperSigma();},
-                                        [this](const double param) { deep_tag_->setGridGrouperSigma(param);},
-                                        "Grid grouper sigma",
-                                        1, 10000);
+                                          [this]() { return deep_tag_->getGridGrouperSigma();},
+                                          [this](const int param) { deep_tag_->setGridGrouperSigma(param);},
+                                          "Grid grouper sigma",
+                                          1, 10000);
             ddr_.registerVariable<int>   ("ssd_grouper_sigma",
-                                        [this]() { return deep_tag_->getSSDGrouperSigma();},
-                                        [this](const double param) { deep_tag_->setSSDGrouperSigma(param);},
-                                        "SSD grouper sigma",
-                                        1, 10000);
+                                          [this]() { return deep_tag_->getSSDGrouperSigma();},
+                                          [this](const int param) { deep_tag_->setSSDGrouperSigma(param);},
+                                          "SSD grouper sigma",
+                                          1, 10000);
             ddr_.registerVariable<double>("nms_confidence_threshold",
-                                        [this]() { return deep_tag_->getNMSConfidenceThreshold();},
-                                        [this](const double param) { deep_tag_->setNMSConfidenceThreshold(param);},
-                                        "NMS Confidence Threshold",
-                                        0.0, 1.0);
+                                          [this]() { return deep_tag_->getNMSConfidenceThreshold();},
+                                          [this](const double param) { deep_tag_->setNMSConfidenceThreshold(param);},
+                                          "NMS Confidence Threshold",
+                                          0.0, 1.0);
             ddr_.registerVariable<double>("nms_nms_threshold",
-                                        [this]() { return deep_tag_->getNMSNMSThreshold();},
-                                        [this](const double param) { deep_tag_->setNMSNMSThreshold(param);},
-                                        "NMS NMS Threshold",
-                                        0.0, 1.0);
+                                          [this]() { return deep_tag_->getNMSNMSThreshold();},
+                                          [this](const double param) { deep_tag_->setNMSNMSThreshold(param);},
+                                          "NMS NMS Threshold",
+                                          0.0, 1.0);
             ddr_.registerVariable<double>("min_grid_match_ratio",
-                                        [this]() { return deep_tag_->getMinGridMatchRatio();},
-                                        [this](const double param) { deep_tag_->setMinGridMatchRatio(param);},
-                                        "Stage 2 min grid match ratio",
-                                        0.0, 1.0);
+                                          [this]() { return deep_tag_->getMinGridMatchRatio();},
+                                          [this](const double param) { deep_tag_->setMinGridMatchRatio(param);},
+                                          "Stage 2 min grid match ratio",
+                                          0.0, 1.0);
             ddr_.publishServicesTopics();
         }
         cv_bridge::CvImageConstPtr cv_frame = cv_bridge::toCvShare(image, sensor_msgs::image_encodings::BGR8);
@@ -230,12 +232,20 @@ private:
             deep_tag_->visualizeStage1SSD(stage1_ssd_debug_image_.image);
             pub_stage1_ssd_debug_image_.publish(stage1_ssd_debug_image_.toImageMsg());
         }
+        if (pub_stage2_debug_image_.getNumSubscribers() > 0)
+        {
+            stage2_debug_image_.header = image->header;
+            stage2_debug_image_.encoding = sensor_msgs::image_encodings::BGR8;
+            stage2_debug_image_.image = cv_frame->image.clone();
+            deep_tag_->visualizeStage2(stage2_debug_image_.image, result);
+            pub_stage2_debug_image_.publish(stage2_debug_image_.toImageMsg());
+        }
 
         pub_apriltag_detections_.publish(apriltag_array_msg);
         pub_apriltag_poses_.publish(apriltag_pose_msg);
     }
 
-    bool saveInputImageCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+    bool saveInputImageCallback(std_srvs::Trigger::Request &, std_srvs::Trigger::Response &res)
     {
         save_input_image_ = true;
         res.success = true;
@@ -251,9 +261,11 @@ private:
     image_transport::Publisher pub_debug_image_;
     image_transport::Publisher pub_stage1_grid_debug_image_;
     image_transport::Publisher pub_stage1_ssd_debug_image_;
+    image_transport::Publisher pub_stage2_debug_image_;
     cv_bridge::CvImage debug_image_;
     cv_bridge::CvImage stage1_grid_debug_image_;
     cv_bridge::CvImage stage1_ssd_debug_image_;
+    cv_bridge::CvImage stage2_debug_image_;
     ros::Publisher pub_apriltag_detections_;
     ros::Publisher pub_apriltag_poses_;
 
