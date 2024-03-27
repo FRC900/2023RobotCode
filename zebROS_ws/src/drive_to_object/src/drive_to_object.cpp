@@ -247,6 +247,7 @@ public:
     }
     else {
       ROS_WARN_STREAM("No object :(");
+      return std::nullopt;
     }
     return closestObject;
   }
@@ -286,6 +287,8 @@ public:
     auto y_axis_it = axis_states_.find("y");
     auto &y_axis = y_axis_it->second;
     std::optional<norfair_ros::Detection> closestObject;
+    feedback_.tracking_obj = false;
+    as_.publishFeedback(feedback_);
     while (true)
     {
       r.sleep();
@@ -337,6 +340,11 @@ public:
       if (as_.isPreemptRequested() || !ros::ok())
       {
         ROS_ERROR_STREAM("drive_to_object : Preempted");
+        geometry_msgs::Twist t;
+        t.linear.x = 0;
+        t.linear.y = 0;
+        t.angular.z = 0;
+        cmd_vel_pub_.publish(t);
         as_.setPreempted();
         x_axis.setEnable(false);
         y_axis.setEnable(false);
@@ -388,24 +396,19 @@ public:
         ROS_INFO_STREAM("SETTING ANGLE TO " << field_relative_object_angle << " atan2" << atan2(base_link_point.point.y, base_link_point.point.x));
       }
 
+      double angle_multipler;
       msg.data = field_relative_object_angle;
-      if (goal->use_y) {
+      if (goal->use_y && !goal->override_goal_angle) {
         msg.data = goal->field_relative_angle;
         ROS_INFO_STREAM("Field relative angle " << goal->field_relative_angle);
-      }
-      orientation_command_pub_.publish(msg);
-
-
-      double angle_multipler;
-      if (goal->use_y) {
         angle_multipler = requested_to_baselink_angle;
-        ROS_INFO_STREAM("Angle multipler " << angle_multipler);
+        ROS_INFO_STREAM("============Angle multipler " << angle_multipler);
       }
       else {
         angle_multipler = field_relative_object_angle - latest_yaw_;
       }
-      
 
+      orientation_command_pub_.publish(msg);
       angle_error_ = fabs(field_relative_object_angle - latest_yaw_);
       
       ROS_INFO_STREAM("Angle error is " << angle_error_ << " field_rel " << field_relative_object_angle << " latest yaw " << latest_yaw_);
@@ -444,6 +447,7 @@ public:
       as_.publishFeedback(feedback_);
       r.sleep();
     }
+    ROS_WARN_STREAM("DRIVE TO OBJ EXIT CONDITIONS x err " << abs(x_error_) <<  "x tol " << goal->x_tolerance << " y ERr " << abs(y_error_ * goal->use_y)  << " Y TOL " << goal->y_tolerance);
     geometry_msgs::Twist t;
     t.linear.x = 0;
     t.linear.y = 0;
@@ -453,6 +457,7 @@ public:
     y_axis.setEnable(false);
     result_.success = true;
     as_.setSucceeded(result_);
+    r.sleep();
   }
 };
 

@@ -5,7 +5,7 @@
 <!-- rostopic list | grep -E -v '.*image.*|.*disp.*|.*depth_registered.*|.*confidence_map.*|.*point_cloud.*' -->
   <node name="rosbag_record_node" pkg="rosbag" type="record"
 	  launch-prefix="nice"
-	  args="record --tcpnodelay -o /home/ubuntu/bagfiles/
+	  args="record --tcpnodelay -o /home/ubuntu/bagfiles/auto_testing
 	  /align/cmd_vel
 	  /align_and_shoot/align_and_shoot_2024/cancel
 	  /align_and_shoot/align_and_shoot_2024/feedback

@@ -38,6 +38,7 @@
 
 #include <behavior_actions/AutoAlignSpeaker.h>
 #include <behavior_actions/DriveObjectIntake2024Action.h>
+#include "behavior_actions/RelocalizePoint.h"
 
 // include tf listener/tf buffer
 #include <tf2_ros/transform_listener.h>
@@ -73,9 +74,14 @@ class AutoNode {
 		ros::ServiceClient brake_srv_;
 		ros::ServiceClient park_srv_;
 		ros::ServiceClient tagslam_relocalize_srv_;
+		
+		ros::ServiceClient zero_odom_srv_;
+		ros::ServiceClient toggle_relocalize_srv_;
+		ros::ServiceClient relocalize_point_srv_;
+
 		ros::ServiceClient pause_srv_;
 		bool park_enabled = false;
-
+		bool have_canceled = false; 
 		//subscribers
 		//rio match data (to know if we're in auto period)
 		ros::Subscriber match_data_sub_;
@@ -163,6 +169,10 @@ class AutoNode {
 		brake_srv_ = nh_.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/brake", false, service_connection_header);
 		park_srv_ = nh_.serviceClient<std_srvs::SetBool>("/frcrobot_jetson/swerve_drive_controller/toggle_park", false, service_connection_header);
 		tagslam_relocalize_srv_ = nh_.serviceClient<std_srvs::Empty>("/tagslam_pub_map_to_odom", false, service_connection_header);
+		zero_odom_srv_ = nh_.serviceClient<std_srvs::Empty>("/frcrobot_jetson/swerve_drive_controller/reset_odom", false, service_connection_header);
+		toggle_relocalize_srv_ = nh_.serviceClient<std_srvs::SetBool>("/toggle_map_to_odom", false, service_connection_header);
+		relocalize_point_srv_ = nh_.serviceClient<behavior_actions::RelocalizePoint>("/relocalize_point", false, service_connection_header);
+		
 		pause_srv_ = nh_.serviceClient<std_srvs::SetBool>("/path_follower/pause_path", false, service_connection_header);
 
 		//subscribers
@@ -1053,6 +1063,13 @@ class AutoNode {
 		return true;
 	}
 
+	bool rezeroOdomfn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
+
+		intaking_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now()); // cancel goal sent from start intaking, probably never needed but could be helpful in a pinch
+		ROS_WARN_STREAM("Auto node - STOPPING INTAKE in auto");
+		return true;
+	}
+
 	bool counterAutofn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
 		// auto_mode_12: ["zoom_mid_ALLIANCE_csv", "spin_up_slide_shooter", "auto_intake", "closest_note_path"]
 		// spin up shooter slide async
@@ -1062,24 +1079,40 @@ class AutoNode {
 		
 		// spin up shooter slide async
 		// runStep("spin_up_slide_shooter");
-
+		
 		// zoom to mid
-		std::string path = "zoom_mid_ALLIANCE_csv";
+		std::string path = "zoom_mid_amp_ALLIANCE_csv";
 		const std::string ALLIANCE = "ALLIANCE"; 
 		boost::replace_all(path, ALLIANCE, getAllianceColorString());
 		runStep(path);
 
 		// auto intake
 		runStep("auto_intake");
+	
 		waitForActionlibServer(auto_intake_ac_, 20, "auto intaking");
 
 		// closest note path forever
-		// runStep("closest_note_path");
+		path = "one_to_two_ALLIANCE_csv";
+		boost::replace_all(path, ALLIANCE, getAllianceColorString());
+		runStep(path);
 
 		// runStep("closest_note_path");
 		// waitForActionlibServer(auto_intake_ac_, 10, "auto intaking");
 
 		return true;
+	}
+
+	void autoIntakeFeedback(const behavior_actions::DriveObjectIntake2024FeedbackConstPtr& feedback) {
+		ROS_INFO_STREAM("GOT DRIVE TO OBJECT FEEDBACK");
+		if (feedback->tracking_obj && !have_canceled) {
+			ROS_INFO_STREAM("TRACKING OBJ, KILLING PATH FOLLOWER");
+			// need to kill path follower yesterday
+			path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+			have_canceled = true;
+		}
+		else {
+			ROS_INFO_STREAM("Auto node: Have not seen object");
+		}	
 	}
 
 	bool autoIntakefn(XmlRpc::XmlRpcValue action_data, const std::string& auto_step) {
@@ -1090,15 +1123,12 @@ class AutoNode {
 
 		behavior_actions::DriveObjectIntake2024Goal goal;
 		goal.destination = goal.SHOOTER;
-
-		auto_intake_ac_.sendGoal(goal); // just send and can cancel in another action
+		goal.drive_timeout = 20;
+		have_canceled = false;
+		auto_intake_ac_.sendGoal(goal, NULL, NULL, boost::bind(&AutoNode::autoIntakeFeedback, this, _1));
 		ROS_INFO_STREAM("Auto node - Starting intake");
 
-		// preempt path follower (cancel action client)
-		path_ac_.cancelGoalsAtAndBeforeTime(ros::Time::now());
-
-		waitForActionlibServer(auto_intake_ac_, 10, "autointaking a note");
-
+		// preempt path follower (cancel action clien
 		return true;
 	}
 
@@ -1237,6 +1267,10 @@ class AutoNode {
 		if (action_data.hasMember("wait_for_path"))
 			readBoolParam("wait_for_path", action_data, wait_for_path);
 
+		bool reset_odom_to_path_start = false; 
+		if (action_data.hasMember("reset_odom_to_path_start"))
+			readBoolParam("reset_odom_to_path_start", action_data, reset_odom_to_path_start);
+		
 		waypoint_actions.clear();
 		if (action_data.hasMember("waypoint_actions")) {
 			XmlRpc::XmlRpcValue wpas = action_data["waypoint_actions"];
@@ -1247,8 +1281,10 @@ class AutoNode {
 					if (wpas[i].getType() == wpas[i].TypeArray) {
 						for (int j = 1; j < wpas[i].size(); j++) {
 							actions_at_waypoint.push_back(wpas[i][j]);
+							ROS_INFO_STREAM("ADDING action at waypoint " << wpas[i][j]);
 						}
 						waypoint_actions[wpas[i][0]] = actions_at_waypoint;
+						// ROS_INFO_STREAM("Auto node: adding waypoint action " << actions_at_waypoint);
 					}
 				}
 			}
@@ -1263,6 +1299,7 @@ class AutoNode {
 			if (premade_position_paths_.find(auto_step) == premade_position_paths_.end()) {
 				shutdownNode(ERROR, "1221: Can't find premade path " + auto_step);
 			}
+
 			goal.position_path = premade_position_paths_[auto_step];
 			goal.position_waypoints = premade_position_waypoints_[auto_step];
 			goal.velocity_path = premade_velocity_paths_[auto_step];
@@ -1270,11 +1307,41 @@ class AutoNode {
 			goal.waypointsIdx = waypointsIdxs_[auto_step];
 
 			last_waypoint = -1;
+			if (reset_odom_to_path_start) {
+				geometry_msgs::PoseStamped first_pose = goal.position_path.poses[0];
+				ROS_WARN_STREAM("FORCING RELOCALZE TO THE START OF THE PATH======= AT POINT X,Y " << first_pose.pose.position.x << ", " << first_pose.pose.position.y);
+				behavior_actions::RelocalizePoint inital_point;
+				inital_point.request.pose.orientation.w = 1;
+				inital_point.request.pose.orientation.x = 0;
+				inital_point.request.pose.orientation.y = 0;
+				inital_point.request.pose.orientation.z = 0;
+				inital_point.request.pose.position.x = first_pose.pose.position.x;
+				inital_point.request.pose.position.y = first_pose.pose.position.y;
+				if (!relocalize_point_srv_.call(inital_point)) {
+					ROS_ERROR_STREAM("FAILED TO CALL RELOCALIZE POINT - EXITING");
+					shutdownNode(ERROR, "Map to odom service call failed");
+				}
+				ROS_INFO_STREAM("SETTING RELOCALIZE TO FALSE");
+				std_srvs::SetBool toggle_relocalize;
+				toggle_relocalize.request.data = false;
+				if (!toggle_relocalize_srv_.call(toggle_relocalize)) {
+					ROS_ERROR_STREAM("FAILED TO DISABLE RELOCALIZING WITH CMD_VEL - EXITING");
+					shutdownNode(ERROR, "A Map to odom service call failed");
+				}
+				ROS_INFO_STREAM("REZEROING ODOMETRY SO PATH WORKS AS EXPECTED");
+				std_srvs::Empty odom_reset; 
+				if (!zero_odom_srv_.call(odom_reset)) {
+					ROS_ERROR_STREAM("FAILED TO REZERO ODOM");
+					shutdownNode(ERROR, "Rezeroing odom before odom/map relative path failed");
+				}
+				ros::Duration(0.05).sleep();
+			} 
+
 			ROS_INFO_STREAM("Auto node - sending path goal for path " << auto_step);
 			path_ac_.sendGoal(goal, NULL, NULL, [&](const path_follower_msgs::PathFeedbackConstPtr& feedback){
 				int waypoint = feedback->current_waypoint;
 				if (last_waypoint != waypoint) {
-					ROS_INFO_STREAM_THROTTLE(0.1, "CHANGED**** WAYPOINT " << std::to_string(waypoint) << " ****");
+					ROS_INFO_STREAM("CHANGED**** WAYPOINT " << std::to_string(waypoint) << " ****");
 					if (waypoint_actions.find(waypoint) == waypoint_actions.end()) {
 						// not found
 						ROS_ERROR_STREAM("No waypoint action");

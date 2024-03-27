@@ -13,7 +13,7 @@ from std_msgs.msg import Float64
 from interpolating_map import InterpolatingMap
 from geometry_msgs.msg import Twist
 
-SIM = True
+SIM = False
 
 class ShootingServer(object):
 
@@ -196,7 +196,7 @@ class ShootingServer(object):
 
     def execute_cb(self, goal: Shooting2024Goal):
         if SIM:
-            rospy.loginfo("WAITING TO SHOOT IN SIM")
+            rospy.logerr("=================WAITING TO SHOOT IN SIM")
             time.sleep(0.5)
             self.result.success = True
             self.server.set_succeeded(self.result)

@@ -48,6 +48,9 @@ class Converter:
         # print("callback")
         detections = []
         for bbox in bboxes.objects:
+            if bbox.confidence < 0.3: # arbitrary
+                rospy.logwarn(f"DROPPING DETECTION {bbox.label}@{bbox.confidence}")
+                continue
             detections.append(
                 DetectionMsg(
                     id=0,

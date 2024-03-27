@@ -74,13 +74,15 @@ class DriveObjectIntakeServer(object):
         
         drive_to_object_goal = DriveToObjectGoal()
         drive_to_object_goal.x_tolerance = self.tolerance_
-        drive_to_object_goal.y_tolerance = 900
+        drive_to_object_goal.y_tolerance = self.tolerance_
         drive_to_object_goal.id = self.note_name_ 
         drive_to_object_goal.transform_to_drive = "intake"
         drive_to_object_goal.min_x_vel = 3.0 # this is faster than before
-        drive_to_object_goal.min_y_vel = 0.0
-        drive_to_object_goal.use_y = False
+        drive_to_object_goal.min_y_vel = 2.0 # TURN THIS OFF
+        drive_to_object_goal.use_y = True # use 
+        drive_to_object_goal.override_goal_angle = True # used for aligning in y and rotating at the same time 
         drive_to_object_goal.fast_zone = 0.0
+
 
         drive_object_done = False
         
@@ -106,9 +108,10 @@ class DriveObjectIntakeServer(object):
         self.drive_to_object_client.send_goal(drive_to_object_goal, done_cb=drive_object_result, feedback_cb=drive_object_feedback)
 
         start = rospy.Time.now()
+    
         r = rospy.Rate(50)
         if goal.drive_timeout:
-            rospy.loginfo(f"2024 drive object intake: setting drive timeout to {goal.drivetimout}")
+            rospy.loginfo(f"2024 drive object intake: setting drive timeout to {goal.drive_timeout}")
             drive_timeout = goal.drive_timeout 
         else:
             drive_timeout = self.drive_timeout_ 
@@ -121,6 +124,7 @@ class DriveObjectIntakeServer(object):
             r.sleep()
 
         rospy.loginfo(f"2024_drive_object_intake: done, NOT WAITING for intake, time to drive {(rospy.Time.now() - start).to_sec()}")
+        rospy.loginfo(f"Has hit note {self.has_hit_note} drive obj done {drive_object_done} time delta {(rospy.Time.now() - start).to_sec()} drive timeout {drive_timeout} start ")
 
         # start = rospy.Time.now()
         # r = rospy.Rate(50)

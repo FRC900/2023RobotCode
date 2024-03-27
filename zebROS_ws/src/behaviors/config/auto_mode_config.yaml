@@ -53,7 +53,7 @@ auto_mode_7: ["shoot_center_subwoofer", "pause_two", "pause_two", "spin_down_sho
 auto_mode_8: ["shoot_center_subwoofer", "drive_2_5_m", "spin_down_shooter"]
 
 # 9: no-op
-auto_mode_9: ["pause_quarter"]
+auto_mode_9: ["one_to_two_blue_csv"]
 
 # 10: drive back
 # auto_mode_10: ["drive_2_5_m"]
@@ -68,7 +68,7 @@ auto_mode_10: ["counter_auto_source"]
 
 # preload note paths
 # (90 is a special case that does preload only)
-auto_mode_90: ["zoom_mid_blue_csv", "zoom_mid_red_csv", "one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
+auto_mode_90: ["zoom_mid_amp_blue_csv", "zoom_mid_amp_red_csv", "one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
 
 #auto_mode_4_blue: ["map_rel_four_note_grid_right1_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_blue_csv"]
 #auto_mode_4_red: ["map_rel_four_note_grid_right1_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_red_csv"]
@@ -88,80 +88,92 @@ auto_mode_90: ["zoom_mid_blue_csv", "zoom_mid_red_csv", "one_to_two_red_csv", "t
 counter_auto_source:
   type: counter_auto_source
 
+rezero_odom:
+  type: rezero_odom
 
-zoom_mid_blue_csv:
+zoom_mid_amp_blue_csv:
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
-  wait_for_path: true
+  wait_for_path: false
 
-zoom_mid_red_csv:
+zoom_mid_amp_red_csv:
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
-  wait_for_path: true
+  wait_for_path: false
 
 one_to_two_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 two_to_three_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 three_to_four_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 four_to_five_red_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 one_to_two_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 two_to_three_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 three_to_four_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
 four_to_five_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "pause_quarter", "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake"]]
   type: path
+  reset_odom_to_path_start: True
   goal:
     points:
       - [0.0, 0.0, 0.0]

@@ -15,7 +15,7 @@ from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 import actionlib
 from std_msgs.msg import Float64
 
-SIM = True
+SIM = False
 
 class Intaking2024Server(object):
     # create messages that are used to publish feedback/result
