@@ -280,7 +280,7 @@ public:
     x_error_ = 900;
     y_error_ = 900;
     angle_error_ = 900;
-    ros::Rate r = ros::Rate(60);
+    ros::Rate r = ros::Rate(250);
     ROS_INFO_STREAM("Execute callback");
     auto x_axis_it = axis_states_.find("x");
     auto &x_axis = x_axis_it->second;

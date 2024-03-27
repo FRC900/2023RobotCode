@@ -9,6 +9,7 @@ from talon_controller_msgs.srv import Command, CommandRequest, CommandResponse
 # Brings in the SimpleActionClient
 import actionlib
 from std_msgs.msg import Float64
+from geometry_msgs.msg import Twist
 
 class DriveObjectIntakeServer(object):
     # create messages that are used to publish feedback/result
@@ -31,6 +32,9 @@ class DriveObjectIntakeServer(object):
         self.note_name_ = rospy.get_param("note_str") # maybe it changes for some other reason
         self.drive_timeout_ = rospy.get_param("drive_timeout")
         self.intake_timeout_ = rospy.get_param("intake_timeout")
+        self.drive_back_time_ = rospy.get_param("drive_back_time")
+        self.drive_back_speed_ = rospy.get_param("drive_back_speed")
+        self.low_priority_cmd_vel_pub = rospy.Publisher("/align/cmd_vel", Twist, queue_size=1)
         self.intake_server_done = False
         self.intake_server_success = False
         self.server = actionlib.SimpleActionServer(self.action_name, DriveObjectIntake2024Action, execute_cb=self.execute_cb, auto_start = False)
@@ -109,7 +113,7 @@ class DriveObjectIntakeServer(object):
 
         start = rospy.Time.now()
     
-        r = rospy.Rate(50)
+        r = rospy.Rate(250)
         if goal.drive_timeout:
             rospy.loginfo(f"2024 drive object intake: setting drive timeout to {goal.drive_timeout}")
             drive_timeout = goal.drive_timeout 
@@ -126,19 +130,23 @@ class DriveObjectIntakeServer(object):
         rospy.loginfo(f"2024_drive_object_intake: done, NOT WAITING for intake, time to drive {(rospy.Time.now() - start).to_sec()}")
         rospy.loginfo(f"Has hit note {self.has_hit_note} drive obj done {drive_object_done} time delta {(rospy.Time.now() - start).to_sec()} drive timeout {drive_timeout} start ")
 
-        # start = rospy.Time.now()
-        # r = rospy.Rate(50)
-        # while not (self.intake_server_done or rospy.is_shutdown() or (rospy.Time.now() - start).to_sec() > self.intake_timeout_):
-        #     if self.server.is_preempt_requested():
-        #         self.preempt_servers() # preempts all actionlib servers
-        #         self.server.set_preempted()
-        #         return
-        #     r.sleep()
-        # 
-        # rospy.loginfo(f"2024_drive_object_intake: done {self.intake_server_done}, result {self.intake_server_success}, time to intake {(rospy.Time.now() - start).to_sec()}")
         self.drive_to_object_client.cancel_goals_at_and_before_time(rospy.Time.now())
         self.result.success = True # always set to success so we don't crash auto node
         self.server.set_succeeded(self.result)
+
+        # drive back at drive_back_speed for drive_back_time
+        start = rospy.Time.now()
+        twist = Twist()
+        while (rospy.Time.now() - start).to_sec() < self.drive_back_time_:
+            if self.server.is_preempt_requested():
+                self.preempt_servers() # preempts all actionlib servers
+                self.server.set_preempted()
+                twist.linear.x = 0
+                self.low_priority_cmd_vel_pub.publish(twist)
+                return
+            twist.linear.x = -self.drive_back_speed_
+            self.low_priority_cmd_vel_pub.publish(twist)
+            r.sleep()
        
 if __name__ == '__main__':
     rospy.init_node('drive_to_and_intake_server_2024')
