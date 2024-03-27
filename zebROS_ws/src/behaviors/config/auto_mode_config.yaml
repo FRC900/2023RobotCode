@@ -108,7 +108,7 @@ zoom_mid_source_red_csv:
   wait_for_path: false
 
 one_to_two_red_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -117,7 +117,7 @@ one_to_two_red_csv:
   wait_for_path: false
 
 two_to_three_red_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake_first_red"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -126,7 +126,7 @@ two_to_three_red_csv:
   wait_for_path: false
 
 three_to_four_red_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -153,7 +153,7 @@ one_to_two_blue_csv:
   wait_for_path: false
 
 two_to_three_blue_csv:
-  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake_first_blue"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -162,7 +162,7 @@ two_to_three_blue_csv:
   wait_for_path: false
 
 three_to_four_blue_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "shoot_slide", "auto_intake"]]
   type: path
   reset_odom_to_path_start: True
   goal:

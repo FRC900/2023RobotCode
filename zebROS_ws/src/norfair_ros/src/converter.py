@@ -48,7 +48,7 @@ class Converter:
         # print("callback")
         detections = []
         for bbox in bboxes.objects:
-            if bbox.confidence < 0.3: # arbitrary
+            if bbox.confidence < 0.2: # arbitrary
                 rospy.logwarn(f"DROPPING DETECTION {bbox.label}@{bbox.confidence}")
                 continue
             detections.append(
@@ -96,7 +96,7 @@ class Converter:
                 if detection.id.isdigit():
                     detection.id = "tag_" + detection.id
 
-                if detection.confidence < 0.3: # arbitrary
+                if detection.confidence < 0.2: # arbitrary
                     rospy.logwarn(f"DROPPING DETECTION {detection.id}@{detection.confidence}")
                     continue
 
