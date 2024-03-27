@@ -32,9 +32,9 @@ private:
         base_nh_ = getNodeHandle();
 
         base_it_ = std::make_unique<image_transport::ImageTransport>(base_nh_);
-        camera_sub_ = base_it_->subscribeCamera("image_rect_color", 2, &DeeptagRosNodelet::callback, this);
-        pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tags", 2);
-        pub_apriltag_poses_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 2);
+        camera_sub_ = base_it_->subscribeCamera("image_rect_color", 1, &DeeptagRosNodelet::callback, this);
+        pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tags", 1);
+        pub_apriltag_poses_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 1);
         it_ = std::make_unique<image_transport::ImageTransport>(nh_);
         pub_debug_image_ = it_->advertise("debug_image", 1);
         pub_stage1_grid_debug_image_ = it_->advertise("stage1_grid_debug_image", 1);

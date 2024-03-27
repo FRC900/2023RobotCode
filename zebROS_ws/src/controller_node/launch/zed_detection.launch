@@ -135,11 +135,18 @@
   </node>
 
 	<group ns="tf_object_detection_$(arg zed_name)" if="$(eval run_object_detection)">
-  <!-- TODO: if we're using compressed images, create an image_transport republisher to subscribe to that compressed topic and
-  republish it as raw for tf_object_detection. This was the ZED node isn't publishing both raw and compressed images? See if it helps perf to do so -->
 		<node pkg="tf_object_detection" name="tf_object_detection" type="fastYOLO.py" output="screen">
-			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color" />
+			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color" unless="$(eval run_deeptag)"/>
+			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color_remapped" if="$(eval run_deeptag)"/>
 			<param name="min_confidence" type="double" value="0.05" />
+		</node>
+  <!-- if we're using compressed images needed by deeptag, create an image_transport republisher to subscribe to that compressed topic and
+       republish it as raw for tf_object_detection. This was the ZED node isn't publishing both raw and compressed images?
+       Moving this to a separate node speeds up ZED wrapper?
+       TODO : rewrite tf_object_detection in CPP so it can use image_wrapper directly
+       -->
+		<node pkg="image_transport" name="tf_object_detection_republish" type="republish" args="raw in:=/$(arg zed_name)/left/image_rect_color out:=/$(arg zed_name)/left/image_rect_color_remapped" output="screen" if="$(eval run_deeptag)">
+      <param name="image_transport" value="compressed" />
 		</node>
 	</group>
 
