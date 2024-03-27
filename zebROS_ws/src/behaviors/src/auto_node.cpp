@@ -1081,7 +1081,7 @@ class AutoNode {
 		// runStep("spin_up_slide_shooter");
 		
 		// zoom to mid
-		std::string path = "zoom_mid_amp_ALLIANCE_csv";
+		std::string path = "zoom_mid_source_ALLIANCE_csv";
 		const std::string ALLIANCE = "ALLIANCE"; 
 		boost::replace_all(path, ALLIANCE, getAllianceColorString());
 		runStep(path);

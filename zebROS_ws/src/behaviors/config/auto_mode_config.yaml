@@ -61,14 +61,14 @@ auto_mode_9: ["one_to_two_blue_csv"]
 auto_mode_11: ["pause_two", "four_note_speaker_no_rotate_ALLIANCE_csv"]
 
 # TODO stop localize
-auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_ALLIANCE_csv", "auto_intake", "shoot_slide", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_shooting", "spin_down_shooter"]
+auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_source_ALLIANCE_csv", "auto_intake", "shoot_slide", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_shooting", "spin_down_shooter"]
 
 auto_mode_10: ["counter_auto_source"]
 
 
 # preload note paths
 # (90 is a special case that does preload only)
-auto_mode_90: ["zoom_mid_amp_blue_csv", "zoom_mid_amp_red_csv", "one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
+auto_mode_90: ["zoom_mid_source_blue_csv", "zoom_mid_source_red_csv", "one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
 
 #auto_mode_4_blue: ["map_rel_four_note_grid_right1_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_blue_csv"]
 #auto_mode_4_red: ["map_rel_four_note_grid_right1_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_red_csv"]
@@ -91,7 +91,7 @@ counter_auto_source:
 rezero_odom:
   type: rezero_odom
 
-zoom_mid_amp_blue_csv:
+zoom_mid_source_blue_csv:
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -99,7 +99,7 @@ zoom_mid_amp_blue_csv:
       - [0.0, 0.0, 0.0]
   wait_for_path: false
 
-zoom_mid_amp_red_csv:
+zoom_mid_source_red_csv:
   type: path
   reset_odom_to_path_start: True
   goal:

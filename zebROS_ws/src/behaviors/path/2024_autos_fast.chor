@@ -13,7 +13,7 @@
         "wheelRadius": 0.050799972568014815
     },
     "paths": {
-        "zoom_mid_amp": {
+        "zoom_mid_source": {
             "waypoints": [
                 {
                     "x": 1.3779138326644897,
@@ -838,7 +838,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "one_to_two": {
             "waypoints": [
