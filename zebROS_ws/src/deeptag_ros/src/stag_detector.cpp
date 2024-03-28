@@ -465,6 +465,21 @@ void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::visualizeSSD(cv::Mat &image)
     }
 }
 template <size_t NUM_TILES, bool USE_SCALED_IMAGE>
+void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::visualizeTiles(cv::Mat &image)
+{
+    if constexpr (NUM_TILES > 0)
+    {
+        std::array<ushort2, NUM_TILES> tileOffsets;
+        m_detectEngine->getTileOffsets(tileOffsets);
+        const auto contextInputDim = m_detectEngine->getContextDim("input");
+        const ushort2 inputSize{static_cast<ushort>(contextInputDim.d[3]), static_cast<ushort>(contextInputDim.d[2])};
+        for (size_t i = 0; i < NUM_TILES; i++)
+        {
+            cv::rectangle(image, cv::Rect2d(cv::Point2d(tileOffsets[i].x, tileOffsets[i].y), cv::Point2d(tileOffsets[i].x + inputSize.x - 1, tileOffsets[i].y + inputSize.y - 1)), cv::Scalar(128, 128, 0), 2);
+        }
+    }
+}
+template <size_t NUM_TILES, bool USE_SCALED_IMAGE>
 void STagDetector<NUM_TILES, USE_SCALED_IMAGE>::saveInputImage(void)
 {
     m_saveInputImage = true;

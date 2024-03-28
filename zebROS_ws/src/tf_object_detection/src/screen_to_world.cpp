@@ -119,6 +119,8 @@ namespace tf_object_detection
 			// Initialize published message with header info from objDetectionMsg
 			field_obj::Detection out_msg;
 			out_msg.header = objDetectionMsg->header;
+			// TODO : replace with a transform to base link?
+			// Or at least to the non-optical_frame version of the camera frame
 			// Remove _optical_frame from the camera frame ID if present
 			std::string frame_id = objDetectionMsg->header.frame_id;
 			const size_t idx = frame_id.rfind("_optical_frame");

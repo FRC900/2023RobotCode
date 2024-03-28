@@ -57,6 +57,7 @@ public:
     int    getSSDGrouperSigma(void) const;
     void   visualizeGrid(cv::Mat &image);
     void   visualizeSSD(cv::Mat &image);
+    void   visualizeTiles(cv::Mat &image);
 
     void   saveInputImage(void);
 

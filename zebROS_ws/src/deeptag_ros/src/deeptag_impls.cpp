@@ -146,11 +146,13 @@ template <size_t NUM_TILES, bool USE_SCALED_IMAGE, size_t MARKER_GRID_SIZE>
 void DeepTagImpl<NUM_TILES, USE_SCALED_IMAGE, MARKER_GRID_SIZE>::visualizeStage1Grid(cv::Mat &image)
 {
     m_sTagDetector.visualizeGrid(image);
+    m_sTagDetector.visualizeTiles(image);
 }
 template <size_t NUM_TILES, bool USE_SCALED_IMAGE, size_t MARKER_GRID_SIZE>
 void DeepTagImpl<NUM_TILES, USE_SCALED_IMAGE, MARKER_GRID_SIZE>::visualizeStage1SSD(cv::Mat &image)
 {
     m_sTagDetector.visualizeSSD(image);
+    m_sTagDetector.visualizeTiles(image);
 }
 
 static cv::Mat getTag(const cv::Mat &image, const size_t outputHW, const std::array<cv::Point2d, 4> &corners)

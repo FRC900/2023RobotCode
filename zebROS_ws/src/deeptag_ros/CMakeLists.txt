@@ -195,7 +195,7 @@ add_library(deeptag STATIC
 
 # target_include_directories(deeptag PUBLIC ${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${TensorRT_INCLUDE_DIRS})
 target_link_libraries(deeptag PUBLIC ${OpenCV_LIBS} ${CUDA_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${TensorRT_LIBRARIES} ${LIBNVTOOLSEXT})
-set_target_properties(deeptag PROPERTIES CUDA_ARCHITECTURES "86")
+set_target_properties(deeptag PROPERTIES CUDA_ARCHITECTURES "86;87")
 set_property(TARGET deeptag PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 add_executable(run_inference_benchmark src/main.cpp)

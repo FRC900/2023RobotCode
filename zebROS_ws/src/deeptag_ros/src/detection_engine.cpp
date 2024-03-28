@@ -287,7 +287,7 @@ void DetectionEngine<NUM_TILES, USE_SCALED_IMAGE>::blobFromGpuMats(const std::ve
     // Sync up all of the streams used for creating tiled GPU inputs
     for (size_t tile = 0; tile < NUM_TILES; tile++)
     {
-        cudaSafeCall(cudaStreamWaitEvent(getCudaStream(), m_preprocCudaEvents[tile]));
+        cudaSafeCall(cudaStreamSynchronize(m_preprocCudaStreams[tile]));
     }
 #ifdef DEBUG
     for (size_t tile = 0; tile < (NUM_TILES + NUM_SCALED_IMAGES); tile++)

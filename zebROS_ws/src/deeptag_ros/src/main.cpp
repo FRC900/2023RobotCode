@@ -20,13 +20,19 @@ int main(int argc, char *argv[])
 
     // Read the input image
     const std::string inputImage = argv[1];
-    auto cpuImg = cv::imread(inputImage);
-    if (cpuImg.empty())
+    cv::VideoCapture cap(inputImage);
+    cv::Mat cpuImg;
+    if (!cap.read(cpuImg))
     {
-        throw std::runtime_error("Unable to read image at path: " + inputImage);
+        throw std::runtime_error("Unable to read video frame at path: " + inputImage);
     }
+    // cpuImg = cv::imread(inputImage);
+    // if (cpuImg.empty())
+    // {
+    //     throw std::runtime_error("Unable to read image at path: " + inputImage);
+    // }
 
-    constexpr double tagSizeInMeter = 0.152;
+    constexpr double tagSizeInMeter = 0.1651;
 
     cv::Mat cameraMatrix;
     cv::Mat distCoeffs;
@@ -45,7 +51,7 @@ int main(int argc, char *argv[])
 
     DeepTag deepTag{cpuImg.size(),               // input image size, used for image resolution
                     true,                        // tiled detection - config item
-                    false,                       // use scaled-down full image in addition to tiles - config item
+                    true,                        // use scaled-down full image in addition to tiles - config item
                     DeepTagType::APRILTAG_36H11, // tag type - config item
                     cameraMatrix,                // from camera info
                     distCoeffs,                  // from camera info
@@ -56,7 +62,8 @@ int main(int argc, char *argv[])
     deepTag.setCornerMinCenterScore(0.05);
     deepTag.setSSDMinCenterScore(0.05);
 
-    // while(true)
+    int frameCounter = 0;
+    while(true)
     {
     for (int iteration = 0; iteration < 1; iteration++)
     {
@@ -90,7 +97,21 @@ int main(int argc, char *argv[])
         cv::imshow((inputImage + "_stage_2").c_str(), stage2DebugImg);
 
         // cv::imwrite(inputImage + "_out.png", debugImg);
-        cv::waitKey(0);
+        int key = cv::waitKey(20) & 0x000000FF;
+        if (key == 's')
+        {
+            std::stringstream s;
+            s << inputImage;
+            s << "_";
+            s << frameCounter;
+            s << ".png";
+            cv::imwrite(s.str().c_str(), cpuImg);
+        }
+        if ((key == 27) || !cap.read(cpuImg))
+        {
+            break;
+        }
+        frameCounter += 1;
 #endif
     }
     }
