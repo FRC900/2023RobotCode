@@ -1381,6 +1381,7 @@ class AutoNode {
 			goal.velocity_path = premade_velocity_paths_[auto_step];
 			goal.velocity_waypoints = premade_velocity_waypoints_[auto_step];
 			goal.waypointsIdx = waypointsIdxs_[auto_step];
+			goal.dont_go_to_start = reset_odom_to_path_start;
 
 			last_waypoint = -1;
 			if (reset_odom_to_path_start) {

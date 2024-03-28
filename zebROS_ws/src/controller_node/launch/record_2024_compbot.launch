@@ -64,6 +64,13 @@
 	  /drive_to_object/x_position_pid/x_cmd_pub
 	  /drive_to_object/x_position_pid/x_command
 	  /drive_to_object/x_position_pid/x_state_pub
+	  /drive_to_object/y_position_pid/parameter_descriptions
+	  /drive_to_object/y_position_pid/parameter_updates
+	  /drive_to_object/y_position_pid/pid_debug
+	  /drive_to_object/y_position_pid/pid_enable
+	  /drive_to_object/y_position_pid/y_cmd_pub
+	  /drive_to_object/y_position_pid/y_command
+	  /drive_to_object/y_position_pid/y_state_pub
 	  /enable_auto_in_teleop
 	  /frcrobot_jetson/arm_controller/command
 	  /frcrobot_jetson/bottom_left_shooter_controller/command
