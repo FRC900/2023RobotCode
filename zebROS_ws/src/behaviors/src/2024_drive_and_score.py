@@ -39,8 +39,13 @@ class DriveAndScore:
         self.align_client.wait_for_server()
         # shoot trap
         self.shooting_client = actionlib.SimpleActionClient('/shooting/shooting_server_2024', behavior_actions.msg.Shooting2024Action)
-        self.leafblower_pub = rospy.Publisher("FIND TOPIC", std_msgs.msg.Float64, queue_size=1)
-        self.arm_pivot_client = rospy.ServiceProxy("/frcrobot_jetson/shooter_pivot_controller/shooter_pivot_service", ShooterPivotSrv)
+        
+        self.leafblower_pub = rospy.Publisher("=============FIND TOPIC=================", std_msgs.msg.Float64, queue_size=1)
+        self.arm_pivot_client = rospy.ServiceProxy("/frcrobot_jetson/arm_controller/shooter_pivot_service", ShooterPivotSrv)
+
+        self.trap_blower_rest_position: float = rospy.get_param("trap_blower_rest_position")
+        self.trap_blower_position: float = rospy.get_param("trap_blower_position")
+        self.trap_blower_speed: int = rospy.get_param("trap_blower_speed")
 
         rospy.loginfo("2024_intaking_server: waiting for shooting server")
         self.shooting_client.wait_for_server()
@@ -58,6 +63,19 @@ class DriveAndScore:
     def shooting_done_cb(self, status, result):
         self.shooting_done = True
     
+    def trap_shooting_done_cb(self, status, result):
+        rospy.loginfo("2024 drive and score, trap shooting done, shutting down leafblower and pivoting arm")
+        msg = std_msgs.msg.Float64()
+        msg.data = 0.0 
+        self.leafblower_pub.publish(msg)
+        pivot = ShooterPivotSrvRequest()
+        pivot.angle = self.rest_blower_position
+        if not self.arm_pivot_client.call(pivot):
+            rospy.logerr("2024 drive and score - failed to send arm back, this is very bad")
+            self._result.success = False
+            self._as.set_succeeded(self._result)
+            return
+
     def score_cb(self, goal: DriveAndScore2024Goal):
         self.feed_forward = True
         success = True
@@ -82,9 +100,17 @@ class DriveAndScore:
             rospy.loginfo(f"Drive and score 2024 - going trap")
             align_goal.destination = align_goal.TRAP
             self.align_client.send_goal(align_goal, done_cb=self.align_done_cb)
-
-            # for this case we just wait until we are done and then send shooting
-
+            msg = std_msgs.msg.Float64()
+            msg.data = 1.0 # make configurable 
+            self.leafblower_pub.publish(msg)
+            pivot = ShooterPivotSrvRequest()
+            pivot.angle = self.trap_blower_position
+            if not self.arm_pivot_client.call(pivot):
+                rospy.logerr("2024 drive and score - failed to call arm pivot client")
+                self._result.success = False
+                self._as.set_succeeded(self._result)
+                return
+            
         # for telling if we hvae 
         while not rospy.is_shutdown():
             # check that preempt has not been requested by the client
@@ -145,8 +171,8 @@ class DriveAndScore:
                 shooting_goal.mode = shooting_goal.TRAP
                 shooting_goal.leave_spinning = False
                 shooting_goal.setup_only = False
-                self.shooting_client.send_goal(shooting_goal)
-
+                self.shooting_client.send_goal(shooting_goal, done_cb=self.trap_shooting_done_cb)
+            
                 self._result.success = True
                 self._as.set_succeeded(self._result)
                 return
