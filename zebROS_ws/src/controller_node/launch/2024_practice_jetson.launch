@@ -144,6 +144,7 @@
 	<include file="$(find behaviors)/launch/2024_drive_to_object_and_intake.launch"/>
 	<include file="$(find norfair_ros)/launch/norfair_node.launch">
 	</include>
+	<include file="$(find behaviors)/launch/2024_drive_and_score.launch"/>
 
 	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
 	

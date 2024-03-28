@@ -23,3 +23,7 @@ stage_1_trap_frame: "trap_frame"
 stage_2_trap_frame: "trap_scoring_frame"
 amp_frame: "shooter_bumper"
 subwoofer_frame: "shooter_bumper"
+
+trap_blower_speed: 1.0 # percent output
+trap_blower_position: 0.24434 # rad
+trap_blower_rest_position: -2.1 # rad
