@@ -16,6 +16,7 @@ from tf.transformations import euler_from_quaternion # may look like tf1 but is 
 from frc_msgs.msg import MatchSpecificData
 import std_srvs.srv
 import angles
+from controllers_2024_msgs.srv import ShooterPivotSrv, ShooterPivotSrvRequest
 import numpy
 import geometry_msgs.msg
 
@@ -38,6 +39,9 @@ class DriveAndScore:
         self.align_client.wait_for_server()
         # shoot trap
         self.shooting_client = actionlib.SimpleActionClient('/shooting/shooting_server_2024', behavior_actions.msg.Shooting2024Action)
+        self.leafblower_pub = rospy.Publisher("FIND TOPIC", std_msgs.msg.Float64, queue_size=1)
+        self.arm_pivot_client = rospy.ServiceProxy("/frcrobot_jetson/shooter_pivot_controller/shooter_pivot_service", ShooterPivotSrv)
+
         rospy.loginfo("2024_intaking_server: waiting for shooting server")
         self.shooting_client.wait_for_server()
         self.pub_cmd_vel = rospy.Publisher("/align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)        
