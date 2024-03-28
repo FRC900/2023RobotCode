@@ -405,7 +405,7 @@ arm_controller:
         neutral_mode: Brake
         invert: clockwise_positive
         close_loop_values:
-            - {kP: 15.0, kI: 0.0, kD: 0.0, kV: 4.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
+            - {kP: 50.0, kI: 0.0, kD: 0.0, kV: 4.0, kS: 0.0, kG: 0.0, gravity_type: "arm_cosine"}
         dynamic_reconfigure: True
 
 arm_cancoder_controller:
