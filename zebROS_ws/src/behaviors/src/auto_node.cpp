@@ -981,6 +981,10 @@ class AutoNode {
 				ROS_INFO_STREAM("Auto node - Spinning up shooter for slide");
 				goal.mode = goal.SLIDE;
 			}
+			if (action_data["mode"] == "start_auto") {
+				ROS_INFO_STREAM("Auto node - shooting start auto shot");
+				goal.mode = goal.START_AUTO;
+			}
 		}
 		shooting_ac_.sendGoal(goal); // this goal will succeed almost right away, don't cancel
 		return true; 
@@ -1017,6 +1021,10 @@ class AutoNode {
 			if (action_data["mode"] == "slide") {
 				ROS_INFO_STREAM("Auto node - shooting slide shot");
 				goal.mode = goal.SLIDE;
+			}
+			if (action_data["mode"] == "start_auto") {
+				ROS_INFO_STREAM("Auto node - shooting start auto shot");
+				goal.mode = goal.START_AUTO;
 			}
 		}
 		shooting_ac_.sendGoal(goal); 

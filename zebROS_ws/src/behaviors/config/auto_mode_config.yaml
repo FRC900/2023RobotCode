@@ -62,7 +62,7 @@ auto_mode_9: ["one_to_two_blue_csv"]
 auto_mode_11: ["spin_up_shooter_3_8m", "score_preload_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "source_score_to_one_ALLIANCE_csv", "wait_for_auto_intake", "score_one_ALLIANCE_csv", "relocalize", "align_to_speaker", "shoot_dynamic", "source_score_to_two_ALLIANCE_csv", "auto_intake", "wait_for_auto_intake", "score_two_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "stop_intake", "spin_down_shooter"]
 
 # four from mid
-auto_mode_12: ["zoom_mid_source_ALLIANCE_csv", "spin_up_slide_shooter", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "spin_down_shooter"]
+auto_mode_12: ["zoom_mid_source_ALLIANCE_csv", "spin_up_start_auto", "wait_for_auto_intake", "closest_note_path", "spin_up_slide_shooter", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "spin_down_shooter"]
 
 # preload note paths
 # (90 is a special case that does preload only)
@@ -140,7 +140,7 @@ score_two_red_csv:
   wait_for_path: true
 
 zoom_mid_source_blue_csv:
-  waypoint_actions: [[1, "shoot_slide"], [2, "auto_intake_first_blue"]]
+  waypoint_actions: [[1, "shoot_start_auto"], [2, "auto_intake_first_blue"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -149,7 +149,7 @@ zoom_mid_source_blue_csv:
   wait_for_path: false
 
 zoom_mid_source_red_csv:
-  waypoint_actions: [[1, "shoot_slide"], [2, "auto_intake_first_red"]]
+  waypoint_actions: [[1, "shoot_start_auto"], [2, "auto_intake_first_red"]]
   type: path
   reset_odom_to_path_start: True
   goal:
@@ -324,10 +324,20 @@ spin_up_slide_shooter:
   distance: 0.0 # meters
   mode: "slide"
 
+spin_up_start_auto:
+  type: spin_up_shooter
+  distance: 0.0 # meters
+  mode: "start_auto"
+
 shoot_slide:
   type: shoot_distance
   distance: 0.0 # meters
   mode: "slide"
+
+shoot_start_auto:
+  type: shoot_distance
+  distance: 0.0 # meters
+  mode: "start_auto"
 
 spin_down_shooter:
   type: spin_down_shooter
