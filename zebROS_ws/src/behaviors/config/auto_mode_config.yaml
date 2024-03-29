@@ -58,14 +58,11 @@ auto_mode_9: ["one_to_two_blue_csv"]
 # 10: drive back
 # auto_mode_10: ["drive_2_5_m"]
 
-auto_mode_11: ["pause_two", "four_note_speaker_no_rotate_ALLIANCE_csv"]
+# score preload and first two (from source side) at centerline
+auto_mode_11: ["score_preload_ALLIANCE_csv", "relocalize", "align_to_speaker", "pause_quarter", "shoot_dynamic", "wait_for_shooting", "start_intake", "source_score_to_one_ALLIANCE_csv", "wait_for_auto_intake", "score_one_ALLIANCE_csv", "relocalize", "align_to_speaker", "pause_quarter", "shoot_dynamic"] #, "start_intake", "source_score_to_two_ALLIANCE_csv", "relocalize", "auto_intake", "wait_for_auto_intake", "score_two_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "stop_intake", "spin_down_shooter"]
 
-# TODO stop localize
+# four from mid
 auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_source_ALLIANCE_csv", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "spin_down_shooter"]
-# "closest_note_path", 
-
-auto_mode_10: ["counter_auto_source"]
-
 
 # preload note paths
 # (90 is a special case that does preload only)
@@ -91,6 +88,56 @@ counter_auto_source:
 
 rezero_odom:
   type: rezero_odom
+
+source_score_to_one_blue_csv:
+  waypoint_actions: [[1, "auto_intake"]]
+  type: path
+  reset_odom_to_path_start: False
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: false
+
+source_score_to_one_red_csv:
+  waypoint_actions: [[1, "auto_intake"]]
+  type: path
+  reset_odom_to_path_start: False
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: false
+
+score_one_blue_csv:
+  type: path
+  reset_odom_to_path_start: True
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: true
+
+score_one_red_csv:
+  type: path
+  reset_odom_to_path_start: True
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: true
+
+score_two_blue_csv:
+  type: path
+  reset_odom_to_path_start: True
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: true
+
+score_two_red_csv:
+  type: path
+  reset_odom_to_path_start: True
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: true
 
 zoom_mid_source_blue_csv:
   waypoint_actions: [[1, "shoot_slide"], [2, "auto_intake_first_blue"]]
@@ -267,6 +314,10 @@ wait_for_shooting:
 spin_up_shooter: 
   type: spin_up_shooter
   distance: 1.0 # meters
+
+spin_up_shooter_5m: 
+  type: spin_up_shooter
+  distance: 5.0 # meters
 
 spin_up_slide_shooter:
   type: spin_up_shooter
