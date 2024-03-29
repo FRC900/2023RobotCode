@@ -395,7 +395,7 @@ arm_controller:
         motion_magic_velocity: 0.1
         motion_magic_acceleration: 1.0
         motion_magic_jerk: 100.0
-        rotor_to_sensor_ratio: 41.66
+        rotor_to_sensor_ratio: 5.0
         sensor_to_mechanism_ratio: 1
 
         softlimit_forward_enable: False

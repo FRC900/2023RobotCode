@@ -9,7 +9,7 @@ import geometry_msgs.msg
 import std_msgs.msg
 import sensor_msgs.msg
 import math
-
+import time
 from behavior_actions.msg import DriveAndScore2024Action, DriveAndScore2024Goal, DriveAndScore2024Feedback, DriveAndScore2024Result 
 import behavior_actions.msg
 from tf.transformations import euler_from_quaternion # may look like tf1 but is actually tf2
@@ -40,7 +40,7 @@ class DriveAndScore:
         # shoot trap
         self.shooting_client = actionlib.SimpleActionClient('/shooting/shooting_server_2024', behavior_actions.msg.Shooting2024Action)
         
-        self.leafblower_pub = rospy.Publisher("=============FIND TOPIC=================", std_msgs.msg.Float64, queue_size=1)
+        self.leafblower_pub = rospy.Publisher("/frcrobot_rio/leafblower_controller/command", std_msgs.msg.Float64, queue_size=1)
         self.arm_pivot_client = rospy.ServiceProxy("/frcrobot_jetson/arm_controller/shooter_pivot_service", ShooterPivotSrv)
 
         self.trap_blower_rest_position: float = rospy.get_param("trap_blower_rest_position")
@@ -49,7 +49,7 @@ class DriveAndScore:
 
         rospy.loginfo("2024_intaking_server: waiting for shooting server")
         self.shooting_client.wait_for_server()
-        self.pub_cmd_vel = rospy.Publisher("/align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)        
+        self.pub_cmd_vel = rospy.Publisher("/auto_note_align/cmd_vel", geometry_msgs.msg.Twist, queue_size=1)        
         self.align_done = False
         
         self.shooting_done = False 
@@ -64,17 +64,31 @@ class DriveAndScore:
         self.shooting_done = True
     
     def trap_shooting_done_cb(self, status, result):
+        time.sleep(0.5)
+        r = rospy.Rate(60.0)
+        cmd_vel_msg = geometry_msgs.msg.Twist()
+        start = rospy.Time.now()
+        while (rospy.Time.now() - start < rospy.Duration(0.5)):
+            rospy.loginfo("Driving back!")
+            cmd_vel_msg.angular.x = 0
+            cmd_vel_msg.angular.y = 0
+            cmd_vel_msg.angular.z = 0
+            cmd_vel_msg.linear.x = -1.0
+            cmd_vel_msg.linear.y = 0
+            cmd_vel_msg.linear.z = 0
+            self.pub_cmd_vel.publish(cmd_vel_msg)
+            r.sleep()
         rospy.loginfo("2024 drive and score, trap shooting done, shutting down leafblower and pivoting arm")
-        msg = std_msgs.msg.Float64()
-        msg.data = 0.0 
-        self.leafblower_pub.publish(msg)
-        pivot = ShooterPivotSrvRequest()
-        pivot.angle = self.rest_blower_position
-        if not self.arm_pivot_client.call(pivot):
-            rospy.logerr("2024 drive and score - failed to send arm back, this is very bad")
-            self._result.success = False
-            self._as.set_succeeded(self._result)
-            return
+        #msg = std_msgs.msg.Float64()
+        #msg.data = 0.0 
+        #self.leafblower_pub.publish(msg)
+        #pivot = ShooterPivotSrvRequest()
+        #pivot.angle = self.trap_blower_rest_position
+        #if not self.arm_pivot_client.call(pivot):
+        #    rospy.logerr("2024 drive and score - failed to send arm back, this is very bad")
+        #    self._result.success = False
+        #    self._as.set_succeeded(self._result)
+        #    return
 
     def score_cb(self, goal: DriveAndScore2024Goal):
         self.feed_forward = True
