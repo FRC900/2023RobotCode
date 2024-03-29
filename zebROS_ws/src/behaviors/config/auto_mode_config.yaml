@@ -285,22 +285,22 @@ auto_intake:
 
 auto_intake_first_red: # left
   type: auto_intake
-  min_y_pos: -1.0
+  min_y_pos: -0.5
   max_y_pos: 5.0
 
 auto_intake_first_blue: # right
   type: auto_intake
   min_y_pos: -5.0
-  max_y_pos: 1.0
+  max_y_pos: 0.5
 
 auto_intake_fourth_red: # right
   type: auto_intake
   min_y_pos: -5.0
-  max_y_pos: 1.0
+  max_y_pos: 0.5
 
 auto_intake_fourth_blue: # left
   type: auto_intake
-  min_y_pos: -1.0
+  min_y_pos: -0.5
   max_y_pos: 5.0
 
 wait_for_auto_intake:
