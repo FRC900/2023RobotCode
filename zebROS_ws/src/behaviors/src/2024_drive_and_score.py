@@ -33,6 +33,7 @@ class DriveAndScore:
     def __init__(self, name):   
         self.valid_samples = 0
         self._action_name = name
+        self.preempted = False
         # get us to right spot
         self.align_client = actionlib.SimpleActionClient('/align_to_trap/align_to_trap_2024', behavior_actions.msg.AlignToTrap2024Action)
         rospy.loginfo("2024_intaking_server: waiting for shooter pivot server")
@@ -64,33 +65,40 @@ class DriveAndScore:
         self.shooting_done = True
     
     def trap_shooting_done_cb(self, status, result):
-        time.sleep(0.5)
+        print(status)
+        print(result)
+        if self.preempted:
+            rospy.logwarn("Preempted, not running cleanup in drive and score")
+            return
+        time.sleep(0.75)
         r = rospy.Rate(60.0)
         cmd_vel_msg = geometry_msgs.msg.Twist()
         start = rospy.Time.now()
-        while (rospy.Time.now() - start < rospy.Duration(0.5)):
+        pivot = ShooterPivotSrvRequest()
+        pivot.angle = self.trap_blower_rest_position
+        if not self.arm_pivot_client.call(pivot):
+            rospy.logerr("2024 drive and score - failed to send arm back, this is very bad")
+            self._result.success = False
+            self._as.set_succeeded(self._result)
+            return
+        while (rospy.Time.now() - start < rospy.Duration(0.75)):
             rospy.loginfo("Driving back!")
             cmd_vel_msg.angular.x = 0
             cmd_vel_msg.angular.y = 0
             cmd_vel_msg.angular.z = 0
-            cmd_vel_msg.linear.x = -1.0
+            cmd_vel_msg.linear.x = -2.0
             cmd_vel_msg.linear.y = 0
             cmd_vel_msg.linear.z = 0
             self.pub_cmd_vel.publish(cmd_vel_msg)
             r.sleep()
         rospy.loginfo("2024 drive and score, trap shooting done, shutting down leafblower and pivoting arm")
-        #msg = std_msgs.msg.Float64()
-        #msg.data = 0.0 
-        #self.leafblower_pub.publish(msg)
-        #pivot = ShooterPivotSrvRequest()
-        #pivot.angle = self.trap_blower_rest_position
-        #if not self.arm_pivot_client.call(pivot):
-        #    rospy.logerr("2024 drive and score - failed to send arm back, this is very bad")
-        #    self._result.success = False
-        #    self._as.set_succeeded(self._result)
-        #    return
+        msg = std_msgs.msg.Float64()
+        msg.data = 0.0 
+        self.leafblower_pub.publish(msg)
+
 
     def score_cb(self, goal: DriveAndScore2024Goal):
+        self.preempted = False
         self.feed_forward = True
         success = True
         self.align_done = False
@@ -130,12 +138,37 @@ class DriveAndScore:
         while not rospy.is_shutdown():
             # check that preempt has not been requested by the client
             if self._as.is_preempt_requested():
+                self.preempted = True
                 rospy.loginfo('%s: Preempted' % self._action_name)
                 self._as.set_preempted()
                 self.align_client.cancel_goals_at_and_before_time(rospy.Time.now())
                 self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                rospy.loginfo("Shutting down leafblower")
+                msg = std_msgs.msg.Float64()
+                msg.data = 0.0 
+                self.leafblower_pub.publish(msg)
                 success = False
-                break
+                pivot = ShooterPivotSrvRequest()
+                pivot.angle = self.trap_blower_rest_position
+                if not self.arm_pivot_client.call(pivot):
+                    rospy.logerr("2024 drive and score - failed to send arm back, this is very bad")
+                    self._result.success = False
+                    self._as.set_succeeded(self._result)
+                    return
+                cmd_vel_msg = geometry_msgs.msg.Twist()
+                start = rospy.Time.now()
+                while (rospy.Time.now() - start < rospy.Duration(0.5)):
+                    rospy.loginfo("Driving back in preempt!")
+                    cmd_vel_msg.angular.x = 0
+                    cmd_vel_msg.angular.y = 0
+                    cmd_vel_msg.angular.z = 0
+                    cmd_vel_msg.linear.x = -2.0
+                    cmd_vel_msg.linear.y = 0
+                    cmd_vel_msg.linear.z = 0
+                    self.pub_cmd_vel.publish(cmd_vel_msg)
+                    r.sleep()
+                return
+                
             rospy.loginfo_throttle(0.1, f"2024_align_and_SCORE: waiting on {'aligning' if not self.align_done else ''} {'shooting' if not self.shooting_done  and goal.destination == goal.TRAP else ''}")
 
             # should be good to outake
