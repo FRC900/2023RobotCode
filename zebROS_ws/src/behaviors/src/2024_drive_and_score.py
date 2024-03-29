@@ -115,7 +115,8 @@ class DriveAndScore:
             align_goal.destination = align_goal.TRAP
             self.align_client.send_goal(align_goal, done_cb=self.align_done_cb)
             msg = std_msgs.msg.Float64()
-            msg.data = 1.0 # make configurable 
+            rospy.loginfo(f"Blowing up leafblower to: {self.trap_blower_speed}")
+            msg.data = self.trap_blower_speed
             self.leafblower_pub.publish(msg)
             pivot = ShooterPivotSrvRequest()
             pivot.angle = self.trap_blower_position
