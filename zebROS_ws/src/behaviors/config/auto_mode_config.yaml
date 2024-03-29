@@ -62,7 +62,7 @@ auto_mode_9: ["one_to_two_blue_csv"]
 auto_mode_11: ["spin_up_shooter_3_8m", "score_preload_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "source_score_to_one_ALLIANCE_csv", "wait_for_auto_intake", "score_one_ALLIANCE_csv", "relocalize", "align_to_speaker", "shoot_dynamic", "source_score_to_two_ALLIANCE_csv", "auto_intake", "wait_for_auto_intake", "score_two_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "stop_intake", "spin_down_shooter"]
 
 # four from mid
-auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_source_ALLIANCE_csv", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "spin_down_shooter"]
+auto_mode_12: ["zoom_mid_source_ALLIANCE_csv", "spin_up_slide_shooter", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "spin_down_shooter"]
 
 # preload note paths
 # (90 is a special case that does preload only)
