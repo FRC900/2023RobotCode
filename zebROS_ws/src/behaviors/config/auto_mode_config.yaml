@@ -59,7 +59,7 @@ auto_mode_9: ["one_to_two_blue_csv"]
 # auto_mode_10: ["drive_2_5_m"]
 
 # score preload and first two (from source side) at centerline
-auto_mode_11: ["score_preload_ALLIANCE_csv", "relocalize", "align_to_speaker", "pause_quarter", "shoot_dynamic", "wait_for_shooting", "start_intake", "source_score_to_one_ALLIANCE_csv", "wait_for_auto_intake", "score_one_ALLIANCE_csv", "relocalize", "align_to_speaker", "pause_quarter", "shoot_dynamic"] #, "start_intake", "source_score_to_two_ALLIANCE_csv", "relocalize", "auto_intake", "wait_for_auto_intake", "score_two_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "stop_intake", "spin_down_shooter"]
+auto_mode_11: ["score_preload_ALLIANCE_csv", "relocalize", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "source_score_to_one_ALLIANCE_csv", "wait_for_auto_intake", "score_one_ALLIANCE_csv", "relocalize", "align_to_speaker", "shoot_dynamic", "source_score_to_two_ALLIANCE_csv", "auto_intake", "wait_for_auto_intake", "score_two_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "stop_intake", "spin_down_shooter"]
 
 # four from mid
 auto_mode_12: ["spin_up_slide_shooter", "zoom_mid_source_ALLIANCE_csv", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "closest_note_path", "wait_for_auto_intake", "spin_down_shooter"]
@@ -90,7 +90,7 @@ rezero_odom:
   type: rezero_odom
 
 source_score_to_one_blue_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake_first_blue"]]
   type: path
   reset_odom_to_path_start: False
   goal:
@@ -99,7 +99,7 @@ source_score_to_one_blue_csv:
   wait_for_path: false
 
 source_score_to_one_red_csv:
-  waypoint_actions: [[1, "auto_intake"]]
+  waypoint_actions: [[1, "auto_intake_first_red"]]
   type: path
   reset_odom_to_path_start: False
   goal:
