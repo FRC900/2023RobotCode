@@ -85,8 +85,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 
 		if(!diagnostics_mode)
 		{
-			//Joystick1: buttonA
-			//Joystick1: buttonA
+			//Joystick1: buttonA (B on apex controller / right button)
 			if(joystick_state->buttonAPress)
 			{	
 				// now just auto score 
@@ -107,7 +106,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 				drive_and_score_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
-			//Joystick1: buttonB (actually A on apex controller)
+			//Joystick1: buttonB (actually A on apex controller / bottom button)
 			if(joystick_state->buttonBPress)
 			{
 				behavior_actions::Shooting2024Goal goal;
@@ -138,7 +137,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 				shooting_ac->cancelGoalsAtAndBeforeTime(ros::Time::now());
 			}
 
-			//Joystick1: buttonY
+			//Joystick1: buttonY (X on apex / left button)
 			if(joystick_state->buttonYPress)
 			{
 				behavior_actions::Shooting2024Goal goal;
