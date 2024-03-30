@@ -524,7 +524,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.5655561149163728,
                     "offset": -0.2,
                     "command": {
                         "type": "named",
@@ -536,7 +536,7 @@
                 {
                     "name": "Marker",
                     "target": 2,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 2.2501526064664197,
                     "offset": 0.3,
                     "command": {
                         "type": "named",
@@ -546,7 +546,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "two_to_three": {
             "waypoints": [
@@ -1057,7 +1057,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.6283399458874661,
                     "offset": -0.2,
                     "command": {
                         "type": "named",
@@ -1069,7 +1069,7 @@
                 {
                     "name": "intake",
                     "target": 3,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 3.1706540042944,
                     "offset": -0.2,
                     "command": {
                         "type": "named",
@@ -1079,7 +1079,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "three_to_four": {
             "waypoints": [
@@ -1602,7 +1602,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.3669444819859033,
                     "offset": -0.1,
                     "command": {
                         "type": "named",
@@ -1614,7 +1614,7 @@
                 {
                     "name": "intake",
                     "target": 3,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 2.4579696143829737,
                     "offset": -0.1,
                     "command": {
                         "type": "named",
@@ -1624,7 +1624,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "four_to_five": {
             "waypoints": [
@@ -1996,7 +1996,7 @@
                 {
                     "name": "shoot",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.4563640606679262,
                     "offset": 0,
                     "command": {
                         "type": "named",
@@ -2006,7 +2006,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "score_one": {
             "waypoints": [
@@ -2563,7 +2563,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "score_two": {
             "waypoints": [
@@ -3111,7 +3111,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "source_score_to_two": {
             "waypoints": [
@@ -3531,7 +3531,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "score_preload": {
             "waypoints": [
@@ -3976,7 +3976,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "source_score_to_one": {
             "waypoints": [
@@ -4399,7 +4399,7 @@
                 {
                     "name": "intake",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.631168676625777,
                     "offset": 0,
                     "command": {
                         "type": "named",
@@ -4409,7 +4409,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "get_amp_close_note": {
             "waypoints": [
