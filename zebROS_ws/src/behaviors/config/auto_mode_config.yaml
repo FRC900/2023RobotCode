@@ -61,7 +61,7 @@ auto_mode_10: ["zoom_mid_2_ALLIANCE_csv", "spin_up_start_auto", "wait_for_auto_i
 # not 11: score preload and first two (1,2 from source side) at centerline
 # auto_mode_11: ["spin_up_shooter_3_8m", "score_preload_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "source_score_to_one_ALLIANCE_csv", "wait_for_auto_intake", "score_one_ALLIANCE_csv", "relocalize", "align_to_speaker", "shoot_dynamic", "source_score_to_two_ALLIANCE_csv", "auto_intake", "wait_for_auto_intake", "score_two_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "wait_for_shooting", "stop_intake", "spin_down_shooter"]
 # 11: preload, then four from mid (5,4,3,2)
-auto_mode_11: ["shoot_dynamic", "get_amp_close_note_ALLIANCE_csv", "align_to_speaker", "shoot_dynamic", "amp_close_to_5_ALLIANCE_csv", "wait_for_auto_intake", "closest_note_path_inverse", "spin_up_slide_shooter", "wait_for_auto_intake", "closest_note_path_inverse", "wait_for_auto_intake", "closest_note_path_inverse", "wait_for_auto_intake", "spin_down_shooter"]
+auto_mode_11: ["shoot_dynamic", "zoom_to_5_ALLIANCE_csv", "wait_for_auto_intake", "closest_note_path_inverse", "spin_up_slide_shooter", "wait_for_auto_intake", "closest_note_path_inverse", "wait_for_auto_intake", "closest_note_path_inverse", "wait_for_auto_intake", "spin_down_shooter"]
 
 # 5: three from mid, scoring the third (1,2,3)
 auto_mode_5: ["zoom_mid_source_ALLIANCE_csv", "spin_up_start_auto", "wait_for_auto_intake", "one_to_two_ALLIANCE_csv", "spin_up_slide_shooter", "wait_for_auto_intake", "two_to_three_ALLIANCE_csv", "wait_for_auto_intake", "score_three_ALLIANCE_csv", "align_to_speaker", "pause_quarter", "shoot_dynamic"]
@@ -71,7 +71,7 @@ auto_mode_12: ["zoom_mid_source_ALLIANCE_csv", "spin_up_start_auto", "wait_for_a
 
 # preload note paths
 # (90 is a special case that does preload only)
-auto_mode_90: ["zoom_mid_source_blue_csv", "zoom_mid_source_red_csv", "one_to_two_red_csv", "two_to_three_red_csv", "three_to_four_red_csv", "four_to_five_red_csv", "one_to_two_blue_csv", "two_to_three_blue_csv", "three_to_four_blue_csv", "four_to_five_blue_csv"]
+auto_mode_90: ["zoom_mid_source_blue_csv", "zoom_mid_source_red_csv", "one_to_two_red_csv", "two_to_one_red_csv", "two_to_three_red_csv", "three_to_two_red_csv", "three_to_four_red_csv", "four_to_three_red_csv", "four_to_five_red_csv", "five_to_four_red_csv", "one_to_two_blue_csv", "two_to_one_blue_csv", "two_to_three_blue_csv", "three_to_two_blue_csv", "three_to_four_blue_csv", "four_to_three_blue_csv", "four_to_five_blue_csv", "five_to_four_blue_csv"]
 
 #auto_mode_4_blue: ["map_rel_four_note_grid_right1_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_blue_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_blue_csv"]
 #auto_mode_4_red: ["map_rel_four_note_grid_right1_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right2_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right3_red_csv", "pause_quarter", "relocalize", "map_rel_four_note_grid_right4_red_csv"]
@@ -195,6 +195,24 @@ score_three_red_csv:
     points:
       - [0.0, 0.0, 0.0]
   wait_for_path: true
+
+zoom_to_5_blue_csv:
+  waypoint_actions: [[1, "auto_intake_fourth_blue"]]
+  type: path
+  reset_odom_to_path_start: True
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: false
+
+zoom_to_5_red_csv:
+  waypoint_actions: [[1, "auto_intake_fourth_red"]]
+  type: path
+  reset_odom_to_path_start: True
+  goal:
+    points:
+      - [0.0, 0.0, 0.0]
+  wait_for_path: false
 
 zoom_mid_source_blue_csv:
   waypoint_actions: [[1, "shoot_start_auto"], [2, "auto_intake_first_blue"]]
