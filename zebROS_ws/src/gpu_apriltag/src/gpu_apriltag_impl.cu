@@ -262,8 +262,8 @@ bool FRC971GpuApriltagDetectorImpl::UndistortDetection(apriltag_detection_t *det
         double u = det->p[i][0];
         double v = det->p[i][1];
 
-        converged &= frc971::apriltag::GpuDetector::UnDistort(&u, &v, &distortion_camera_matrix_,
-                                                              &distortion_coefficients_);
+        converged &= frc971::apriltag::UnDistort(&u, &v, &distortion_camera_matrix_,
+                                                 &distortion_coefficients_);
         det->p[i][0] = u;
         det->p[i][1] = v;
     }
