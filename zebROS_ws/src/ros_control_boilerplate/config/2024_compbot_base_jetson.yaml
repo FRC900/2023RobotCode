@@ -104,7 +104,7 @@ hardware_interface:
 # /frcrobot/talon_states
 
 intake_talonfxpro_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: intake
     invert: counterclockwise_positive
     # dynamic_reconfigure: True
@@ -118,7 +118,7 @@ note_diverter_controller:
     neutral_mode: Coast
 
 clawster_controller:
-    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    type: talonfxpro_controllers/TalonFXProVoltageOutputController
     joint: clawster
     invert: counterclockwise_positive
     # dynamic_reconfigure: True
