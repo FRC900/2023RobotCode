@@ -56,7 +56,7 @@
     <remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
     <remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
     <param name="depth_algorithm" type="string" value="$(arg depth_algorithm)" />
-    <param name="timeout"         type="double" value="0.2" /> 
+    <param name="timeout"         type="double" value="0.2" />
   </node>
 
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_apriltag)">
@@ -108,7 +108,7 @@
     <param name="timeout" type="double" value="0.2" /> 
   </node>
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_deeptag)">
-    <!-- Run the actual deeptag ode if run_deeptag_node is true
+    <!-- Run the actual deeptag node if run_deeptag_node is true
          This option allows the deeptag node itself to be run on a different jetson if needed-->
     <include file="$(find deeptag_ros)/launch/deeptag.launch" if="$(eval run_deeptag_node)">
       <arg name="zed_name"        value="$(arg zed_name)" />
