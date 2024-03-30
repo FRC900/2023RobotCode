@@ -10,7 +10,7 @@ cam0:
   resolution: [1920, 1200]
   rostopic: /DONTUSETHIS_back
   # CHECK THIS
-  tagtopic: /apriltag_zedx_back/apriltag_detection/tags
+  tagtopic: /apriltag_zedx_back/gpu_apriltag_node/tags
   rig_body: frc_robot
 
 # FRONT CAM
@@ -24,5 +24,5 @@ cam1:
   resolution: [1920, 1200]
   rostopic: /DONTUSETHIS_front
   # CHECK THIS
-  tagtopic: /apriltag_zedx_front/apriltag_detection/tags
+  tagtopic: /apriltag_zedx_front/gpu_apriltag_node/tags
   rig_body: frc_robot
