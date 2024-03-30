@@ -6,9 +6,6 @@ include("../cmake_modules/CMakeOpt.cmake")
 add_compile_options(-Wno-deprecated-declarations)
 add_compile_options(-Wno-unused-parameter)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Ofast -DNDEBUG -Wno-deprecated-declarations")
 
