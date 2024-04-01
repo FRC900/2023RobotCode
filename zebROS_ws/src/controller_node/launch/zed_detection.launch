@@ -80,7 +80,7 @@
   -->
   <!-- Use depth info to generate apriltag world coords -->
   <node pkg="nodelet" type="nodelet" name="apriltag_$(arg zed_name)" args="load tf_object_detection/ScreenToWorld /$(arg nodelet_manager_name)" if="$(eval run_gpu_apriltag)" output="screen" >
-    <remap from="obj_detection_msg" to="/apriltag_$(arg zed_name)/tag_detection_msg"/>
+    <remap from="obj_detection_msg" to="/apriltag_$(arg zed_name)/gpu_apriltag_node/tag_detection_msg"/>
     <remap from="/apriltag_$(arg zed_name)/object_detection_world" to="/apriltag_$(arg zed_name)/tag_detection_world"/>
     <remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
     <remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
@@ -89,15 +89,8 @@
   </node>
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_gpu_apriltag)">
     <!-- Run FRC971 GPU apriltag detector on output of ZED camera code -->
-    <node pkg="gpu_apriltag" name="gpu_apriltag_node" type="gpu_apriltag_node" output="screen">
+    <node pkg="nodelet" type="nodelet" name="gpu_apriltag_node" args="load frc971_gpu_apriltag/FRC971GpuApriltagNodelet /$(arg nodelet_manager_name)" if="$(eval run_gpu_apriltag)" output="screen" >
       <remap from="image_rect_color" to="/$(arg zed_name)/left/image_rect_color" />
-    </node>
-
-    <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
-        Publishes to $(ns)/tag_detection_msgs
-    -->
-    <node pkg="tf_object_detection" name="gpu_tag_depth" type="tag_depth.py" output="screen">
-			<remap from="tags_in" to="/apriltag_$(arg zed_name)/gpu_apriltag_node/tags"/>
     </node>
   </group>
 
