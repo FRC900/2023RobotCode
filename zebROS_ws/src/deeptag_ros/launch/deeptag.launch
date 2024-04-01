@@ -13,6 +13,9 @@
       <param name="use_tiled_detection" value="true" />
       <param name="use_scaled_image"    value="false" />
       <param name="image_transport"     value="$(arg image_transport)" />
+      <remap from="/apriltag_$(arg zed_name)/deeptag_ros/tags" to="/apriltag_$(arg zed_name)/apriltag_detection/tags"/>
+      <remap from="/apriltag_$(arg zed_name)/deeptag_ros/poses" to="/apriltag_$(arg zed_name)/apriltag_detection/poses"/>
+      <remap from="/apriltag_$(arg zed_name)/deeptag_ros/tag_detection_msg" to="/apriltag_$(arg zed_name)/tag_detection_msg"/>
     </node>
   </group>
 </launch>

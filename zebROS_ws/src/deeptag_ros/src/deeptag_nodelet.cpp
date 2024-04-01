@@ -16,6 +16,7 @@
 #include "apriltag_msgs/ApriltagArrayStamped.h"
 #include "apriltag_msgs/ApriltagPoseStamped.h"
 #include "deeptag_ros/deeptag.h"
+#include "field_obj/TFDetection.h"
 
 namespace deeptag_ros
 {
@@ -33,8 +34,11 @@ private:
 
         base_it_ = std::make_unique<image_transport::ImageTransport>(base_nh_);
         camera_sub_ = base_it_->subscribeCamera("image_rect_color", 1, &DeeptagRosNodelet::callback, this);
+        // Publishers for apriltag detections
         pub_apriltag_detections_ = nh_.advertise<apriltag_msgs::ApriltagArrayStamped>("tags", 1);
         pub_apriltag_poses_ = nh_.advertise<apriltag_msgs::ApriltagPoseStamped>("poses", 1);
+        // A publisher to publish to a topic that screen to world can use directly
+        pub_objdetect_ = nh_.advertise<field_obj::TFDetection>("tag_detection_msg", 1);
         it_ = std::make_unique<image_transport::ImageTransport>(nh_);
         pub_debug_image_ = it_->advertise("debug_image", 1);
         pub_stage1_grid_debug_image_ = it_->advertise("stage1_grid_debug_image", 1);
@@ -175,6 +179,10 @@ private:
         apriltag_msgs::ApriltagArrayStamped apriltag_array_msg;
         apriltag_array_msg.header = image->header;
 
+        field_obj::TFDetection objdetect_msg;
+        objdetect_msg.header = image->header;
+        objdetect_msg.header.frame_id = camera_info->header.frame_id;
+
         for (const auto &r: result)
         {
             apriltag_array_msg.apriltags.emplace_back();
@@ -183,12 +191,33 @@ private:
             msg.id = r.m_tagId;
             msg.center.x = r.m_center.x;
             msg.center.y = r.m_center.y;
+
+            double br_x = -std::numeric_limits<double>::max();
+            double br_y = -std::numeric_limits<double>::max();
+            double tl_x =  std::numeric_limits<double>::max();
+            double tl_y =  std::numeric_limits<double>::max();
             for (size_t i = 0; i < 4; i++)
             {
                 msg.corners[i].x = r.m_stage2Corners[i].x;
                 msg.corners[i].y = r.m_stage2Corners[i].y;
+                br_x = std::max(br_x, msg.corners[i].x);
+                br_y = std::max(br_y, msg.corners[i].y);
+                tl_x = std::min(tl_x, msg.corners[i].x);
+                tl_y = std::min(tl_y, msg.corners[i].y);
             }
+
+            objdetect_msg.objects.emplace_back();
+            auto &obj = objdetect_msg.objects.back();
+            obj.br.x = static_cast<float>(br_x);
+            obj.br.y = static_cast<float>(br_y);
+            obj.tl.x = static_cast<float>(tl_x);
+            obj.tl.y = static_cast<float>(tl_y);
+            obj.id = r.m_tagId;
+            obj.label = std::to_string(r.m_tagId);
+            obj.confidence = r.m_centerScore;
         }
+        pub_apriltag_detections_.publish(apriltag_array_msg);
+        pub_objdetect_.publish(objdetect_msg);
 
         apriltag_msgs::ApriltagPoseStamped apriltag_pose_msg;
         apriltag_pose_msg.header = image->header;
@@ -207,6 +236,7 @@ private:
             quaternion_tf2.setRPY(r.m_rVec.at<double>(0), r.m_rVec.at<double>(1), r.m_rVec.at<double>(2));
             msg.orientation = tf2::toMsg(quaternion_tf2);
         }
+        pub_apriltag_poses_.publish(apriltag_pose_msg);
 
         if (pub_debug_image_.getNumSubscribers() > 0)
         {
@@ -241,8 +271,6 @@ private:
             pub_stage2_debug_image_.publish(stage2_debug_image_.toImageMsg());
         }
 
-        pub_apriltag_detections_.publish(apriltag_array_msg);
-        pub_apriltag_poses_.publish(apriltag_pose_msg);
     }
 
     bool saveInputImageCallback(std_srvs::Trigger::Request &, std_srvs::Trigger::Response &res)
@@ -268,6 +296,7 @@ private:
     cv_bridge::CvImage stage2_debug_image_;
     ros::Publisher pub_apriltag_detections_;
     ros::Publisher pub_apriltag_poses_;
+    ros::Publisher pub_objdetect_;
 
     std::unique_ptr<DeepTag> deep_tag_;
 

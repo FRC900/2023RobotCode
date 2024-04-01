@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   apriltag_msgs
   cv_bridge
   ddynamic_reconfigure
+  field_obj
   geometry_msgs
   image_geometry
   image_transport

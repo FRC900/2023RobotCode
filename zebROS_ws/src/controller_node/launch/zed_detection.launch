@@ -22,7 +22,7 @@
   <arg name="run_pub_video"        default="false" />
   <arg name="startup_delay"        default="0.0" />
   <!-- Name of the Nodelet Manager -->
-  <arg name="nodelet_manager_name" default="$(arg zed_name)_nodelet_manager" />
+  <arg name="nodelet_manager_name"  default="$(arg zed_name)_nodelet_manager" />
   <arg name="deeptag_image_transport" default="raw" />
 
   <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" />
@@ -47,18 +47,22 @@
       <arg name="nodelet_manager_name" value="$(arg nodelet_manager_name)" />
   </include>
   <!-- 
-  ========== CPU Apriltag Detector
+  ========== Screen to world for any apriltag detections
   -->
-  <!-- Use depth info to generate apriltag world coords -->
-  <node pkg="nodelet" type="nodelet" name="apriltag_$(arg zed_name)" args="load tf_object_detection/ScreenToWorld /$(arg nodelet_manager_name)" if="$(eval run_apriltag or run_gpu_apriltag)" output="screen" >
+  <!-- Use depth info to generate apriltag world coords.  Use common
+       topic names published by all detectors so that this node works for all of them -->
+  <node pkg="nodelet" type="nodelet" name="apriltag_$(arg zed_name)" args="load tf_object_detection/ScreenToWorld /$(arg nodelet_manager_name)" if="$(eval run_apriltag or run_gpu_apriltag or run_deeptag)" output="screen" >
     <remap from="obj_detection_msg" to="/apriltag_$(arg zed_name)/tag_detection_msg"/>
     <remap from="/apriltag_$(arg zed_name)/object_detection_world" to="/apriltag_$(arg zed_name)/tag_detection_world"/>
     <remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
     <remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
     <param name="depth_algorithm" type="string" value="$(arg depth_algorithm)" />
-    <param name="timeout"         type="double" value="0.2" />
+    <param name="timeout"         type="double" value="0.2" /> 
   </node>
 
+  <!-- 
+  ========== CPU Apriltag Detector
+  -->
   <group ns="apriltag_$(arg zed_name)" if="$(eval run_apriltag)">
     <!-- Run UMich apriltag detector on output of ZED camera code
     TBD - does gray force zed code to publish a message it
@@ -98,30 +102,12 @@
   <!-- 
   ========== Deeptag Apriltag Detector
   -->
-  <!-- Use depth info to generate apriltag world coords -->
-  <node pkg="nodelet" type="nodelet" name="apriltag_$(arg zed_name)" args="load tf_object_detection/ScreenToWorld /$(arg nodelet_manager_name)" if="$(eval run_deeptag)" output="screen" >
-    <remap from="obj_detection_msg" to="tag_detection_msg"/>
-    <remap from="object_detection_world" to="tag_detection_world"/>
-    <remap from="/zed_objdetect/left/camera_info" to="/$(arg zed_name)/left/camera_info"/>
-    <remap from="/zed_objdetect/depth/depth_registered" to="/$(arg zed_name)/depth/depth_registered"/>
-    <param name="depth_algorithm" type="string" value="$(arg depth_algorithm)" />
-    <param name="timeout" type="double" value="0.2" /> 
-  </node>
-  <group ns="apriltag_$(arg zed_name)" if="$(eval run_deeptag)">
-    <!-- Run the actual deeptag node if run_deeptag_node is true
-         This option allows the deeptag node itself to be run on a different jetson if needed-->
-    <include file="$(find deeptag_ros)/launch/deeptag.launch" if="$(eval run_deeptag_node)">
-      <arg name="zed_name"        value="$(arg zed_name)" />
-      <arg name="image_transport" value="$(arg deeptag_image_transport)" />
-    </include>
-
-  <group ns="apriltag_$(arg zed_name)" if="$(eval run_deeptag)">
-    <!-- Convert from AprilTag msg to object detection so it can be passed into screen to world below 
-        Publishes to $(ns)/tag_detection_msgs -->
-    <node pkg="tf_object_detection" name="deeptag_tag_depth" type="tag_depth.py" output="screen">
-			<remap from="tags_in" to="/apriltag_$(arg zed_name)/deeptag_ros/tags"/>
-    </node>
-  </group>
+  <!-- Run the actual deeptag node if run_deeptag_node is true
+        This option allows the deeptag node itself to be run on a different jetson if needed-->
+  <include file="$(find deeptag_ros)/launch/deeptag.launch" if="$(eval run_deeptag_node)">
+    <arg name="zed_name" value="$(arg zed_name)" />
+    <arg name="image_transport" value="$(arg deeptag_image_transport)" />
+  </include>
 
   <!-- 
   ========== YOLOv8 Object Detection
@@ -136,17 +122,8 @@
 
 	<group ns="tf_object_detection_$(arg zed_name)" if="$(eval run_object_detection)">
 		<node pkg="tf_object_detection" name="tf_object_detection" type="fastYOLO.py" output="screen">
-			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color" unless="$(eval run_deeptag)"/>
-			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color_remapped" if="$(eval run_deeptag)"/>
+			<param name="image_topic" type="string" value="/$(arg zed_name)/left/image_rect_color" />
 			<param name="min_confidence" type="double" value="0.05" />
-		</node>
-  <!-- if we're using compressed images needed by deeptag, create an image_transport republisher to subscribe to that compressed topic and
-       republish it as raw for tf_object_detection. This was the ZED node isn't publishing both raw and compressed images?
-       Moving this to a separate node speeds up ZED wrapper?
-       TODO : rewrite tf_object_detection in CPP so it can use image_wrapper directly
-       -->
-		<node pkg="image_transport" name="tf_object_detection_republish" type="republish" args="raw in:=/$(arg zed_name)/left/image_rect_color out:=/$(arg zed_name)/left/image_rect_color_remapped" output="screen" if="$(eval run_deeptag)">
-      <param name="image_transport" value="compressed" />
 		</node>
 	</group>
 
