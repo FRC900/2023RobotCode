@@ -70,6 +70,7 @@ std::unique_ptr<actionlib::SimpleActionClient<path_follower_msgs::PathAction>> p
 bool reset_climb = true;
 
 ros::ServiceClient enable_continuous_autoalign_client;
+bool sent_first_continuous_autoalign = false;
 
 void talonFXProStateCallback(const talon_state_msgs::TalonFXProStateConstPtr &talon_state)
 {    
@@ -534,8 +535,23 @@ bool aligning = false;
 
 void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 {
-	if (button_box->lockingSwitchButton)
+	if (!sent_first_continuous_autoalign)
 	{
+		std_srvs::SetBool srv;
+		if (button_box->lockingSwitchButton)
+		{
+			srv.request.data = true;
+		}
+		else
+		{
+			srv.request.data = false;
+		}
+		ROS_INFO_STREAM("teleop_joystick_comp_2024 : sending first autoalign message (data = " << static_cast<int>(srv.request.data) << ")");
+		if (enable_continuous_autoalign_client.call(srv))
+		{
+			sent_first_continuous_autoalign = true;
+			ROS_INFO_STREAM("teleop_joystick_comp_2024 : first autoalign call succeeded");
+		}
 	}
 	if (button_box->lockingSwitchPress)
 	{

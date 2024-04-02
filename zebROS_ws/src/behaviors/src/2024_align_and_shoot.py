@@ -92,7 +92,7 @@ class AlignAndShoot:
         if self.enable_continuous_autoalign and not req.data:
             self.preempt()
         self.enable_continuous_autoalign = req.data
-        rospy.loginfo(f"enable service called with {req.data}")
+        rospy.loginfo(f"enable continouous autoalign service called with {req.data}")
         return std_srvs.srv.SetBoolResponse(success=True,message="")
 
     def relocalized_cb(self, msg: Header):
