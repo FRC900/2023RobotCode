@@ -86,7 +86,8 @@ class DriveObjectIntakeServer(object):
         drive_to_object_goal.min_y_vel = 0.5 # TURN THIS OFF
         drive_to_object_goal.use_y = True # use 
         drive_to_object_goal.override_goal_angle = True # used for aligning in y and rotating at the same time 
-        drive_to_object_goal.fast_zone = 0.0
+        drive_to_object_goal.x_fast_zone = 0.0
+        drive_to_object_goal.y_fast_zone = 0.2
         drive_to_object_goal.min_y_pos = goal.min_y_pos # -5 for first blue
         drive_to_object_goal.max_y_pos = goal.max_y_pos # 0.1 for first blue
         drive_to_object_goal.max_angle = self.max_angle_away_

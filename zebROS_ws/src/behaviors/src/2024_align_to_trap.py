@@ -136,7 +136,8 @@ class Aligner:
             self.angle_tolerance = self.amp_angle_tolerance
             self.min_x_vel = self.amp_min_x_vel
             self.min_y_vel = self.amp_min_y_vel
-            self.fast_zone = self.amp_fast_zone
+            self.x_fast_zone = self.amp_fast_zone
+            self.y_fast_zone = self.amp_fast_zone
             self.frame = self.amp_frame
 
         elif goal.destination == goal.SUBWOOFER:
@@ -163,7 +164,8 @@ class Aligner:
             self.angle_tolerance = self.amp_angle_tolerance
             self.min_x_vel = self.amp_min_x_vel
             self.min_y_vel = self.amp_min_y_vel
-            self.fast_zone = self.amp_fast_zone
+            self.x_fast_zone = self.amp_fast_zone
+            self.y_fast_zone = self.amp_fast_zone
             self.frame = self.subwoofer_frame
 
         else:
@@ -190,7 +192,8 @@ class Aligner:
             self.angle_tolerance = self.trap_angle_tolerance
             self.min_x_vel = self.trap_min_x_vel
             self.min_y_vel = self.trap_min_y_vel
-            self.fast_zone = self.trap_fast_zone
+            self.x_fast_zone = self.trap_fast_zone
+            self.y_fast_zone = self.trap_fast_zone
             self.frame = self.stage_1_trap_frame
         
         yaw = min(yaws, key=lambda y: abs(angles.shortest_angular_distance(self.current_yaw, y)))

@@ -17,6 +17,7 @@
 #include <cmath>
 #include "axis_state/axis_state.h"
 #include <geometry_msgs/TransformStamped.h>
+#include <angles/angles.h>
 
 
 geometry_msgs::Point operator-(const geometry_msgs::Point& lhs, const geometry_msgs::Point& rhs) {
@@ -228,31 +229,33 @@ public:
         double d = dist_between_points(map_x, map_y, obj.points[0].point[0], obj.points[0].point[1]);
 
         if (d < minDistance && obj.label == object_id) {
+          geometry_msgs::PointStamped base_link_point;
+
+          geometry_msgs::PointStamped latest_map_relative_detection;
+
+          geometry_msgs::PointStamped object_point;
+          object_point.point.x = obj.points[0].point[0];
+          object_point.point.y = obj.points[0].point[1];
+          object_point.header = latest_.header;
+          // will go map to map but copies
+          tf_buffer_.transform(object_point, latest_map_relative_detection, "odom");
+
+          auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "odom", ros::Time::now(), ros::Duration(0.1));
+          tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
+
           if (min_y_pos != 0.0 || max_y_pos != 0.0) {
-            geometry_msgs::PointStamped base_link_point;
-
-            geometry_msgs::PointStamped latest_map_relative_detection;
-
-            geometry_msgs::PointStamped object_point;
-            object_point.point.x = obj.points[0].point[0];
-            object_point.point.y = obj.points[0].point[1];
-            object_point.header = latest_.header;
-            // will go map to map but copies
-            tf_buffer_.transform(object_point, latest_map_relative_detection, "odom");
-
-            auto map_to_baselink = tf_buffer_.lookupTransform("base_link", "odom", ros::Time::now(), ros::Duration(0.1));
-            tf2::doTransform(latest_map_relative_detection, base_link_point, map_to_baselink);
-
             if (!(min_y_pos <= base_link_point.point.y && base_link_point.point.y <= max_y_pos)) {
               ROS_INFO_STREAM("drive_to_object: ignoring object " << obj.label << "_" << obj.id << " because its y of " << base_link_point.point.y << " is not within [" << min_y_pos << ", " << max_y_pos << "]");
               continue;
             }
-            if (max_angle != 0) {
-              double object_angle = atan2(base_link_point.point.y, base_link_point.point.x);
-              if (fabs(object_angle) > max_angle) {
-                ROS_WARN_STREAM("Drive to object: Object angle " << object_angle << " is greater than max angle " << max_angle);
-                continue;
-              }
+          }
+          if (max_angle != 0) {
+            double object_angle = atan2(base_link_point.point.y, base_link_point.point.x);
+            ROS_INFO_STREAM("Object angle " << object_angle);
+            ROS_INFO_STREAM("Max angle " << max_angle);
+            if (fabs(angles::shortest_angular_distance(0.0, object_angle)) > max_angle) {
+              ROS_WARN_STREAM("Drive to object: Object angle " << object_angle << " is greater than max angle " << max_angle);
+              continue;
             }
           }
           minDistance = d;
@@ -470,10 +473,10 @@ public:
       pid_twist.linear.x = x_eff_ * cos(angle_multipler) - y_eff_ * sin(angle_multipler);
       pid_twist.linear.y = x_eff_ * sin(angle_multipler) + y_eff_ * cos(angle_multipler);
       
-      if (abs(x_error_) > goal->fast_zone) {
+      if (abs(x_error_) > goal->x_fast_zone) {
         pid_twist.linear.x = copysign(std::max(fabs(goal->min_x_vel), fabs(pid_twist.linear.x)), pid_twist.linear.x);
       } 
-      if (abs(y_error_) > goal->fast_zone) {
+      if (abs(y_error_) > goal->y_fast_zone) {
         pid_twist.linear.y = copysign(std::max(fabs(goal->min_y_vel), fabs(pid_twist.linear.y)), pid_twist.linear.y);
       }
 
