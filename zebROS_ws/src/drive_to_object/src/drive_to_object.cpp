@@ -288,9 +288,28 @@ public:
       t.linear.x *= entry.weight;
       t.linear.y *= entry.weight;
       t.angular.z *= entry.weight;
+      // check for NaN
+      if (t.linear.x != t.linear.x) {
+        ROS_WARN_STREAM("drive_to_object: linear x is NaN");
+        t.linear.x = 0;
+      }
+      if (t.linear.y != t.linear.y) {
+        ROS_WARN_STREAM("drive_to_object: linear y is NaN");
+        t.linear.y = 0;
+      }
+      if (t.angular.z != t.angular.z) {
+        ROS_WARN_STREAM("drive_to_object: angular z is NaN");
+        t.angular.z = 0;
+      }
       return t;
     });
     geometry_msgs::Twist finalTwist;
+    finalTwist.linear.x = 0;
+    finalTwist.linear.y = 0;
+    finalTwist.linear.z = 0;
+    finalTwist.angular.x = 0;
+    finalTwist.angular.y = 0;
+    finalTwist.angular.z = 0;
     std::for_each(weightedTwists.begin(), weightedTwists.end(), [&](const geometry_msgs::Twist &t){
       finalTwist.linear.x += t.linear.x;
       finalTwist.linear.y += t.linear.y;
@@ -345,10 +364,6 @@ public:
     geometry_msgs::TransformStamped requested_to_baselink = tf_buffer_.lookupTransform("base_link", goal->transform_to_drive, ros::Time::now(), ros::Duration(0.1));
     double requested_to_baselink_angle = getYaw(requested_to_baselink.transform.rotation);
     ROS_WARN_STREAM("Requested to baselink angle " << requested_to_baselink_angle);
-
-    // shouldn't enable this until we have actually seen a note
-    x_axis.setEnable(true);
-    y_axis.setEnable(goal->use_y);
 
     // we don't know this until we go once in the loop, set to large value to signal that
     double field_relative_object_angle = 900;
@@ -405,7 +420,7 @@ public:
       // ROS_WARN_STREAM("Base link pt " << base_);
 
       ROS_INFO_STREAM("Object is at x,y " << base_link_point.point.x << "," << base_link_point.point.y);
-      ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
+      // ROS_INFO_STREAM("We are at x,y " << map_to_baselink.transform.translation.x << "," << map_to_baselink.transform.translation.y);
       // ROS_INFO_STREAM("Distance away " << goal->distance_away);
       x_axis.setState(-base_link_point.point.x);
       x_axis.setCommand(0.0);
@@ -417,7 +432,7 @@ public:
       // ROS_INFO_STREAM("Angle offset " << angle_offset << " distance away " << fabs(goal->distance_away - base_link_point.point.x));
       // checking if it is 900, we only want to set this value once and then keep it. 
       if (fabs(x_error_) > distance_to_hold_angle_ || field_relative_object_angle > 899) {
-        field_relative_object_angle = latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
+        field_relative_object_angle = -latest_yaw_ + atan2(base_link_point.point.y, base_link_point.point.x);
 
         ROS_INFO_STREAM("SETTING ANGLE TO " << field_relative_object_angle << " atan2" << atan2(base_link_point.point.y, base_link_point.point.x));
       }
@@ -437,7 +452,7 @@ public:
       orientation_command_pub_.publish(msg);
       angle_error_ = fabs(field_relative_object_angle - latest_yaw_);
       
-      ROS_INFO_STREAM("Angle error is " << angle_error_ << " field_rel " << field_relative_object_angle << " latest yaw " << latest_yaw_);
+      // ROS_INFO_STREAM("Angle error is " << angle_error_ << " field_rel " << field_relative_object_angle << " latest yaw " << latest_yaw_);
       // note: need to account for spinning, because that changes the direction we're pointing --> changes what command we need to send.
       // could try to do the math, but i'm not sure how we'd calculate that.
       // also, we'd probably need to control linear acceleration (since linear velocity has to dynamically change :/)
@@ -446,6 +461,8 @@ public:
       if (goal->use_y) {
         angle_multipler = 0;
       }
+
+      ros::spinOnce(); // grab latest callback data
 
       geometry_msgs::Twist pid_twist;
       // t.linear.x = x_eff_ - (ros::Time::now() - latest_.header.stamp).toSec() * std::cos(orient_effort_);
