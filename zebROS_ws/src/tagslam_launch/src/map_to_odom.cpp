@@ -77,6 +77,10 @@ double ang_vel_threshold;
 double time_stopped;
 double publish_frequency;
 bool localize_while_stopped;
+double min_stable_time;
+double max_stable_distance;
+ros::Time last_stable_time;
+geometry_msgs::TransformStamped last_stable_transform;
 
 void updateMapOdomTf() {
     ros::spinOnce();
@@ -211,7 +215,11 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
         tfbr->sendTransform(map_odom_tf);
         std_msgs::Header msg;
         msg.stamp = map_odom_tf.header.stamp;
-        if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout) {
+        if (hypot(last_stable_transform.transform.translation.x - map_odom_tf.transform.translation.x, last_stable_transform.transform.translation.y - map_odom_tf.transform.translation.y) > max_stable_distance) {
+          last_stable_time = ros::Time::now();
+          last_stable_transform = map_odom_tf;
+        }
+        if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout && (ros::Time::now() - last_stable_time).toSec() > min_stable_time) {
           last_relocalized_pub.publish(msg);
         }
         last_tf_pub = ros::Time::now();
@@ -317,6 +325,18 @@ int main(int argc, char **argv) {
   if (!nh_.getParam("publish_frequency", publish_frequency))
   {
     ROS_ERROR_STREAM("map_to_odom: could not find publish_frequency, exiting");
+    return -1;
+  }
+
+  if (!nh_.getParam("min_stable_time", min_stable_time))
+  {
+    ROS_ERROR_STREAM("map_to_odom: could not find min_stable_time, exiting");
+    return -1;
+  }
+
+  if (!nh_.getParam("max_stable_distance", max_stable_distance))
+  {
+    ROS_ERROR_STREAM("map_to_odom: could not find max_stable_distance, exiting");
     return -1;
   }
 
