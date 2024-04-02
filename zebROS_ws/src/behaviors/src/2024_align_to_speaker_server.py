@@ -77,7 +77,7 @@ class Aligner:
                 self.valid_samples += 1
             else:
                 self.valid_samples = 0
-            #rospy.loginfo(f"errr {self._feedback.error} tolerance {self.tolerance}")
+            #rospy.loginfo(f"err {self._feedback.error} tolerance {self.tolerance}")
         except Exception as e:
             rospy.logwarn_throttle(1, f"align_to_speaker: can't publish distance {e}")
         
@@ -126,7 +126,7 @@ class Aligner:
                     self._as.publish_feedback(self._feedback)
                     break
 
-            # If we haven't succeeded yet or we want to keep aligning foreever, we need to
+            # If we haven't succeeded yet or we want to keep aligning forever, we need to
             # publish a cmd_vel message to make and/or keep the robot aligned
 
             # self.angle_setpoint is calulated in imu_callback and is the angle to the speaker
