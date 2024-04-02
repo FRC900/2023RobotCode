@@ -5,10 +5,12 @@ import smach
 import smach_ros
 import sys
 import time
-from candle_controller_msgs.srv import Colour, Animation, AnimationRequest
+from candle_controller_msgs.srv import Colour, ColourRequest, Animation, AnimationRequest
 from frc_msgs.msg import MatchSpecificData
 from behavior_actions.msg import AutoMode
 from behavior_actions.msg import AutoAlignSpeaker
+from frc_msgs.msg import MatchSpecificData
+
 
 
 
@@ -39,7 +41,7 @@ from behavior_actions.msg import AutoAlignSpeaker
 #        print("candle_smach: In shooting range. ")
 
 def make_colour_obj(start, count, r, g, b):
-    colour = Colour() #colourrequest  isn't a actual srv file? 
+    colour = ColourRequest() #colourrequest  isn't a actual srv file? 
     colour.start = start
     colour.count = count
     colour.red = r
@@ -47,6 +49,18 @@ def make_colour_obj(start, count, r, g, b):
     colour.blue = b
     colour.white = 0
     return colour
+
+def send_colours(r_col, g_col, b_col):
+    rospy.wait_for_service('/frcrobot_jetson/candle_controller/colour')
+    try:
+        colour_client = rospy.ServiceProxy('/frcrobot_jetson/candle_controller/colour', Colour)
+        # Start/counts should be edited to match the real robot
+        the_colour = make_colour_obj(9, 2, r_col, g_col, b_col)
+        colour_client(the_colour)
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
+
+    
 
 def make_animation(speed, start, count, animation_type):
     animation = AnimationRequest()
@@ -88,21 +102,17 @@ class head_state(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['head_disable', 'head_has_note', 'neither'])
         self.Status = 'neither'
+        self.match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.disable_callback) 
+
         #subscriber to disabling state
         #subscriber to has note state
     
-    #def disable_callback(self, data):
-    '''
-        if ... :
+    def disable_callback(self, data):
+        if data.Disabled: 
             self.Status = 'head_disable'
         
         else:
             self.Status = 'neither'
-
-
-
-    '''
-
 
     #def note_callback(self, data):
     '''
@@ -111,12 +121,7 @@ class head_state(smach.State):
 
         else:
             self.Status = 'neither'
-
-
-
     '''
-
-
 
     def execute(self, userdata):
         return self.Status
@@ -126,7 +131,7 @@ class blue_light(smach.State):
         smasch.State__init__(self, outcomes=['blue_succeed'])
 
     def execute(self, userdata):
-        make_colour_obj(0, 6, 0, 255, 0)
+        send_colours(0, 255, 0)
         return 'blue_succeed'
 
 class red_light(smach.State):
@@ -136,12 +141,12 @@ class red_light(smach.State):
     def execute(self, userdata):
         #if self.is_disabled = True
         #user.disable_output == 1
-        make_colour_obj(0, 6, 255, 0, 0)
+        send_colours(255, 0, 0)
         return 'red_succeed'
 
 class note_state(smach.State):
     def __init__(self, userdata):
-        smach.State.__init__(self, outcomes['has_note'], input_keys=['note_input'], output_keys=['note_output'])
+        smach.State.__init__(self, outcomes=['has_note'])
         #subscriber state
         #self.has_note = False
     
@@ -153,8 +158,7 @@ class note_state(smach.State):
             make colour obj red...
             return purple
         '''
-
-        make_colour_obj(0, 6, 218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
+        send_colours(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
         return 'has_note'
 
 class white_light(smach.State):
@@ -163,7 +167,7 @@ class white_light(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state white_light, not cool auto :(')
-        make_colour_obj(0, 6, 255, 255, 255) # white :)
+        send_colours(255, 255, 255) # white :)
         return 'white_succeed'
         # Go back to alliance colour
 
@@ -174,7 +178,7 @@ class green_light(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state green_light, piece acquired')
-        make_colour_obj(0, 6, 0, 255, 0) # Green :)
+        send_colours(0, 255, 0) # Green :)
         #time.sleep(2) # Leave the green up for a little bit
         return 'green_succeed' # Go back to alliance colour
 
@@ -241,26 +245,10 @@ def main():
        \> if neither bluelight() -> head()              
 
 
-i mean really, what we need this to do, is to cycle back to head, and then down to the lower levels
-
-need to figure out the hz rate of all of this
-also need to figure out how to store status values etc...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    i mean really, what we need this to do, is to cycle back to head, and then down to the lower levels
+    
+    need to figure out the hz rate of all of this
+    also need to figure out how to store status values etc...
     '''
 
     # Open the container
@@ -269,12 +257,12 @@ also need to figure out how to store status values etc...
         smach.StateMachine.add('head_state', head_state(), transitions={'head_disable':'red_light', 'head_has_note':'note_state', 'neither':'blue_light'})
 
         smach.StateMachine.add('red_light', red_light(), transitions={'red_succeed':'head_state'})
-        smach.StateMachine.add('note_state', note_state(), transitions={'has_note':'range_check'})
+        smach.StateMachine.add('note_state', note_state(), transitions={'has_note':'range_check'}) #is also purple light()
         smach.StateMachine.add('blue_light', blue_light(), transitions={'blue_succeed':'head_state'})
 
         smach.StateMachine.add('green_light', green_light(), transitions={'green_succeed':'head_state'})
-        smach.StateMachine.add('white_light', white_light(), transitions={'white_succeed':'head_state'})
-        smach.StateMachine.add('range_check', distance_light(), transitions={'in_range':'green_light', 'out_of_range':'white_light'})
+        #smach.StateMachine.add('white_light', white_light(), transitions={'white_succeed':'head_state'})
+        smach.StateMachine.add('range_check', distance_light(), transitions={'in_range':'green_light', 'out_of_range':'note_state'})
 
 
     # Execute SMACH plan
