@@ -324,6 +324,12 @@ public:
       closestObject = findClosestObject(latest_, goal->id, tracked_object_id, goal->transform_to_drive, goal->min_y_pos, goal->max_y_pos);
       if (closestObject == std::nullopt) {
         ROS_WARN_THROTTLE(0.5, "Drive to object: No object found, waiting for next frame");
+      } else if (goal->max_angle != 0) {
+        double object_angle = atan2(closestObject->points[0].point[1], closestObject->points[0].point[0]);
+        if (fabs(object_angle) > goal->max_angle) {
+          ROS_WARN_STREAM("Drive to object: Object angle " << object_angle << " is greater than max angle " << goal->max_angle);
+          continue;
+        }
       } else {
         tracked_object_id = closestObject->id;
         ROS_INFO_STREAM("Drive to object: Found object with id " << tracked_object_id << " and label " << closestObject->label);
