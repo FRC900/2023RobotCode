@@ -1,4 +1,4 @@
-trap_x_tolerance: 0.06
+trap_x_tolerance: 0.12
 trap_y_tolerance: 0.06
 trap_angle_tolerance: 0.015
 trap_min_x_vel: 0.0 # m/s
