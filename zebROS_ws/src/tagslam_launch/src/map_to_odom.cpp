@@ -13,6 +13,7 @@
 #include <std_msgs/Bool.h>
 #include "behavior_actions/RelocalizePoint.h"
 #include "field_obj/Detection.h"
+#include <boost/circular_buffer.hpp>
 
 /* New idea for publishing last relocalized:
 - Verify that we were stopped at the time of the last valid tag detection. Once that's true,
@@ -20,6 +21,11 @@
   We might also just want to wait some amount of time after we're stopped or just check for a jump
   within that time or something. */
 
+/*
+TagSLAM uses the timestamp of the detection message that it used as its timestamp!
+That means we can easily tell when it's been relocalized using tags!
+We can store the timestamp of the latest detection with tags and only publish the transform if TagSLAM's transform is at that timestamp or newer!
+*/
 
 namespace tf2
 {
@@ -70,7 +76,7 @@ geometry_msgs::TransformStamped relocalized_point_tf;
 ros::Subscriber front_tags_sub;
 ros::Subscriber back_tags_sub;
 
-ros::Time last_tag_sighting = ros::Time(0);
+boost::circular_buffer<ros::Time> last_tag_sightings(10);
 
 ros::Time last_tf_pub = ros::Time(0);
 
@@ -199,8 +205,11 @@ bool service_cb(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*
     tfbr->sendTransform(map_odom_tf);
     std_msgs::Header msg;
     msg.stamp = ros::Time::now();
-    if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout) {
-      last_relocalized_pub.publish(msg);
+    for (int i = 0; i < 10; i++) {
+      if ((ros::Time::now() - last_tag_sightings[i]).toSec() < 0.05) {
+        last_relocalized_pub.publish(msg);
+        break;
+      }
     }
     last_tf_pub = ros::Time::now();
   }
@@ -228,9 +237,12 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
           last_stable_time = ros::Time::now();
           last_stable_transform = map_odom_tf;
         }
-        if ((ros::Time::now() - last_stable_time).toSec() > min_stable_time) {
-          ROS_INFO_STREAM("LAST RELOCALIZED IS TRUE");
-          last_relocalized_pub.publish(msg);
+        // homebrew approximate sync
+        for (int i = 0; i < 10; i++) {
+          if (fabs((map_odom_tf.header.stamp - last_tag_sightings[i]).toSec()) < 0.05) {
+            last_relocalized_pub.publish(msg);
+            break;
+          }
         }
         last_tf_pub = ros::Time::now();
       }
@@ -241,8 +253,11 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
       tfbr->sendTransform(relocalized_point_tf);
       std_msgs::Header msg;
       msg.stamp = relocalized_point_tf.header.stamp;
-      if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout) {
-        last_relocalized_pub.publish(msg);
+      for (int i = 0; i < 10; i++) {
+        if ((ros::Time::now() - last_tag_sightings[i]).toSec() < 0.05) {
+          last_relocalized_pub.publish(msg);
+          break;
+        }
       }
       last_tf_pub = ros::Time::now();
       ROS_WARN_STREAM_THROTTLE(2, "Shifting odom with service ");
@@ -252,7 +267,8 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
 
 void tagCallback(const field_obj::DetectionConstPtr &msg) {
   if (msg->objects.size() > 0) {
-    last_tag_sighting = msg->header.stamp;
+    ROS_INFO_STREAM(msg->header.stamp);
+    last_tag_sightings.push_front(msg->header.stamp);
   }
 }
 
@@ -276,8 +292,11 @@ bool relocalize_to_point_cb(behavior_actions::RelocalizePoint::Request &req, beh
   tfbr->sendTransform(relocalized_point_tf);
   std_msgs::Header msg;
   msg.stamp = relocalized_point_tf.header.stamp;
-  if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout) {
-    last_relocalized_pub.publish(msg);
+  for (int i = 0; i < 10; i++) {
+    if ((ros::Time::now() - last_tag_sightings[i]).toSec() < 0.05) {
+      last_relocalized_pub.publish(msg);
+      break;
+    }
   }
   last_tf_pub = ros::Time::now();
   return true;
@@ -372,8 +391,11 @@ int main(int argc, char **argv) {
     tfbr->sendTransform(map_odom_tf);
     std_msgs::Header msg;
     msg.stamp = ros::Time::now();
-    if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout) {
-      last_relocalized_pub.publish(msg);
+    for (int i = 0; i < 10; i++) {
+      if ((ros::Time::now() - last_tag_sightings[i]).toSec() < 0.05) {
+        last_relocalized_pub.publish(msg);
+        break;
+      }
     }
     last_tf_pub = ros::Time::now();
   }
