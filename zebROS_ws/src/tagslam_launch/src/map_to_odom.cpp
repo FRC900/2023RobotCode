@@ -232,7 +232,7 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
         ROS_INFO_STREAM("RELOCALIZING NOW");
         tfbr->sendTransform(map_odom_tf);
         std_msgs::Header msg;
-        msg.stamp = map_odom_tf.header.stamp;
+        msg.stamp = ros::Time::now();
         if (hypot(last_stable_transform.transform.translation.x - map_odom_tf.transform.translation.x, last_stable_transform.transform.translation.y - map_odom_tf.transform.translation.y) > max_stable_distance) {
           last_stable_time = ros::Time::now();
           last_stable_transform = map_odom_tf;

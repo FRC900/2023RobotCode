@@ -198,6 +198,7 @@ class AlignAndShoot:
         shooting_goal.mode = shooting_goal.SPEAKER
         shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
         shooting_goal.setup_only = True
+        shooting_goal.only_shooter_setup = True
         shooting_goal.leave_spinning = True
 
         self.shooting_client.send_goal(shooting_goal)
