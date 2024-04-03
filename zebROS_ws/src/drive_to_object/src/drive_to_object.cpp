@@ -444,7 +444,7 @@ public:
       // seems like the correct way to do it is just based on how far we've turned since the last vision update:
 
       if (goal->use_y) {
-        angle_multipler = 0;
+        angle_multipler = requested_to_baselink_angle;
       }
 
       geometry_msgs::Twist pid_twist;

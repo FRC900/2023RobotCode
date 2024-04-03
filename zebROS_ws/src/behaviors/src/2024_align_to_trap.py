@@ -33,7 +33,7 @@ class Aligner:
     
     BLUE_AMP = [6]
     RED_AMP = [5]
-    AMP_YAW = [math.radians(90)]
+    AMP_YAW = [math.radians(-90)]
 
     BLUE_SUBWOOFER = [7]
     RED_SUBWOOFER = [4]

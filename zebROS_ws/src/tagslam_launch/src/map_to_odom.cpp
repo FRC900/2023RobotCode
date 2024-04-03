@@ -219,7 +219,7 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
           last_stable_time = ros::Time::now();
           last_stable_transform = map_odom_tf;
         }
-        if ((ros::Time::now() - last_tag_sighting).toSec() < transform_timeout && (ros::Time::now() - last_stable_time).toSec() > min_stable_time) {
+        if ((ros::Time::now() - last_stable_time).toSec() > min_stable_time) {
           last_relocalized_pub.publish(msg);
         }
         last_tf_pub = ros::Time::now();
