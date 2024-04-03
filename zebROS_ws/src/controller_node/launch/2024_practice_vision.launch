@@ -10,7 +10,7 @@
 		<arg name="zed_name"             value="zedx_front" />
 		<arg name="zed_config_dir"       value="zedx" />
 		<arg name="camera_model"         value="zedx" />
-		<arg name="serial_number"	     value="43782465" />
+		<arg name="serial_number"	     value="47067994" /> <!-- 43782465 is original practice -->
 		<arg name="cam_pos_x"            value="0.395726" />
 		<arg name="cam_pos_y"            value="0.231140" /> 
 		<arg name="cam_pos_z"            value="0.248031" /> <!-- RAISED, was 0.231140 -->
