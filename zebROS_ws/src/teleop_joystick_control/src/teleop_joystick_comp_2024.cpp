@@ -617,6 +617,11 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		if (!toggle_relocalize_srv_.call(toggle_relocalize)) {
 			ROS_ERROR_STREAM("FAILED TO ENABLE RELOCALIZING WITH CMD_VEL");
 		}
+		std_srvs::SetBool toggle_cmd_vel_limit;
+		toggle_cmd_vel_limit.request.data = false;
+		if (!toggle_cmd_vel_limit_srv_.call(toggle_cmd_vel_limit)) {
+			ROS_ERROR_STREAM("FAILED TO DISABLE CMD_VEL LIMITING");
+		}
 	}
 	if (button_box->redRelease)
 	{

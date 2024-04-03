@@ -14,6 +14,11 @@
 #include "behavior_actions/RelocalizePoint.h"
 #include "field_obj/Detection.h"
 
+/* New idea for publishing last relocalized:
+- Verify that we were stopped at the time of the last valid tag detection. Once that's true,
+  wait for TagSLAM to be stable for a good amount of time, then say we have relocalized. 
+  We might also just want to wait some amount of time after we're stopped or just check for a jump
+  within that time or something. */
 
 
 namespace tf2
@@ -76,7 +81,8 @@ double cmd_vel_threshold;
 double ang_vel_threshold;
 double time_stopped;
 double publish_frequency;
-bool localize_while_stopped;
+bool localize_while_stopped = true;
+bool cmd_vel_limit = true;
 double min_stable_time;
 double max_stable_distance;
 ros::Time last_stable_time;
@@ -156,7 +162,7 @@ void updateMapOdomTf() {
       
       geometry_msgs::TransformStamped transformStamped;
 
-      transformStamped.header.stamp = ros::Time::now();
+      transformStamped.header.stamp = base_link_to_map_tf.header.stamp;
       transformStamped.header.frame_id = map_frame_id;
       transformStamped.child_frame_id = odom_frame_id;
 
@@ -166,6 +172,8 @@ void updateMapOdomTf() {
       tf2::Transform odom_to_map_tf;
       tf2::convert(odom_to_map.pose, odom_to_map_tf);
       tf2::convert(odom_to_map_tf.inverse(), transformStamped.transform);
+
+      ROS_INFO_STREAM("map_to_odom: transform x = " << transformStamped.transform.translation.x << ", y = " << transformStamped.transform.translation.y << ", z = " << transformStamped.transform.translation.z << " at time " << transformStamped.header.stamp << " from " << base_link_to_map_tf.header.stamp << " to " << base_link_to_odom_tf.header.stamp);
 
       if (std::hypot(transformStamped.transform.translation.x - map_odom_tf.transform.translation.x, transformStamped.transform.translation.y - map_odom_tf.transform.translation.y) > maximum_jump) {
         ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: jump is too big! not saving transform");
@@ -205,13 +213,14 @@ bool service_cb(std_srvs::Empty::Request &/*req*/, std_srvs::Empty::Response &/*
 
 void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
   if (localize_while_stopped) {
-    if (hypot(msg->twist.linear.x, msg->twist.linear.y) > cmd_vel_threshold && fabs(msg->twist.angular.z) > ang_vel_threshold) {
+    bool slow = hypot(msg->twist.linear.x, msg->twist.linear.y) < cmd_vel_threshold && fabs(msg->twist.angular.z) < ang_vel_threshold;
+    if (!slow) {
       last_tf_pub = ros::Time::now() + ros::Duration(time_stopped);
     }
-    if (hypot(msg->twist.linear.x, msg->twist.linear.y) < cmd_vel_threshold && fabs(msg->twist.angular.z) < ang_vel_threshold) {
+    if (!cmd_vel_limit || slow) {
       updateMapOdomTf();
       if (map_odom_tf.header.frame_id == map_frame_id && (ros::Time::now() - last_tf_pub).toSec() > (1./publish_frequency)) {
-        ROS_INFO_STREAM_THROTTLE(2, "RELOCALIZING"); 
+        ROS_INFO_STREAM("RELOCALIZING NOW");
         tfbr->sendTransform(map_odom_tf);
         std_msgs::Header msg;
         msg.stamp = map_odom_tf.header.stamp;
@@ -220,6 +229,7 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
           last_stable_transform = map_odom_tf;
         }
         if ((ros::Time::now() - last_stable_time).toSec() > min_stable_time) {
+          ROS_INFO_STREAM("LAST RELOCALIZED IS TRUE");
           last_relocalized_pub.publish(msg);
         }
         last_tf_pub = ros::Time::now();
@@ -270,6 +280,12 @@ bool relocalize_to_point_cb(behavior_actions::RelocalizePoint::Request &req, beh
     last_relocalized_pub.publish(msg);
   }
   last_tf_pub = ros::Time::now();
+  return true;
+}
+
+bool toggle_cmd_vel_limit_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &/*res*/) {
+  ROS_WARN_STREAM("map_to_odom: cmd_vel_limit is now " << req.data);
+  cmd_vel_limit = req.data;
   return true;
 }
 
@@ -345,10 +361,11 @@ int main(int argc, char **argv) {
   ros::ServiceServer service = nh_.advertiseService("tagslam_pub_map_to_odom", service_cb);
   ros::ServiceServer relocalize_point_srv = nh_.advertiseService("relocalize_point", relocalize_to_point_cb);
   ros::ServiceServer toggle_relocalize = nh_.advertiseService("toggle_map_to_odom", toggle_service_cb);
+  ros::ServiceServer toggle_cmd_vel_limit_server = nh_.advertiseService("toggle_cmd_vel_limit", toggle_cmd_vel_limit_cb);
 
   ros::Subscriber cmd_vel_sub = nh_.subscribe("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", 1, cmdVelCallback);
   front_tags_sub = nh_.subscribe("/apriltag_zedx_front/tag_detection_world", 1, tagCallback);
-  back_tags_sub = nh_.subscribe("/apriltag_zedx_back//tag_detection_world", 1, tagCallback);
+  back_tags_sub = nh_.subscribe("/apriltag_zedx_back/tag_detection_world", 1, tagCallback);
   last_relocalized_pub = nh_.advertise<std_msgs::Header>("/last_relocalize", 1, true);
   updateMapOdomTf();
   if (map_odom_tf.header.frame_id == map_frame_id) {
