@@ -11,6 +11,9 @@ from behavior_actions.msg import AutoMode
 from behavior_actions.msg import AutoAlignSpeaker
 from frc_msgs.msg import MatchSpecificData
 
+
+
+
 def match_data_callback(msg):
     global is_disabled
     is_disabled = msg.Disabled
@@ -130,7 +133,7 @@ class out_of_range(smach.State):
         smach.State.__init__(self, outcomes=['lost_note', 'entered_range'])
         
     def execute(self, userdata):
-        rospy.loginfo('Executing state out_of_range (orange light)')
+        rospy.loginfo('Executing state out_of_range (green light)')
         send_colour(0, 255, 0) # Green
         while has_note and (not in_range): # Half-real
             r.sleep()
@@ -150,7 +153,7 @@ class noteless(smach.State):
         return 'got_note'
 
 if __name__ == '__main__':
-    r = rospy.Rate(10)
+    r = rospy.Rate(10)#10 hz
     rospy.init_node('leds_state_machine')
     
     # Create a SMACH state machine
@@ -179,8 +182,10 @@ if __name__ == '__main__':
     with sm:
         # Add states to the container
         smach.StateMachine.add('head_state', head_state(), transitions={'boring_auto': 'boring_auto', 'cool_auto': 'cool_auto', 'in_range': 'ready_to_shoot', 'not_in_range': 'out_of_range', 'no_note': 'noteless'})
-        smach.StateMachine.add('boring_auto', boring_auto(), transitions={'teleop': 'head_stat'})
+
+        smach.StateMachine.add('boring_auto', boring_auto(), transitions={'teleop': 'head_state'})
         smach.StateMachine.add('cool_auto', cool_auto(), transitions={'teleop': 'head_state'})
+
         smach.StateMachine.add('ready_to_shoot', ready_to_shoot(), transitions={'lost_note': 'noteless', 'left_range': 'out_of_range'})
         smach.StateMachine.add('out_of_range', out_of_range(), transitions={'lost_note': 'noteless', 'entered_range': 'ready_to_shoot'})
         smach.StateMachine.add('noteless', noteless(), transitions={'got_note': 'head_state'})
