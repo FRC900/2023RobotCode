@@ -37,13 +37,16 @@ def auto_mode_callback(msg):
 
 def distance_callback(msg):
    global in_range
-   in_range = msg.distance < shooting_distance
+   if (msg.distance < shooting_distance):
+    in_range = True
+   else:
+    in_range = False
 
 def send_colour(r_col, g_col, b_col):
     colour = ColourRequest()
     # Start/counts should be edited to match the real robot
     colour.start = 9
-    colour.count = 2
+    colour.count = 15
     colour.red = r_col
     colour.green = g_col
     colour.blue = b_col
@@ -79,41 +82,63 @@ def send_animation(speed, start, count, animation_type):
 
 class head_state(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['boring_auto', 'cool_auto', 'in_range', 'not_in_range', 'no_note'])
+        smach.State.__init__(self, outcomes=['disabled', 'auto_state', 'in_range', 'not_in_range', 'no_note', 'blue_test_state'])
 
     def execute(self, userdata):
-        if is_disabled or is_auto: # Do we want something different if god forbid we disable during the match?
-            if auto_mode > 4:
-                return 'boring_auto'
-            return 'cool_auto'
-        else:
-            if has_note: # Not real
-                if in_range:
+        #if is_disabled or is_auto: # Do we want something different if god forbid we disable during the match?
+        #    if auto_mode > 4:
+        #        return 'disabled'
+        #    return 'auto_state'
+        if is_disabled:
+            return 'disabled'
+        elif is_auto:
+            return 'auto_state'
+
+        elif has_note:
+                if (in_range == True):
                     return 'in_range'
-                return 'not_in_range'
-            return 'no_note'
+                elif (in_range != True):
+                    return 'not_in_range'
 
-class cool_auto(smach.State):
+        return 'no_note'
+        #else:
+        #return 'blue_test_state'
+
+
+
+    
+class auto_state(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['teleop'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state cool_auto (rainbow), prepare for enlightenment')
+        rospy.loginfo('Executing state auto_state (rainbow), prepare for enlightenment')
         send_animation(1, 0, 6, 3)
-        while (is_disabled or is_auto): # A bit fishy
+        while (is_auto): # A bit fishy
             r.sleep()
         return 'teleop'
 
-class boring_auto(smach.State):
+class disabled(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['teleop'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state boring_auto, white light :')
+        rospy.loginfo('Executing state disabled, white light :')
         send_colour(255, 255, 255) # white :)
-        while (is_disabled or is_auto): # A bit fishy
+        while (is_disabled): # A bit fishy
             r.sleep()
         return 'teleop'
+
+
+
+class blue_test_state(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['head_state'])
+    
+    def execute(self, userdata):
+        rospy.loginfo('In blue tests teat mahcine thing')
+        send_colour(0, 0, 255)
+        return 'head_state'
 
 class ready_to_shoot(smach.State):
     def __init__(self):
@@ -153,9 +178,8 @@ class noteless(smach.State):
         return 'got_note'
 
 if __name__ == '__main__':
-    r = rospy.Rate(10)#10 hz
     rospy.init_node('leds_state_machine')
-    
+    r = rospy.Rate(10)#10 hz
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['termination'])
 
@@ -172,7 +196,7 @@ if __name__ == '__main__':
     auto_mode = 1
     has_note = False
     in_range = False
-    shooting_distance = rospy.get_param("effective_shooting_range")
+    #shooting_distance = rospy.get_param("effective_shooting_range")
 
     rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, match_data_callback)
     rospy.Subscriber("/auto/auto_mode", AutoMode, auto_mode_callback)
@@ -181,10 +205,12 @@ if __name__ == '__main__':
     # Open the container
     with sm:
         # Add states to the container
-        smach.StateMachine.add('head_state', head_state(), transitions={'boring_auto': 'boring_auto', 'cool_auto': 'cool_auto', 'in_range': 'ready_to_shoot', 'not_in_range': 'out_of_range', 'no_note': 'noteless'})
+        smach.StateMachine.add('head_state', head_state(), transitions={'disabled': 'disabled', 'auto_state': 'auto_state', 'in_range': 'ready_to_shoot', 'not_in_range': 'out_of_range', 'no_note': 'noteless', 'blue_test_state':'blue_test_state'})
 
-        smach.StateMachine.add('boring_auto', boring_auto(), transitions={'teleop': 'head_state'})
-        smach.StateMachine.add('cool_auto', cool_auto(), transitions={'teleop': 'head_state'})
+        smach.StateMachine.add('blue_test_state', blue_test_state(), transitions={'head_state':'head_state'})
+
+        smach.StateMachine.add('disabled', disabled(), transitions={'teleop': 'head_state'})
+        smach.StateMachine.add('auto_state', auto_state(), transitions={'teleop': 'head_state'})
 
         smach.StateMachine.add('ready_to_shoot', ready_to_shoot(), transitions={'lost_note': 'noteless', 'left_range': 'out_of_range'})
         smach.StateMachine.add('out_of_range', out_of_range(), transitions={'lost_note': 'noteless', 'entered_range': 'ready_to_shoot'})
