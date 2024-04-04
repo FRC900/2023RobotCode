@@ -36,26 +36,23 @@ def distance_callback(msg):
    global in_range
    in_range = msg.distance < shooting_distance
 
-def make_colour_obj(start, count, r, g, b):
-    colour = ColourRequest() #colourrequest  isn't a actual srv file? 
-    colour.start = start
-    colour.count = count
-    colour.red = r
-    colour.green = g
-    colour.blue = b
+def send_colour(r_col, g_col, b_col):
+    colour = ColourRequest()
+    # Start/counts should be edited to match the real robot
+    colour.start = 9
+    colour.count = 2
+    colour.red = r_col
+    colour.green = g_col
+    colour.blue = b_col
     colour.white = 0
-    return colour
-
-def send_colours(r_col, g_col, b_col):
     rospy.wait_for_service('/frcrobot_jetson/candle_controller/colour')
     try:
         colour_client = rospy.ServiceProxy('/frcrobot_jetson/candle_controller/colour', Colour)
-        # Start/counts should be edited to match the real robot
-        colour_client(make_colour_obj(9, 2, r_col, g_col, b_col))
+        colour_client(colour)
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 
-def make_animation(speed, start, count, animation_type):
+def send_animation(speed, start, count, animation_type):
     animation = AnimationRequest()
     animation.speed = speed
     animation.start = start
@@ -70,7 +67,12 @@ def make_animation(speed, start, count, animation_type):
     animation.reversed = False
     animation.param4 = 0
     animation.param5 = 0
-    return animation
+    rospy.wait_for_service('/frcrobot_jetson/candle_controller/animation')
+    try:
+        animation_client = rospy.ServiceProxy('/frcrobot_jetson/candle_controller/colour', Animation)
+        animation_client(animation)
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
 
 class head_state(smach.State):
     def __init__(self):
@@ -168,7 +170,7 @@ class cool_auto(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state cool_auto (rainbow), prepare for enlightenment')
-        make_animation(1, 0, 6, 3)
+        send_animation(1, 0, 6, 3)
         while (is_disabled or is_auto): # A bit fishy
             r.sleep()
         return 'teleop'
@@ -179,7 +181,7 @@ class boring_auto(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state boring_auto, white light :')
-        send_colours(255, 255, 255) # white :)
+        send_colour(255, 255, 255) # white :)
         while (is_disabled or is_auto): # A bit fishy
             r.sleep()
         return 'teleop'
@@ -190,7 +192,7 @@ class ready_to_shoot(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state ready_to_shoot (green light), piece acquired')
-        send_colours(255, 182, 193) # Pink
+        send_colour(255, 182, 193) # Pink
         while has_note and in_range: # Half-real
             r.sleep()
         if not has_note: # Not real
@@ -203,7 +205,7 @@ class out_of_range(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state out_of_range (orange light)')
-        send_colours(0, 255, 0) # Green
+        send_colour(0, 255, 0) # Green
         while has_note and (not in_range): # Half-real
             r.sleep()
         if not has_note: # Not real
@@ -216,7 +218,7 @@ class noteless(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state noteless (alliance color light)')
-        send_colours(team_color)
+        send_colour(team_color)
         while not has_note: # Not real
             r.sleep()
         return 'got_note'
@@ -270,7 +272,7 @@ if __name__ == '__main__':
 #         smach.State__init__(self, outcomes=['blue_succeed'])
 
 #     def execute(self, userdata):
-#         send_colours(0, 255, 0)
+#         send_colour(0, 255, 0)
 #         return 'blue_succeed'
 
 # class red_light(smach.State):
@@ -280,7 +282,7 @@ if __name__ == '__main__':
 #     def execute(self, userdata):
 #         #if self.is_disabled = True
 #         #user.disable_output == 1
-#         send_colours(255, 0, 0)
+#         send_colour(255, 0, 0)
 #         return 'red_succeed'
 
 # class note_state(smach.State):
@@ -297,7 +299,7 @@ if __name__ == '__main__':
 #             make colour obj red...
 #             return purple
 #         '''
-#         send_colours(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
+#         send_colour(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
 #         return 'has_note'
 
 # class distance_light(smach.State):
