@@ -75,21 +75,6 @@ def make_animation(speed, start, count, animation_type):
 class head_state(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['boring_auto', 'cool_auto', 'in_range', 'not_in_range', 'no_note'])
-        
-    #     self.match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.match_data_callback) # Consider making this global-ler
-    #     self.Status = 'enabled'
-
-    #     #subscriber to disabling state
-    #     #subscriber to has note state
-
-    '''
-    def note_callback(self, data):
-        if ... :
-            self.Status = 'head_has_note'
-
-        else:
-            self.Status = 'neither'
-    '''
 
     def execute(self, userdata):
         if is_disabled or is_auto: # Do we want something different if god forbid we disable during the match?
@@ -205,7 +190,7 @@ class ready_to_shoot(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state ready_to_shoot (green light), piece acquired')
-        send_colours(0, 255, 0) # Green :)
+        send_colours(255, 182, 193) # Pink
         while has_note and in_range: # Half-real
             r.sleep()
         if not has_note: # Not real
@@ -218,7 +203,7 @@ class out_of_range(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('Executing state out_of_range (orange light)')
-        send_colours(255, 165, 0) # Orange :D
+        send_colours(0, 255, 0) # Green
         while has_note and (not in_range): # Half-real
             r.sleep()
         if not has_note: # Not real
