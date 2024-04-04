@@ -216,7 +216,7 @@ class AlignAndShoot:
         # we have not relocalized recently OR we have not aligned to speaker OR we are not done shooting
         while (not relocalized_recently) or (not self.align_to_speaker_done) or (not self.stopped) and not rospy.is_shutdown():
             relocalized_recently = (rospy.Time.now() - self.last_relocalized) < rospy.Duration(self.localization_timeout)
-            rospy.loginfo_throttle(0.1, f"2024_align_and_shoot: aligning waiting on {'speaker' if not self.align_to_speaker_done else ''} {'shooting' if not self.shooting_done else ''} {'stopping' if not self.stopped else ''}")
+            rospy.loginfo_throttle(0.1, f"2024_align_and_shoot: aligning waiting on {'speaker' if not self.align_to_speaker_done else ''} {'localization' if not relocalized_recently else ''} {'stopping' if not self.stopped else ''}")
             if self.server.is_preempt_requested():
                 rospy.loginfo("2024_align_and_shoot: preempted")
                 self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())

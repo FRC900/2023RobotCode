@@ -179,7 +179,7 @@ void updateMapOdomTf() {
       tf2::convert(odom_to_map.pose, odom_to_map_tf);
       tf2::convert(odom_to_map_tf.inverse(), transformStamped.transform);
 
-      ROS_INFO_STREAM("map_to_odom: transform x = " << transformStamped.transform.translation.x << ", y = " << transformStamped.transform.translation.y << ", z = " << transformStamped.transform.translation.z << " at time " << transformStamped.header.stamp << " from " << base_link_to_map_tf.header.stamp << " to " << base_link_to_odom_tf.header.stamp);
+      // ROS_INFO_STREAM("map_to_odom: transform x = " << transformStamped.transform.translation.x << ", y = " << transformStamped.transform.translation.y << ", z = " << transformStamped.transform.translation.z << " at time " << transformStamped.header.stamp << " from " << base_link_to_map_tf.header.stamp << " to " << base_link_to_odom_tf.header.stamp);
 
       if (std::hypot(transformStamped.transform.translation.x - map_odom_tf.transform.translation.x, transformStamped.transform.translation.y - map_odom_tf.transform.translation.y) > maximum_jump) {
         ROS_ERROR_STREAM_THROTTLE(0.5, "map_to_odom: jump is too big! not saving transform");
@@ -229,7 +229,7 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
     if (!cmd_vel_limit || slow) {
       updateMapOdomTf();
       if (map_odom_tf.header.frame_id == map_frame_id && (ros::Time::now() - last_tf_pub).toSec() > (1./publish_frequency)) {
-        ROS_INFO_STREAM("RELOCALIZING NOW");
+        // ROS_INFO_STREAM("RELOCALIZING NOW");
         tfbr->sendTransform(map_odom_tf);
         std_msgs::Header msg;
         msg.stamp = ros::Time::now();
@@ -267,7 +267,7 @@ void cmdVelCallback(const geometry_msgs::TwistStampedConstPtr &msg) {
 
 void tagCallback(const field_obj::DetectionConstPtr &msg) {
   if (msg->objects.size() > 0) {
-    ROS_INFO_STREAM(msg->header.stamp);
+    // ROS_INFO_STREAM(msg->header.stamp);
     last_tag_sightings.push_front(msg->header.stamp);
   }
 }

@@ -4,9 +4,9 @@ claw:
   intake_speed: 0.4 # doesnt exist
   outtake_speed: -0.5 # doesnt exist
   switch_name: "claw_limit_switch"
-  
+
 preshooter:
-  intake_speed: 4.0
+  intake_speed: 3.0
   outtake_speed: 9.0 # multiplied by 10 to account for change to voltage out, very likley to be wrong
   switch_name: "preshooter_limit_switch"
 

@@ -111,7 +111,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			if(joystick_state->buttonBPress)
 			{
 				behavior_actions::Shooting2024Goal goal;
-				goal.mode = goal.SUBWOOFER;
+				goal.mode = goal.SLIDE;
 				shooting_ac->sendGoal(goal);
 			}
 			if(joystick_state->buttonBButton)
@@ -127,7 +127,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 			if(joystick_state->buttonXPress)
 			{
 				behavior_actions::Shooting2024Goal goal;
-				goal.mode = goal.SLIDE;
+				goal.mode = goal.SUBWOOFER;
 				shooting_ac->sendGoal(goal);
 			}
 			if(joystick_state->buttonXButton)
