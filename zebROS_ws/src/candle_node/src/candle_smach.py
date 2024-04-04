@@ -11,38 +11,26 @@ from behavior_actions.msg import AutoMode
 from behavior_actions.msg import AutoAlignSpeaker
 from frc_msgs.msg import MatchSpecificData
 
-
-
-
-#def team_colour_callback(msg):
-#    global disabled
-#    
-#    disabled = msg.disabled
-#    
-#    if msg.disabled != disabled:
-#        print("Updating auto LEDs...")
-#        disabled = msg.disabled
-#
-
 def match_data_callback(msg):
     global is_disabled
     is_disabled = msg.Disabled
     global is_auto
     is_auto = msg.Autonomous
     global team_color
-    if msg.allianceColor == 0:
-        team_color = (255, 0, 0)
-    elif msg.allianceColor == 1:
-        team_color = (0, 0, 255)
+    if team_color == None:
+        if msg.allianceColor == 0:
+            team_color = (255, 0, 0)
+        elif msg.allianceColor == 1:
+            team_color = (0, 0, 255)
 
 def auto_mode_callback(msg):
    global auto_mode
    auto_mode = msg.auto_mode
 
-def has_note_callback(msg):
-    # We really should make this happen
-    # sm.userdata.has_note = 
-    pass
+# def has_note_callback(msg):
+#     We really should make this happen
+#     global has_note
+#     has_note = 
 
 def distance_callback(msg):
    global in_range
@@ -109,7 +97,7 @@ class head_state(smach.State):
                 return 'boring_auto'
             return 'cool_auto'
         else:
-            if has_note: # not real
+            if has_note: # Not real
                 if in_range:
                     return 'in_range'
                 return 'not_in_range'
@@ -146,7 +134,7 @@ class ready_to_shoot(smach.State):
         send_colours(0, 255, 0) # Green :)
         while has_note and in_range: # Half-real
             r.sleep()
-        if not has_note:
+        if not has_note: # Not real
             return 'lost_note'
         return 'left_range'
 
@@ -155,11 +143,11 @@ class out_of_range(smach.State):
         smach.State.__init__(self, outcomes=['lost_note', 'entered_range'])
         
     def execute(self, userdata):
-        rospy.loginfo('Executing state ready_to_shoot (green light), piece acquired')
+        rospy.loginfo('Executing state out_of_range (orange light)')
         send_colours(255, 165, 0) # Orange :D
         while has_note and (not in_range): # Half-real
             r.sleep()
-        if not has_note:
+        if not has_note: # Not real
             return 'lost_note'
         return 'entered_range'
 
@@ -168,7 +156,7 @@ class noteless(smach.State):
         smach.State.__init__(self, outcomes=['got_note'])
         
     def execute(self, userdata):
-        rospy.loginfo('Executing state ready_to_shoot (green light), piece acquired')
+        rospy.loginfo('Executing state noteless (alliance color light)')
         send_colours(team_color)
         while not has_note: # Not real
             r.sleep()
@@ -181,14 +169,21 @@ if __name__ == '__main__':
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['termination'])
 
-    # These are not being used YET
-    sm.userdata.is_disabled = True
-    sm.userdata.is_auto = False
-    sm.userdata.auto_mode = 1
-    sm.userdata.has_note = False
-    sm.userdata.in_range = False
-    sm.userdata.shooting_distance = rospy.get_param("effective_shooting_range")
+    # These are not being used rn
+    # sm.userdata.is_disabled = True
+    # sm.userdata.is_auto = False
+    # sm.userdata.auto_mode = 1
+    # sm.userdata.has_note = False
+    # sm.userdata.in_range = False
 
+    is_disabled = False
+    is_auto = False
+    team_color = None
+    auto_mode = 1
+    has_note = False
+    in_range = False
+    shooting_distance = rospy.get_param("effective_shooting_range")
+    
     rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, match_data_callback)
     rospy.Subscriber("/auto/auto_mode", AutoMode, auto_mode_callback)
     rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, distance_callback)
@@ -205,7 +200,7 @@ if __name__ == '__main__':
     # Execute SMACH plan
     outcome = sm.execute()
 
-# Code from Nathan if we decide we want it back sometime
+# Old code if we decide we want it back sometime
 # -----------------------------
 
 # class blue_light(smach.State):
