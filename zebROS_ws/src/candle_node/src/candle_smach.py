@@ -83,80 +83,6 @@ class head_state(smach.State):
             if auto_mode > 4:
                 return 'boring_auto'
             return 'cool_auto'
-        return self.Status
-
-class blue_light(smach.State):
-    def __init__(self):
-        smach.State__init__(self, outcomes=['blue_succeed'])
-
-    def execute(self, userdata):
-        rospy.loginfo("inside callback blue light")
-        send_colours(0, 255, 0)
-        rospy.loginfo("sent the blue values inside blue light")
-        return 'blue_succeed'
-
-class red_light(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['red_succeed'])
-  
-    def execute(self, userdata):
-        #if self.is_disabled = True
-        #user.disable_output == 1
-        send_colours(255, 0, 0)
-        return 'red_succeed'
-
-class note_state(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['has_note'])
-        #subscriber state
-        #self.has_note = False
-    
-    #def callback(self, data):
-    
-    def execute(self, userdata):
-        '''
-        if self.has_note:
-            make colour obj red...
-            return purple
-        '''
-        send_colours(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
-        return 'has_note'
-
-class white_light(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['white_succeed'])
-
-    def execute(self, userdata):
-        rospy.loginfo('Executing state white_light, not cool auto :(')
-        send_colours(255, 255, 255) # white :)
-        return 'white_succeed'
-        # Go back to alliance colour
-
-# define state green_light
-class green_light(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['green_succeed'])
-        
-    def execute(self, userdata):
-        rospy.loginfo('Executing state green_light, piece acquired')
-        send_colours(0, 255, 0) # Green :)
-        #time.sleep(2) # Leave the green up for a little bit
-        return 'green_succeed' # Go back to alliance colour
-
-
-class distance_light(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['in_range', 'out_of_range'])
-        self.Subscriber = rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, self.callback)
-        self.Status = 'out_of_range'
-        self.shooting_distance = rospy.get_param("effective_shooting_range")
-
-
-    def callback(self, data):
-        distance = msg.distance
-        print("candle_smach: Updating with respect to distance. ")
-        if distance < self.shooting_distance:
-            self.Status = 'in_range'
         else:
             if has_note: # Not real
                 if in_range:
@@ -236,9 +162,6 @@ if __name__ == '__main__':
     # sm.userdata.auto_mode = 1
     # sm.userdata.has_note = False
     # sm.userdata.in_range = False
-    #termination state
-    #sm.userdata.note_state = 0 #0 if there is no note inside, 1 if there is a note inside
-    #sm.userdata.disable_state = 0 #0 if not disabled 1 if disabled
 
     is_disabled = False
     is_auto = False
@@ -352,21 +275,3 @@ if __name__ == '__main__':
     need to figure out the hz rate of all of this
     also need to figure out how to store status values etc...
     '''
-    '''
-
-    # Open the container
-    with sm:
-        # Add states to the container
-        smach.StateMachine.add('head_state', head_state(), transitions={'head_disable':'red_light', 'head_has_note':'note_state', 'neither':'blue_light'})
-        smach.StateMachine.add('red_light', red_light(), transitions={'red_succeed':'head_state'})
-        smach.StateMachine.add('note_state', note_state(), transitions={'has_note':'range_check'}) #is also purple light()
-        smach.StateMachine.add('blue_light', blue_light(), transitions={'blue_succeed':'head_state'})
-        smach.StateMachine.add('green_light', green_light(), transitions={'green_succeed':'head_state'})
-        smach.StateMachine.add('range_check', distance_light(), transitions={'in_range':'green_light', 'out_of_range':'note_state'})
-
-
-    # Execute SMACH plan
-    outcome = sm.execute()
-
-if __name__ == '__main__':
-    main()
