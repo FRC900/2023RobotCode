@@ -10,7 +10,7 @@ from frc_msgs.msg import MatchSpecificData
 from behavior_actions.msg import AutoMode
 from behavior_actions.msg import AutoAlignSpeaker
 from frc_msgs.msg import MatchSpecificData
-
+from sensor_msgs.msg import JointState
 
 
 
@@ -20,23 +20,20 @@ def match_data_callback(msg):
     global is_auto
     is_auto = msg.Autonomous
     global team_color
-    if team_color == None:
-        if msg.allianceColor == 0:
-            team_color = (255, 0, 0)
-        elif msg.allianceColor == 1:
-            team_color = (0, 0, 255)
+
+    team_color = [252, 186, 3]
+
+   
 
 def auto_mode_callback(msg):
    global auto_mode
    auto_mode = msg.auto_mode
 
-# def has_note_callback(msg):
-#     We really should make this happen
-#     global has_note
-#     has_note = 
+
 
 def distance_callback(msg):
    global in_range
+   shooting_distance = 4.5
    if (msg.distance < shooting_distance):
     in_range = True
    else:
@@ -80,6 +77,17 @@ def send_animation(speed, start, count, animation_type):
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 
+def limit_swtich_callback(data):
+    global has_note
+    preshooter_limit_switch = "preshooter_limit_switch"
+    if preshooter_limit_switch in data.name:
+        preshooter_switch = data.position[data.name.index(preshooter_limit_switch)]
+        if preshooter_switch == 1:
+            has_note = True
+        else:
+            has_note = False
+
+
 class head_state(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['disabled', 'auto_state', 'in_range', 'not_in_range', 'no_note', 'blue_test_state'])
@@ -91,10 +99,11 @@ class head_state(smach.State):
         #    return 'auto_state'
         if is_disabled:
             return 'disabled'
-        elif is_auto:
-            return 'auto_state'
+        #elif is_auto:
+        #    return 'auto_state'
 
         elif has_note:
+                send_colour(78, 16, 133)
                 if (in_range == True):
                     return 'in_range'
                 elif (in_range != True):
@@ -113,9 +122,10 @@ class auto_state(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state auto_state (rainbow), prepare for enlightenment')
-        send_animation(1, 0, 6, 3)
-        while (is_auto): # A bit fishy
-            r.sleep()
+        #send_animation(1, 0, 6, 3)
+        send_colour(78, 16, 133)
+        #while (is_auto): # A bit fishy
+        #    r.sleep()
         return 'teleop'
 
 class disabled(smach.State):
@@ -125,8 +135,8 @@ class disabled(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state disabled, white light :')
         send_colour(255, 255, 255) # white :)
-        while (is_disabled): # A bit fishy
-            r.sleep()
+        #while (is_disabled): # A bit fishy
+        #    r.sleep()
         return 'teleop'
 
 
@@ -145,10 +155,10 @@ class ready_to_shoot(smach.State):
         smach.State.__init__(self, outcomes=['lost_note', 'left_range'])
         
     def execute(self, userdata):
-        rospy.loginfo('Executing state ready_to_shoot (green light), piece acquired')
-        send_colour(255, 182, 193) # Pink
-        while has_note and in_range: # Half-real
-            r.sleep()
+        rospy.loginfo('Executing state ready_to_shoot (red light), piece acquired')
+        send_colour(189, 21, 46) # Pink
+        #while has_note and in_range: # Half-real
+        #    r.sleep()
         if not has_note: # Not real
             return 'lost_note'
         return 'left_range'
@@ -160,8 +170,8 @@ class out_of_range(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state out_of_range (green light)')
         send_colour(0, 255, 0) # Green
-        while has_note and (not in_range): # Half-real
-            r.sleep()
+        #while has_note and (not in_range): # Half-real
+        #    r.sleep()
         if not has_note: # Not real
             return 'lost_note'
         return 'entered_range'
@@ -171,10 +181,10 @@ class noteless(smach.State):
         smach.State.__init__(self, outcomes=['got_note'])
         
     def execute(self, userdata):
-        rospy.loginfo('Executing state noteless (alliance color light)')
-        send_colour(team_color)
-        while not has_note: # Not real
-            r.sleep()
+        rospy.loginfo('Executing state noteless (yellow_light)')
+        send_colour(252, 186, 3)
+        #while not has_note: # Not real
+        #    r.sleep()
         return 'got_note'
 
 if __name__ == '__main__':
@@ -192,15 +202,16 @@ if __name__ == '__main__':
 
     is_disabled = False
     is_auto = False
-    team_color = None
+    
     auto_mode = 1
     has_note = False
     in_range = False
     #shooting_distance = rospy.get_param("effective_shooting_range")
 
-    rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, match_data_callback)
+    rospy.Subscriber("/bag/match_data", MatchSpecificData, match_data_callback)
     rospy.Subscriber("/auto/auto_mode", AutoMode, auto_mode_callback)
     rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, distance_callback)
+    rospy.Subscriber("/bag/joint_states", JointState, limit_swtich_callback)
 
     # Open the container
     with sm:
@@ -218,91 +229,3 @@ if __name__ == '__main__':
     # Execute SMACH plan
     outcome = sm.execute()
 
-# Old code if we decide we want it back sometime
-# -----------------------------
-
-# class blue_light(smach.State):
-#     def __init__(self):
-#         smach.State__init__(self, outcomes=['blue_succeed'])
-
-#     def execute(self, userdata):
-#         send_colour(0, 255, 0)
-#         return 'blue_succeed'
-
-# class red_light(smach.State):
-#     def __init__(self):
-#         smach.State.__init__(self, outcomes=['red_succeed'])
-  
-#     def execute(self, userdata):
-#         #if self.is_disabled = True
-#         #user.disable_output == 1
-#         send_colour(255, 0, 0)
-#         return 'red_succeed'
-
-# class note_state(smach.State):
-#     def __init__(self, userdata):
-#         smach.State.__init__(self, outcomes=['has_note'])
-#         #subscriber state
-#         #self.has_note = False
-    
-#     #def callback(self, data):
-    
-#     def execute(self,userdata):
-#         '''
-#         if self.has_note:
-#             make colour obj red...
-#             return purple
-#         '''
-#         send_colour(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
-#         return 'has_note'
-
-# class distance_light(smach.State):
-#     def __init__(self):
-#         smach.State.__init__(self, outcomes=['in_range', 'out_of_range'])
-#         self.Subscriber = rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, self.callback)
-#         self.Status = 'out_of_range'
-#         self.shooting_distance = rospy.get_param("effective_shooting_range")
-
-
-#     def callback(self, data):
-#         distance = msg.distance
-#         print("candle_smach: Updating with respect to distance. ")
-#         if distance < self.shooting_distance:
-#             self.Status = 'in_range'
-#         else:
-#             print("candle_smach: Not inside shooting range. ")
-#             self.Status = 'out_of_range'
-
-#     def execute(self, userdata):
-#         rospy.loginfo("CANDLE_SMACH: EXECUTING RANGE CALLBACK")
-#         return self.Status
-    '''
-    Begin at head, head check status of general stuff, if disabled not true, then proceed to range checking as well as purple light
-    
-    recall that, it doesnt make sense to be in range if we don't have a note
-
-
-
-    proceed to purple light, if no note, go back to head
-    in purple light, if there is a note, proceed to range check
-
-
-    in range check, check if in range
-    if in range, light green continue until not in range, or not ejected
-
-    if not in range, light white, continue until in rnage, or note ejected
-
-
-
-          /> if disable light redlight() -> head()         />  if not in range whitelight() -> head()
-
-    So head_status -> note state, -> if note -> range check  ->  greenlight() -> head()
-                               \> if no note -> head                 
-       \> if neither bluelight() -> head()              
-
-
-    i mean really, what we need this to do, is to cycle back to head, and then down to the lower levels
-    
-    need to figure out the hz rate of all of this
-    also need to figure out how to store status values etc...
-    '''
