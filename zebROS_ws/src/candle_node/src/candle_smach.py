@@ -260,7 +260,7 @@ if __name__ == '__main__':
     has_note = False
     in_range = False
     shooting_distance = rospy.get_param("effective_shooting_range")
-    
+
     rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, match_data_callback)
     rospy.Subscriber("/auto/auto_mode", AutoMode, auto_mode_callback)
     rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, distance_callback)
