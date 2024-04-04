@@ -23,22 +23,20 @@ from frc_msgs.msg import MatchSpecificData
 #        print("Updating auto LEDs...")
 #        disabled = msg.disabled
 #
-#def auto_mode_callback(msg):
-#    global auto_mode
-#    
-#    auto_mode = msg.auto_mode
-#    
-#    if msg.auto_mode != auto_mode:
-#        print("Updating auto LEDs...")
-#        disabled = msg.disabled
-#
-#def distance_callback(msg):
-#    global distance  
-#
-#    distance = msg.distance
-#    print("candle_smach: Updating with respect to distance. ")
-#    if distance < shooting_distance:
-#        print("candle_smach: In shooting range. ")
+
+def match_data_callback(msg):
+    global is_disabled
+    is_disabled = msg.Disabled
+    global is_auto
+    is_auto = msg.Autonomous
+
+def auto_mode_callback(msg):
+   global auto_mode
+   auto_mode = msg.auto_mode
+
+def distance_callback(msg):
+   global in_range
+   in_range = msg.distance < shooting_distance
 
 def make_colour_obj(start, count, r, g, b):
     colour = ColourRequest() #colourrequest  isn't a actual srv file? 
@@ -55,8 +53,7 @@ def send_colours(r_col, g_col, b_col):
     try:
         colour_client = rospy.ServiceProxy('/frcrobot_jetson/candle_controller/colour', Colour)
         # Start/counts should be edited to match the real robot
-        the_colour = make_colour_obj(9, 2, r_col, g_col, b_col)
-        colour_client(the_colour)
+        colour_client(make_colour_obj(9, 2, r_col, g_col, b_col))
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 
@@ -79,43 +76,20 @@ def make_animation(speed, start, count, animation_type):
     animation.param5 = 0
     return animation
 
-
-
-# define state rainbow_animation
-# For when we're about to do something cool
-
-#class rainbow_animation(smach.State):
-#    def __init__(self):
-#        smach.State.__init__(self, outcomes=['team_colours'],  input_keys = ['Autonomous', 'Disable'])
-#
-#    def execute(self, userdata):
-#        rospy.loginfo('Executing state rainbow_animation, prepare for enlightenment')
-#        while message.Autonomous == True:
-#            make_animation(1, 0, 6, 3)
-#        while message.Disable == True:
-#            make_animation(1, 0, 6, 3)
-
-
 #puprple whenever we pick up a piece
 
 class head_state(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['head_disable', 'head_has_note', 'neither'])
-        self.Status = 'neither'
-        self.match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.disable_callback) 
-
-        #subscriber to disabling state
-        #subscriber to has note state
-    
-    def disable_callback(self, data):
-        if data.Disabled: 
-            self.Status = 'head_disable'
+        smach.State.__init__(self, outcomes=['boring_auto', 'cool_auto'])
         
-        else:
-            self.Status = 'neither'
+    #     self.match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.match_data_callback) # Consider making this global-ler
+    #     self.Status = 'enabled'
 
-    #def note_callback(self, data):
+    #     #subscriber to disabling state
+    #     #subscriber to has note state
+
     '''
+    def note_callback(self, data):
         if ... :
             self.Status = 'head_has_note'
 
@@ -124,60 +98,44 @@ class head_state(smach.State):
     '''
 
     def execute(self, userdata):
-        return self.Status
+        if is_disabled or is_auto:
+            if auto_mode > 4:
+                return 'boring_auto'
+            return 'cool_auto'
+        else:
+            if has_note: # not real btw
+                if in_range:
 
-class blue_light(smach.State):
+
+class cool_auto(smach.State):
     def __init__(self):
-        smasch.State__init__(self, outcomes=['blue_succeed'])
+        smach.State.__init__(self, outcomes=['team_colours'])
 
     def execute(self, userdata):
-        send_colours(0, 255, 0)
-        return 'blue_succeed'
+        rospy.loginfo('Executing state cool_auto (rainbow), prepare for enlightenment')
+        make_animation(1, 0, 6, 3)
+        while (is_disabled or is_auto): # A bit fishy
+            r.sleep()
+        return 'teleop'
 
-class red_light(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['red_succeed'])
-  
-    def execute(self, userdata):
-        #if self.is_disabled = True
-        #user.disable_output == 1
-        send_colours(255, 0, 0)
-        return 'red_succeed'
-
-class note_state(smach.State):
-    def __init__(self, userdata):
-        smach.State.__init__(self, outcomes=['has_note'])
-        #subscriber state
-        #self.has_note = False
-    
-    #def callback(self, data):
-    
-    def execute(self,userdata):
-        '''
-        if self.has_note:
-            make colour obj red...
-            return purple
-        '''
-        send_colours(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
-        return 'has_note'
-
-class white_light(smach.State):
+class boring_auto(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['white_succeed'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state white_light, not cool auto :(')
+        rospy.loginfo('Executing state boring_auto, white light :')
         send_colours(255, 255, 255) # white :)
-        return 'white_succeed'
-        # Go back to alliance colour
+        while (is_disabled or is_auto): # A bit fishy
+            r.sleep()
+        return 'teleop'
 
 # define state green_light
-class green_light(smach.State):
+class ready_to_shoot(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['green_succeed'])
         
     def execute(self, userdata):
-        rospy.loginfo('Executing state green_light, piece acquired')
+        rospy.loginfo('Executing state ready_to_shoot (green light), piece acquired')
         send_colours(0, 255, 0) # Green :)
         #time.sleep(2) # Leave the green up for a little bit
         return 'green_succeed' # Go back to alliance colour
@@ -210,8 +168,9 @@ class distance_light(smach.State):
 
 def main():
     rospy.init_node('leds_state_machine')                                                               #need to place these subscribers in side of object                
-    #rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, team_colour_callback)
-    #rospy.Subscriber("/auto/auto_mode", AutoMode, auto_mode_callback)
+    rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, match_data_callback)
+    rospy.Subscriber("/auto/auto_mode", AutoMode, auto_mode_callback)
+    
 
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['termination'])
@@ -269,4 +228,41 @@ def main():
     outcome = sm.execute()
 
 if __name__ == '__main__':
+    r = rospy.Rate(10) # :skull:
     main()
+
+# Code from Nathan
+# class blue_light(smach.State):
+#     def __init__(self):
+#         smach.State__init__(self, outcomes=['blue_succeed'])
+
+#     def execute(self, userdata):
+#         send_colours(0, 255, 0)
+#         return 'blue_succeed'
+
+# class red_light(smach.State):
+#     def __init__(self):
+#         smach.State.__init__(self, outcomes=['red_succeed'])
+  
+#     def execute(self, userdata):
+#         #if self.is_disabled = True
+#         #user.disable_output == 1
+#         send_colours(255, 0, 0)
+#         return 'red_succeed'
+
+# class note_state(smach.State):
+#     def __init__(self, userdata):
+#         smach.State.__init__(self, outcomes=['has_note'])
+#         #subscriber state
+#         #self.has_note = False
+    
+#     #def callback(self, data):
+    
+#     def execute(self,userdata):
+#         '''
+#         if self.has_note:
+#             make colour obj red...
+#             return purple
+#         '''
+#         send_colours(218, 45, 237) #color is purple #probably light htis up for a few seconds or rail commnds over for a few seconds?
+#         return 'has_note'
