@@ -10,9 +10,11 @@ from behavior_actions.msg import AutoAlignSpeaker
 from frc_msgs.msg import MatchSpecificData
 from sensor_msgs.msg import JointState
 from norfair_ros.msg import Detections
+from geometry_msgs.msg import Twist
 
 # We want a list of priorities for what LED stuff to do
 # 1. If we're in autonomous, we want to turn the LEDs rainbow
+# 1.5 Drive to object is running (also essentially autonmous), we want to turn the LEDs rainbow
 # 2. If we're within shooting range, we want to turn the LEDs green
 # 3. If we have a note, we want to turn the LEDs orange
 # 4. If we see a note, we want to turn the LEDs white with a "fire" animation
@@ -38,8 +40,19 @@ class State:
     def stop(self):
         self.currently_running = False
 
+last_drive_obj_time = rospy.Time.now()
+
+def is_drive_objet():
+    global last_drive_obj_time
+    if rospy.Time.now() - last_drive_obj_time < rospy.Duration(0.2):
+        return True
+    else:
+        return False
+
+
 states = [
     State("autonomous", lambda: is_auto, lambda: send_animation(0.5, 0, 15, 0)),
+    State("autonomous", is_drive_objet, lambda: send_animation(0.5, 0, 15, 0)),
     State("in_range", lambda: has_note and in_range, lambda: send_colour(0, 255, 0)),
     State("has_note", lambda: has_note, lambda: send_colour(255, 165, 0)),
     State("can_see_note", lambda: can_see_note, lambda: send_animation(0.5, 0, 15, 1)),
@@ -47,6 +60,8 @@ states = [
 ]
 
 can_see_note = False
+
+
 def norfair_callback(msg: Detections):
     global can_see_note
     can_see_note = "note" in map(lambda d: d.label, msg.detections)
@@ -61,6 +76,10 @@ def match_data_callback(msg: MatchSpecificData):
         team_color = [0,0,255]
     elif msg.allianceColor == msg.ALLIANCE_COLOR_RED:
         team_color = [255,0,0]
+
+def drive_object_callback(msg):
+    global last_drive_obj_time
+    last_drive_obj_time = rospy.Time.now()
 
 def auto_mode_callback(msg):
    global auto_mode
@@ -141,6 +160,7 @@ if __name__ == '__main__':
     rospy.Subscriber("/speaker_align/dist_and_ang", AutoAlignSpeaker, distance_callback)
     rospy.Subscriber("/frcrobot_rio/joint_states", JointState, limit_switch_callback)
     rospy.Subscriber("/norfair/output", Detections, norfair_callback)
+    rospy.Subscriber("/auto_note_align/cmd_vel", Twist, drive_object_callback)
 
     while not rospy.is_shutdown():
         got_valid_state = False
