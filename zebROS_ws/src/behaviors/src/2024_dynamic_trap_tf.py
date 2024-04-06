@@ -18,7 +18,7 @@ class DynamicTrapTF:
         self.br = tf2_ros.StaticTransformBroadcaster()
         self.sub = rospy.Subscriber('/trap_x', std_msgs.msg.Float64, self.callback)
         self.trap_pose = geometry_msgs.msg.PoseStamped()
-        self.trap_pose.pose.position.x = 0.365 # 0.36 worked on practice field Saturday, but the tag on the field is a bit further back
+        self.trap_pose.pose.position.x = 0.36 # 0.36 worked on practice field Saturday, but the tag on the field is a bit further back
         self.trap_pose.pose.position.y = -0.08
         self.trap_pose.pose.position.z = 0.0
         self.trap_pose.pose.orientation.x = 0.0
