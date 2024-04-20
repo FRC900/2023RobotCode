@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+  Add-ons needed to the regular robot launch to run stage simulation 
+  Ideally this can just be appended to anything which needs to run
+  stage, but generalizing from N==1 is hard
+ -->
+<launch>
+	<arg name="joy_or_key" default="joy" />
+	<arg name="button_box" default="true"/>
+
+    <!--  ************** Stage Simulator ***************  -->
+    <node pkg="stage_ros" type="stageros" name="stageros" args="$(find controller_node)/stage/2024_crescendo.world" output="screen">
+        <remap from="base_scan" to="scan"/>
+        <remap from="odom" to="/frcrobot_jetson/swerve_drive_controller/odom"/>
+    </node>
+    <!-- Create an imu message with noise from stage's ground truth -->
+    <group ns="imu">
+        <node pkg="fake_sensors" type="fake_imu_node" name="fake_imu" >
+            <remap from="imu" to="/imu/imu/data" />
+            <remap from="/imu/base_pose_ground_truth" to="/base_pose_ground_truth" />
+        </node>
+    </group>
+    <!-- Load ROS nodes & remaps needed to read from gamepads attached to laptop -->
+    <include file="$(find controller_node)/launch/joysticks_sim.launch">
+        <arg name="joy_or_key" value="$(arg joy_or_key)"/>
+        <arg name="button_box" value="false"/>
+    </include>
+    <!-- Convert from stage base_marker_detection to goal detect msg (for pf_localization) and
+    object_detection_world message -->
+    <node pkg="fake_sensors" type="fake_goal_detect_node" name="fake_goal_detect" output="screen" >
+        <!-- rosparam won't load this yaml because there are numeric-only keys (TypeError: can only concatenate str (not "int") to str)
+            so fake_goal_detect just loads the file and parses it using a regex :| -->
+        <!-- <rosparam command="load" file="$(find tf_object_detection)/src/FRC2024.yaml" ns="yolo_yaml" /> -->
+        <remap from="goal_detect_msg" to="/goal_detection/goal_detect_msg" />
+    </node>
+
+    <!-- Publish tag_detection_world from stage /base_marker_detections	 
+            as apriltag_msgs/ApriltagArrayStamped -->
+    <include file="$(find fake_sensors)/launch/apriltag_sim.launch"/>
+    <node pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" name="rqt_driver_station_sim" />
+
+    <!-- Not sure what this does -->
+    <!-- <node name="fake_odom_publisher" pkg="behaviors" type="publish_fake_odom.py"/> -->
+
+    <!--  Think this is only used by pf_localization -->
+    <node pkg="tf" type="static_transform_publisher" name="blue0_to_red0" args="16.458 8.228 0 3.1415926 0 0 blue0 red0 10" />
+    <!-- Stage uses base_footprint, we use base_link -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_basefootprintlink" args="0 0 0 0 0 0 base_footprint base_link" />
+    <!-- Stage odom is based at map origin, so create an identity transform here so map and odom are part of the same tree -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_maptoodom" args="0 0 0 0 0 0 map odom" />
+</launch>

@@ -15,7 +15,7 @@ class FakeIMU
 			: rd_{}
 			, gen_{rd_()}
 			, zCovariance_(0.000001)
-			, sub_(n.subscribe("base_pose_ground_truth", 2, &FakeIMU::cmdVelCallback, this))
+			, sub_(n.subscribe("base_pose_ground_truth", 2, &FakeIMU::callback, this))
 			, pub_(n.advertise<sensor_msgs::Imu>("imu", 2))
 
 		{
@@ -24,7 +24,7 @@ class FakeIMU
 		}
 
 		// Read Odom message add noise, republish
-		void cmdVelCallback(const nav_msgs::OdometryConstPtr &msgIn)
+		void callback(const nav_msgs::OdometryConstPtr &msgIn)
 		{
 			sensor_msgs::Imu msgOut;
 			msgOut.header.stamp = msgIn->header.stamp;

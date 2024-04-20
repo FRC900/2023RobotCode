@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Simulate a 2023 omni (swerve) robot in 2024 field stage
+  Simulate a 2024 omni (swerve) robot in 2024 field stage
  -->
 <launch>
 	<!-- useful for running sim stuff on a laptop and path follower on a jetson -->

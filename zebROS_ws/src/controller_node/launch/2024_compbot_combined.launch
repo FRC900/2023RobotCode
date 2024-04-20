@@ -11,19 +11,18 @@
 	<arg name="button_box" default="true"/>
 	<arg name="record" default="false"/>
 
+	<group if="$(eval hw_or_sim=='sim')">
+		<param name="/use_sim_time" value="true"/>
+	</group>
+
     <!-- Jetson Nodes -->
     <include file="$(find controller_node)/launch/2024_compbot_jetson.launch" pass_all_args="true"/>
-
-	<include file="$(find controller_node)/launch/joysticks_sim.launch" if="$(eval arg('hw_or_sim')=='sim')">
-		<arg name="joy_or_key" value="$(arg joy_or_key)" />
-		<arg name="button_box" value="$(arg button_box)" />
-	</include>
 
     <!-- RIO Nodes -->
 	<!-- For hw, run the Rio stuff on the Rio.
 		 For sim, run both it and the jetson sim on the same machine. This
 		 is an awful hack but seems to work? -->
-	<group if="$(eval arg('hw_or_sim')=='hw')">
+	<group if="$(eval hw_or_sim=='hw')">
 		<machine name="roboRIO" address="10.9.0.2" env-loader="/home/admin/2023RobotCode/zebROS_ws/ROSJetsonMaster.sh" user="admin" password="admin" default="true" timeout="30"/>
 	</group>
 
@@ -31,11 +30,19 @@
 
     <!-- If you want to include a second Jetson, create a new launch file for it and uncomment these lines: -->
     <!-- Jetson 2 Nodes -->
-	<group if="$(eval arg('hw_or_sim')=='hw')">
+	<group if="$(eval hw_or_sim=='hw')">
 		<machine name="jetson_2" address="10.9.0.9" env-loader="/home/ubuntu/2023RobotCode/zebROS_ws/ROSJetsonMaster.sh" user="ubuntu" password="ubuntu" default="true"/>
 	</group>
     <include file="$(find controller_node)/launch/2024_compbot_vision.launch"> 
 		<arg name="run_camera" value="$(eval arg('hw_or_sim') == 'hw')" />
+		<arg name="hw_or_sim" value="$(arg hw_or_sim)" />
 	</include>
 
+	<!-- StageSim related code 
+		TODO : make this an additional option on top of hw_or_sim?
+	-->
+    <include file="$(find controller_node)/launch/stage_sim.launch" if="$(eval hw_or_sim=='sim')">
+		<arg name="joy_or_key" value="$(arg joy_or_key)" />
+		<arg name="button_box" value="$(arg button_box)"/>
+	</include>
 </launch>
