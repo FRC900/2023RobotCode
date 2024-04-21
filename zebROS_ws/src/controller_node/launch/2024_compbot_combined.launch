@@ -42,6 +42,7 @@
 		TODO : make this an additional option on top of hw_or_sim?
 	-->
     <include file="$(find controller_node)/launch/stage_sim.launch" if="$(eval hw_or_sim=='sim')">
+		<arg name="world_file" value="2024_crescendo.world" />
 		<arg name="joy_or_key" value="$(arg joy_or_key)" />
 		<arg name="button_box" value="$(arg button_box)"/>
 	</include>

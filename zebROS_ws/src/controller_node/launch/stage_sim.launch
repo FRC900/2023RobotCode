@@ -5,11 +5,12 @@
   stage, but generalizing from N==1 is hard
  -->
 <launch>
+	<arg name="world_file" default="2024_crescendo.world" />
 	<arg name="joy_or_key" default="joy" />
 	<arg name="button_box" default="true"/>
 
     <!--  ************** Stage Simulator ***************  -->
-    <node pkg="stage_ros" type="stageros" name="stageros" args="$(find controller_node)/stage/2024_crescendo.world" output="screen">
+	<node pkg="stage_ros" type="stageros" name="stageros" args="$(find controller_node)/stage/$(arg world_file)" output="screen">
         <remap from="base_scan" to="scan"/>
         <remap from="odom" to="/frcrobot_jetson/swerve_drive_controller/odom"/>
     </node>
