@@ -16,7 +16,7 @@
 #include <string>
 #include <fstream>
 
-std::map<int, std::string> parsePBTXT(std::string filename) {
+std::map<int, std::string> parsePBTXT(const std::string &filename) {
 	std::map<int, std::string> pbtxtMap;
 	std::regex pbtxtRegex("(\\d+): *(.+)"); // this feels like an evil thing to do, but whatever
 	// regexr.com/6dql5
@@ -37,33 +37,43 @@ std::map<int, std::string> parsePBTXT(std::string filename) {
 	return pbtxtMap;
 }
 
-const std::vector<std::string> other_topics{"/apriltag_zedx_back/tag_detection_world", "/apriltag_zedx_front/tag_detection_world"};
+// Search for a leading / and, if found, remove it
+// Used to clean up frame_id strings
+std::string &rtrim(std::string &str)
+{
+	if (str[0] == '/')
+	{
+		str.erase(0, 1);
+	}
+	return str;   
+}
 
 class FakeGoalDetection
 {
 	public:
 		FakeGoalDetection(ros::NodeHandle &n, const std::map<int, std::string> &objMap)
-			: rd_{}
-			, gen_{rd_()}
-			, covariance_(0.0004)
-			, sub_(n.subscribe("base_marker_detection", 2, &FakeGoalDetection::cmdVelCallback, this))
-			, pub_(n.advertise<field_obj::Detection>("goal_detect_msg", 2))
-			, pubd_(n.advertise<field_obj::Detection>("/tf_object_detection_zedx_front/object_detection_world", 2))
+			: sub_(n.subscribe("base_marker_detection", 2, &FakeGoalDetection::cmdVelCallback, this))
+			, pubt_(n.advertise<field_obj::Detection>("tag_detection_world", 2))
 			, objMap_(objMap)
 
 		{
 			n.param("covariance", covariance_, covariance_);
 			normalDistribution_ = std::normal_distribution<double>{0, sqrt(covariance_)};
-			for (const std::string &topic : other_topics) {
-				pubs_.push_back(n.advertise<field_obj::Detection>(topic, 2));
+			n.param("publish_detections", pubDetections_, pubDetections_);
+			if (pubDetections_) {
+				pubd_ = n.advertise<field_obj::Detection>("object_detection_world", 2);
 			}
 		}
 
 		// Translate stage base_marker_detection into our custom goal detection message
 		void cmdVelCallback(const marker_msgs::MarkerDetectionConstPtr &msgIn)
 		{
-			field_obj::Detection msgOut;
-			msgOut.header = msgIn->header;
+			field_obj::Detection detectionsOut;
+			detectionsOut.header = msgIn->header;
+			rtrim(detectionsOut.header.frame_id);
+			field_obj::Detection tagsOut;
+			tagsOut.header = msgIn->header;
+			rtrim(tagsOut.header.frame_id);
 			static tf2_ros::TransformBroadcaster br;
 			for(size_t i = 0; i < msgIn->markers.size(); i++)
 			{
@@ -80,7 +90,7 @@ class FakeGoalDetection
 					dummy.angle = atan2(dummy.location.y, dummy.location.x) * 180. / M_PI;
 					dummy.confidence = msgIn->markers[i].ids_confidence[0];
 					dummy.id = std::to_string(msgIn->markers[i].ids[0] - 100);
-					msgOut.objects.push_back(dummy);
+					tagsOut.objects.push_back(dummy);
 					continue;
 				}
 
@@ -102,12 +112,12 @@ class FakeGoalDetection
 							//continue;
 						}
  					}
-					msgOut.objects.push_back(obj);
+					detectionsOut.objects.push_back(obj);
 
 					geometry_msgs::TransformStamped transformStamped;
 
-					transformStamped.header.stamp = msgOut.header.stamp;
-					transformStamped.header.frame_id = msgOut.header.frame_id;
+					transformStamped.header.stamp = detectionsOut.header.stamp;
+					transformStamped.header.frame_id = detectionsOut.header.frame_id;
 					std::stringstream child_frame;
 					child_frame << obj.id << "_" << i;
 					transformStamped.child_frame_id = child_frame.str();
@@ -138,28 +148,25 @@ class FakeGoalDetection
 					dummy.id = std::to_string(msgIn->markers[i].ids[0]);
 					ROS_INFO_STREAM("Saw else " << dummy.id);
 
-					msgOut.objects.push_back(dummy);
+					detectionsOut.objects.push_back(dummy);
 				}
 			}
-			pub_.publish(msgOut);
-			pubd_.publish(msgOut);
-			for (size_t i = 0; i < pubs_.size(); i++) {
-				field_obj::Detection dummy;
-				dummy.header = msgIn->header;
-				pubs_[i].publish(dummy);
+			pubt_.publish(tagsOut);
+			if (pubDetections_) {
+				pubd_.publish(detectionsOut);
 			}
 		}
 
 	private:
-		std::random_device rd_;
-		std::mt19937 gen_;
+		std::random_device rd_{};
+		std::mt19937 gen_{rd_()};
 		std::normal_distribution<double> normalDistribution_;
-		double covariance_;
+		double covariance_{0.0004};
 		ros::Subscriber            sub_;
-		ros::Publisher             pub_;
+		ros::Publisher             pubt_; // t for tags
+		bool                       pubDetections_{true};
 		ros::Publisher             pubd_; // d for detection
 		std::map<int, std::string> objMap_;
-		std::vector<ros::Publisher> pubs_;
 };
 
 int main(int argc, char** argv)

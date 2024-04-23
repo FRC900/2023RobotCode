@@ -26,18 +26,28 @@
         <arg name="joy_or_key" value="$(arg joy_or_key)"/>
         <arg name="button_box" value="false"/>
     </include>
-    <!-- Convert from stage base_marker_detection to goal detect msg (for pf_localization) and
-    object_detection_world message -->
-    <node pkg="fake_sensors" type="fake_goal_detect_node" name="fake_goal_detect" output="screen" >
+
+    <!-- Convert from stage base_marker_detection to tag_detection_world and object_detetction_world
+         messages for both front and rear cameras. -->
+    <node pkg="fake_sensors" type="fake_goal_detect_node" name="fake_goal_detect_front" output="screen" >
         <!-- rosparam won't load this yaml because there are numeric-only keys (TypeError: can only concatenate str (not "int") to str)
             so fake_goal_detect just loads the file and parses it using a regex :| -->
         <!-- <rosparam command="load" file="$(find tf_object_detection)/src/FRC2024.yaml" ns="yolo_yaml" /> -->
-        <remap from="goal_detect_msg" to="/goal_detection/goal_detect_msg" />
+        <remap from="tag_detection_world" to="/apriltag_zedx_front/tag_detection_world" />
+        <remap from="object_detection_world" to="/tf_object_detection_zedx_front/object_detection_world" />
+        <remap from="base_marker_detection" to="base_marker_detection_0" />
+    </node>
+    <node pkg="fake_sensors" type="fake_goal_detect_node" name="fake_goal_detect_back" output="screen" >
+        <param name="publish_detections" value="false" />
+        <remap from="tag_detection_world" to="/apriltag_zedx_back/tag_detection_world" />
+        <remap from="base_marker_detection" to="base_marker_detection_1" />
     </node>
 
     <!-- Publish tag_detection_world from stage /base_marker_detections	 
-            as apriltag_msgs/ApriltagArrayStamped -->
-    <include file="$(find fake_sensors)/launch/apriltag_sim.launch"/>
+            as apriltag_msgs/ApriltagArrayStamped and ApritagPoseStamped
+            We only need these if trying to use tagslam in sim. If not,
+            the code will just use the _world topics from the fake_goal_detect_node -->
+    <!-- <include file="$(find fake_sensors)/launch/apriltag_sim.launch"/> -->
     <node pkg="rqt_driver_station_sim" type="rqt_driver_station_sim" name="rqt_driver_station_sim" />
 
     <!-- Not sure what this does -->
