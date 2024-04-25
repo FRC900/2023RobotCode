@@ -41,8 +41,7 @@ std::map<int, std::string> parsePBTXT(const std::string &filename) {
 // Used to clean up frame_id strings
 std::string &rtrim(std::string &str)
 {
-	if (str[0] == '/')
-	{
+	if (str[0] == '/') {
 		str.erase(0, 1);
 	}
 	return str;   
@@ -57,9 +56,10 @@ class FakeGoalDetection
 			, objMap_(objMap)
 
 		{
-			n.param("covariance", covariance_, covariance_);
+			ros::NodeHandle n_private("~");
+			n_private.param("covariance", covariance_, covariance_);
 			normalDistribution_ = std::normal_distribution<double>{0, sqrt(covariance_)};
-			n.param("publish_detections", pubDetections_, pubDetections_);
+			n_private.param("publish_detections", pubDetections_, pubDetections_);
 			if (pubDetections_) {
 				pubd_ = n.advertise<field_obj::Detection>("object_detection_world", 2);
 			}
@@ -74,37 +74,35 @@ class FakeGoalDetection
 			field_obj::Detection tagsOut;
 			tagsOut.header = msgIn->header;
 			rtrim(tagsOut.header.frame_id);
-			static tf2_ros::TransformBroadcaster br;
 			for(size_t i = 0; i < msgIn->markers.size(); i++)
 			{
-				if (msgIn->markers[i].ids[0] == -1) // stage publishes odom as marker -1
+				const auto marker = msgIn->markers[i];
+				if (marker.ids[0] == -1) // stage publishes odom as marker -1
 					continue;                       // ignore it here
 				// check if the id - 100 is a positive number, sim only hack for apriltags
-				if (msgIn->markers[i].ids[0] >= 100) {
-					field_obj::Object dummy;
+				if (marker.ids[0] >= 100) {
+					field_obj::Object tag;
 
-					const auto &p = msgIn->markers[i].pose.position;
-					dummy.location.x = p.x + normalDistribution_(gen_);
-					dummy.location.y = p.y + normalDistribution_(gen_);
-					dummy.location.z = p.z + normalDistribution_(gen_);
-					dummy.angle = atan2(dummy.location.y, dummy.location.x) * 180. / M_PI;
-					dummy.confidence = msgIn->markers[i].ids_confidence[0];
-					dummy.id = std::to_string(msgIn->markers[i].ids[0] - 100);
-					tagsOut.objects.push_back(dummy);
-					continue;
-				}
-
-				if (objMap_.find(msgIn->markers[i].ids[0]) != objMap_.end()) { // if ID in map
+					const auto &p = marker.pose.position;
+					tag.location.x = p.x + normalDistribution_(gen_);
+					tag.location.y = p.y + normalDistribution_(gen_);
+					tag.location.z = p.z + normalDistribution_(gen_);
+					tag.angle = atan2(tag.location.y, tag.location.x) * 180. / M_PI;
+					tag.confidence = marker.ids_confidence[0];
+					tag.id = std::to_string(marker.ids[0] - 100);
+					tagsOut.objects.push_back(tag);
+					sendTransform(tagsOut.header, tag, i, "obj_");
+				} else if (objMap_.find(marker.ids[0]) != objMap_.end()) { // if ID in map
 					field_obj::Object obj;
 
-					const auto &p = msgIn->markers[i].pose.position;
+					const auto &p = marker.pose.position;
 					obj.location.x = p.x;
 					obj.location.y = p.y;
 					obj.location.z = p.z;
 					
 					obj.angle = atan2(obj.location.y, obj.location.x) * 180. / M_PI;
-					obj.confidence = msgIn->markers[i].ids_confidence[0];
-					obj.id = objMap_[msgIn->markers[i].ids[0]];
+					obj.confidence = marker.ids_confidence[0];
+					obj.id = objMap_[marker.ids[0]];
 					if (obj.id == "note") {
 						// ROS_INFO_STREAM("Found a note!");
 						if (hypot(p.x, p.y) < 1.0) {
@@ -113,39 +111,17 @@ class FakeGoalDetection
 						}
  					}
 					detectionsOut.objects.push_back(obj);
-
-					geometry_msgs::TransformStamped transformStamped;
-
-					transformStamped.header.stamp = detectionsOut.header.stamp;
-					transformStamped.header.frame_id = detectionsOut.header.frame_id;
-					std::stringstream child_frame;
-					child_frame << obj.id << "_" << i;
-					transformStamped.child_frame_id = child_frame.str();
-
-					transformStamped.transform.translation.x = obj.location.x;
-					transformStamped.transform.translation.y = obj.location.y;
-					transformStamped.transform.translation.z = obj.location.z;
-
-					// Can't detect rotation yet, so publish 0 instead
-					tf2::Quaternion q;
-					q.setRPY(0, 0, 0);
-
-					transformStamped.transform.rotation.x = q.x();
-					transformStamped.transform.rotation.y = q.y();
-					transformStamped.transform.rotation.z = q.z();
-					transformStamped.transform.rotation.w = q.w();
-
-					br.sendTransform(transformStamped);
+					sendTransform(detectionsOut.header, obj, i, "");
 				} else {
 					field_obj::Object dummy;
 
-					const auto &p = msgIn->markers[i].pose.position;
+					const auto &p = marker.pose.position;
 					dummy.location.x = p.x + normalDistribution_(gen_);
 					dummy.location.y = p.y + normalDistribution_(gen_);
 					dummy.location.z = p.z + normalDistribution_(gen_);
 					dummy.angle = atan2(dummy.location.y, dummy.location.x) * 180. / M_PI;
-					dummy.confidence = msgIn->markers[i].ids_confidence[0];
-					dummy.id = std::to_string(msgIn->markers[i].ids[0]);
+					dummy.confidence = marker.ids_confidence[0];
+					dummy.id = std::to_string(marker.ids[0]);
 					ROS_INFO_STREAM("Saw else " << dummy.id);
 
 					detectionsOut.objects.push_back(dummy);
@@ -158,20 +134,48 @@ class FakeGoalDetection
 		}
 
 	private:
-		std::random_device rd_{};
-		std::mt19937 gen_{rd_()};
+
+		void sendTransform(const std_msgs::Header &header, const field_obj::Object &obj, const size_t i, const std::string &prefix)
+		{
+			geometry_msgs::TransformStamped transformStamped;
+
+			transformStamped.header.stamp = header.stamp;
+			transformStamped.header.frame_id = header.frame_id;
+			std::stringstream child_frame;
+			child_frame << prefix << obj.id << "_" << i;
+			transformStamped.child_frame_id = child_frame.str();
+ 
+ 			transformStamped.transform.translation.x = obj.location.x;
+ 			transformStamped.transform.translation.y = obj.location.y;
+ 			transformStamped.transform.translation.z = obj.location.z;
+ 
+ 			// Can't detect rotation yet, so publish 0 instead
+			tf2::Quaternion q;
+			q.setRPY(0, 0, 0);
+
+			transformStamped.transform.rotation.x = q.x();
+			transformStamped.transform.rotation.y = q.y();
+			transformStamped.transform.rotation.z = q.z();
+			transformStamped.transform.rotation.w = q.w();
+
+			br_.sendTransform(transformStamped);
+		}
+
+		std::random_device               rd_{};
+		std::mt19937                     gen_{rd_()};
 		std::normal_distribution<double> normalDistribution_;
-		double covariance_{0.0004};
-		ros::Subscriber            sub_;
-		ros::Publisher             pubt_; // t for tags
-		bool                       pubDetections_{true};
-		ros::Publisher             pubd_; // d for detection
-		std::map<int, std::string> objMap_;
+		double                           covariance_{0.0004};
+		ros::Subscriber                  sub_;
+		ros::Publisher                   pubt_; // t for tags
+		bool                             pubDetections_{true};
+		ros::Publisher                   pubd_; // d for detection
+		std::map<int, std::string>       objMap_;
+		tf2_ros::TransformBroadcaster    br_;
 };
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "fake_goal_detect");
+	ros::init(argc, argv, "fake_goal_detect");
 
 	ros::NodeHandle nh;
 	FakeGoalDetection fakeGoalDetection(nh, parsePBTXT("/home/ubuntu/2023RobotCode/zebROS_ws/src/tf_object_detection/src/FRC2024.yaml"));
