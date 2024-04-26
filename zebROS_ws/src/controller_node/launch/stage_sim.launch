@@ -13,14 +13,12 @@
 	<node pkg="stage_ros" type="stageros" name="stageros" args="$(find controller_node)/stage/$(arg world_file)" output="screen">
         <remap from="base_scan" to="scan"/>
         <remap from="odom" to="/frcrobot_jetson/swerve_drive_controller/odom"/>
+        <remap from="cmd_vel" to="/frcrobot_jetson/swerve_drive_controller/cmd_vel"/>
     </node>
-    <!-- Create an imu message with noise from stage's ground truth -->
-    <group ns="imu">
-        <node pkg="fake_sensors" type="fake_imu_node" name="fake_imu" >
-            <remap from="imu" to="/imu/imu/data" />
-            <remap from="/imu/base_pose_ground_truth" to="/base_pose_ground_truth" />
-        </node>
-    </group>
+
+    <!-- Create an imu message with noise from stage's ground truth, publish into sim interface imu input -->
+    <node pkg="fake_sensors" type="fake_imu_node" name="fake_imu" />
+
     <!-- Load ROS nodes & remaps needed to read from gamepads attached to laptop -->
     <include file="$(find controller_node)/launch/joysticks_sim.launch">
         <arg name="joy_or_key" value="$(arg joy_or_key)"/>
