@@ -13,7 +13,7 @@ from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtWidgets import QWidget
 
-from behavior_actions.msg import AutoMode, AutoState
+from behavior_actions.msg import AutoState
 from frc_msgs.msg import MatchSpecificData
 from talon_state_msgs.msg import TalonState
 from talon_state_msgs.msg import TalonFXProState
@@ -267,7 +267,6 @@ class DriverStationSim(Plugin):
             self._widget.talon_state_vertical_layout.addWidget(self._widget.talon_state_widgets[-1])
 
         match_pub = rospy.Publisher("/frcrobot_rio/match_data_in", MatchSpecificData, queue_size=2)
-        auto_mode_pub = rospy.Publisher("/auto/auto_mode", AutoMode, queue_size=1)
 
         self.auto_state_signal.connect(self.auto_state_slot)
         self.auto_state_sub = rospy.Subscriber("/auto/auto_state", AutoState, self._auto_state_callback)
@@ -279,7 +278,6 @@ class DriverStationSim(Plugin):
         def pub_data(self):
             r = rospy.Rate(20)
 
-            modes =  [0, 0, 0, 0]
             match_msg = MatchSpecificData()
             start_time = rospy.get_time()
             enable_last = False
@@ -352,16 +350,9 @@ class DriverStationSim(Plugin):
 
                 match_pub.publish(match_msg)
 
-                # Publish integer auto mode to auto_mode node
-                auto_mode_msg = AutoMode()
-                auto_mode_msg.header.stamp = rospy.Time.now()
-                auto_mode_msg.auto_mode = int(self._widget.auto_mode_text.text())
-                auto_mode_pub.publish(auto_mode_msg)
-
                 r.sleep()
 
             match_pub.unregister()
-            auto_mode_pub.unregister()
 
         load_thread = threading.Thread(target=pub_data, args=(self,))
         load_thread.start()
