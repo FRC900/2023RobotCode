@@ -7,8 +7,8 @@
 	<arg name="launch_prefix" default="" />
 
 	<arg name="hw_or_sim" default="hw" />
-	<arg name="joy_or_key" default="joy" />
-	<arg name="button_box" default="true"/>
+	<arg name="sim_joystick" default="true" />
+	<arg name="sim_button_box" default="true"/>
 	<arg name="record" default="false"/>
 
 	<group if="$(eval hw_or_sim=='sim')">
@@ -43,7 +43,7 @@
 	-->
     <include file="$(find controller_node)/launch/stage_sim.launch" if="$(eval hw_or_sim=='sim')">
 		<arg name="world_file" value="2024_crescendo.world" />
-		<arg name="joy_or_key" value="$(arg joy_or_key)" />
-		<arg name="button_box" value="$(arg button_box)"/>
+		<arg name="sim_joystick" value="$(arg sim_joystick)" />
+		<arg name="sim_button_box" value="$(arg sim_button_box)"/>
 	</include>
 </launch>

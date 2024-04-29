@@ -6,8 +6,8 @@
  -->
 <launch>
 	<arg name="world_file" default="2024_crescendo.world" />
-	<arg name="joy_or_key" default="joy" />
-	<arg name="button_box" default="true"/>
+	<arg name="sim_joystick" default="true" />
+	<arg name="sim_button_box" default="true"/>
 
     <!--  ************** Stage Simulator ***************  -->
 	<node pkg="stage_ros" type="stageros" name="stageros" args="$(find controller_node)/stage/$(arg world_file)" output="screen">
@@ -21,8 +21,8 @@
 
     <!-- Load ROS nodes & remaps needed to read from gamepads attached to laptop -->
     <include file="$(find controller_node)/launch/joysticks_sim.launch">
-        <arg name="joy_or_key" value="$(arg joy_or_key)"/>
-        <arg name="button_box" value="false"/>
+        <arg name="sim_joystick" value="$(arg sim_joystick)"/>
+        <arg name="sim_button_box" value="$(arg sim_button_box)"/>
     </include>
 
     <!-- Convert from stage base_marker_detection to tag_detection_world and object_detetction_world
