@@ -9,6 +9,7 @@
 	<arg name="hw_or_sim" default="hw" />
 	<arg name="sim_joystick" default="true" />
 	<arg name="sim_button_box" default="true"/>
+	<arg name="stage_sim" default="false"/>
 	<arg name="record" default="false"/>
 
 	<group if="$(eval hw_or_sim=='sim')">
@@ -41,7 +42,7 @@
 	<!-- StageSim related code 
 		TODO : make this an additional option on top of hw_or_sim?
 	-->
-    <include file="$(find controller_node)/launch/stage_sim.launch" if="$(eval hw_or_sim=='sim')">
+    <include file="$(find controller_node)/launch/stage_sim.launch" if="$(eval hw_or_sim=='sim' and arg('stage_sim'))">
 		<arg name="world_file" value="2024_crescendo.world" />
 		<arg name="sim_joystick" value="$(arg sim_joystick)" />
 		<arg name="sim_button_box" value="$(arg sim_button_box)"/>

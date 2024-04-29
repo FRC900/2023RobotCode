@@ -146,7 +146,7 @@
 	</include>
 	<include file="$(find behaviors)/launch/2024_drive_and_score.launch"/>
 
-	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
+	<!-- <include file="$(find pf_localization)/launch/pf_localization.launch"/> -->
 	
 	<!--
 		# Shooter ZED: Y Distance is 0, X distance is -0.299731, Z distance is 0.200852

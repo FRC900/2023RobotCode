@@ -146,7 +146,7 @@
 	
 	<include file="$(find controller_node)/launch/record_2023_compbot.launch" if="$(arg record)" />
 
-	<!-- <include file="$(find controller_node)/launch/pf_localization.launch"/> -->
+	<!-- <include file="$(find pf_localization)/launch/pf_localization.launch"/> -->
 	
 	<include file="$(find controller_node)/launch/zed_detection.launch">
 		<arg name="run_camera" value="false" if="$(eval hw_or_sim == 'sim')"/>
