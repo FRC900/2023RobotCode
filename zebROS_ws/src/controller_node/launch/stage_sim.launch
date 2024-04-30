@@ -8,6 +8,8 @@
 	<arg name="world_file" default="2024_crescendo.world" />
 	<arg name="sim_joystick" default="true" />
 	<arg name="sim_button_box" default="true"/>
+	<arg name="joy1_device" default="/dev/input/js0" />
+	<arg name="button_box_device" default="/dev/input/js1" />
 
     <!--  ************** Stage Simulator ***************  -->
 	<node pkg="stage_ros" type="stageros" name="stageros" args="$(find controller_node)/stage/$(arg world_file)" output="screen">
@@ -23,6 +25,8 @@
     <include file="$(find controller_node)/launch/joysticks_sim.launch">
         <arg name="sim_joystick" value="$(arg sim_joystick)"/>
         <arg name="sim_button_box" value="$(arg sim_button_box)"/>
+		<arg name="joy1_device" value="$(arg joy1_device)" />
+		<arg name="button_box_device" value="$(arg button_box_device)" />
     </include>
 
     <!-- Convert from stage base_marker_detection to tag_detection_world and object_detetction_world

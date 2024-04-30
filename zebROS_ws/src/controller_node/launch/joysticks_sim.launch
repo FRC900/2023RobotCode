@@ -10,6 +10,8 @@ In both cases, the sim gui will still be used for a simulated button box.
 
 	<arg name="sim_joystick" default="true"/>
 	<arg name="sim_button_box" default="true"/>
+	<arg name="joy1_device" default="/dev/input/js0" />
+	<arg name="button_box_device" default="/dev/input/js1" />
 
 	<!-- Launch a ros joy node to read a button box plugged into the laptop
 		 This is almost never used, perhaps only for testing the button box
@@ -23,7 +25,8 @@ In both cases, the sim gui will still be used for a simulated button box.
 	<group ns="button_box_joy" unless="$(arg sim_button_box)">
 
 		<node name="joy_node" pkg="joy" type="joy_node" output="screen">
-			<param name="dev" value="/dev/input/js1" unless="$(arg sim_joystick)"/>
+			<param name="dev" value="$(arg button_box_device)" unless="$(arg sim_joystick)"/>
+			<param name="dev" value="$(arg joy1_device)" if="$(arg sim_joystick)"/>
 			<param name="autorepeat_rate" type="double" value="100"/>
 			<param name="coalesce_interval" type="double" value="0.01"/>
 			<param name="deadzone" type="double" value="0.0"/>
@@ -39,6 +42,7 @@ In both cases, the sim gui will still be used for a simulated button box.
 	<group ns="joy1" unless="$(arg sim_joystick)">
 
 		<node name="joy_node" pkg="joy" type="joy_node" output="screen">
+			<param name="dev" value="$(arg joy1_device)" />
 			<param name="autorepeat_rate" type="double" value="100"/>
 			<param name="coalesce_interval" type="double" value="0.01"/>
 			<param name="deadzone" type="double" value="0.0"/>

@@ -75,7 +75,6 @@ class FakeGoalDetection
 			if (idx != std::string::npos && isdigit(topic[idx + 1])) {
 					frame_suffix = topic.substr(idx);
 			}
-			ROS_WARN_STREAM_THROTTLE(0.5, "Got message on topic : " << topic << " frame_suffix = " << frame_suffix);
 			const marker_msgs::MarkerDetectionConstPtr &msgIn = event.getConstMessage();
 			field_obj::Detection detectionsOut;
 			detectionsOut.header = msgIn->header;

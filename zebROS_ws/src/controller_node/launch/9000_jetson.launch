@@ -75,6 +75,7 @@
 	<!-- TODO split teleop into driving and buttons so we can reuse driving? -->
 	<include file="$(find controller_node)/launch/teleop.launch">
 		<arg name="year" value="2023" />
+		<arg name="hw_or_sim" value="$(arg hw_or_sim)" />
 	</include>
 
 	<include file="$(find controller_node)/launch/hold_position.launch"/>
