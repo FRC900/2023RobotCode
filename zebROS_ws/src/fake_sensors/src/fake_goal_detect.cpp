@@ -66,8 +66,17 @@ class FakeGoalDetection
 		}
 
 		// Translate stage base_marker_detection into our custom goal detection message
-		void cmdVelCallback(const marker_msgs::MarkerDetectionConstPtr &msgIn)
+		void cmdVelCallback(const ros::MessageEvent<marker_msgs::MarkerDetection> &event)
 		{
+			const ros::M_string &header = event.getConnectionHeader();
+			const std::string topic = header.at("topic");
+			const auto idx = topic.find_last_of('_');
+			std::string frame_suffix = "";
+			if (idx != std::string::npos && isdigit(topic[idx + 1])) {
+					frame_suffix = topic.substr(idx);
+			}
+			ROS_WARN_STREAM_THROTTLE(0.5, "Got message on topic : " << topic << " frame_suffix = " << frame_suffix);
+			const marker_msgs::MarkerDetectionConstPtr &msgIn = event.getConstMessage();
 			field_obj::Detection detectionsOut;
 			detectionsOut.header = msgIn->header;
 			rtrim(detectionsOut.header.frame_id);
@@ -78,7 +87,7 @@ class FakeGoalDetection
 			{
 				const auto marker = msgIn->markers[i];
 				if (marker.ids[0] == -1) // stage publishes odom as marker -1
-					continue;                       // ignore it here
+					continue;			 // ignore it here
 				// check if the id - 100 is a positive number, sim only hack for apriltags
 				if (marker.ids[0] >= 100) {
 					field_obj::Object tag;
@@ -91,40 +100,42 @@ class FakeGoalDetection
 					tag.confidence = marker.ids_confidence[0];
 					tag.id = std::to_string(marker.ids[0] - 100);
 					tagsOut.objects.push_back(tag);
-					sendTransform(tagsOut.header, tag, i, "obj_");
-				} else if (objMap_.find(marker.ids[0]) != objMap_.end()) { // if ID in map
-					field_obj::Object obj;
+					sendTransform(tagsOut.header, tag, i, "obj_", frame_suffix);
+				} else if (pubDetections_) {
+					if (objMap_.find(marker.ids[0]) != objMap_.end()) { // if ID in map
+						field_obj::Object obj;
 
-					const auto &p = marker.pose.position;
-					obj.location.x = p.x;
-					obj.location.y = p.y;
-					obj.location.z = p.z;
-					
-					obj.angle = atan2(obj.location.y, obj.location.x) * 180. / M_PI;
-					obj.confidence = marker.ids_confidence[0];
-					obj.id = objMap_[marker.ids[0]];
-					if (obj.id == "note") {
-						// ROS_INFO_STREAM("Found a note!");
-						if (hypot(p.x, p.y) < 1.0) {
-							ROS_INFO_STREAM_THROTTLE(1, "Note too close! Dropping");
-							//continue;
+						const auto &p = marker.pose.position;
+						obj.location.x = p.x;
+						obj.location.y = p.y;
+						obj.location.z = p.z;
+						
+						obj.angle = atan2(obj.location.y, obj.location.x) * 180. / M_PI;
+						obj.confidence = marker.ids_confidence[0];
+						obj.id = objMap_[marker.ids[0]];
+						if (obj.id == "note") {
+							// ROS_INFO_STREAM("Found a note!");
+							if (hypot(p.x, p.y) < 1.0) {
+								ROS_INFO_STREAM_THROTTLE(1, "Note too close! Dropping");
+								//continue;
+							}
 						}
- 					}
-					detectionsOut.objects.push_back(obj);
-					sendTransform(detectionsOut.header, obj, i, "");
-				} else {
-					field_obj::Object dummy;
+						detectionsOut.objects.push_back(obj);
+						sendTransform(detectionsOut.header, obj, i, "", frame_suffix);
+					} else {
+						field_obj::Object dummy;
 
-					const auto &p = marker.pose.position;
-					dummy.location.x = p.x + normalDistribution_(gen_);
-					dummy.location.y = p.y + normalDistribution_(gen_);
-					dummy.location.z = p.z + normalDistribution_(gen_);
-					dummy.angle = atan2(dummy.location.y, dummy.location.x) * 180. / M_PI;
-					dummy.confidence = marker.ids_confidence[0];
-					dummy.id = std::to_string(marker.ids[0]);
-					ROS_INFO_STREAM("Saw else " << dummy.id);
+						const auto &p = marker.pose.position;
+						dummy.location.x = p.x + normalDistribution_(gen_);
+						dummy.location.y = p.y + normalDistribution_(gen_);
+						dummy.location.z = p.z + normalDistribution_(gen_);
+						dummy.angle = atan2(dummy.location.y, dummy.location.x) * 180. / M_PI;
+						dummy.confidence = marker.ids_confidence[0];
+						dummy.id = std::to_string(marker.ids[0]);
+						ROS_INFO_STREAM("Saw else " << dummy.id);
 
-					detectionsOut.objects.push_back(dummy);
+						detectionsOut.objects.push_back(dummy);
+					}
 				}
 			}
 			pubt_.publish(tagsOut);
@@ -135,14 +146,14 @@ class FakeGoalDetection
 
 	private:
 
-		void sendTransform(const std_msgs::Header &header, const field_obj::Object &obj, const size_t i, const std::string &prefix)
+		void sendTransform(const std_msgs::Header &header, const field_obj::Object &obj, const size_t i, const std::string &prefix, const std::string &suffix)
 		{
 			geometry_msgs::TransformStamped transformStamped;
 
 			transformStamped.header.stamp = header.stamp;
 			transformStamped.header.frame_id = header.frame_id;
 			std::stringstream child_frame;
-			child_frame << prefix << obj.id << "_" << i;
+			child_frame << prefix << obj.id << "_" << i << suffix;
 			transformStamped.child_frame_id = child_frame.str();
  
  			transformStamped.transform.translation.x = obj.location.x;
