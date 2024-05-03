@@ -24,8 +24,6 @@
 		<arg name="run_deeptag"          value="$(arg run_deeptag)" />
 		<arg name="run_deeptag_node"     value="$(arg run_deeptag_node)" />
 		<arg name="run_object_detection" value="true" />
-		<arg name="run_nodelet_manager"  value="true" />
-		<arg name="nodelet_manager_name" value="zed_nodelet" />
 		<arg name="startup_delay"        value="15.0" />
 	</include>
 
@@ -46,8 +44,6 @@
 		<arg name="run_deeptag"          value="$(arg run_deeptag)" />
 		<arg name="run_deeptag_node"     value="$(arg run_deeptag_node)" />
 		<arg name="run_object_detection" value="false" />
-		<arg name="run_nodelet_manager"  value="false" />
-		<arg name="nodelet_manager_name" value="zed_nodelet" />
 		<arg name="startup_delay"        value="0.0" />
 	</include>
 
