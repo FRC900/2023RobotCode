@@ -84,11 +84,11 @@ object_detection:
     max_range:                          15.                             # Maximum detection range
     allow_reduced_precision_inference:  true                            # Allow inference to run at a lower precision to improve runtime and memory usage
     prediction_timeout:                 0.5                             #  During this time [sec], the object will have OK state even if it is not detected. Set this parameter to 0 to disable SDK predictions            
-    object_tracking_enabled:            false                            # Enable/disable the tracking of the detected objects
-    mc_people:                          false                            # Enable/disable the detection of persons for 'MULTI_CLASS_BOX_X' models
-    mc_vehicle:                         false                            # Enable/disable the detection of vehicles for 'MULTI_CLASS_BOX_X' models
-    mc_bag:                             false                            # Enable/disable the detection of bags for 'MULTI_CLASS_BOX_X' models
-    mc_animal:                          false                            # Enable/disable the detection of animals for 'MULTI_CLASS_BOX_X' models
-    mc_electronics:                     false                            # Enable/disable the detection of electronic devices for 'MULTI_CLASS_BOX_X' models
-    mc_fruit_vegetable:                 false                            # Enable/disable the detection of fruits and vegetables for 'MULTI_CLASS_BOX_X' models
-    mc_sport:                           false                            # Enable/disable the detection of sport-related objects for 'MULTI_CLASS_BOX_X' models
+    object_tracking_enabled:            false                           # Enable/disable the tracking of the detected objects
+    mc_people:                          false                           # Enable/disable the detection of persons for 'MULTI_CLASS_BOX_X' models
+    mc_vehicle:                         false                           # Enable/disable the detection of vehicles for 'MULTI_CLASS_BOX_X' models
+    mc_bag:                             false                           # Enable/disable the detection of bags for 'MULTI_CLASS_BOX_X' models
+    mc_animal:                          false                           # Enable/disable the detection of animals for 'MULTI_CLASS_BOX_X' models
+    mc_electronics:                     false                           # Enable/disable the detection of electronic devices for 'MULTI_CLASS_BOX_X' models
+    mc_fruit_vegetable:                 false                           # Enable/disable the detection of fruits and vegetables for 'MULTI_CLASS_BOX_X' models
+    mc_sport:                           false                           # Enable/disable the detection of sport-related objects for 'MULTI_CLASS_BOX_X' models
