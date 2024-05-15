@@ -1,3 +1,4 @@
+// Classes to create CUDA-event based timing for profiling
 #ifndef CUDA_EVENT_TIMING_INC__
 #define CUDA_EVENT_TIMING_INC__
 #include <iosfwd>          // for ostream
@@ -5,6 +6,9 @@
 #include <string>          // for string
 #include "driver_types.h"  // for cudaStream_t, CUevent_st, cudaEvent_t
 
+// And individual timing event between two points in the code
+// Users call start() and end() to mark the start and end of the event
+// to time. The event is recorded on the provided CUDA stream.
 class Timing
 {
 public:
@@ -19,19 +23,21 @@ public:
     virtual ~Timing();
    
     void start(cudaStream_t cudaStream);
-    void end(cudaStream_t cudaStream);
+    void end(void);
     void endFrame(void);
     friend std::ostream &operator<<(std::ostream &stream, const Timing &timing);
 private:
     std::string m_name;
     cudaEvent_t m_startEvent{};
     cudaEvent_t m_endEvent{};
+    cudaStream_t m_cudaStream{};
     bool m_startEventSeen{false};
     bool m_endEventSeen{false};
     double m_elapsedSeconds{0};
     long int m_count{-5}; // start negative to allow warm up before counting events
 };
 
+// A collection of Timing events
 class Timings
 {
 public:
@@ -45,7 +51,7 @@ public:
     virtual ~Timings();
 
     void start(const std::string &name, cudaStream_t cudaStream);
-    void end(const std::string &name, cudaStream_t cudaStream);
+    void end(const std::string &name);
 
     void endFrame(void);
 
@@ -58,25 +64,24 @@ private:
     bool m_enabled{true};
 };
 
-#if 0
-class ScopedTiming
+// A class for scoping a timing event - the event starts when the object is
+// created and ends when the object is destroyed.
+class ScopedEventTiming
 {
 public:
-    ScopedTiming(Timings &timings, std::string &name);
-    ScopedTiming(const ScopedTiming &other);
-    ScopedTiming(ScopedTiming &&other) noexcept;
+    ScopedEventTiming(Timings &timings, const std::string &name, cudaStream_t cudaStream);
+    ScopedEventTiming(const ScopedEventTiming &other) = delete;
+    ScopedEventTiming(ScopedEventTiming &&other) noexcept = delete;
 
-    ScopedTiming &operator=(const ScopedTiming &other);
-    ScopedTiming &operator=(ScopedTiming &&other) noexcept;
+    ScopedEventTiming &operator=(const ScopedEventTiming &other) = delete;
+    ScopedEventTiming &operator=(ScopedEventTiming &&other) noexcept = delete;
 
-    virtual ~ScopedTiming();
+    virtual ~ScopedEventTiming();
 
 private:
     Timings &m_timings;
     std::string m_name;
-    bool m_ended{false};
-
 };
-#endif
+
 
 #endif

@@ -3,6 +3,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <ddynamic_reconfigure/ddynamic_reconfigure.h>
 #include <image_transport/image_transport.h>
+#include <glog/logging.h>
 
 #include "gpu_apriltag/gpu_apriltag.h"
 #include "apriltag_msgs/ApriltagArrayStamped.h"
@@ -19,6 +20,9 @@ public:
 
     void onInit() override
     {
+        // Initialize Google's logging library.
+        FLAGS_v = 6; // TODO : make this a param?
+        google::InitGoogleLogging(getName().c_str());
         nh_ = getMTPrivateNodeHandle();
         auto base_nh = getNodeHandle();
 
@@ -153,8 +157,6 @@ private:
     }
     ros::NodeHandle nh_;
     ros::NodeHandle base_nh_;
-    std::unique_ptr<image_transport::ImageTransport> base_it_;
-    std::unique_ptr<image_transport::ImageTransport> it_;
     image_transport::CameraSubscriber camera_sub_;
     ros::Publisher pub_apriltag_detections_;
     ros::Publisher pub_apriltag_poses_;
