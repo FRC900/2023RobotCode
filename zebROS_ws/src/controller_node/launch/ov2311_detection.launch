@@ -11,7 +11,9 @@
   <arg name="cam_yaw"              default="0.0" />
    -->
   <arg name="run_camera"           default="true" />
+  <arg name="static_image"         default="false" />
   <arg name="run_gpu_apriltag"     default="true" />
+  <arg name="run_calibrator"       default="false" />
 
   <!-- Name of the Nodelet Manager -->
   <arg name="run_nodelet_manager"  default="true" />
@@ -24,8 +26,8 @@
   -->
   <node pkg="nodelet" type="nodelet" name="$(arg camera_name)" args="load cv_camera/CvCameraNodelet /$(arg nodelet_manager_name)" if="$(eval run_camera)" output="screen" >
     <param name="device_path"             value="/dev/video0" />
-    <param name="image_width"             value="1600" />
-    <param name="image_height"            value="1300" />
+    <!-- <param name="image_width"             value="1600" />
+    <param name="image_height"            value="1300" /> -->
     <param name="rate"                    value="60" />
     <param name="frame_id"                value="$(arg camera_name)" />
     <param name="camera_name"             value="$(arg camera_name)" />
@@ -39,9 +41,12 @@
   <node pkg="nodelet" type="nodelet" name="$(arg camera_name)_reformatter" args="load image_reformatter/ImageReformatterNodelet /$(arg nodelet_manager_name)" if="$(eval run_camera)" output="screen" >
     <remap from="/image_raw" to="/$(arg camera_name)/image_raw"/>
     <!-- <remap from="/image_reformatted" to="/$(arg camera_name)_reformatted/image_reformatted"/> -->
-    <param name="output_encoding"  value="bayer_rggb8" />
+    <param name="output_encoding"  value="mono8" />
     <param name="output_height"  value="1300" />
   </node>
+
+  <node pkg="camera_calibration" name="camera_calibration" type="camera_calibration" args="image:=/$(arg camera_name)_reformatter/image_reformatted camera:=/$(arg camera_name)_reformatter -p acircles -s 8x27 -q=0.1" if="$(eval run_calibrator)" output="screen" />
+
 
   <!-- 
   ========== GPU Apriltag Detector
@@ -51,5 +56,13 @@
     <!-- Match tag topic to CPU apriltag detection topic names -->
     <remap from="/apriltag_$(arg camera_name)/apriltag_detection/tag_detection_msg" to="/apriltag_$(arg camera_name)/tag_detection_msg"/>
   </node>
+
+  <group ns="$(arg camera_name)_reformatter" if="$(eval static_image)">
+    <node pkg="tf_object_detection" type="simple_static_img_pub.py" name="static_img_pub" output="screen" >
+      <param name="test_image_path" value="$(find tf_object_detection)/src/raw_0.png" />
+      <param name="camera_name" value="$(arg camera_name)" />
+      <remap from="image_raw" to="image_reformatted" />
+    </node>
+  </group>
 
 </launch>

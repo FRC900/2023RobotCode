@@ -307,6 +307,5 @@ double FRC971GpuApriltagDetectorImpl<INPUT_FORMAT>::ComputeDistortionFactor(
 
 template class FRC971GpuApriltagDetectorImpl<frc971::apriltag::InputFormat::Mono8>;
 template class FRC971GpuApriltagDetectorImpl<frc971::apriltag::InputFormat::BGR8>;
-template class FRC971GpuApriltagDetectorImpl<frc971::apriltag::InputFormat::Bayer_RGGB8>;
 
 } // namespace

@@ -39,11 +39,10 @@ public:
 
     void callback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& camera_info)
     {
-        cv_bridge::CvImageConstPtr cv_frame = cv_bridge::toCvShare(image);
+        auto cv_frame = cv_bridge::toCvShare(image);
 
         if (!detector_)
         {
-            // TODO : this should check encoding / format instead of channels
             if (cv_frame->encoding == sensor_msgs::image_encodings::MONO8)
             {
                 detector_ = std::make_unique<frc971_gpu_apriltag::FRC971GpuApriltagDetector<frc971::apriltag::InputFormat::Mono8>>(camera_info);
@@ -52,13 +51,9 @@ public:
             {
                 detector_ = std::make_unique<frc971_gpu_apriltag::FRC971GpuApriltagDetector<frc971::apriltag::InputFormat::BGR8>>(camera_info);
             }
-            else if (cv_frame->encoding == sensor_msgs::image_encodings::BAYER_RGGB8)
-            {
-                detector_ = std::make_unique<frc971_gpu_apriltag::FRC971GpuApriltagDetector<frc971::apriltag::InputFormat::Bayer_RGGB8>>(camera_info);
-            }
             else
             {
-                ROS_ERROR("Unsupported number of channels in image: %d", cv_frame->image.channels());
+                ROS_ERROR_STREAM_THROTTLE(1.0, "Unsupported image encoding " << cv_frame->encoding);
                 return;
             }
         }
@@ -71,7 +66,7 @@ public:
                           rejected_noconverge_corners,
                           cv_frame->image);
 
-        // Publish both an apriltag message adn a td detection message
+        // Publish both an apriltag message and a td detection message
         // The later lets us skip using a separate node to process
         // the results into the format needed by screen to world
         apriltag_msgs::ApriltagArrayStamped apriltag_array;

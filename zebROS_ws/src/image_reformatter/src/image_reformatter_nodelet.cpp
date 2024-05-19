@@ -22,7 +22,7 @@ public:
         auto nh = getMTPrivateNodeHandle();
         auto base_nh = getNodeHandle();
 
-        nh.param<std::string>("output_encoding", output_encoding_, "bayer_rggb8");
+        nh.param<std::string>("output_encoding", output_encoding_, "mono8");
         nh.param<int>("output_height", output_height_, 1300);
 
         image_transport::ImageTransport base_it(base_nh);
@@ -39,8 +39,7 @@ private:
         cv_bridge::CvImageConstPtr cv_image = cv_bridge::toCvShare(image);
         output_image.header = image->header;
         output_image.encoding = output_encoding_;
-        output_image.image = cv_image->image;
-        output_image.image = output_image.image.reshape(1, output_height_);
+        output_image.image = cv_image->image.reshape(1, output_height_);
 
         camera_pub_.publish(output_image.toImageMsg(), camera_info);
     }

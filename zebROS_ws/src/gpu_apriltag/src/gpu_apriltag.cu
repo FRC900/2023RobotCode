@@ -22,5 +22,4 @@ namespace frc971_gpu_apriltag
 
     template class FRC971GpuApriltagDetector<frc971::apriltag::InputFormat::Mono8>;
     template class FRC971GpuApriltagDetector<frc971::apriltag::InputFormat::BGR8>;
-    template class FRC971GpuApriltagDetector<frc971::apriltag::InputFormat::Bayer_RGGB8>;
 }
