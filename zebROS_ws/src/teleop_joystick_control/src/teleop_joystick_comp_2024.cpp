@@ -296,6 +296,7 @@ void evaluateCommands(const frc_msgs::JoystickStateConstPtr& joystick_state, int
 				if(!joystick1_right_trigger_pressed)
 				{
 					behavior_actions::AlignAndShoot2024Goal goal;
+					goal.align_forever = true;
 					aligned_shooting_ac->sendGoal(goal);
 				}
 

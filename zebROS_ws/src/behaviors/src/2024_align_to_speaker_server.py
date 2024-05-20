@@ -124,6 +124,7 @@ class Aligner:
                     cmd_vel_msg.linear.z = 0
                     self.pub_cmd_vel.publish(cmd_vel_msg)
                     self._as.publish_feedback(self._feedback)
+                    rospy.Duration(0.05).sleep()
                     break
 
             # If we haven't succeeded yet or we want to keep aligning forever, we need to
@@ -152,6 +153,7 @@ class Aligner:
         if success:
             self._result.success = True
             rospy.loginfo('%s: Succeeded' % self._action_name)
+            self._as.publish_feedback(self._feedback)
             self._as.set_succeeded(self._result)
         
 if __name__ == '__main__':
