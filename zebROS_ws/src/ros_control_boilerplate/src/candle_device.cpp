@@ -12,20 +12,22 @@
 #include "ros_control_boilerplate/candle_device.h"
 
 static ctre::phoenix::led::ColorFlowAnimation::Direction convertCANdleDirection(int direction);
-static std::shared_ptr<ctre::phoenix::led::BaseStandardAnimation> convertBaseStandardAnimation(hardware_interface::candle::Animation animation);
-static std::shared_ptr<ctre::phoenix::led::BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_interface::candle::Animation animation);
+static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_interface::candle::Animation animation);
 
-CANdleDevice::CANdleDevice(const std::string &name_space,
-                           const int joint_index,
-                           const std::string &joint_name,
-                           const int candle_id,
-                           const std::string &can_bus,
-                           const bool local_hardware,
-                           const bool local_update)
+#define safeCANdleCall(error_code, call_string) \
+    SIMFLAG ? true : safeCall(error_code, call_string)
+
+template <bool SIMFLAG>
+CANdleDevice<SIMFLAG>::CANdleDevice(const std::string &name_space,
+                                    const int joint_index,
+                                    const std::string &joint_name,
+                                    const int candle_id,
+                                    const std::string &can_bus,
+                                    const bool local_hardware,
+                                    const bool local_update)
     : CTREV5Device(name_space, "CANdle", joint_name, candle_id)
     , local_hardware_{local_hardware}
     , local_update_{local_update}
-    , candle_{local_hardware_ ? std::make_unique<ctre::phoenix::led::CANdle>(candle_id, can_bus) : nullptr}
     , state_{std::make_unique<hardware_interface::candle::CANdleHWState>(candle_id)}
     , command_{std::make_unique<hardware_interface::candle::CANdleHWCommand>()}
 {
@@ -34,11 +36,21 @@ CANdleDevice::CANdleDevice(const std::string &name_space,
                           (local_update_ ? " local" : " remote") << " update, " <<
                           (local_hardware_ ? "local" : "remote") << " hardware" <<
                           " as CANdle " << candle_id << " on bus " << can_bus);
+
+    if constexpr (!SIMFLAG)
+    {
+        if (local_hardware_)
+        {
+            candle_ = std::make_unique<ctre::phoenix::led::CANdle>(candle_id, can_bus);
+        }
+    }
 }
 
-CANdleDevice::~CANdleDevice() = default;
+template <bool SIMFLAG>
+CANdleDevice<SIMFLAG>::~CANdleDevice() = default;
 
-void CANdleDevice::registerInterfaces(hardware_interface::candle::CANdleStateInterface &state_interface,
+template <bool SIMFLAG>
+void CANdleDevice<SIMFLAG>::registerInterfaces(hardware_interface::candle::CANdleStateInterface &state_interface,
                                       hardware_interface::candle::CANdleCommandInterface &command_interface,
                                       hardware_interface::candle::RemoteCANdleStateInterface &remote_state_interface) const
 {
@@ -57,7 +69,43 @@ void CANdleDevice::registerInterfaces(hardware_interface::candle::CANdleStateInt
     }
 }
 
-void CANdleDevice::write(const ros::Time &/*time*/, const ros::Duration &/*period*/)
+// Used to clear out previous references to these LEDs.
+// Clear any animations which reference the LEDs and set
+// the LEDs to off. Used to provide a clean slate for new
+// writes to the LEDs, so only one value to them is active
+// at any given point in time.
+template <bool SIMFLAG>
+void CANdleDevice<SIMFLAG>::clearLEDs(size_t start, size_t count)
+{
+    const size_t group_max = start + count;
+    for (size_t led_id = start; led_id < group_max; led_id++) {
+        const std::optional<hardware_interface::candle::LED> led = state_->getLED(led_id);
+        if (led.has_value()) {
+            const auto animation_id = led->getAnimationID();
+            if (animation_id.has_value()) {
+                safeCANdleCall(candle_->ClearAnimation(*animation_id), "candle_->ClearAnimation");
+
+                hardware_interface::candle::Animation existing_animation = state_->getAnimation(*animation_id).value();
+                safeCANdleCall(
+                candle_->SetLEDs(
+                    0,
+                    0,
+                    0,
+                    0,
+                    existing_animation.start,
+                    existing_animation.count
+                ),
+                "candle_->SetLEDs");
+
+                command_->clearCurrentAnimation(existing_animation);
+                state_->clearAnimation(*animation_id);
+            }
+        }
+    }
+}
+
+template <bool SIMFLAG>
+void CANdleDevice<SIMFLAG>::write(const ros::Time &/*time*/, const ros::Duration &/*period*/)
 {
     if (!local_hardware_)
     {
@@ -69,7 +117,7 @@ void CANdleDevice::write(const ros::Time &/*time*/, const ros::Duration &/*perio
 
     // Brightness
     if (double brightness; command_->brightnessChanged(brightness)) {
-        if (safeCall(
+        if (safeCANdleCall(
             candle_->ConfigBrightnessScalar(brightness),
             "candle_->ConfigBrightnessScalar"
         )) {
@@ -82,7 +130,7 @@ void CANdleDevice::write(const ros::Time &/*time*/, const ros::Duration &/*perio
 
     // Show status LED when active
     if (bool status_led_when_active; command_->statusLEDWhenActiveChanged(status_led_when_active)) {
-        if (safeCall(
+        if (safeCANdleCall(
             candle_->ConfigStatusLedState(!status_led_when_active),
             "candle_->ConfigStatusLedState"
         )) {
@@ -95,7 +143,7 @@ void CANdleDevice::write(const ros::Time &/*time*/, const ros::Duration &/*perio
 
     // Enabled
     if (bool enabled; command_->enabledChanged(enabled)) {
-        if (safeCall(
+        if (safeCANdleCall(
             candle_->configV5Enabled(enabled),
             "candle_->configV5Enabled"
         )) {
@@ -108,96 +156,57 @@ void CANdleDevice::write(const ros::Time &/*time*/, const ros::Duration &/*perio
 
     // Stop animations
     if (bool stop_animations; command_->stopAnimationsChanged(stop_animations)) {
-        size_t max_animations = (size_t)candle_->GetMaxSimultaneousAnimationCount();
+        size_t max_animations = 8;
+        if constexpr (!SIMFLAG)
+        {
+            max_animations = (size_t)candle_->GetMaxSimultaneousAnimationCount();
+        }
         for (size_t i = 0; i < max_animations; i++) {
-            candle_->ClearAnimation(i);
+            safeCANdleCall(candle_->ClearAnimation(i), "candle_->ClearAnimation");
         }
 
         command_->drainAnimations();
-        state_->setMaxAnimations(max_animations);
+        // state_->setMaxAnimations(max_animations);
         state_->clearAnimations();
     }
 
     // Animation
     if (std::vector<hardware_interface::candle::Animation> candle_animations;
         command_->animationsChanged(candle_animations)) {
-        for (hardware_interface::candle::Animation& candle_animation : candle_animations) {
-            // Clear any old animations
-            size_t group_max = (size_t)(candle_animation.start + candle_animation.count);
-            for (size_t led_id = candle_animation.start; led_id < group_max; led_id++) {
-                std::optional<hardware_interface::candle::LED> led = state_->getLED(led_id);
-                if (led.has_value() && led->type == hardware_interface::candle::LEDType::Animated) {
-                    int animation_id = led->getAnimationID().value();
-                    candle_->ClearAnimation(animation_id);
+        for (const hardware_interface::candle::Animation& candle_animation : candle_animations) {
+            // Clear any old animations for the range of LEDs this animation will cover
+            clearLEDs(candle_animation.start, candle_animation.count);
 
-                    hardware_interface::candle::Animation existing_animation = state_->getAnimation(animation_id).value();
-                    candle_->SetLEDs(
-                        0,
-                        0,
-                        0,
-                        0,
-                        existing_animation.start,
-                        existing_animation.count
-                    );
-
-                    state_->clearAnimation(animation_id);
-                }
+            auto animation_slot = state_->getNextAnimationSlot();
+            if (animation_slot == hardware_interface::candle::MAX_ANIMATION_SLOTS) {
+                ROS_ERROR_STREAM("Failed to set CANdle animation - no available slots!");
+                continue;
             }
-
-            // A pointer to the animation, after it gets converted
-            std::shared_ptr<ctre::phoenix::led::Animation> animation;
-
-            // Convert from Animation to the appropriate CTRE animation class
-            if (candle_animation.class_type == hardware_interface::candle::AnimationClass::BaseStandard) {
-                animation = convertBaseStandardAnimation(candle_animation);
-            } else {
-                animation = convertBaseTwoAnimation(candle_animation);
-            }
-
-            size_t slot = state_->getNextAnimationSlot();
-
-            if (safeCall(
-                candle_->Animate(*animation, slot),
+            ROS_INFO_STREAM("Setting animation slot " << animation_slot);
+            if (safeCANdleCall(
+                candle_->Animate(*convertAnimation(candle_animation), animation_slot),
                 "candle_->Animate"
             )) {
                 ROS_INFO_STREAM("CANdle " << getName() << " : Changed its animation");
                 state_->setAnimation(candle_animation);
             } else {
-                // If we fail to animate, just re-add the animation to the queue
+                // Remove the failed animation from the list the command interface
+                // thinks is active then re-submit the failed animation so we retry
+                // it next update period
+                command_->clearCurrentAnimation(candle_animation);
                 command_->setAnimation(candle_animation);
             }
         }
-        command_->drainAnimations();
     }
 
     // LEDs
     std::vector<hardware_interface::candle::LEDGroup> led_groups;
     if (command_->ledGroupsChanged(led_groups)) {
-        command_->drainLEDGroups();
         for (hardware_interface::candle::LEDGroup group : led_groups) {
-            size_t group_max = (size_t)(group.start + group.count);
+            // Clear any old animations for the range of LEDs this animation will cover
+            clearLEDs(group.start, group.count);
 
-            for (size_t led_id = group.start; led_id < group_max; led_id++) {
-                std::optional<hardware_interface::candle::LED> led = state_->getLED(led_id);
-                if (led.has_value() && led->type == hardware_interface::candle::LEDType::Animated) {
-                    int animation_id = led->getAnimationID().value();
-                    candle_->ClearAnimation(animation_id);
-
-                    hardware_interface::candle::Animation animation = state_->getAnimation(animation_id).value();
-                    candle_->SetLEDs(
-                        0,
-                        0,
-                        0,
-                        0,
-                        animation.start,
-                        animation.count
-                    );
-
-                    state_->clearAnimation(animation_id);
-                }
-            }
-
-            if (safeCall(
+            if (safeCANdleCall(
                 candle_->SetLEDs(
                     group.colour.red,
                     group.colour.green,
@@ -208,12 +217,13 @@ void CANdleDevice::write(const ros::Time &/*time*/, const ros::Duration &/*perio
                 ),
                 "candle_->SetLEDs"
             )) {
-                for (size_t led_id = group.start; led_id < group_max; led_id++) {
+                for (size_t led_id = group.start; led_id < static_cast<size_t>(group.start + group.count); led_id++) {
                     state_->setLED(led_id, group.colour);
                 }
 
                 ROS_INFO_STREAM("CANdle " << getName() << " : Changed colours");
             } else {
+                // On an error, just re-queue the failed LED group
                 command_->setLEDGroup(group);
             }
         }
@@ -234,10 +244,11 @@ static ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
     }
 }
 
-static std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(hardware_interface::candle::Animation animation) {
+static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_interface::candle::Animation animation) {
+    Colour colour = animation.colour;
     switch (animation.type) {
         case AnimationType::Fire: {
-            return std::make_shared<FireAnimation>(
+            return std::make_unique<FireAnimation>(
                 animation.brightness,
                 animation.speed,
                 animation.count,
@@ -248,7 +259,7 @@ static std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(hardw
             );
         }
         case AnimationType::Rainbow: {
-            return std::make_shared<RainbowAnimation>(
+            return std::make_unique<RainbowAnimation>(
                 animation.brightness,
                 animation.speed,
                 animation.count,
@@ -257,25 +268,15 @@ static std::shared_ptr<BaseStandardAnimation> convertBaseStandardAnimation(hardw
             );
         }
         case AnimationType::RGBFade: {
-            return std::make_shared<RgbFadeAnimation>(
+            return std::make_unique<RgbFadeAnimation>(
                 animation.brightness,
                 animation.speed,
                 animation.count,
                 animation.start
             );
         }
-        default: {
-            ROS_ERROR_STREAM("Invalid animation type in " << __FUNCTION__ << " " << static_cast<int>(animation.type));
-            return {};
-        }
-    }
-}
-
-static std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_interface::candle::Animation animation) {
-    Colour colour = animation.colour;
-    switch (animation.type) {
         case AnimationType::ColourFlow: {
-            return std::make_shared<ColorFlowAnimation>(
+            return std::make_unique<ColorFlowAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -288,7 +289,7 @@ static std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_in
         }
         case AnimationType::Larson:
         {
-            return std::make_shared<LarsonAnimation>(
+            return std::make_unique<LarsonAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -303,7 +304,7 @@ static std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_in
         }
         case AnimationType::SingleFade:
         {
-            return std::make_shared<SingleFadeAnimation>(
+            return std::make_unique<SingleFadeAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -315,7 +316,7 @@ static std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_in
         }
         case AnimationType::Strobe:
         {
-            return std::make_shared<StrobeAnimation>(
+            return std::make_unique<StrobeAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -327,7 +328,7 @@ static std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_in
         }
         case AnimationType::Twinkle:
         {
-            return std::make_shared<TwinkleAnimation>(
+            return std::make_unique<TwinkleAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,
@@ -341,7 +342,7 @@ static std::shared_ptr<BaseTwoSizeAnimation> convertBaseTwoAnimation(hardware_in
         }
         case AnimationType::TwinkleOff:
         {
-            return std::make_shared<TwinkleOffAnimation>(
+            return std::make_unique<TwinkleOffAnimation>(
                 colour.red,
                 colour.green,
                 colour.blue,

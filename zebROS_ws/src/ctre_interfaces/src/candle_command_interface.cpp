@@ -1,19 +1,13 @@
 #include "ctre_interfaces/candle_command_interface.h"
 
-namespace hardware_interface {
-namespace candle {
+namespace hardware_interface::candle {
 
-CANdleHWCommand::CANdleHWCommand() :
-    leds_changed{false},
-    brightness{1.0},
-    brightness_changed{true},
-    show_status_led_when_active{true},
-    status_led_changed{false},
-    enabled{true},
-    enabled_changed{false},
-    animation_changed{false},
-    stop_animations{true}
-{}
+CANdleHWCommand::CANdleHWCommand()
+{
+    for (size_t i = 0; i < 8; i++) {
+        this->leds.emplace_back(Colour(255, 255, 255, 255));
+    }
+}
 
 void CANdleHWCommand::setLEDGroup(const LEDGroup& leds)
 {
@@ -52,7 +46,7 @@ bool CANdleHWCommand::ledGroupsChanged(std::vector<LEDGroup>& groups) {
             if (led.has_value()) {
                 // If the previous colour is none, or the colour has changed, start a new group
                 if (!previous_colour.has_value() || previous_colour.value() != led.value()) {
-                    groups.emplace_back(LEDGroup(
+                    groups.emplace_back(
                         i,
                         1,
                         Colour(
@@ -61,7 +55,7 @@ bool CANdleHWCommand::ledGroupsChanged(std::vector<LEDGroup>& groups) {
                             led->blue,
                             led->white
                         )
-                    ));
+                    );
                 // If the colour matches the last colour, just increase the number of LEDs in that group
                 } else {
                     groups.back().count += 1;
@@ -71,6 +65,7 @@ bool CANdleHWCommand::ledGroupsChanged(std::vector<LEDGroup>& groups) {
             previous_colour = led;
         }
         this->leds_changed = false;
+        this->leds.clear();
         return true;
     }
     return false;
@@ -143,7 +138,9 @@ void CANdleHWCommand::resetEnabledChanged() {
     this->enabled_changed = true;
 }
 
-void CANdleHWCommand::setAnimation(Animation animation) {
+void CANdleHWCommand::setAnimation(const Animation &animation) {
+    // Check if the animation is already in the list to
+    // update this time
     for (Animation& existing_animation : this->animations) {
         if (animation == existing_animation) {
             ROS_INFO_STREAM("Identical animation detected. Not updating");
@@ -151,13 +148,37 @@ void CANdleHWCommand::setAnimation(Animation animation) {
         }
     }
 
+    // Check if the animation matches an existing one already
+    // written to hardware. This will prevent restarting the
+    // animation if it's already running.
+    for (const Animation& a : this->current_animations) {
+        if (a == animation) {
+            ROS_INFO_STREAM("New animation matching existing animation. Not updating");
+            return;
+        }
+    }
+
     this->animations.push_back(animation);
     this->animation_changed = true;
+
+    // Previously checked for an exact match, so here we
+    // can just check start and size and if there's an
+    // existing animation with the same start and size,
+    // overwrite the rest of the info with the requested animation
+    for (size_t i = 0; i < this->current_animations.size(); i++) {
+        if ((this->current_animations[i].start == animation.start) &&
+            (this->current_animations[i].count == animation.count)) {
+            this->current_animations[i] = animation;
+            return;
+        }
+    }
+    this->current_animations.push_back(animation);
 }
 bool CANdleHWCommand::animationsChanged(std::vector<Animation>& animations) {
     if (this->animation_changed) {
         this->animation_changed = false;
         animations = this->animations;
+        this->animations.clear();
         return true;
     }
     return false;
@@ -166,8 +187,22 @@ void CANdleHWCommand::drainAnimations() {
     this->animations.clear();
 }
 
+// Clear an animation from the list of currently active animations
+// Do this by passing the animation config rather than the index
+// since I'm not sure if the indexes will get out of sync between
+// here and the state interface
+void CANdleHWCommand::clearCurrentAnimation(const Animation &animation) {
+    for (size_t i = 0; i < this->current_animations.size(); i++) {
+        if (this->current_animations[i] == animation) {
+            this->current_animations.erase(this->current_animations.begin() + i);
+            return;
+        }
+    }
+}
+
 void CANdleHWCommand::stopAnimations() {
     this->stop_animations = true;
+    this->current_animations.clear();
 }
 bool CANdleHWCommand::stopAnimationsChanged(bool& stop) {
     if (this->stop_animations) {
@@ -178,5 +213,4 @@ bool CANdleHWCommand::stopAnimationsChanged(bool& stop) {
     return false;
 }
 
-}
-}
+} // namespace hardware_interface::candle
