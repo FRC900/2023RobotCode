@@ -21,7 +21,8 @@ public:
     void onInit() override
     {
         // Initialize Google's logging library.
-        FLAGS_v = 6; // TODO : make this a param?
+        // TODO : hook it up to print using ROS_INFO calls somehow?
+        // FLAGS_v = 6; // TODO : make this a param?
         google::InitGoogleLogging(getName().c_str());
         nh_ = getMTPrivateNodeHandle();
         auto base_nh = getNodeHandle();

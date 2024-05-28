@@ -166,6 +166,7 @@ add_library(${PROJECT_NAME}
   ${FRC971}/frc971/orin/apriltag_detect.cc
   ${FRC971}/frc971/orin/cuda.cc
   ${FRC971}/frc971/orin/cuda_event_timing.cc
+  ${FRC971}/frc971/orin/cuda_utils.cc
   ${FRC971}/frc971/orin/labeling_allegretti_2019_BKE.cc
   ${FRC971}/frc971/orin/line_fit_filter.cc
   ${FRC971}/frc971/orin/threshold.cc

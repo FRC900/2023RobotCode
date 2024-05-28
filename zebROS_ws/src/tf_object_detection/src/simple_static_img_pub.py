@@ -15,7 +15,8 @@ test_image_path = "/home/ubuntu/tensorflow_workspace/2023Game/data/videos/162_36
 test_image_path = rospy.get_param("~test_image_path", test_image_path)
 rospy.loginfo(f"Publishing image from: {test_image_path}")
 img = cv2.imread(test_image_path)
-if img.shape[2] == 1:
+img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+if len(img.shape) == 2:
     encoding="mono8"
 elif img.shape[2] == 3:
     encoding="bgr8"
