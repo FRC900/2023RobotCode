@@ -1,14 +1,11 @@
-// Classes to create CUDA-event based timing for profiling
 #ifndef CUDA_EVENT_TIMING_INC__
 #define CUDA_EVENT_TIMING_INC__
 #include <iosfwd>          // for ostream
 #include <map>             // for map
 #include <string>          // for string
+#include <vector>          // for vector
 #include "driver_types.h"  // for cudaStream_t, CUevent_st, cudaEvent_t
 
-// And individual timing event between two points in the code
-// Users call start() and end() to mark the start and end of the event
-// to time. The event is recorded on the provided CUDA stream.
 class Timing
 {
 public:
@@ -37,7 +34,6 @@ private:
     long int m_count{-5}; // start negative to allow warm up before counting events
 };
 
-// A collection of Timing events
 class Timings
 {
 public:
@@ -61,11 +57,10 @@ public:
 
 private:
     std::map<std::string, Timing> m_timings{};
+    std::vector<std::string> m_keys_in_insert_order_{};
     bool m_enabled{true};
 };
 
-// A class for scoping a timing event - the event starts when the object is
-// created and ends when the object is destroyed.
 class ScopedEventTiming
 {
 public:
