@@ -169,7 +169,7 @@ void FRC971GpuApriltagDetectorImpl<INPUT_FORMAT>::Detect(std::vector<GpuApriltag
             // First create an apriltag_detection_info_t struct using your known
             // parameters.
             apriltag_detection_info_t info;
-            info.tagsize = tag_size;
+            info.tagsize = tag_size_;
 
             info.fx = intrinsics_.at<double>(0, 0);
             info.fy = intrinsics_.at<double>(1, 1);
