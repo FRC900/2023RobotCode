@@ -169,18 +169,7 @@ void FRC971GpuApriltagDetectorImpl<INPUT_FORMAT>::Detect(std::vector<GpuApriltag
             // First create an apriltag_detection_info_t struct using your known
             // parameters.
             apriltag_detection_info_t info;
-            info.tagsize = tag_sizetemplate <size_t BYTES_PER_PIXEL>
-__global__ void InternalCudaToGreyscaleAndDecimateHalide(
-    const uint8_t *color_image, uint8_t *gray_image, uint8_t *decimated_image,
-    size_t width, size_t height) {
-  size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-  while (i < width * height) {
-    uint8_t pixel;
-    if constexpr (BYTES_PER_PIXEL == 1) {
-      pixel = gray_image[i] = color_image[i];  // Grayscale input
-    } else if constexpr (BYTES_PER_PIXEL == 2) {
-      pixel = gray_image[i] = color_image[i * 2];  // YUY input
-    } else if constexpr (BYTES_PER_PIXEL == 3) {_;
+            info.tagsize = tag_size;
 
             info.fx = intrinsics_.at<double>(0, 0);
             info.fy = intrinsics_.at<double>(1, 1);
