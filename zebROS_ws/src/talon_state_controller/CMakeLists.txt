@@ -27,8 +27,8 @@ catkin_package(
 
 include_directories(${catkin_INCLUDE_DIRS})
 add_library(${PROJECT_NAME}
-	src/cancoder_state_controller.cpp
-	src/candle_state_controller.cpp
+  src/cancoder_state_controller.cpp
+  src/candle_state_controller.cpp
   src/canifier_state_controller.cpp
   src/latency_compensation_state_controller.cpp
   src/talon_config_controller.cpp

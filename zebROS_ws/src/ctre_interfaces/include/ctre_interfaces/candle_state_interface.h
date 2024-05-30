@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CANDLE_STATE_INTERFACE_INC__
+#define CANDLE_STATE_INTERFACE_INC__
 
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include "state_handle/state_handle.h"
@@ -175,3 +176,5 @@ class CANdleStateInterface : public HardwareResourceManager<CANdleStateHandle> {
 class RemoteCANdleStateInterface : public HardwareResourceManager<CANdleWritableStateHandle, ClaimResources> {};
 
 } // namespace hardware_interface::candle
+
+#endif // CANDLE_STATE_INTERFACE_INC__
