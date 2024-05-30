@@ -92,10 +92,10 @@ public:
 							const auto led_value = led->getColour();
 							if (led_value.has_value())
 							{
-								led_msg.red = led_value->red;
-								led_msg.green = led_value->green;
-								led_msg.blue = led_value->blue;
-								led_msg.white = led_value->white;
+								led_msg.red = led_value->red_;
+								led_msg.green = led_value->green_;
+								led_msg.blue = led_value->blue_;
+								led_msg.white = led_value->white_;
 								led_msg.valid = true;
 							}
 							else
@@ -112,11 +112,10 @@ public:
 						auto anim = cs->getAnimation(anim_idx);
 						if (anim.has_value())
 						{
-							anim_msg.speed = anim->speed;
-							anim_msg.start = anim->start;
-							anim_msg.count = anim->count;
-							anim_msg.color.red = anim->colour.red;
-							switch(anim->type)
+							anim_msg.speed = anim->speed_;
+							anim_msg.start = anim->start_;
+							anim_msg.count = anim->count_;
+							switch(anim->type_)
 							{
 								case hardware_interface::candle::AnimationType::ColourFlow:
 									anim_msg.type = "ColourFlow";
@@ -149,26 +148,65 @@ public:
 									anim_msg.type = "Unknown";
 									break;
 							}
-							anim_msg.color.green = anim->colour.green;
-							anim_msg.color.blue = anim->colour.blue;
-							anim_msg.color.white = anim->colour.white;
+							anim_msg.color.red = anim->colour_.red_;
+							anim_msg.color.green = anim->colour_.green_;
+							anim_msg.color.blue = anim->colour_.blue_;
+							anim_msg.color.white = anim->colour_.white_;
 							anim_msg.color.valid = true; // not sure this matters
-							switch (anim->direction)
+							if ((anim->type_ == hardware_interface::candle::AnimationType::Twinkle) ||
+								(anim->type_ == hardware_interface::candle::AnimationType::TwinkleOff))
 							{
-								case 0:
-									anim_msg.direction = "Forward";
-									break;
-								case 1:
-									anim_msg.direction = "Reverse";
-									break;
-								default:
-									anim_msg.direction = "Unknown";
-									break;
+								// Twinkle/TwinkleOff Percent values are encoded in this field
+								switch (anim->direction_)
+								{
+									case 0:
+										anim_msg.direction = "Percen100";
+										break;
+									case 1:
+										anim_msg.direction = "Percent88";
+										break;
+									case 2:
+										anim_msg.direction = "Percent76";
+										break;
+									case 3:
+										anim_msg.direction = "Percent64";
+										break;
+									case 4:
+										anim_msg.direction = "Percent42";
+										break;
+									case 5:
+										anim_msg.direction = "Percent30";
+										break;
+									case 6:
+										anim_msg.direction = "Percent18";
+										break;
+									case 7:
+										anim_msg.direction = "Percent6";
+										break;
+									default:
+										anim_msg.direction = "Unknown";
+										break;
+								}
 							}
-							anim_msg.brightness = anim->brightness;
-							anim_msg.reversed = anim->reversed;
-							anim_msg.param4 = anim->param4;
-							anim_msg.param5 = anim->param5;
+							else
+							{
+								switch (anim->direction_)
+								{
+									case 0:
+										anim_msg.direction = "Forward";
+										break;
+									case 1:
+										anim_msg.direction = "Reverse";
+										break;
+									default:
+										anim_msg.direction = "Unknown";
+										break;
+								}
+							}
+							anim_msg.brightness = anim->brightness_;
+							anim_msg.reversed = anim->reversed_;
+							anim_msg.param4 = anim->param4_;
+							anim_msg.param5 = anim->param5_;
 							anim_msg.valid = true;
 						}
 						else

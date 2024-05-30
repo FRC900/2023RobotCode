@@ -4,65 +4,68 @@ namespace hardware_interface {
 namespace candle {
 
 
-Colour::Colour(int red, int green, int blue, int white) {
-    this->red = red;
-    this->green = green;
-    this->blue = blue;
-    this->white = white;
+Colour::Colour(int red, int green, int blue, int white) 
+    : red_{red}
+    , green_{green}
+    , blue_{blue}
+    , white_{white}
+{
 }
 bool Colour::operator!=(const Colour& rhs) const {
     return !(*this == rhs);
 }
 bool Colour::operator==(const Colour& rhs) const {
     return (
-        this->red == rhs.red &&
-        this->green == rhs.green &&
-        this->blue == rhs.blue &&
-        this->white == rhs.white
+        red_ == rhs.red_ &&
+        green_ == rhs.green_ &&
+        blue_ == rhs.blue_ &&
+        white_ == rhs.white_
     );
 }
 
-Animation::Animation(double speed, int start, int count, AnimationType type, double brightness, bool reversed, double param4, double param5) {
-    this->speed = speed;
-    this->start = start;
-    this->count = count;
-    this->type = type;
-    this->class_type = AnimationClass::BaseStandard;
-    this->brightness = brightness;
-    this->reversed = reversed;
-    this->param4 = param4;
-    this->param5 = param5;
+Animation::Animation(double speed, int start, int count, AnimationType type, double brightness, bool reversed, double param4, double param5) 
+    : speed_{speed}
+    , start_{start}
+    , count_{count}
+    , type_{type}
+    , class_type_{AnimationClass::BaseStandard}
+    , brightness_{brightness}
+    , reversed_{reversed}
+    , param4_{param4}
+    , param5_{param5}
+{
 }
-Animation::Animation(double speed, int start, int count, AnimationType type, int red, int green, int blue, int white, int direction) {
-    this->speed = speed;
-    this->start = start;
-    this->count = count;
-    this->type = type;
-    this->class_type = AnimationClass::BaseTwo;
-    this->colour = Colour(red, green, blue, white);
-    this->direction = direction;
+Animation::Animation(double speed, int start, int count, AnimationType type, int red, int green, int blue, int white, int direction) 
+    : speed_{speed}
+    , start_{start}
+    , count_{count}
+    , type_{type}
+    , class_type_{AnimationClass::BaseTwo}
+    , colour_{red, green, blue, white}
+    , direction_{direction}
+{
 }
 
 bool Animation::operator==(const Animation& rhs) const {
-    if (this->class_type == rhs.class_type) {
-        if (this->class_type == AnimationClass::BaseStandard) {
+    if (class_type_ == rhs.class_type_) {
+        if (class_type_ == AnimationClass::BaseStandard) {
             return (
-                (this->speed == rhs.speed) &&
-                (this->start == rhs.start) &&
-                (this->count == rhs.count) &&
-                (this->brightness == rhs.brightness) &&
-                (this->param4 == rhs.param4) &&
-                (this->param5 == rhs.param5) &&
-                (this->type == rhs.type)
+                (speed_ == rhs.speed_) &&
+                (start_ == rhs.start_) &&
+                (count_ == rhs.count_) &&
+                (brightness_ == rhs.brightness_) &&
+                (param4_ == rhs.param4_) &&
+                (param5_ == rhs.param5_) &&
+                (type_ == rhs.type_)
             );
         } else {
             return (
-                (this->speed == rhs.speed) &&
-                (this->start == rhs.start) &&
-                (this->count == rhs.count) &&
-                (this->colour == rhs.colour) &&
-                (this->direction == rhs.direction) &&
-                (this->type == rhs.type)
+                (speed_ == rhs.speed_) &&
+                (start_ == rhs.start_) &&
+                (count_ == rhs.count_) &&
+                (colour_ == rhs.colour_) &&
+                (direction_ == rhs.direction_) &&
+                (type_ == rhs.type_)
             );
         }
     } else {
@@ -70,69 +73,69 @@ bool Animation::operator==(const Animation& rhs) const {
     }
 }
 bool Animation::operator!=(const Animation& rhs) const {
-    return !(this->operator==(rhs));
+    return !(*this == rhs);
 }
 
 CANdleHWState::CANdleHWState(int id) :
-    device_id{id}
+    device_id_{id}
 {
 }
 
-void CANdleHWState::setLED(size_t id, Colour colour) {
-    if (id < this->leds.size()) {
-        this->leds[id].emplace(colour);
+void CANdleHWState::setLED(const size_t id, const Colour &colour) {
+    if (id < leds_.size()) {
+        leds_[id].emplace(colour);
     } else {
-        if (id > this->leds.size()) {
-            this->leds.resize(id);
+        if (id > leds_.size()) {
+            leds_.resize(id);
         }
-        this->leds.emplace_back(LED(colour));
+        leds_.emplace_back(LED(colour));
     }
 }
-void CANdleHWState::setLED(size_t id, size_t animation_id) {
-    if (id < this->leds.size()) {
-        this->leds[id].emplace(LED(animation_id));
+void CANdleHWState::setLED(const size_t id, const size_t animation_id) {
+    if (id < leds_.size()) {
+        leds_[id].emplace(animation_id);
     } else {
-        if (id > this->leds.size()) {
-            this->leds.resize(id);
+        if (id > leds_.size()) {
+            leds_.resize(id);
         }
-        this->leds.emplace_back(LED(animation_id));
+        leds_.emplace_back(LED(animation_id));
     }
 }
-void CANdleHWState::setLEDOff(size_t id) {
-    this->leds[id].reset();
+void CANdleHWState::setLEDOff(const size_t id) {
+    leds_[id].reset();
 }
-std::optional<LED> CANdleHWState::getLED(size_t id) const {
-    if (id < this->leds.size()) {
-        return this->leds[id];
+std::optional<LED> CANdleHWState::getLED(const size_t id) const {
+    if (id < leds_.size()) {
+        return leds_[id];
     } else {
         return std::nullopt;
     }
 }
 
 size_t CANdleHWState::getLEDCount() const {
-    return this->leds.size();
+    return leds_.size();
 }
 
 // TODO : do we ever want to allow this?
-void CANdleHWState::setBrightness(double brightness) {
-    this->brightness = brightness;
+void CANdleHWState::setBrightness(const double brightness) {
+    brightness_ = brightness;
 }
 double CANdleHWState::getBrightness() const {
-    return this->brightness;
+    return brightness_;
 }
 
-void CANdleHWState::setStatusLEDWhenActive(bool show) {
-    this->show_led_when_active = show;
+void CANdleHWState::setStatusLEDWhenActive(const bool show) {
+    show_led_when_active_ = show;
 }
 bool CANdleHWState::getStatusLEDWhenActive() const {
-    return this->show_led_when_active;
+    return show_led_when_active_;
 }
 
-void CANdleHWState::setEnabled(bool enabled) {
-    this->enabled = enabled;
+void CANdleHWState::setEnabled(const bool enabled) {
+    enabled_ = enabled;
 }
 bool CANdleHWState::getEnabled() const {
-    return this->enabled;
+    return enabled_;
 }
 
 void CANdleHWState::setAnimation(const Animation& animation) {
@@ -141,59 +144,58 @@ void CANdleHWState::setAnimation(const Animation& animation) {
         ROS_ERROR_STREAM("Failed to set CANdle animation - no available slots!");
         return;
     }
-    if (animation_id == this->animations.size()) {
-        this->animations.emplace_back(animation);
+    if (animation_id == animations_.size()) {
+        animations_.emplace_back(animation);
     } else {
-        this->animations[animation_id].emplace(animation);
+        animations_[animation_id].emplace(animation);
     }
-    for (int led_id = animation.start; led_id < (animation.start + animation.count); led_id++) {
+    for (int led_id = animation.start_; led_id < (animation.start_ + animation.count_); led_id++) {
         this->setLED(led_id, animation_id);
     }
 }
-void CANdleHWState::clearAnimation(size_t id) {
-    if (id < this->animations.size() && this->animations[id].has_value()) {
-        const Animation animation = this->animations[id].value();
-        for (size_t led_id = animation.start; led_id < (size_t)(animation.start + animation.count); led_id++) {
+void CANdleHWState::clearAnimation(const size_t id) {
+    if (id < animations_.size() && animations_[id].has_value()) {
+        const Animation animation = animations_[id].value();
+        for (size_t led_id = animation.start_; led_id < (size_t)(animation.start_ + animation.count_); led_id++) {
             this->setLEDOff(led_id);
         }
-        this->animations[id].reset();
+        animations_[id].reset();
     } else {
         ROS_ERROR_STREAM("Attempted to clear CANdle animation with invalid ID!");
     }
 }
-void CANdleHWState::setMaxAnimations(size_t max) {
-    this->animations.resize(max, std::nullopt);
+void CANdleHWState::setMaxAnimations(const size_t max) {
+    animations_.resize(max, std::nullopt);
 }
 void CANdleHWState::clearAnimations() {
-    for (auto &a : this->animations) {
+    for (auto &a : animations_) {
         a.reset();
     }
 }
-std::optional<Animation> CANdleHWState::getAnimation(size_t id) const {
-    if (id < this->animations.size()) {
-        return this->animations[id];
+std::optional<Animation> CANdleHWState::getAnimation(const size_t id) const {
+    if (id < animations_.size()) {
+        return animations_[id];
     }
 
     return std::nullopt;
 }
 size_t CANdleHWState::getNextAnimationSlot() {
     size_t anim_idx = 0;
-    while (anim_idx < this->animations.size() && this->animations[anim_idx].has_value()) {
+    while (anim_idx < animations_.size() && animations_[anim_idx].has_value()) {
         anim_idx++;
     }
     if (anim_idx < MAX_ANIMATION_SLOTS) {
-        ROS_INFO_STREAM("Found available animation slot for CANdle: " << anim_idx);
         return anim_idx;
     }
     ROS_ERROR_STREAM("Failed to get available animation slot for CANdle!");
     return MAX_ANIMATION_SLOTS;
 }
 size_t CANdleHWState::getAnimationCount() const {
-    return this->animations.size();
+    return animations_.size();
 }
 
 int CANdleHWState::getDeviceID() const {
-    return this->device_id;
+    return device_id_;
 }
 
 } // namespace candle

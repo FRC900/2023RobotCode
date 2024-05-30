@@ -11,7 +11,6 @@
 #include "ctre_interfaces/candle_command_interface.h"
 #include "ros_control_boilerplate/candle_device.h"
 
-static ctre::phoenix::led::ColorFlowAnimation::Direction convertCANdleDirection(int direction);
 static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_interface::candle::Animation animation);
 
 #define safeCANdleCall(error_code, call_string) \
@@ -92,8 +91,8 @@ void CANdleDevice<SIMFLAG>::clearLEDs(size_t start, size_t count)
                     0,
                     0,
                     0,
-                    existing_animation.start,
-                    existing_animation.count
+                    existing_animation.start_,
+                    existing_animation.count_
                 ),
                 "candle_->SetLEDs");
 
@@ -175,7 +174,7 @@ void CANdleDevice<SIMFLAG>::write(const ros::Time &/*time*/, const ros::Duration
         command_->animationsChanged(candle_animations)) {
         for (const hardware_interface::candle::Animation& candle_animation : candle_animations) {
             // Clear any old animations for the range of LEDs this animation will cover
-            clearLEDs(candle_animation.start, candle_animation.count);
+            clearLEDs(candle_animation.start_, candle_animation.count_);
 
             auto animation_slot = state_->getNextAnimationSlot();
             if (animation_slot == hardware_interface::candle::MAX_ANIMATION_SLOTS) {
@@ -204,21 +203,21 @@ void CANdleDevice<SIMFLAG>::write(const ros::Time &/*time*/, const ros::Duration
     if (command_->ledGroupsChanged(led_groups)) {
         for (hardware_interface::candle::LEDGroup group : led_groups) {
             // Clear any old animations for the range of LEDs this animation will cover
-            clearLEDs(group.start, group.count);
+            clearLEDs(group.start_, group.count_);
 
             if (safeCANdleCall(
                 candle_->SetLEDs(
-                    group.colour.red,
-                    group.colour.green,
-                    group.colour.blue,
-                    group.colour.white,
-                    group.start,
-                    group.count
+                    group.colour_.red_,
+                    group.colour_.green_,
+                    group.colour_.blue_,
+                    group.colour_.white_,
+                    group.start_,
+                    group.count_
                 ),
                 "candle_->SetLEDs"
             )) {
-                for (size_t led_id = group.start; led_id < static_cast<size_t>(group.start + group.count); led_id++) {
-                    state_->setLED(led_id, group.colour);
+                for (size_t led_id = group.start_; led_id < static_cast<size_t>(group.start_ + group.count_); led_id++) {
+                    state_->setLED(led_id, group.colour_);
                 }
 
                 ROS_INFO_STREAM("CANdle " << getName() << " : Changed colours");
@@ -232,7 +231,7 @@ void CANdleDevice<SIMFLAG>::write(const ros::Time &/*time*/, const ros::Duration
 
 using namespace hardware_interface::candle;
 using namespace ctre::phoenix::led;
-static ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
+static ColorFlowAnimation::Direction convertCANdleDirection(const int direction) {
     switch (direction) {
         case 0:
             return ColorFlowAnimation::Direction::Forward;
@@ -244,118 +243,179 @@ static ColorFlowAnimation::Direction convertCANdleDirection(int direction) {
     }
 }
 
+static TwinkleAnimation::TwinklePercent convertTwinklePercent(const int percent) {
+    switch (percent) {
+        case 0:
+            return TwinkleAnimation::TwinklePercent::Percent100;
+        case 1:
+            return TwinkleAnimation::TwinklePercent::Percent88;
+        case 2:
+            return TwinkleAnimation::TwinklePercent::Percent76;
+        case 3:
+            return TwinkleAnimation::TwinklePercent::Percent64;
+        case 4:
+            return TwinkleAnimation::TwinklePercent::Percent42;
+        case 5:
+            return TwinkleAnimation::TwinklePercent::Percent30;
+        case 6:
+            return TwinkleAnimation::TwinklePercent::Percent18;
+        case 7:
+            return TwinkleAnimation::TwinklePercent::Percent6;
+        default:
+            ROS_ERROR_STREAM("Invalid int to convert to CANdle TwinklePercent! Defaulting to 100%.");
+            return TwinkleAnimation::TwinklePercent::Percent100;
+    }
+}
+
+static TwinkleOffAnimation::TwinkleOffPercent convertTwinkleOffPercent(const int percent) {
+    switch (percent) {
+        case 0:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent100;
+        case 1:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent88;
+        case 2:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent76;
+        case 3:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent64;
+        case 4:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent42;
+        case 5:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent30;
+        case 6:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent18;
+        case 7:
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent6;
+        default:
+            ROS_ERROR_STREAM("Invalid int to convert to CANdle TwinkleOffPercent! Defaulting to 100%.");
+            return TwinkleOffAnimation::TwinkleOffPercent::Percent100;
+    }
+}
+
+static LarsonAnimation::BounceMode convertLarsonBounceMode(const double bounce_mode)
+{
+    switch (static_cast<int>(bounce_mode)) {
+        case 0:
+            return LarsonAnimation::BounceMode::Front;
+        case 1:
+            return LarsonAnimation::BounceMode::Center;
+        case 2:
+            return LarsonAnimation::BounceMode::Back;
+        default:
+            ROS_ERROR_STREAM("Invalid bounce mode in " << __FUNCTION__ << " " << bounce_mode);
+            return LarsonAnimation::BounceMode::Front;
+    }
+
+}
+
 static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_interface::candle::Animation animation) {
-    Colour colour = animation.colour;
-    switch (animation.type) {
+    const Colour &colour = animation.colour_;
+    switch (animation.type_) {
         case AnimationType::Fire: {
             return std::make_unique<FireAnimation>(
-                animation.brightness,
-                animation.speed,
-                animation.count,
-                animation.param4,
-                animation.param5,
-                animation.reversed,
-                animation.start
+                animation.brightness_,
+                animation.speed_,
+                animation.count_,
+                animation.param4_,
+                animation.param5_,
+                animation.reversed_,
+                animation.start_
             );
         }
         case AnimationType::Rainbow: {
             return std::make_unique<RainbowAnimation>(
-                animation.brightness,
-                animation.speed,
-                animation.count,
-                animation.reversed,
-                animation.start
+                animation.brightness_,
+                animation.speed_,
+                animation.count_,
+                animation.reversed_,
+                animation.start_
             );
         }
         case AnimationType::RGBFade: {
             return std::make_unique<RgbFadeAnimation>(
-                animation.brightness,
-                animation.speed,
-                animation.count,
-                animation.start
+                animation.brightness_,
+                animation.speed_,
+                animation.count_,
+                animation.start_
             );
         }
         case AnimationType::ColourFlow: {
             return std::make_unique<ColorFlowAnimation>(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation.speed,
-                animation.count,
-                convertCANdleDirection(animation.direction),
-                animation.start
+                colour.red_,
+                colour.red_,
+                colour.blue_,
+                colour.white_,
+                animation.speed_,
+                animation.count_,
+                convertCANdleDirection(animation.direction_),
+                animation.start_
             );
         }
         case AnimationType::Larson:
         {
             return std::make_unique<LarsonAnimation>(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation.speed,
-                animation.count,
-                // TODO: Store Bounce mode and Size arguments in animation class
-                LarsonAnimation::BounceMode::Front,
-                2,
-                animation.start
+                colour.red_,
+                colour.red_,
+                colour.blue_,
+                colour.white_,
+                animation.speed_,
+                animation.count_,
+                convertLarsonBounceMode(animation.param4_),
+                std::min(6, std::max(static_cast<int>(animation.param5_), 1)),
+                animation.start_
             );
         }
         case AnimationType::SingleFade:
         {
             return std::make_unique<SingleFadeAnimation>(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation.speed,
-                animation.count,
-                animation.start
+                colour.red_,
+                colour.red_,
+                colour.blue_,
+                colour.white_,
+                animation.speed_,
+                animation.count_,
+                animation.start_
             );
         }
         case AnimationType::Strobe:
         {
             return std::make_unique<StrobeAnimation>(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation.speed,
-                animation.count,
-                animation.start
+                colour.red_,
+                colour.red_,
+                colour.blue_,
+                colour.white_,
+                animation.speed_,
+                animation.count_,
+                animation.start_
             );
         }
         case AnimationType::Twinkle:
         {
             return std::make_unique<TwinkleAnimation>(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation.speed,
-                animation.count,
-                // TODO: Store actual Divider value
-                TwinkleAnimation::TwinklePercent::Percent100,
-                animation.start
+                colour.red_,
+                colour.red_,
+                colour.blue_,
+                colour.white_,
+                animation.speed_,
+                animation.count_,
+                convertTwinklePercent(animation.direction_),
+                animation.start_
             );
         }
         case AnimationType::TwinkleOff:
         {
             return std::make_unique<TwinkleOffAnimation>(
-                colour.red,
-                colour.green,
-                colour.blue,
-                colour.white,
-                animation.speed,
-                animation.count,
-                // TODO: Store actual Divider value
-                TwinkleOffAnimation::TwinkleOffPercent::Percent100,
-                animation.start
+                colour.red_,
+                colour.red_,
+                colour.blue_,
+                colour.white_,
+                animation.speed_,
+                animation.count_,
+                convertTwinkleOffPercent(animation.direction_),
+                animation.start_
             );
         }
         default: {
-            ROS_ERROR_STREAM("Invalid animation type in " << __FUNCTION__ << " " << static_cast<int>(animation.type));
+            ROS_ERROR_STREAM("Invalid animation type in " << __FUNCTION__ << " " << static_cast<int>(animation.type_));
             return {};
         }
     }

@@ -29,10 +29,10 @@ enum class AnimationClass {
 
 // A CANdle colour
 struct Colour {
-    int red{0};
-    int green{0};
-    int blue{0};
-    int white{0};
+    int red_{0};
+    int green_{0};
+    int blue_{0};
+    int white_{0};
 
     // Constructor
     Colour(int red, int green, int blue, int white);
@@ -45,30 +45,31 @@ struct Colour {
 // An animation for the CANdle to play
 struct Animation {
     // Animation speed
-    double speed{0.0};
+    double speed_{0.0};
     // Initial LED to animate
-    int start{0};
+    int start_{0};
     // Number of LEDs to animation
-    int count{0};
+    int count_{0};
     // The animation to play
-    AnimationType type{AnimationType::ColourFlow};
+    AnimationType type_{AnimationType::ColourFlow};
     // The animation class type
-    AnimationClass class_type{AnimationClass::BaseStandard};
+    AnimationClass class_type_{AnimationClass::BaseStandard};
 
     // For Base Two animations
     // Animation colour
-    Colour colour{};
+    Colour colour_{};
     // Animation direction
-    int direction{0};
+    // Also encodes twinke percent for Twinkle/TwinkleOff animations
+    int direction_{0};
 
     // For Base Standard animations
     // Animation brightness
-    double brightness{1.0};
+    double brightness_{1.0};
     // If the animation is reversed
-    bool reversed{false};
+    bool reversed_{false};
     // Extra params
-    double param4{0.0};
-    double param5{0.0};
+    double param4_{0.0};
+    double param5_{0.0};
 
     // Constructor for BaseStandard animations
     Animation(double speed, int start, int count, AnimationType type, double brightness, bool reversed, double param4, double param5);
@@ -125,49 +126,48 @@ class CANdleHWState {
         int getDeviceID() const;
 
         // Set the colour of an LED
-        void setLED(size_t id, Colour colour);
-        void setLED(size_t id, size_t animation_id);
-        void setLEDOff(size_t id);
+        void setLED(const size_t id, const Colour &colour);
+        void setLED(const size_t id, const size_t animation_id);
+        void setLEDOff(const size_t id);
         std::optional<LED> getLED(size_t id) const;
 
         size_t getLEDCount() const;
 
         // Set the brightness of the CANdle's LEDs
-        void setBrightness(double brightness);
+        void setBrightness(const double brightness);
         double getBrightness() const;
 
         // Show status LED when the CANdle is being controlled
-        void setStatusLEDWhenActive(bool show);
+        void setStatusLEDWhenActive(const bool show);
         bool getStatusLEDWhenActive() const;
 
         // If the CANdle is enabled
-        void setEnabled(bool enabled);
+        void setEnabled(const bool enabled);
         bool getEnabled() const;
 
         // The CANdle's animation
         void setAnimation(const Animation& animation);
-        void clearAnimation(size_t id);
+        void clearAnimation(const size_t id);
         void clearAnimations();
-        void setMaxAnimations(size_t max);
+        void setMaxAnimations(const size_t max);
         size_t getAnimationCount(void) const;
-        std::optional<Animation> getAnimation(size_t id) const;
+        std::optional<Animation> getAnimation(const size_t id) const;
         size_t getNextAnimationSlot();
 
     private:
         // The CAN ID of this CANdle
-        int device_id;
+        int device_id_;
         // All of the LED groups to colour
-        std::vector<std::optional<LED>> leds;
+        std::vector<std::optional<LED>> leds_;
         // The brightness of the LEDs in the CANdle, from 0->1
-        double brightness{1.0};
+        double brightness_{1.0};
         // If the status LED should be on when the CANdle is being controlled
-        bool show_led_when_active{false};
-        // If the CANdle is enabled
-        bool enabled{false};
+        bool show_led_when_active_{false};
+        // If the 5v CANdle output is enabled
+        bool enabled_{false};
         // The CANdle's animations
-        std::vector<std::optional<Animation>> animations;
+        std::vector<std::optional<Animation>> animations_;
 };
-
 
 using CANdleStateHandle = StateHandle<const CANdleHWState>;
 using CANdleWritableStateHandle = StateHandle<CANdleHWState>;
