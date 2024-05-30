@@ -304,7 +304,6 @@ static LarsonAnimation::BounceMode convertLarsonBounceMode(const double bounce_m
             ROS_ERROR_STREAM("Invalid bounce mode in " << __FUNCTION__ << " " << bounce_mode);
             return LarsonAnimation::BounceMode::Front;
     }
-
 }
 
 static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_interface::candle::Animation animation) {
@@ -341,7 +340,7 @@ static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_
         case AnimationType::ColourFlow: {
             return std::make_unique<ColorFlowAnimation>(
                 colour.red_,
-                colour.red_,
+                colour.green_,
                 colour.blue_,
                 colour.white_,
                 animation.speed_,
@@ -354,7 +353,7 @@ static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_
         {
             return std::make_unique<LarsonAnimation>(
                 colour.red_,
-                colour.red_,
+                colour.green_,
                 colour.blue_,
                 colour.white_,
                 animation.speed_,
@@ -368,7 +367,7 @@ static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_
         {
             return std::make_unique<SingleFadeAnimation>(
                 colour.red_,
-                colour.red_,
+                colour.green_,
                 colour.blue_,
                 colour.white_,
                 animation.speed_,
@@ -380,7 +379,7 @@ static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_
         {
             return std::make_unique<StrobeAnimation>(
                 colour.red_,
-                colour.red_,
+                colour.green_,
                 colour.blue_,
                 colour.white_,
                 animation.speed_,
@@ -392,7 +391,7 @@ static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_
         {
             return std::make_unique<TwinkleAnimation>(
                 colour.red_,
-                colour.red_,
+                colour.green_,
                 colour.blue_,
                 colour.white_,
                 animation.speed_,
@@ -405,7 +404,7 @@ static std::unique_ptr<ctre::phoenix::led::Animation> convertAnimation(hardware_
         {
             return std::make_unique<TwinkleOffAnimation>(
                 colour.red_,
-                colour.red_,
+                colour.green_,
                 colour.blue_,
                 colour.white_,
                 animation.speed_,
