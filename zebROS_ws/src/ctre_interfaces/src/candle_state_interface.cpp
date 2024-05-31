@@ -1,7 +1,6 @@
 #include "ctre_interfaces/candle_state_interface.h"
 
-namespace hardware_interface {
-namespace candle {
+namespace hardware_interface::candle {
 
 Colour::Colour(int red, int green, int blue, int white) 
     : red_{red}
@@ -197,5 +196,4 @@ int CANdleHWState::getDeviceID() const {
     return device_id_;
 }
 
-} // namespace candle
-} // namespace hardware_interface
+} // namespace hardware_interface::candle // namespace hardware_interface
