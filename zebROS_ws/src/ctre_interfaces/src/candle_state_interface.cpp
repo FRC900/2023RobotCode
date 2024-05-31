@@ -3,7 +3,6 @@
 namespace hardware_interface {
 namespace candle {
 
-
 Colour::Colour(int red, int green, int blue, int white) 
     : red_{red}
     , green_{green}
