@@ -115,10 +115,6 @@ void updateMapOdomTf() {
     }
 }
 
-void timer_cb(const ros::TimerEvent& /*event*/) {
-  updateMapOdomTf();
-}
-
 // Should never have to "fake" localization
 bool relocalize_to_point_cb(behavior_actions::RelocalizePoint::Request &req, behavior_actions::RelocalizePoint::Response &/*res*/) {
   ROS_INFO_STREAM("map_to_odom: relocalizing to a point at x,y " << req.pose.position.x << ", " << req.pose.position.y);
@@ -144,9 +140,12 @@ int main(int argc, char **argv) {
   nh_.param<double>("map_to_odom_rate", map_to_odom_rate, 250.0);
 
   // make a timer that runs at the requested rate and updates the tagslam transform 
-  ros::Timer timer = nh_.createTimer(ros::Duration(1./map_to_odom_rate), timer_cb);
-
-  ros::spin();
+  ros::Rate r(map_to_odom_rate);
+  while (ros::ok()) {
+    ros::spinOnce();
+    updateMapOdomTf();
+    r.sleep();
+  }
 
   return 0;
 }
