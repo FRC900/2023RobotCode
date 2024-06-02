@@ -3,8 +3,6 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include "behavior_actions/RelocalizePoint.h"
-
 namespace tf2
 {
     inline
@@ -113,22 +111,6 @@ void updateMapOdomTf() {
     } catch (const tf2::TransformException &ex) {
       ROS_ERROR_STREAM_THROTTLE(5, "Line " << __LINE__ << " Map to odom : transform from base_link to " << odom_frame_id << " failed in map->odom broadcaser : " << ex.what());
     }
-}
-
-// Should never have to "fake" localization
-bool relocalize_to_point_cb(behavior_actions::RelocalizePoint::Request &req, behavior_actions::RelocalizePoint::Response &/*res*/) {
-  ROS_INFO_STREAM("map_to_odom: relocalizing to a point at x,y " << req.pose.position.x << ", " << req.pose.position.y);
-
-  geometry_msgs::TransformStamped relocalized_point_tf;
-  relocalized_point_tf.header.stamp = ros::Time::now();
-  relocalized_point_tf.header.frame_id = map_frame_id;
-  relocalized_point_tf.child_frame_id = odom_frame_id;
-  relocalized_point_tf.transform.rotation = req.pose.orientation;
-  relocalized_point_tf.transform.translation.x = req.pose.position.x;
-  relocalized_point_tf.transform.translation.y = req.pose.position.y;
-
-  tfbr.sendTransform(relocalized_point_tf);
-  return true;
 }
 
 int main(int argc, char **argv) {
