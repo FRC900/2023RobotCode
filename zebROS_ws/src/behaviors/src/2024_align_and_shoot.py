@@ -49,7 +49,7 @@ class AlignAndShoot:
         self.enable_continuous_autoalign_server = rospy.Service("enable_autoalign", std_srvs.srv.SetBool, self.enable_cb)
         self.enable_continuous_autoalign = False
 
-        self.dont_send_shooting_goal = False
+        self.dont_send_shooting_goal = False # TODO - can probably be a local in the callback
         
         # not used self.localization_timeout = rospy.get_param("localization_timeout")
 
