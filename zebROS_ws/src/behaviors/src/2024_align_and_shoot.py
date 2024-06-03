@@ -74,7 +74,7 @@ class AlignAndShoot:
         rospy.loginfo("2024_align_and_shoot: server started")
 
     def cmd_vel_cb(self, msg: TwistStamped):
-        self.stopped = math.hypot(msg.twist.linear.x, msg.twist.linear.y) <= self.linear_vel_threshold and msg.twist.angular.z <= self.angular_vel_threshold
+        self.stopped = math.hypot(msg.twist.linear.x, msg.twist.linear.y) <= self.linear_vel_threshold # and msg.twist.angular.z <= self.angular_vel_threshold
 
     def match_data_cb(self, msg: MatchSpecificData):
         self.alliance_color = msg.allianceColor
@@ -96,7 +96,7 @@ class AlignAndShoot:
 
     def distance_and_angle_callback(self, msg: AutoAlignSpeaker):
         self.dist_value = msg.distance
-        rospy.loginfo_throttle(0.05, f"{self.dist_value}")
+        # rospy.loginfo_throttle(0.05, f"{self.dist_value}")
     
     def align_to_speaker_feedback_cb(self, feedback: AlignToSpeaker2024Feedback):
         self.align_to_speaker_done = feedback.aligned
@@ -133,25 +133,46 @@ class AlignAndShoot:
 
         rospy.loginfo("2024_align_and_shoot: spinning up shooter")
         self.dont_send_shooting_goal = True
-        # shooting_goal.mode = shooting_goal.SPEAKER
-        # shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
-        # shooting_goal.setup_only = True
-        # shooting_goal.only_shooter_setup = True
-        # shooting_goal.leave_spinning = True
+        shooting_goal.mode = shooting_goal.SPEAKER
+        shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
+        shooting_goal.setup_only = True
+        shooting_goal.only_shooter_setup = True
+        shooting_goal.leave_spinning = True
 
-        # self.shooting_client.send_goal(shooting_goal)
+        self.shooting_client.send_goal(shooting_goal)
 
-        if not self.aligning:
-            align_to_speaker_goal.align_forever = goal.align_forever
-            align_to_speaker_goal.offsetting = goal.offsetting
-            self.aligning = goal.align_forever
-            self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
-            rospy.loginfo("2024_align_and_shoot: align goal sent")
+        align_to_speaker_goal.align_forever = goal.align_forever
+        align_to_speaker_goal.offsetting = goal.offsetting
+        self.aligning = goal.align_forever
+        self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
+        rospy.loginfo("2024_align_and_shoot: align goal sent")
 
         relocalized_recently = True # TODO : remove me
 
         # We want to run this loop while rospy is not shutdown, and:
         # we have not aligned to speaker OR we are not done shooting
+
+        while not self.stopped and not rospy.is_shutdown():
+            rospy.loginfo_throttle(0.1, f"2024_align_and_shoot: aligning waiting on stopping")
+            if self.server.is_preempt_requested():
+                rospy.loginfo("2024_align_and_shoot: preempted")
+                self.align_to_speaker_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
+                self.server.set_preempted()
+                return
+            r.sleep()
+
+        time.sleep(0.25)
+
+        # Once stopped, send shooting setup goal
+        shooting_goal.mode = shooting_goal.SPEAKER
+        shooting_goal.distance = self.dist_value #sets the dist value for goal ditsance with resepct ot hte calblack
+        shooting_goal.setup_only = True
+        shooting_goal.only_shooter_setup = False
+        shooting_goal.leave_spinning = True
+
+        self.shooting_client.send_goal(shooting_goal)
+
         while (not self.align_to_speaker_done) or (not self.stopped) and not rospy.is_shutdown():
             #relocalized_recently = (rospy.Time.now() - self.last_relocalized) < rospy.Duration(self.localization_timeout)
             rospy.loginfo_throttle(0.1, f"2024_align_and_shoot: aligning waiting on {'speaker' if not self.align_to_speaker_done else ''} {'localization' if not relocalized_recently else ''} {'stopping' if not self.stopped else ''}")
@@ -164,9 +185,9 @@ class AlignAndShoot:
             r.sleep()
 
         rospy.loginfo("2024_align_and_shoot: done aligning, about to shoot")
-        rospy.loginfo(f"2024_align_and_shoot: distance before is {self.dist_value}")
-        time.sleep(1.0) # TODO : goal is to eventually reduce or remove this entirely
-        rospy.loginfo(f"2024_align_and_shoot: distance after is {self.dist_value}")
+        # rospy.loginfo(f"2024_align_and_shoot: distance before is {self.dist_value}")
+        # time.sleep(1.0) # TODO : goal is to eventually reduce or remove this entirely
+        # rospy.loginfo(f"2024_align_and_shoot: distance after is {self.dist_value}")
         self.dont_send_shooting_goal = True
         shooting_goal.mode = shooting_goal.SPEAKER
         shooting_goal.distance = self.dist_value #sets the dist value for goal distance with respect to the calblack

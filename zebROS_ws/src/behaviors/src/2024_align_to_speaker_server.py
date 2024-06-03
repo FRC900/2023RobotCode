@@ -67,7 +67,7 @@ class Aligner:
 
         debug_msg = Float64MultiArray()
         try:
-            trans = self.tfBuffer.lookup_transform('base_link', offset_point.header.frame_id, rospy.Time())
+            trans = self.tfBuffer.lookup_transform(offset_point.header.frame_id, 'base_link', rospy.Time())
             destination = tf2_geometry_msgs.do_transform_point(offset_point, trans)
             debug_msg.data.append(trans.transform.translation.x) # 0
             debug_msg.data.append(trans.transform.translation.y) # 1
@@ -81,7 +81,7 @@ class Aligner:
             dist_ang_msg.angle    = math.atan2(destination.point.y, destination.point.x)
             self.pub_dist_and_ang_vel.publish(dist_ang_msg)
 
-            self.angle_setpoint = math.pi + yaw + dist_ang_msg.angle # TODO - math.pi might not be needed now that the src/dst of the transform is correct
+            self.angle_setpoint = dist_ang_msg.angle # TODO - math.pi might not be needed now that the src/dst of the transform is correct
             self._feedback.error = abs(angles.shortest_angular_distance(self.angle_setpoint, yaw))
             if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.velocity_tolerance:
                 self.valid_samples += 1

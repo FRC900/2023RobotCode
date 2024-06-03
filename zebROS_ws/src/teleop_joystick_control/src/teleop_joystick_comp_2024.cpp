@@ -555,7 +555,7 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 		std_srvs::SetBool srv;
 		if (button_box->lockingSwitchButton)
 		{
-			srv.request.data = true;
+			srv.request.data = false; // was true
 		}
 		else
 		{
@@ -570,10 +570,10 @@ void buttonBoxCallback(const frc_msgs::ButtonBoxState2024ConstPtr &button_box)
 	}
 	if (button_box->lockingSwitchPress)
 	{
-		std_srvs::SetBool srv;
-		srv.request.data = true;
-		enable_continuous_autoalign_client.call(srv);
-		ROS_INFO_STREAM("teleop_joystick_comp_2024 : enabling continuous autoalign");
+		// std_srvs::SetBool srv;
+		// srv.request.data = true;
+		// enable_continuous_autoalign_client.call(srv);
+		// ROS_INFO_STREAM("teleop_joystick_comp_2024 : enabling continuous autoalign");
 	}
 	if (button_box->lockingSwitchRelease)
 	{
