@@ -42,11 +42,10 @@ std::string odom_frame_id = "odom";
 std::string map_frame_id = "map";
 std::string tagslam_baselink = "frc_robot";
 
-tf2_ros::TransformBroadcaster tfbr;
+ros::Time last_published{};
 
-tf2_ros::Buffer tf_buffer;
-
-void updateMapOdomTf() {
+void updateMapOdomTf(const tf2_ros::Buffer &tf_buffer, tf2_ros::TransformBroadcaster &tfbr
+) {
     // This will only be called from a timer event, meaning that we should
     // already be up to date with the latest tagslam transform
     // ros::spinOnce();
@@ -61,6 +60,10 @@ void updateMapOdomTf() {
       // get base_link -> odom transform at the timestamp of the tagslam transform
       // maybe this allows us to relocalize while moving, since we know where we were?
                                                                                     // look at changing this to ros::Time(0)
+      if (last_published == base_link_to_map_tf.header.stamp) {
+        return;
+      }
+      last_published = base_link_to_map_tf.header.stamp;
       base_link_to_odom_tf = tf_buffer.lookupTransform("base_link", odom_frame_id, base_link_to_map_tf.header.stamp);
     } catch (const tf2::TransformException &ex) {
       ROS_ERROR_STREAM_THROTTLE(5, "map to odom : transform from base_link to " << odom_frame_id << " failed in map->odom broadcaser : " << ex.what());
@@ -116,7 +119,9 @@ void updateMapOdomTf() {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "map_to_odom_node");
   ros::NodeHandle nh_;
+  tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
+  tf2_ros::TransformBroadcaster tfbr;
 
   double map_to_odom_rate;
   nh_.param<double>("map_to_odom_rate", map_to_odom_rate, 250.0);
@@ -125,7 +130,7 @@ int main(int argc, char **argv) {
   ros::Rate r(map_to_odom_rate);
   while (ros::ok()) {
     ros::spinOnce();
-    updateMapOdomTf();
+    updateMapOdomTf(tf_buffer, tfbr);
     r.sleep();
   }
 
