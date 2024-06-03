@@ -12,6 +12,7 @@ import math
 import behavior_actions.msg
 from tf.transformations import euler_from_quaternion # may look like tf1 but is actually tf2
 from frc_msgs.msg import MatchSpecificData
+from std_msgs.msg import Float64MultiArray
 import angles
 import numpy
 
@@ -26,9 +27,7 @@ class Aligner:
         self.velocity_tolerance = rospy.get_param("velocity_tolerance")
         self.min_samples = rospy.get_param("min_samples")
         self.color = 0
-        self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.AlignToSpeaker2024Action, execute_cb=self.aligner_callback, auto_start = False)
-        self._as.start()
-        self.current_yaw = 0
+        # self.current_yaw = 0
         self.angle_setpoint = 0
         self.current_orient_effort = 0
         self.valid_samples = 0
@@ -45,9 +44,13 @@ class Aligner:
 
         self.pub_dist_and_ang_vel = rospy.Publisher("/speaker_align/dist_and_ang", behavior_actions.msg.AutoAlignSpeaker, queue_size=1) #distance and angle
 
+        self.pub_debug = rospy.Publisher("/speaker_align/debug", Float64MultiArray, queue_size=1)
+
         self._feedback.aligned = False
         
         self.feed_forward = True
+        self._as = actionlib.SimpleActionServer(self._action_name, behavior_actions.msg.AlignToSpeaker2024Action, execute_cb=self.aligner_callback, auto_start = False)
+        self._as.start()
 
     def imu_callback(self, imu_msg):
         q = imu_msg.orientation
@@ -62,24 +65,40 @@ class Aligner:
         else:
             offset_point.point.y = 0
 
+        debug_msg = Float64MultiArray()
         try:
             trans = self.tfBuffer.lookup_transform('base_link', offset_point.header.frame_id, rospy.Time())
             destination = tf2_geometry_msgs.do_transform_point(offset_point, trans)
+            debug_msg.data.append(trans.transform.translation.x) # 0
+            debug_msg.data.append(trans.transform.translation.y) # 1
+            debug_msg.data.append(trans.transform.translation.z) # 2
+            debug_msg.data.append(destination.point.x)           # 3
+            debug_msg.data.append(destination.point.y)           # 4
+            debug_msg.data.append(destination.point.z)           # 5
 
             dist_ang_msg = behavior_actions.msg.AutoAlignSpeaker()
             dist_ang_msg.distance = math.hypot(destination.point.x, destination.point.y)
             dist_ang_msg.angle    = math.atan2(destination.point.y, destination.point.x)
             self.pub_dist_and_ang_vel.publish(dist_ang_msg)
 
-            self.angle_setpoint = math.pi + yaw + math.atan2(destination.point.y, destination.point.x)
+            self.angle_setpoint = math.pi + yaw + dist_ang_msg.angle # TODO - math.pi might not be needed now that the src/dst of the transform is correct
             self._feedback.error = abs(angles.shortest_angular_distance(self.angle_setpoint, yaw))
             if self._feedback.error < self.tolerance and abs(self.current_orient_effort) < self.velocity_tolerance:
                 self.valid_samples += 1
             else:
                 self.valid_samples = 0
+            debug_msg.data.extend(euler)                      # 6, 7, 8
+            debug_msg.data.append(self.current_orient_effort) # 9
+            debug_msg.data.append(self.angle_setpoint)        # 10
+            debug_msg.data.append(self._feedback.error)       # 11
+            debug_msg.data.append(self.valid_samples)         # 12
             #rospy.loginfo(f"err {self._feedback.error} tolerance {self.tolerance}")
         except Exception as e:
             rospy.logwarn_throttle(1, f"align_to_speaker: can't publish distance {e}")
+            return
+        
+        if self.pub_debug.get_num_connections() > 0:
+            self.pub_debug.publish(debug_msg)
         
     def data_callback(self, data_msg):
         self.color = data_msg.allianceColor
@@ -113,7 +132,7 @@ class Aligner:
                 rospy.loginfo_throttle(0.5, "2024_align_to_speaker: aligned")
                 self.feed_forward = False
                 if not goal.align_forever:
-                    # moved down here because we don't want to exit if align forever is true
+                    # moved here because we don't want to exit if align forever is true
                     success = True
                     cmd_vel_msg = geometry_msgs.msg.Twist()
                     cmd_vel_msg.angular.x = 0
@@ -124,7 +143,7 @@ class Aligner:
                     cmd_vel_msg.linear.z = 0
                     self.pub_cmd_vel.publish(cmd_vel_msg)
                     self._as.publish_feedback(self._feedback)
-                    rospy.Duration(0.05).sleep()
+                    rospy.Duration(0.05).sleep() # Make sure feedback is published
                     break
 
             # If we haven't succeeded yet or we want to keep aligning forever, we need to
@@ -154,7 +173,10 @@ class Aligner:
             self._result.success = True
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.publish_feedback(self._feedback)
+            rospy.Duration(0.05).sleep() # Make sure feedback is published
             self._as.set_succeeded(self._result)
+
+        #TODO - set cmd_vel to 0 on exit?
         
 if __name__ == '__main__':
     rospy.init_node('aligner')
