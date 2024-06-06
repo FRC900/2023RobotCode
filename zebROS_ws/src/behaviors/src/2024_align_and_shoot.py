@@ -17,6 +17,7 @@ from std_msgs.msg import Header
 # not used from sensor_msgs.msg import JointState
 
 from geometry_msgs.msg import TwistStamped
+from nav_msgs.msg import Odometry
 
 import time, math
 
@@ -61,10 +62,10 @@ class AlignAndShoot:
         self.is_teleop_and_enabled = False
         self.match_data_sub = rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, callback=self.match_data_cb, tcp_nodelay=True, queue_size=1)
 
-        self.linear_vel_threshold = 0.2
-        self.angular_vel_threshold = 0.2
+        self.linear_vel_threshold = 0.1
+        self.angular_vel_threshold = 1.5
         self.stopped = False
-        self.cmd_vel_sub = rospy.Subscriber("/frcrobot_jetson/swerve_drive_controller/cmd_vel_out", TwistStamped, self.cmd_vel_cb)
+        self.cmd_vel_sub = rospy.Subscriber("/frcrobot_jetson/swerve_drive_controller/odom", Odometry, self.cmd_vel_cb)
 
         # self.last_relocalized = rospy.Time()
         self.align_to_speaker_done = False
@@ -73,8 +74,8 @@ class AlignAndShoot:
         rospy.loginfo("2024_align_and_shoot: starting timer")
         rospy.loginfo("2024_align_and_shoot: server started")
 
-    def cmd_vel_cb(self, msg: TwistStamped):
-        self.stopped = math.hypot(msg.twist.linear.x, msg.twist.linear.y) <= self.linear_vel_threshold # and msg.twist.angular.z <= self.angular_vel_threshold
+    def cmd_vel_cb(self, msg: Odometry):
+        self.stopped = math.hypot(msg.twist.twist.linear.x, msg.twist.twist.linear.y) <= self.linear_vel_threshold and msg.twist.twist.angular.z <= self.angular_vel_threshold
 
     def match_data_cb(self, msg: MatchSpecificData):
         self.alliance_color = msg.allianceColor
@@ -142,7 +143,6 @@ class AlignAndShoot:
         self.shooting_client.send_goal(shooting_goal)
 
         align_to_speaker_goal.align_forever = goal.align_forever
-        align_to_speaker_goal.offsetting = goal.offsetting
         self.aligning = goal.align_forever
         self.align_to_speaker_client.send_goal(align_to_speaker_goal, feedback_cb=self.align_to_speaker_feedback_cb)
         rospy.loginfo("2024_align_and_shoot: align goal sent")
