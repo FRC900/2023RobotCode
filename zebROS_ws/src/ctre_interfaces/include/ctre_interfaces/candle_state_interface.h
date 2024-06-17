@@ -23,6 +23,7 @@ enum class AnimationType {
     Twinkle,
     TwinkleOff
 };
+
 enum class AnimationClass {
     BaseStandard,
     BaseTwo
@@ -88,30 +89,30 @@ struct Animation {
 class LED {
     public:
         explicit LED(size_t animation_id) :
-            display{animation_id}
+            display_{animation_id}
         {
         }
         explicit LED(Colour colour) :
-            display{colour}
+            display_{colour}
         {
         }
 
         std::optional<Colour> getColour() const {
-            return std::holds_alternative<Colour>(display) ? std::optional<Colour>(std::get<Colour>(this->display)) : std::nullopt;
+            return std::holds_alternative<Colour>(display_) ? std::optional<Colour>(std::get<Colour>(display_)) : std::nullopt;
         }
-        std::optional<int> getAnimationID() const {
-            return std::holds_alternative<size_t>(display) ? std::optional<size_t>(std::get<size_t>(this->display)) : std::nullopt;
+        std::optional<size_t> getAnimationID() const {
+            return std::holds_alternative<size_t>(display_) ? std::optional<size_t>(std::get<size_t>(display_)) : std::nullopt;
         }
 
         void setColour(Colour colour) {
-            this->display = colour;
+            display_ = colour;
         }
         void setAnimationID(size_t animation_id) {
-            this->display = animation_id;
+            display_ = animation_id;
         }
 
     private:
-        std::variant<Colour, size_t> display;
+        std::variant<Colour, size_t> display_;
 };
 
 class CANdleHWState {

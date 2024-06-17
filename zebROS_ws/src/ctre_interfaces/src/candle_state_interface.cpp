@@ -114,7 +114,6 @@ size_t CANdleHWState::getLEDCount() const {
     return leds_.size();
 }
 
-// TODO : do we ever want to allow this?
 void CANdleHWState::setBrightness(const double brightness) {
     brightness_ = brightness;
 }
@@ -196,4 +195,4 @@ int CANdleHWState::getDeviceID() const {
     return device_id_;
 }
 
-} // namespace hardware_interface::candle // namespace hardware_interface
+} // namespace hardware_interface::candle

@@ -114,8 +114,6 @@ public:
         return true;
     }
 
-    void starting(const ros::Time&) override {}
-
     void update(const ros::Time&, const ros::Duration&) override {
         const double brightness = *(brightness_buffer.readFromRT());
         // Brightness isn't exclusive to colours/animations, so it gets special treatment
@@ -136,8 +134,6 @@ public:
         }
         command_buffer.clear();
     }
-
-    void stopping(const ros::Time&) override {}
 
 private:
     CANdleCommandHandle candle_handle;
