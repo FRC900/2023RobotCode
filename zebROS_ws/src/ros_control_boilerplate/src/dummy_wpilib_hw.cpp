@@ -30,7 +30,7 @@ extern "C"
 
 		ctre::phoenix::platform::can::CANComm_SendMessage(messageID, data, dataSize, status, canBus.c_str());
 	}
-	void HAL_CAN_ReceiveMessage(uint32_t *messageID, uint32_t messageIDMask, uint8_t *data, uint8_t *dataSize, uint32_t *timeStamp, int32_t *status)
+	void HAL_CAN_ReceiveMessage(uint32_t *messageID, uint32_t /*messageIDMask*/, uint8_t *data, uint8_t *dataSize, uint32_t *timeStamp, int32_t *status)
 	{
 		ctre::phoenix::platform::can::canframe_t canframe{};
 		ctre::phoenix::platform::can::CANComm_ReceiveMessage(*messageID, canframe, status, canBus.c_str());
