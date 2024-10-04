@@ -15,6 +15,9 @@ class DriveTrajectoryAction(Action):
     def __init__(self, autonomous_name : str, trajectory_index : int):
 
         self.__path_follower_client = actionlib.SimpleActionClient("/path_follower/path_follower_server", PathAction)
+        if not self.__path_follower_client.wait_for_server(rospy.Duration(5)):
+            rospy.logerr("Path follower server not up after 5 seconds, exiting")
+            exit(1)
         self.__current_path: PathGoalArray = None
         self.__autonomous_name = autonomous_name
         self.__trajectory_index = trajectory_index

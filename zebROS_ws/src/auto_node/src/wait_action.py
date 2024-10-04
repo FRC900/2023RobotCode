@@ -10,7 +10,7 @@ class WaitAction(Action):
         self.__start_time = datetime.now()
 
     def start(self):
-        print(f"start called with ttw {self.__time_to_wait}")
+        print(f"Wait action called with time {self.__time_to_wait} seconds")
         self.__start_time = datetime.now()
 
     def update(self):
