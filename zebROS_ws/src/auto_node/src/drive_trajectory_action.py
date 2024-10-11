@@ -37,6 +37,7 @@ class DriveTrajectoryAction(Action):
         self.__latest_feedback = msg
 
     def done_cb(self, status: PathFeedback, result: PathResult):
+        rospy.loginfo(f"Pathing for step {self.__trajectory_index} DONE")
         self.__done = True
 
     def start(self):
