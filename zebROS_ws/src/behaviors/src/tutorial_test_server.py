@@ -15,4 +15,11 @@ from behavior_actions.msg import TutorialTestGoal, TutorialTestFeedback, Tutoria
 from talon_controller_msgs.srv import Command, CommandRequest, CommandResponse
 from sensor_msgs.msg import JointState
 
+def find_joint_state(msg: JointState, name: str) -> float:
+    # Returns the state of the joint with name `name` in the JointState message `msg`
+    for i in range(len(msg.name)):
+        if msg.name[i] == name:
+            return msg.position[i]
+    return None
+
 # Add code here :)
