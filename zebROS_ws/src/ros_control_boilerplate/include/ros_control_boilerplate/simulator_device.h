@@ -30,16 +30,18 @@ public:
 
     void simInit(ros::NodeHandle &nh);
     void simPostRead(const ros::Time& time, const ros::Duration& period, Tracer &tracer);
-    void registerInterfaces(hardware_interface::talonfxpro::TalonFXProStateInterface &state_interface);
+    void registerInterfaces(hardware_interface::talonfxpro::TalonFXProStateInterface *state_interface);
+    
+    std::string simulator_name_;
 
 private:
-    std::string simulator_name_;
 
     std::multimap<std::string, ctre::phoenix6::hardware::ParentDevice *> ctre_devices_;
     boost::shared_ptr<simulator_base::Simulator> simulator_;
 
     std::vector<std::string> joints_;
-    std::map<std::string, std::unique_ptr<hardware_interface::talonfxpro::TalonFXProHWState>> states_;
+    std::vector<std::string> names_;
+    std::unique_ptr<hardware_interface::talonfxpro::TalonFXProStateInterface> state_interface_;
     std::map<std::string, std::unique_ptr<ctre::phoenix6::hardware::core::CoreTalonFX>> talonfxs_;
     std::map<std::string, std::unique_ptr<ctre::phoenix6::hardware::core::CoreCANcoder>> cancoders_;
     std::map<std::string, double> cancoder_inverts_;

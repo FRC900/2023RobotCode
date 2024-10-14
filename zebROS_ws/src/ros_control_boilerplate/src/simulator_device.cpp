@@ -15,6 +15,8 @@ SimulatorDevice::SimulatorDevice(const std::string &name, const XmlRpc::XmlRpcVa
     ctre_devices_ = devices;
     simulator_ = simulator;
 
+    ROS_INFO_STREAM("SimulatorDevice: Initializing simulator device " << name << ", joints = " << joints);
+
     for (int i = 0; i < joints.size(); i++) {
         const XmlRpc::XmlRpcValue &joint_params = joints[i];
 
@@ -38,10 +40,10 @@ SimulatorDevice::SimulatorDevice(const std::string &name, const XmlRpc::XmlRpcVa
             return static_cast<T *>(nullptr);
         };
 
-        if (joint_type == "talonfx") {
+        if (joint_type == "talonfxpro") {
             const auto talon_fx_ptr = check_for_correct_pointer_entry.operator()<ctre::phoenix6::hardware::core::CoreTalonFX>(); // more wizardry
             ROS_INFO_STREAM(name << ": Got device ID " << talon_fx_ptr->GetDeviceID() << " for joint " << joint_name);
-            states_[joint_name] = std::make_unique<hardware_interface::talonfxpro::TalonFXProHWState>(talon_fx_ptr->GetDeviceID());
+            names_.push_back(joint_name);
             talonfxs_[joint_name].reset(talon_fx_ptr);
         }
         
@@ -102,8 +104,9 @@ void SimulatorDevice::simInit(ros::NodeHandle &nh)
     // 4. Create a new CoreCANcoder object with that CAN ID
     // 5. Store the CoreCANcoder object in the cancoders_ map
     ROS_INFO_STREAM("SimulatorDevice: Setting up CANcoders for simulator " << simulator_name_);
-    for (const auto &[joint, state] : states_)
+    for (std::string joint : names_)
     {
+        auto state = state_interface_->getHandle(joint).operator->();
         const auto feedback_sensor_source = state->getFeedbackSensorSource();
         if (feedback_sensor_source == hardware_interface::talonfxpro::FeedbackSensorSource::FusedCANcoder ||
             feedback_sensor_source == hardware_interface::talonfxpro::FeedbackSensorSource::RemoteCANcoder ||
@@ -119,17 +122,9 @@ void SimulatorDevice::simInit(ros::NodeHandle &nh)
     }
 }
 
-void SimulatorDevice::registerInterfaces(hardware_interface::talonfxpro::TalonFXProStateInterface &state_interface)
+void SimulatorDevice::registerInterfaces(hardware_interface::talonfxpro::TalonFXProStateInterface *state_interface)
 {
-    // Need CAN IDs to create std::make_unique<hardware_interface::talonfxpro::TalonFXProHWState>(can_id) (i.e. state_)
-    ROS_INFO_STREAM("FRCRobotInterface: Registering interfaces for joints of: " << simulator_name_);
-    for (const std::string &joint : joints_) {
-        // This links states_[joint] to the actual state interface, if I'm understanding what's happening in talonfxpro_device.cpp correctly
-        ROS_INFO_STREAM(simulator_name_ << ": registering handle for state of " << joint);
-        hardware_interface::talonfxpro::TalonFXProStateHandle state_handle(joint, states_[joint].get());
-        state_interface.registerHandle(state_handle);
-    }
-    return;
+    state_interface_.reset(state_interface);
 }
 
 void SimulatorDevice::simPostRead(const ros::Time& time, const ros::Duration& period, Tracer &tracer) {
@@ -137,9 +132,13 @@ void SimulatorDevice::simPostRead(const ros::Time& time, const ros::Duration& pe
     // Call update() on the simulator
     // If the TalonFXPro is using a CANcoder, update the CANcoder's simulated state
 
+    // ROS_INFO_STREAM("SimulatorDevice: Updating simulator " << simulator_name_);
+
     tracer.start(simulator_name_);
-    for (auto &[joint, state] : states_)
+    for (std::string joint : names_)
     {
+        auto state = state_interface_->getHandle(joint).operator->();
+        // ROS_INFO_STREAM("SimulatorDevice: Updating simulator " << simulator_name_ << " for joint " << joint);
         // Call update() on the simulator
         // ROS_INFO_STREAM("SimulatorDevice: Updating simulator for joint " << joint);
         simulator_->update(joint, time, period, talonfxs_[joint], state);

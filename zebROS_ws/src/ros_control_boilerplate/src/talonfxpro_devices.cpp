@@ -110,10 +110,11 @@ void TalonFXProDevices<SIM>::simPostRead(const ros::Time& time, const ros::Durat
             ctre::phoenix::unmanaged::FeedEnable(2. * 1000. / read_hz_);
         }
         tracer.start_unique("talonfxpro battery sim");
+        const auto names = state_interface_->getNames();
         std::vector<units::ampere_t> currents;
-        for (const auto &d : devices_)
+        for (const auto &name : names)
         {
-            currents.push_back(units::ampere_t{d->state_->getSupplyCurrent()});
+            currents.push_back(units::ampere_t{state_interface_->getHandle(name)->getSupplyCurrent()});
         }
         units::volt_t battery = frc::sim::BatterySim::Calculate(currents);
         tracer.start_unique("talonfxpro sim");

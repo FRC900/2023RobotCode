@@ -1,5 +1,13 @@
 <library path="lib/libgeneral_simulators">
 	<class
+		name="general_simulators/DefaultSimulator"
+		type="general_simulators::DefaultSimulator"
+		base_class_type="simulator_base::Simulator">
+		<description>
+			Default simulator, gets to setpoint immediately
+		</description>
+	</class>
+	<class
 		name="general_simulators/FlywheelSimulator"
 		type="general_simulators::FlywheelSimulator"
 		base_class_type="simulator_base::Simulator">

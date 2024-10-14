@@ -117,7 +117,7 @@ class SingleJointedArmSimulator : public simulator_base::Simulator
             // ROS_INFO_STREAM("Created flywheel sim");
         }
 
-        void update(const std::string &name, const ros::Time &time, const ros::Duration &period, std::unique_ptr<ctre::phoenix6::hardware::core::CoreTalonFX> &talonfxpro, std::unique_ptr<hardware_interface::talonfxpro::TalonFXProHWState> &state) override
+        void update(const std::string &name, const ros::Time &time, const ros::Duration &period, std::unique_ptr<ctre::phoenix6::hardware::core::CoreTalonFX> &talonfxpro, const hardware_interface::talonfxpro::TalonFXProHWState *state) override
         {
             if (!set_initial_position_)
             {

@@ -41,8 +41,8 @@ hardware_interface:
        #- {name: talonfx, type: can_talon_fx, can_bus: CANivore, can_id: 1, local: true}
        - {name: talonfxpro1, type: talonfxpro, can_bus: CANivore, can_id: 1, local: true}
        #- {name: talonfxpro2, type: talonfxpro, can_bus: CANivore, can_id: 2, local: true}
-       #- {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: talonfxpro1, type: talonfx}, {name: talonfxpro2, type: talonfx} ] }
-       - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: talonfxpro1, type: talonfx}] }
+       #- {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: talonfxpro1, type: talonfxpro}, {name: talonfxpro2, type: talonfxpro} ] }
+       - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: talonfxpro1, type: talonfxpro}] }
        #- {name: elevator_leader, type: can_talon_fx, can_bus: CANivore, can_id: 31, local: true}
        #- {name: elevator_follower, type: can_talon_fx, can_bus: CANivore, can_id: 32, local: true}
        #- {name: four_bar, type: can_talon_fx, can_bus: CANivore, can_id: 41, local: true}
