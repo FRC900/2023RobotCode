@@ -20,7 +20,7 @@ namespace hardware_interface::cancoder
     bool CANCoderSimCommand::supplyVoltageChanged(double &supply_voltage)
     {
         supply_voltage = supply_voltage_;
-        bool rc = supply_voltage_changed_;
+        const bool rc = supply_voltage_changed_;
         supply_voltage_changed_ = false;
         return rc;
     }
@@ -44,7 +44,7 @@ namespace hardware_interface::cancoder
     bool CANCoderSimCommand::rawPositionChanged(double &raw_position)
     {
         raw_position = raw_position_;
-        bool rc = raw_position_changed_;
+        const bool rc = raw_position_changed_;
         raw_position_changed_ = false;
         return rc;
     }
@@ -68,7 +68,7 @@ namespace hardware_interface::cancoder
     bool CANCoderSimCommand::addPositionChanged(double &add_position)
     {
         add_position = add_position_;
-        bool rc = add_position_changed_;
+        const bool rc = add_position_changed_;
         add_position_changed_ = false;
         return rc;
     }
@@ -92,7 +92,7 @@ namespace hardware_interface::cancoder
     bool CANCoderSimCommand::velocityChanged(double &velocity)
     {
         velocity = velocity_;
-        bool rc = velocity_changed_;
+        const bool rc = velocity_changed_;
         velocity_changed_ = false;
         return rc;
     }
@@ -116,7 +116,7 @@ namespace hardware_interface::cancoder
     bool CANCoderSimCommand::magnetHealthChanged(MagnetHealth &magnet_health)
     {
         magnet_health = magnet_health_;
-        bool rc = magnet_health_changed_;
+        const bool rc = magnet_health_changed_;
         magnet_health_changed_ = false;
         return rc;
     }

@@ -55,7 +55,7 @@ template <bool SIM>
 void CANCoderDevice<SIM>::registerInterfaces(hardware_interface::cancoder::CANCoderStateInterface &state_interface,
                                              hardware_interface::cancoder::CANCoderCommandInterface &command_interface,
                                              hardware_interface::cancoder::RemoteCANcoderStateInterface &remote_state_interface,
-                                             hardware_interface::cancoder::CANCoderSimCommandInterface &command_sim_interface) const
+                                             hardware_interface::cancoder::CANCoderSimCommandInterface &sim_command_interface) const
 {
     ROS_INFO_STREAM("FRCRobotInterface: Registering interface for CANCoder : " << getName() << " at CAN id " << getId());
 
@@ -74,7 +74,7 @@ void CANCoderDevice<SIM>::registerInterfaces(hardware_interface::cancoder::CANCo
     if constexpr (SIM)
     {
         hardware_interface::cancoder::CANCoderSimCommandHandle command_sim_handle(state_handle, sim_fields_.command_sim_.get());
-        command_sim_interface.registerHandle(command_sim_handle);
+        sim_command_interface.registerHandle(command_sim_handle);
     }
 }
 
@@ -431,7 +431,7 @@ static bool convertAbsoluteSensorRange(hardware_interface::cancoder::AbsoluteSen
 }
 
 template <bool SIM>
-void CANCoderDevice<SIM>::simRead(const ros::Time &time, Tracer &tracer)
+void CANCoderDevice<SIM>::simWrite(const ros::Time &time, Tracer &tracer)
 {
     if constexpr (SIM)
     {

@@ -152,6 +152,7 @@ add_library(frc_robot_interface STATIC
 	src/servo_devices.cpp
 	src/solenoid_device.cpp
 	src/solenoid_devices.cpp
+	src/talonfxpro_device.cpp
 	src/talon_orchestra_device.cpp
 	src/talon_orchestra_devices.cpp
 )

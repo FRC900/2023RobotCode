@@ -45,7 +45,8 @@ public:
     void read(const ros::Time &time, const ros::Duration &period);
     void write(const ros::Time &time, const ros::Duration &period);
 
-    void simRead(const ros::Time &time, Tracer &tracer);
+    // Code responsible for writing changes queued in sim_command_ to the actual CTRE simulation code
+    void simWrite(const ros::Time &time, Tracer &tracer);
 
 private:
     const bool local_hardware_;

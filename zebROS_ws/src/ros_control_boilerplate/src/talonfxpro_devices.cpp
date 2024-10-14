@@ -5,6 +5,7 @@
 #include "ros_control_boilerplate/sim_talonfxpro_device.h"
 #include "ros_control_boilerplate/read_config_utils.h"
 #include "ctre_interfaces/talonfxpro_command_interface.h"
+#include "ctre_interfaces/talonfxpro_sim_command_interface.h"
 #include "ctre_interfaces/cancoder_sim_command_interface.h"
 
 template <bool SIM>
@@ -55,6 +56,10 @@ hardware_interface::InterfaceManager *TalonFXProDevices<SIM>::registerInterface(
     for (const auto &d : devices_)
     {
         d->registerInterfaces(*state_interface_, *command_interface_);
+        if constexpr (SIM)
+        {
+            d->registerSimInterface(*state_interface_, *sim_fields_.sim_command_interface_);
+        }
     }
     interface_manager_.registerInterface(state_interface_.get());
     interface_manager_.registerInterface(command_interface_.get());
@@ -160,6 +165,20 @@ void TalonFXProDevices<SIM>::simPreRead(const ros::Time& time, const ros::Durati
         for (const auto &d : devices_)
         {
             d->simRead(time, period, getRobotHW()->get<hardware_interface::cancoder::CANCoderSimCommandInterface>());
+        }
+    }
+}
+
+// Run after read() and simRead() to write queued updates to the simulated TalonFXPro CTRE libs
+template <bool SIM>
+void TalonFXProDevices<SIM>::simPostRead(const ros::Time& time, const ros::Duration& period, Tracer &tracer)
+{
+    if constexpr (SIM)
+    {
+        tracer.start_unique("talonfxpro simWrite");
+        for (const auto &d : devices_)
+        {
+            d->simWrite(time, period);
         }
     }
 }

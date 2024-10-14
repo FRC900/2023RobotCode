@@ -66,14 +66,14 @@ hardware_interface::InterfaceManager *CANCoderDevices<SIM>::registerInterface()
 {
     for (const auto &d : devices_)
     {
-        d->registerInterfaces(*state_interface_, *command_interface_, *remote_state_interface_, *command_sim_interface_);
+        d->registerInterfaces(*state_interface_, *command_interface_, *remote_state_interface_, *sim_command_interface_);
     }
     interface_manager_.registerInterface(state_interface_.get());
     interface_manager_.registerInterface(command_interface_.get());
     interface_manager_.registerInterface(remote_state_interface_.get());
     if constexpr (SIM)
     {
-        interface_manager_.registerInterface(command_sim_interface_.get());
+        interface_manager_.registerInterface(sim_command_interface_.get());
     }
     return &interface_manager_;
 }
@@ -119,7 +119,7 @@ void CANCoderDevices<SIM>::simPostRead(const ros::Time& time, const ros::Duratio
         tracer.start_unique("cancoder simPostRead");
         for (const auto &d : devices_)
         {
-            d->simRead(time, tracer);
+            d->simWrite(time, tracer);
         }
     }
 }

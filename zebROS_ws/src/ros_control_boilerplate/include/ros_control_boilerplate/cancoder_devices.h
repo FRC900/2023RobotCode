@@ -45,7 +45,7 @@ private:
     std::unique_ptr<hardware_interface::cancoder::CANCoderStateInterface> state_interface_{std::make_unique<hardware_interface::cancoder::CANCoderStateInterface>()};
     std::unique_ptr<hardware_interface::cancoder::CANCoderCommandInterface> command_interface_{std::make_unique<hardware_interface::cancoder::CANCoderCommandInterface>()};
     std::unique_ptr<hardware_interface::cancoder::RemoteCANcoderStateInterface> remote_state_interface_{std::make_unique<hardware_interface::cancoder::RemoteCANcoderStateInterface>()};
-    std::unique_ptr<hardware_interface::cancoder::CANCoderSimCommandInterface> command_sim_interface_{std::make_unique<hardware_interface::cancoder::CANCoderSimCommandInterface>()};
+    std::unique_ptr<hardware_interface::cancoder::CANCoderSimCommandInterface> sim_command_interface_{std::make_unique<hardware_interface::cancoder::CANCoderSimCommandInterface>()};
     hardware_interface::InterfaceManager interface_manager_;
 };
 

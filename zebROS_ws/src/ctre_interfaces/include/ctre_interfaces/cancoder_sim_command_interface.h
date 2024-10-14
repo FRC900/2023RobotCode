@@ -8,8 +8,8 @@ namespace hardware_interface::cancoder
 {
 class CANCoderSimCommand
 {
-	public:
-		CANCoderSimCommand(void);
+public:
+        CANCoderSimCommand(void);
         void setSupplyVoltage(const double supply_voltage);
         double getSupplyVoltage(void) const;
         bool supplyVoltageChanged(double &supply_voltage);
@@ -35,7 +35,7 @@ class CANCoderSimCommand
         bool magnetHealthChanged(MagnetHealth &magnet_health);
         void resetMagnetHealth(void);
 
-	private:
+private:
         double supply_voltage_{0.0};
         bool supply_voltage_changed_{false};
         double raw_position_{0.0};
@@ -50,7 +50,7 @@ class CANCoderSimCommand
 
 // Handle - used by each controller to get, by name of the
 // corresponding joint, an interface with which to send commands
-// to a CANCoder
+// to a CANCoderimulator
 using CANCoderSimCommandHandle = CommandHandle<CANCoderSimCommand, CANCoderHWState, CANCoderStateHandle>;
 
 

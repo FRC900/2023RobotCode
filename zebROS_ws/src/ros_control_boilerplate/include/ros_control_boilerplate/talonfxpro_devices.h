@@ -12,6 +12,7 @@ namespace hardware_interface::talonfxpro
 {
     class TalonFXProStateInterface;
     class TalonFXProCommandInterface;
+    class TalonFXProSimCommandInterface;
 }
 
 namespace ctre::phoenix6::hardware
@@ -40,8 +41,9 @@ public:
     // Sim-only functions below
     void simInit(ros::NodeHandle &nh) override;
 
-    // simRead hooks up to CTRE simulation code and updates motor state each control cycle
     void simPreRead(const ros::Time &time, const ros::Duration &period, Tracer &tracer) override;
+    // simPostRead is responsible for writing changes to the actual CTRE simulation code
+    void simPostRead(const ros::Time &time, const ros::Duration &period, Tracer &tracer) override;
 
     bool gazeboSimInit(const ros::NodeHandle &/*nh*/, boost::shared_ptr<gazebo::physics::Model> parent_model) override;
 
@@ -69,6 +71,7 @@ private:
     {
         ros::ServiceServer sim_limit_switch_srv_;
         ros::ServiceServer sim_current_srv_;
+        std::unique_ptr<hardware_interface::talonfxpro::TalonFXProSimCommandInterface> sim_command_interface_;
     };
     std::conditional_t<SIM, SimFields, HwFields> sim_fields_{};
 };
