@@ -91,6 +91,9 @@ hardware_interface:
         #  taken out
        - {name: latency_compensation, type: latency_compensation, update_frequency: 250, entries: [ {name: fl_drive, type: talonfx}, {name: fl_angle, type: talonfx}, {name: fr_drive, type: talonfx}, {name: fr_angle, type: talonfx}, {name: br_drive, type: talonfx}, {name: br_angle, type: talonfx}, {name: bl_drive, type: talonfx}, {name: bl_angle, type: talonfx}, {name: pigeon2, type: pigeon2_yaw}] }
 
+       - {name: test_limit_switch, type: digital_input, local: false}
+       - {name: test_motor, type: talonfxpro, can_bus: CANivore, can_id: 61, local: true}
+
 # Create controllers for each joint
 #
 # Entry is the name of the controller. It can be anything.
@@ -102,6 +105,16 @@ hardware_interface:
 # /frcrobot/joint1_talon_controller/command
 # /frcrobot/joint2_talon_controller/command
 # /frcrobot/talon_states
+
+# Advertises a service to control the motor
+# Service name: /frcrobot_jetson/test_motor_controller/command
+# Service type: talon_controller_msgs/Command, put a value between -1.0 (full reverse) and 1.0 (full forward) to drive the motor
+test_motor_controller:
+    type: talonfxpro_controllers/TalonFXProDutyCycleOutController
+    joint: test_motor
+    invert: counterclockwise_positive
+    dynamic_reconfigure: True
+    neutral_mode: Coast
 
 intake_talonfxpro_controller:
     type: talonfxpro_controllers/TalonFXProVoltageOutputController

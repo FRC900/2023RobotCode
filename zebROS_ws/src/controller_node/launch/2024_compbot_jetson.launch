@@ -65,6 +65,7 @@
 			 candle_controller
 			 candle_state_controller
 			 cancoder_state_controller
+			 test_motor_controller
 			 robot_code_ready_controller" />
 			 
 			 <!--
