@@ -47,19 +47,21 @@ namespace hardware_interface::talonfxpro
         void resetRotorAcceleration(void);
 
     private:
-        double supply_voltage_{0.0};
+        // Set these to NaN so that any new value will be different from
+        // the default initialized value and trigger a write to sim-hardware
+        double supply_voltage_{std::numeric_limits<double>::quiet_NaN()};
         bool supply_voltage_changed_{false};
         bool forward_limit_{false};
         bool forward_limit_changed_{false};
         bool reverse_limit_{false};
         bool reverse_limit_changed_{false};
-        double rotor_position_{0.0};
+        double rotor_position_{std::numeric_limits<double>::quiet_NaN()};
         bool rotor_position_changed_{false};
-        double add_rotor_position_{0.0};
+        double add_rotor_position_{std::numeric_limits<double>::quiet_NaN()};
         bool add_rotor_position_changed_{false};
-        double rotor_velocity_{0.0};
+        double rotor_velocity_{std::numeric_limits<double>::quiet_NaN()};
         bool rotor_velocity_changed_{false};
-        double rotor_acceleration_{0.0};
+        double rotor_acceleration_{std::numeric_limits<double>::quiet_NaN()};
         bool rotor_acceleration_changed_{false};
     };
 

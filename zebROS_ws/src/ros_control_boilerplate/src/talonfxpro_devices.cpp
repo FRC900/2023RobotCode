@@ -63,6 +63,14 @@ hardware_interface::InterfaceManager *TalonFXProDevices<SIM>::registerInterface(
     }
     interface_manager_.registerInterface(state_interface_.get());
     interface_manager_.registerInterface(command_interface_.get());
+    if constexpr (SIM)
+    {
+        for (const auto &d : devices_)
+        {
+            d->registerSimInterface(*state_interface_, *sim_fields_.sim_command_interface_);
+        }
+        interface_manager_.registerInterface(sim_fields_.sim_command_interface_.get());
+    }
     return &interface_manager_;
 }
 

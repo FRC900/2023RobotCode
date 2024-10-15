@@ -36,13 +36,15 @@ public:
         void resetMagnetHealth(void);
 
 private:
-        double supply_voltage_{0.0};
+        // Set these to NaN so that any new value will be different from
+        // the default initialized value and trigger a write to sim-hardware
+        double supply_voltage_{std::numeric_limits<double>::quiet_NaN()};
         bool supply_voltage_changed_{false};
-        double raw_position_{0.0};
+        double raw_position_{std::numeric_limits<double>::quiet_NaN()};
         bool raw_position_changed_{false};
-        double add_position_{0.0};
+        double add_position_{std::numeric_limits<double>::quiet_NaN()};
         bool add_position_changed_{false};
-        double velocity_{0.0};
+        double velocity_{std::numeric_limits<double>::quiet_NaN()};
         bool velocity_changed_{false};
         MagnetHealth magnet_health_{MagnetHealth::Invalid};
         bool magnet_health_changed_{false};

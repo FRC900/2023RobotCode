@@ -71,7 +71,7 @@ private:
     {
         ros::ServiceServer sim_limit_switch_srv_;
         ros::ServiceServer sim_current_srv_;
-        std::unique_ptr<hardware_interface::talonfxpro::TalonFXProSimCommandInterface> sim_command_interface_;
+        std::unique_ptr<hardware_interface::talonfxpro::TalonFXProSimCommandInterface> sim_command_interface_{std::make_unique<hardware_interface::talonfxpro::TalonFXProSimCommandInterface>()};
     };
     std::conditional_t<SIM, SimFields, HwFields> sim_fields_{};
 };

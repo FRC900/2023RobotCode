@@ -92,9 +92,13 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     {
     case hardware_interface::talonfxpro::TalonMode::DutyCycleOut:
         // NEED TO FILL IN FOR SWERVE
+        // Special case for 0 output, set rotor velocity to 0
+        if (state_->getControlOutput() == 0.0)
+        {
+            sim_command_->setRotorVelocity(0.0);
+        }
+        sim_command_->setSupplyVoltage(12.5);
         
-        
-        //sim_state.SetSupplyVoltage(units::voltage::volt_t{12.5});
         //gazebo_joint_->SetForce()
         break;
     case hardware_interface::talonfxpro::TalonMode::TorqueCurrentFOC:
@@ -106,12 +110,19 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     case hardware_interface::talonfxpro::TalonMode::PositionTorqueCurrentFOC:
     {
         const double invert = state_->getInvert() == hardware_interface::talonfxpro::Inverted::Clockwise_Positive ? -1.0 : 1.0;
-        double position{invert * state_->getControlPosition() * state_->getSensorToMechanismRatio()};
-        double cancoder_position{state_->getControlPosition() * cancoder_invert - cancoder_offset};
+        const double position{invert * state_->getControlPosition() * state_->getSensorToMechanismRatio()};
+        const double velocity{invert * state_->getControlVelocity() * state_->getSensorToMechanismRatio()}; // should be 0 in all cases?
         sim_command_->setRawRotorPosition(position);
-        if (cancoder_id_) { cancoder_->setRawPosition(cancoder_position); }
-        double velocity{invert * state_->getControlVelocity() * state_->getSensorToMechanismRatio()};
         sim_command_->setRotorVelocity(velocity);
+        sim_command_->setRotorAcceleration(0.0);
+        if (cancoder_id_)
+        {
+            const double cancoder_position{state_->getControlPosition() * cancoder_invert - cancoder_offset};
+            // ROS_INFO_STREAM("TalonFXPro simRead PositionVoltage : cancoder id = " << *cancoder_id_ << " control position = "  << state_->getControlPosition() << " cancoder_position = " << cancoder_position);
+            cancoder_->setRawPosition(cancoder_position);
+            cancoder_->setAddPosition(0);
+            cancoder_->setVelocity(0);
+        }
         sim_command_->setSupplyVoltage(12.5);
         if (gazebo_joint_)
         {
@@ -124,20 +135,21 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
     case hardware_interface::talonfxpro::TalonMode::VelocityVoltage:
     case hardware_interface::talonfxpro::TalonMode::VelocityTorqueCurrentFOC:
     {
-         /*
-          * Using the 971-style first order system model. V = I * R + Kv * w
-          * torque = Kt * I
-          * torque = 0.0192 * (V - (Kv * w)) / R
-          */
+        // TODO : model accel by keeping track of prev + current velocity values?
         const double invert = state_->getInvert() == hardware_interface::talonfxpro::Inverted::Clockwise_Positive ? -1.0 : 1.0;
-        double setpoint{invert * state_->getControlVelocity() * state_->getSensorToMechanismRatio()};
+        const double setpoint{invert * state_->getControlVelocity() * state_->getSensorToMechanismRatio()};
         sim_command_->setRotorVelocity(setpoint);
-        double delta_position{invert * state_->getControlVelocity() * period.toSec() * state_->getSensorToMechanismRatio()};
+        const double delta_position{invert * state_->getControlVelocity() * period.toSec() * state_->getSensorToMechanismRatio()};
         sim_command_->setAddRotorPosition(delta_position); // VERY IMPORTANT SO CTRE SIM KNOWS MOTORS MOVE
         sim_command_->setSupplyVoltage(12.5);
         
 // TODO - need to have a cleaner way of getting sim_state Get() values into here
 #if 0
+         /*
+          * Using the 971-style first order system model. V = I * R + Kv * w
+          * torque = Kt * I
+          * torque = 0.0192 * (V - (Kv * w)) / R
+          */
         if (gazebo_joint_)
         {
             constexpr double kT = 0.0192; // Nm/A
@@ -168,19 +180,21 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::MotionMagicDutyCycle:
-    case hardware_interface::talonfxpro::TalonMode::MotionMagicVoltage: 
+    case hardware_interface::talonfxpro::TalonMode::MotionMagicVoltage:
+    case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoDutyCycle:
+    case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoVoltage: 
     {
-        double position{state_->getClosedLoopReference() * state_->getSensorToMechanismRatio()};
-        double cancoder_position{(state_->getClosedLoopReference() - cancoder_offset - M_PI / 2) * cancoder_invert};
-        double velocity{state_->getClosedLoopReferenceSlope() * state_->getSensorToMechanismRatio()};
+        const double position{state_->getClosedLoopReference() * state_->getSensorToMechanismRatio()};
+        const double velocity{state_->getClosedLoopReferenceSlope() * state_->getSensorToMechanismRatio()};
         sim_command_->setRawRotorPosition(position);
+        sim_command_->setRotorVelocity(velocity);
+        sim_command_->setSupplyVoltage(12.5);
         if (cancoder_id_)
         {
             // ROS_WARN_STREAM("cancoder id = " << *cancoder_id_ << " cancoder_value = " << cancoder_position.value());
+            const double cancoder_position{(state_->getClosedLoopReference() - cancoder_offset - M_PI / 2) * cancoder_invert};
             cancoder_->setRawPosition(cancoder_position);
         }
-        sim_command_->setRotorVelocity(velocity);
-        sim_command_->setSupplyVoltage(12.5);
         if (gazebo_joint_)
         {
             gazebo_joint_->SetPosition(0, state_->getRotorPosition());
@@ -189,6 +203,7 @@ void SimTalonFXProDevice::simRead(const ros::Time &/*time*/, const ros::Duration
         break;
     }
     case hardware_interface::talonfxpro::TalonMode::MotionMagicTorqueCurrentFOC:
+    case hardware_interface::talonfxpro::TalonMode::MotionMagicExpoTorqueCurrentFOC:
     // TODO : test the modes below when/if we actually use them
     case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityDutyCycle:
     case hardware_interface::talonfxpro::TalonMode::MotionMagicVelocityVoltage:
