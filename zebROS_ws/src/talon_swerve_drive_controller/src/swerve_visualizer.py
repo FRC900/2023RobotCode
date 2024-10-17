@@ -6,7 +6,6 @@ import numpy as np
 import rospy
 
 from talon_state_msgs.msg import TalonFXProState
-        
 
 class SwerveVisualizer:
     speeds = []
@@ -52,18 +51,14 @@ class SwerveVisualizer:
 
         D = R * C
 
-        # print(R)
-        # print(D)
         # Rotate because screen display coords are off by 90
         # And positive x&y are in opposite directions
-        return -D[1, 0], -D[0, 0]
+        return D[0, 0], -D[1, 0]
 
 
     def update(self) -> None:
         if len(self.speeds) == 0 or len(self.angles) == 0:
             return
-        # print([ s * self.speed_scale for s in self.speeds])
-        print(self.angles)
         img = np.zeros((self.WINDOW_SIZE, self.WINDOW_SIZE, 3), np.uint8)
         for c, a, s in zip(self.wheel_coords, self.angles, self.speeds):
             end_x, end_y = self.get_line_endpoints(self.WHEEL_SIZE, a)

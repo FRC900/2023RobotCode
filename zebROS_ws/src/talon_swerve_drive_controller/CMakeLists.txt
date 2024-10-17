@@ -89,18 +89,18 @@ add_dependencies(dump_offsets_service
 if (NOT (("${ARM_PREFIX}" STREQUAL "arm-frc2020-linux-gnueabi") OR
 	     ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "arm-linux-gnueabihf") OR
 		 ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "aarch64-linux-gnu") )) 
-	add_executable(test_filtering src/test_filtering.cpp src/Swerve.cpp src/SwerveMath.cpp)
-	target_link_libraries(test_filtering ${catkin_LIBRARIES})
-	add_dependencies(test_filtering
-		${${PROJECT_NAME}_EXPORTED_TARGETS}
-		${catkin_EXPORTED_TARGETS}
-	)
-	add_executable(test_origin src/test_origin.cpp src/Swerve.cpp src/SwerveMath.cpp)
-	target_link_libraries(test_origin ${catkin_LIBRARIES})
-	add_dependencies(test_origin
-		${${PROJECT_NAME}_EXPORTED_TARGETS}
-		${catkin_EXPORTED_TARGETS}
-	)
+	# add_executable(test_filtering src/test_filtering.cpp src/Swerve.cpp src/SwerveMath.cpp)
+	# target_link_libraries(test_filtering ${catkin_LIBRARIES})
+	# add_dependencies(test_filtering
+	# 	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	# 	${catkin_EXPORTED_TARGETS}
+	# )
+	# add_executable(test_origin src/test_origin.cpp src/Swerve.cpp src/SwerveMath.cpp)
+	# target_link_libraries(test_origin ${catkin_LIBRARIES})
+	# add_dependencies(test_origin
+	# 	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	# 	${catkin_EXPORTED_TARGETS}
+	# )
 
   add_executable(swervebot test/swervebot.cpp src/Swerve.cpp src/SwerveMath.cpp)
 	target_link_libraries(swervebot ${catkin_LIBRARIES})

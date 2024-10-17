@@ -3,6 +3,10 @@
 
 #include <ros/console.h>
 
+// Struct for returning optimized wheel motion.
+// The angle is the direction to point the wheel, while speed
+// multiplier is +/- 1 to run the corresponding drive motor in
+// the forward or reverse direction.
 struct WheelDirection
 {
 	WheelDirection(const double angle, const double speed_multiplier)

@@ -30,11 +30,11 @@ std::array<Point2d, WHEELCOUNT> SwerveDriveMath<WHEELCOUNT>::wheelMultipliersXY(
 	std::array<Point2d, WHEELCOUNT> multipliersXY;
 	for (size_t i = 0; i < WHEELCOUNT; i++)
 	{
-		// Negate wheel angle since C++ math is clockwise positive 
-		// but wheel rotation is defined to be counter clockwise positive
 		// Add M_PI_2 to get the angle normal to the corner rather than
 		// the angle pointing out from the center of the robot
-		const double wheelAngle = -(atan2(wheelCoordinates_[i].y - rotationCenter.y, wheelCoordinates_[i].x - rotationCenter.x) + M_PI_2);
+		const double wheelAngle = atan2(wheelCoordinates_[i].y - rotationCenter.y,
+										wheelCoordinates_[i].x - rotationCenter.x) +
+								  M_PI_2;
 		multipliersXY[i].x = wheelMultipliers[i] * cos(wheelAngle);
 		multipliersXY[i].y = wheelMultipliers[i] * sin(wheelAngle);
 	}
@@ -82,9 +82,7 @@ std::array<double, WHEELCOUNT> SwerveDriveMath<WHEELCOUNT>::parkingAngles(void) 
 	std::transform(wheelCoordinates_.cbegin(), wheelCoordinates_.cend(), angles.begin(),
 				   [](const Point2d &wheelCoordinate)
 				   {
-					   // Negate this becauce C++ math is clockwise positive
-					   // but wheel rotation is defined to be counter clockwise positive
-					   return -atan2(wheelCoordinate.y, wheelCoordinate.x);
+					   return atan2(wheelCoordinate.y, wheelCoordinate.x);
 				   });
 	return angles;
 }
@@ -95,6 +93,11 @@ double SwerveDriveMath<WHEELCOUNT>::getParkingAngle(const size_t wheel) const
 	return parkingAngle_[wheel];
 }
 
+// input is an array of wheel speeds
+// find the absolute value of the min and max speeds for all wheels
+// If this absolute max is greater than 1, scale all speeds down so
+// the fastest wheel is moving at 1
+// If force_norm is set, do the same normalization
 template<size_t WHEELCOUNT>
 void SwerveDriveMath<WHEELCOUNT>::normalize(std::array<double, WHEELCOUNT> &input, const bool force_norm) const
 {
@@ -109,6 +112,8 @@ void SwerveDriveMath<WHEELCOUNT>::normalize(std::array<double, WHEELCOUNT> &inpu
 	}
 }
 
+// Return the larges of the distances between the wheels and the 
+// provided center of rotation
 template<size_t WHEELCOUNT>
 double SwerveDriveMath<WHEELCOUNT>::furthestWheel(const Point2d &centerOfRotation) const
 {
