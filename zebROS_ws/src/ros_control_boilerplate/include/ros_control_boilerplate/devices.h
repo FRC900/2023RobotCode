@@ -18,12 +18,12 @@
 #define INC_DEVICES_H__
 
 #include <ros/ros.h>
-#include <hardware_interface/robot_hw.h>
 #include "ros_control_boilerplate/tracer.h"
 
 namespace hardware_interface
 {
     class InterfaceManager;
+    class RobotHW;
 }
 
 namespace gazebo::physics
