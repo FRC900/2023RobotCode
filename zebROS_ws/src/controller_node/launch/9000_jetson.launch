@@ -58,7 +58,7 @@
 			<arg name="poll_period" value="5"/>
 		</include>
 
-		<node name="swerve_visualizer" pkg="talon_swerve_drive_controller" type="swerve_visualizer.py" output="screen" />
+		<node name="swerve_visualizer" pkg="talon_swerve_drive_controller" type="swerve_visualizer.py" output="screen" if="$(eval hw_or_sim == 'sim')"/>
 	</group>
 
 	<group ns="imu">
