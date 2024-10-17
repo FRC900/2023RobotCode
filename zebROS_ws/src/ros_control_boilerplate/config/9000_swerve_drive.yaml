@@ -41,7 +41,10 @@ swerve_drive_controller:
     encoder_steering_set_units: 1
 
     # 17.5 in (0.4445 m) long, 15.5 in (0.3937) wide
-    # fl, fr, bl, br
+    # fl : +x, +y
+    # fr : +x, -y
+    # bl : -x, +y
+    # br : -x, -y
     wheel_coords: [[0.19685, 0.22225], [0.19685, -0.22225], [-0.19685, 0.22225], [-0.19685, -0.22225]]
     parking_config_time_delay: 0.75
     drive_speed_time_delay: 0.125
