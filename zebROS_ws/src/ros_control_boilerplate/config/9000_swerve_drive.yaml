@@ -103,7 +103,7 @@ swerve_drive_controller:
         neutral_mode: "Brake"
         forward_limit_enable: False
         reverse_limit_enable: False
-    # fl -> bl, fr -> fl, bl -> br, br -> fr
+
     fl_angle:
         joint: fl_angle
         # invert: clockwise_positive
