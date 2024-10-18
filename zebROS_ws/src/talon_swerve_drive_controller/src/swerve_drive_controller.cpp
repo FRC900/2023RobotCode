@@ -674,26 +674,48 @@ void compOdometry(const ros::Time &time, const ros::Duration &period, const std:
 	// Find the translation+rotation that produces the least square error
 	// between (prev pos + transform) and current measured position
 	const Eigen::RowVector2d new_wheel_centroid = new_wheel_pos.colwise().mean();
+
+	// Code for using wheel positions to calculate rotation
+	// TODO : can this result be fused with the IMU yaw rotation?
+#if 0
 	new_wheel_pos.rowwise() -= new_wheel_centroid;
 
 	const Eigen::Matrix2d h = wheel_pos_ * new_wheel_pos;
 	const Eigen::JacobiSVD<Eigen::Matrix2d> svd(h, Eigen::ComputeFullU | Eigen::ComputeFullV);
-	if (Eigen::Matrix2d old_rot = svd.matrixV() * svd.matrixU().transpose();
-		old_rot.determinant() < 0) {
+
+	// If determinant is -1, then it's a reflection, not a rotation
+	// so we need to flip one of the columns
+	// (A reflection is minimum distance in theory but in real life
+	//  means the robot flipped over ... so don't allow that as a solution)
+	Eigen::Matrix2d old_rot = svd.matrixV() * svd.matrixU().transpose();
+	if (old_rot.determinant() < 0)
+	{
 		old_rot.col(1) *= -1;
 	}
+#endif
 
 	// Find difference between last IMU yaw and current IMU yaw
 	double yaw = latency_compensation_state_->getLatencyCompensatedValue("pigeon2", time);
-	if (initial_yaw_ == 0) {
+
+	// Correctly handle 1st time through the calcs
+	if (initial_yaw_ == std::numeric_limits<double>::max()) {
 		initial_yaw_ = yaw;
 	}
 	const double delta_yaw = yaw - initial_yaw_;
 
 	// Set rotation matrix to the rotation measured using the IMU
+	// TODO : doesn't work in simulation, or at least without fieldsim running to supply imu values
 	Eigen::Matrix2d rot;
-	rot << cos(delta_yaw), -sin(delta_yaw),
-		   sin(delta_yaw), cos(delta_yaw);
+	const double c = cos(delta_yaw);
+	const double s = sin(delta_yaw);
+	rot << c, -s,
+		   s, c;
+	// If determinant is -1, then it's a reflection, not a rotation
+	// so we need to flip one of the columns to correct for that
+	if (rot.determinant() < 0)
+	{
+		rot.col(1) *= -1;
+	}
 
 	// Set last IMU yaw to current IMU yaw
 	initial_yaw_ = yaw;
@@ -1002,7 +1024,7 @@ double parking_config_time_delay_{0.1};
 double drive_speed_time_delay_{0.1};
 std::array<swervemath::SpeedAndAngle, WHEELCOUNT> speeds_angles_;
 
-double initial_yaw_ = 0;
+double initial_yaw_ = std::numeric_limits<double>::max();
 
 // Attempt to limit speed of wheels which are pointing further from
 // their target angle. Should help to reduce the robot being pulled
