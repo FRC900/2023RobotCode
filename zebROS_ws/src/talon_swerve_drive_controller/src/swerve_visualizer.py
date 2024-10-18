@@ -18,7 +18,7 @@ class SwerveVisualizer:
         self.steering_names = rospy.get_param("swerve_drive_controller/steering")
         self.wheel_coords = rospy.get_param("swerve_drive_controller/wheel_coords")
         self.max_magnitude = max(max([[abs(y) for y in x] for x in self.wheel_coords])) * 3. / 2.
-        self.wheel_coords = [[self.WINDOW_SIZE/2. + (y / self.max_magnitude) * (self.WINDOW_SIZE / 2.) for y in  x] for x in self.wheel_coords]
+        self.wheel_coords = [[self.WINDOW_SIZE / 2. + (-pt / self.max_magnitude) * (self.WINDOW_SIZE / 2.) for pt in reversed(coord)] for coord in self.wheel_coords]
         
         max_speed = rospy.get_param("/teleop/teleop_params/max_speed")
         wheel_radius = rospy.get_param("swerve_drive_controller/wheel_radius")
@@ -60,12 +60,13 @@ class SwerveVisualizer:
         if len(self.speeds) == 0 or len(self.angles) == 0:
             return
         img = np.zeros((self.WINDOW_SIZE, self.WINDOW_SIZE, 3), np.uint8)
-        for c, a, s in zip(self.wheel_coords, self.angles, self.speeds):
+        for c, a, s, n in zip(self.wheel_coords, self.angles, self.speeds, self.steering_names):
             end_x, end_y = self.get_line_endpoints(self.WHEEL_SIZE, a)
             cv2.line(img, (int(c[0] + end_x), int(c[1] + end_y)), (int(c[0] - end_x), int(c[1] - end_y)), (255, 255, 0), 15)
+            cv2.putText(img, n, (int(c[0] - self.WINDOW_SIZE/10.), int(c[1] - 1.2 * abs(end_y))), cv2.FONT_HERSHEY_SIMPLEX, .75, (255, 255, 255), 2)
             if abs(s) > 0. :
                 end_x, end_y = self.get_line_endpoints(self.WHEEL_SIZE * s * self.speed_scale, a)
-                cv2.line(img, (int(c[0]), int(c[1])), (int(c[0] + end_x), int(c[1] + end_y)), (0, 0, 255), 5)
+                cv2.arrowedLine(img, (int(c[0]), int(c[1])), (int(c[0] + end_x), int(c[1] + end_y)), (0, 0, 255), 5, tipLength=0.5)
         cv2.imshow("Swerve Drive", img)
         cv2.waitKey(1)
 
