@@ -50,6 +50,7 @@ class PathLoader:
             return
         self.old_alliance = alliance
         self.old_auto_name = self.auto_name
+        
 
         rospy.loginfo(f"Publishing {self.auto_name}'s path for the {alliance.name} alliance")
         os.chdir("/home/ubuntu/2023RobotCode/zebROS_ws/src/auto_node/paths")

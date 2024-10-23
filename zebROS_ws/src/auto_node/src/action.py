@@ -26,7 +26,7 @@ class Action(ABC):
     @abstractmethod
     def done(self):
         pass
-    
+
     # does not actually have much effect (i.e multiple actions taking same subsytem works fine)
     @abstractmethod
     def affectedSystems(self) -> List[Subsystem]:
