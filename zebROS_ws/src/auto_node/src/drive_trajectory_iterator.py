@@ -1,6 +1,7 @@
 import rospy
 from drive_trajectory_action import DriveTrajectoryAction
-from auto_node_msgs.msg import PathGoalArray, PathGoal # have the path to be sent to the path follower
+from auto_node_msgs.msg import PathGoalArray # have the path to be sent to the path follower
+from path_follower_msgs.msg import PathGoal
 
 # notably NOT an action, just gets the right DriveTrajectoryAction to run and makes sure you don't mess up 
 class DriveTrajectoryActionIterator():

@@ -10,7 +10,8 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import os
 from frc_utils.match_data_helper import RobotStatusHelper, Alliance, RobotMode
 import re
-from auto_node_msgs.msg import PathGoal, PathGoalArray 
+from auto_node_msgs.msg import PathGoalArray 
+from path_follower_msgs.msg import PathGoal
 
 class PathLoader:
     def __init__(self):

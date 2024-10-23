@@ -4,8 +4,8 @@ import actionlib.simple_action_client
 from frc_utils.match_data_helper import RobotStatusHelper
 
 from typing import List
-from path_follower_msgs.msg import PathAction, PathFeedback, PathResult
-from auto_node_msgs.msg import PathGoalArray, PathGoal # have the path to be sent to the path follower
+from path_follower_msgs.msg import PathGoal, PathAction, PathFeedback, PathResult
+from auto_node_msgs.msg import PathGoalArray # have the path to be sent to the path follower
 import actionlib
 from subsystem import Subsystem
 
