@@ -12,9 +12,6 @@ Pathing is somewhat a special case. The path is loaded and published (latching) 
 ## How to make Choreo paths
 Open `choreo` in docker. Right now it is expected that all waypoints the "split" option is checked if it corresponds to a stop waypoint. Split or stop point on its own currently does nothing. There is other little bits of knowledge, probably the best advice for pathing is be humble and get something simple working and THEN speed it up.   
 
-## Current Possible Problems
-Main one is don't have a preempt situation set up yet, so if you disable in auto and then reenable in teleop quickly the path follower etc will still be running. Should be solvable if a real problem. 
-
 ## Other Notes
 Python packaging is annoying and the files should not all be flat in `src/`. At least an `autos/` directory for autos like `Test4Note.py` and `generic_actions` for the series/parallel/trajectory actions. Can be refactored in the future.
 

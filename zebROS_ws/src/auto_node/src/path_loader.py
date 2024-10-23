@@ -42,7 +42,7 @@ class PathLoader:
             rospy.logwarn("Alliance is unknown in the path loader!")
             return
         if self.auto_name is None:
-            rospy.logwarn_throttle(2, "Auto name is none is the path loader!")
+            rospy.logwarn_throttle(4, "Auto name is none is the path loader! (May be ok if auto has no path)")
             return
 
         # nothing has changed so can leave early
@@ -50,7 +50,7 @@ class PathLoader:
             return
         self.old_alliance = alliance
         self.old_auto_name = self.auto_name
-        
+
 
         rospy.loginfo(f"Publishing {self.auto_name}'s path for the {alliance.name} alliance")
         os.chdir("/home/ubuntu/2023RobotCode/zebROS_ws/src/auto_node/paths")

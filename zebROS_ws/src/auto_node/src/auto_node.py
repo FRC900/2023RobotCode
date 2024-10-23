@@ -38,7 +38,7 @@ class AutoNode():
         self.AUTO_NAME_TO_AUTOBASE = autos.init_auto_selection_map()
         self.timer = rospy.Timer(period=rospy.Duration(1.0/50.0), callback=self.loop)
         self.__auto_sub = rospy.Subscriber("/auto/auto_mode", AutoMode, self.set_auto_id)
-        self.__auto_name_pub = rospy.Publisher("/auto/auto_name", String, latch=True)
+        self.__auto_name_pub = rospy.Publisher("/auto/auto_name", String)
 
     def loop(self, _) -> None:
         """
@@ -64,11 +64,16 @@ class AutoNode():
             self.__selected_auto = None
             self.runner.reset_action_list()
             
-
         # only way this happens is if we havent set a valid auto, otherwise it will just be the last valid selected
-        if self.__selected_auto is None:                 
-            rospy.logerr_throttle(1, "No auto selected!")
-        
+        if self.__selected_auto is None:                
+            err_str = "No auto selected!"
+            if robot_mode == RobotMode.TELEOP:
+                err_str += " Must be disabled (Currently in teleop)"
+            rospy.logerr_throttle(1, err_str)
+            self.__auto_name_pub.publish(String(err_str))
+        else:
+            self.__auto_name_pub.publish(String(self.__selected_auto.display_name))
+
         # need to stress test this a ton and make sure there are no edge cases 
         if robot_mode == RobotMode.AUTONOMOUS:
             # Start the action on the transition from Disabled to Auto.
@@ -113,10 +118,7 @@ class AutoNode():
                 self.__path_loader.set_auto_name(IDS_TO_AUTO_NAME[msg.auto_mode]) # will load the path for the selected auto
             else:
                 rospy.logwarn_throttle_identical(10, f"AUTO NODE NOT LOADING A PATH for {self.__selected_auto.display_name} because expected trajectory count is 0")
-            if robot_mode == RobotMode.TELEOP:
-                self.__auto_name_pub.publish(String("Autos not generated in teleop, must be disabled in auto"))
-            else:
-                self.__auto_name_pub.publish(String(self.__selected_auto.display_name)) # latched publish
+            
             rospy.loginfo_throttle(10, f"Recived auto mode of - {msg.auto_mode} mapped to {IDS_TO_AUTO_NAME[msg.auto_mode]}")
         except Exception as e:
             rospy.logerr(f"Unable to look up auto with id {msg.auto_mode}\n error of {e}")
