@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from action import Action
-from subsystem import Subsystem
 from series_action import SeriesAction
 from parallel_action import ParallelAction
 from wait_action import WaitAction
@@ -11,13 +10,11 @@ class ActionRunner:
     def __init__(self) -> None:
         self.__active_action_list:List[Action] = []
 
-    def get_operated_systems(self) -> List[Subsystem]:
-        b = []
+    def preempt_all_actions(self):
+        rospy.logerr_throttle(5, "Preempting all actions since disabled!")
         for a in self.__active_action_list:
-            for s in a.affectedSystems():
-                b.append(s)
-        return b
-    
+            a.preempt()
+
     def reset_action_list(self):
         self.__active_action_list:List[Action] = []
 
@@ -58,6 +55,7 @@ class ActionRunner:
                     a.update()
         else:
             if num_actions > 0:
+                self.preempt_all_actions()
                 self.__active_action_list = []
 
 if __name__ == "__main__":

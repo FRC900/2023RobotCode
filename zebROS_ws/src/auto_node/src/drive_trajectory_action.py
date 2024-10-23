@@ -7,7 +7,6 @@ from typing import List
 from path_follower_msgs.msg import PathGoal, PathAction, PathFeedback, PathResult
 from auto_node_msgs.msg import PathGoalArray # have the path to be sent to the path follower
 import actionlib
-from subsystem import Subsystem
 
 class DriveTrajectoryAction(Action):
     """An action that drives a trajectory and waits for completion before ending"""
@@ -63,5 +62,9 @@ class DriveTrajectoryAction(Action):
     def isFinished(self) -> bool:
         return self.__done
 
-    def affectedSystems(self) -> List[Subsystem]:
-        return [ Subsystem.DRIVEBASE ]
+    def preempt(self):
+        rospy.logwarn("Preempt called for drive trajectory action, cancelling path goals")
+        # will cancel a couple times when there are more than 1 drive trajectory actions but should be ok
+        self.__path_follower_client.cancel_goals_at_and_before_time(rospy.Time.now()) 
+        self.__done = True
+

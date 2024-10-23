@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import List
-from subsystem import Subsystem
 
 class Action(ABC):
     """
@@ -27,9 +26,9 @@ class Action(ABC):
     def done(self):
         pass
 
-    # does not actually have much effect (i.e multiple actions taking same subsytem works fine)
+    # must be implemented, will be called if auto is preempted for some reason. Should reset everything and make the robot not move
     @abstractmethod
-    def affectedSystems(self) -> List[Subsystem]:
+    def preempt(self):
         pass 
 
     def __str__(self) -> str:

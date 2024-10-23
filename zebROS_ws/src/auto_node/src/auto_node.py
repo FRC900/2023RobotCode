@@ -52,10 +52,18 @@ class AutoNode():
         robot_mode : RobotMode = self.__robot_status.get_mode()
 
         # never ever do anything in teleop. 
+        # this is ok because prematch we sit disabled and the FMS reports auto, so all the setup will happen prematch
+        # i.e (disabled, auto) -> (enabled, auto) -> (disabled, auto) -> (enabled, teleop)
+        # want to preempt when going from auto to teleop without a disable first (does not happen often)
+        # dont want to preempt just generically in teleop because could lead to problems
+        if robot_mode == RobotMode.TELEOP and self.__prev_robot_mode == RobotMode.AUTONOMOUS:
+            self.__selected_auto = None
+            self.runner.preempt_all_actions() # want to preempt from auto -> teleop/disabled but not otherwise
+            self.runner.reset_action_list()
         if robot_mode == RobotMode.TELEOP:
             self.__selected_auto = None
             self.runner.reset_action_list()
-            return
+            
 
         # only way this happens is if we havent set a valid auto, otherwise it will just be the last valid selected
         if self.__selected_auto is None:                 
@@ -73,6 +81,7 @@ class AutoNode():
         elif robot_mode == RobotMode.DISABLED:
             if self.__prev_robot_mode == RobotMode.AUTONOMOUS:
                 self.__selected_auto = None
+                self.runner.preempt_all_actions() # also want to preempt from auto -> disable 
                 self.runner.reset_action_list()
 
             if self.__selected_auto != self.__prev_selected_auto:
@@ -97,13 +106,17 @@ class AutoNode():
     
 
     def set_auto_id(self, msg : AutoMode) -> None:
+        robot_mode : RobotMode = self.__robot_status.get_mode()
         try:
             self.__selected_auto = self.AUTO_NAME_TO_AUTOBASE[IDS_TO_AUTO_NAME[msg.auto_mode]]
             if self.__selected_auto.expected_trajectory_count != 0:
                 self.__path_loader.set_auto_name(IDS_TO_AUTO_NAME[msg.auto_mode]) # will load the path for the selected auto
             else:
                 rospy.logwarn_throttle_identical(10, f"AUTO NODE NOT LOADING A PATH for {self.__selected_auto.display_name} because expected trajectory count is 0")
-            self.__auto_name_pub.publish(String(self.__selected_auto.display_name)) # latched publish
+            if robot_mode == RobotMode.TELEOP:
+                self.__auto_name_pub.publish(String("Autos not generated in teleop, must be disabled in auto"))
+            else:
+                self.__auto_name_pub.publish(String(self.__selected_auto.display_name)) # latched publish
             rospy.loginfo_throttle(10, f"Recived auto mode of - {msg.auto_mode} mapped to {IDS_TO_AUTO_NAME[msg.auto_mode]}")
         except Exception as e:
             rospy.logerr(f"Unable to look up auto with id {msg.auto_mode}\n error of {e}")

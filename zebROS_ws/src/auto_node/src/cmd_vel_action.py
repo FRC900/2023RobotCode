@@ -3,7 +3,6 @@ import actionlib
 from action import Action
 from datetime import datetime
 from typing import List
-from subsystem import Subsystem
 from behavior_actions.msg import Intaking2024Action, Intaking2024Goal, Intaking2024Feedback, Intaking2024Result
 from geometry_msgs.msg import Twist
 
@@ -36,5 +35,13 @@ class CmdVelAction(Action):
     def isFinished(self) -> bool:
         return self.__finished
 
-    def affectedSystems(self) -> List[Subsystem]:
-        return [ Subsystem.INTAKE ]
+    def preempt(self):
+        rospy.logwarn("Preempt called for Cmd Vel Action, publishing a zero")
+        twist_msg = Twist()
+        # may be unneeded but like just to make sure
+        twist_msg.linear.x = 0
+        twist_msg.linear.y = 0
+        twist_msg.angular.z = 0 
+        self.__cmd_vel_pub_.publish(twist_msg)
+        self.start_time = None # force calling start again before resuming
+        self.__finished = True

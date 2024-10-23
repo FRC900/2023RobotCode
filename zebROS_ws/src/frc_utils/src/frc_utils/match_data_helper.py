@@ -17,6 +17,7 @@ class RobotMode(Enum):
 # @TODO don't crash when we haven't recived a message 
 class RobotStatusHelper:
     def __init__(self):
+        rospy.loginfo("Waiting 3 seconds for match data")
         self.__match_data_msg: MatchSpecificData = None
         rospy.Subscriber("/frcrobot_rio/match_data", MatchSpecificData, self.__update, tcp_nodelay=True)
         rospy.sleep(rospy.Duration(3)) # wait for some match data

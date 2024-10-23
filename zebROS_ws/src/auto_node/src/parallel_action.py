@@ -1,7 +1,6 @@
 from action import Action
 from datetime import datetime
 from typing import List
-from subsystem import Subsystem
 
 class ParallelAction(Action):
     def __init__(self, action_list:List[Action]):
@@ -36,11 +35,9 @@ class ParallelAction(Action):
 
         return retval
 
-    def affectedSystems(self) -> List[Subsystem]:
-        retlist = []
+    def preempt(self):
         for a in self.__action_list:
-            retlist.extend(a.affectedSystems())
-        return retlist
+            a.preempt()
     
     def __str__(self) -> str:
         return f"Parallel: {', '.join(str(a) for a in self.__action_list)}"

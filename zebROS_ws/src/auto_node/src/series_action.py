@@ -1,7 +1,6 @@
 from action import Action
 from datetime import datetime
 from typing import List
-from subsystem import Subsystem
 
 class SeriesAction(Action):
     def __init__(self, action_list:List[Action]):
@@ -43,11 +42,9 @@ class SeriesAction(Action):
     def isFinished(self) -> bool:
         return self.__current_action == None and self.__current_action_index == len(self.__action_list)
 
-    def affectedSystems(self) -> List[Subsystem]:
-        retlist = []
+    def preempt(self):
         for a in self.__action_list:
-            retlist.extend(a.affectedSystems())
-        return retlist
+            a.preempt()
     
     def __str__(self) -> str:
         return f"Series: {str(self.__current_action)}"

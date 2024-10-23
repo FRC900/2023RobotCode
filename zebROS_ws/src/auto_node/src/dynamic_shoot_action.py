@@ -7,7 +7,6 @@ from typing import List
 from behavior_actions.msg import Shooting2024Action, Shooting2024Goal, Shooting2024Result, Shooting2024Feedback
 from behavior_actions.msg import AutoAlignSpeaker
 import actionlib
-from subsystem import Subsystem
 
 class DynamicShootAction(Action):
     """An action that shoots without aligning using the current distance from the subwoofer"""
@@ -17,7 +16,7 @@ class DynamicShootAction(Action):
         # conflicting goals could be bad, but seems the same as one client sending two goals
         self.__shooting_client = actionlib.SimpleActionClient("/shooting/shooting_server_2024", Shooting2024Action)
         if not self.__shooting_client.wait_for_server(rospy.Duration(5)):
-            rospy.logerr("Path follower server not up after 5 seconds, exiting")
+            rospy.logerr("Shooting clinet  not up after 5 seconds, exiting")
             exit(1)
 
         self.__subwoofer = subwoofer
@@ -55,6 +54,8 @@ class DynamicShootAction(Action):
     def isFinished(self) -> bool:
         return self.__done
 
-    def affectedSystems(self) -> List[Subsystem]:
-        return [ Subsystem.SHOOTER ]
+    def preempt(self):
+        rospy.logwarn("Preempt called for dynamic shoot action, stopping shooter")
+        self.__shooting_client.cancel_goals_at_and_before_time(rospy.Time.now())
+        self.__done = True
 

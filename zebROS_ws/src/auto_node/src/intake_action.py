@@ -3,7 +3,6 @@ import actionlib
 from action import Action
 from datetime import datetime
 from typing import List
-from subsystem import Subsystem
 from behavior_actions.msg import Intaking2024Action, Intaking2024Goal, Intaking2024Feedback, Intaking2024Result
 
 class IntakeAction(Action):
@@ -34,5 +33,7 @@ class IntakeAction(Action):
     def isFinished(self) -> bool:
         return self.__finished
 
-    def affectedSystems(self) -> List[Subsystem]:
-        return [ Subsystem.INTAKE ]
+    def preempt(self):
+        rospy.logwarn("Preempt called for intake action, stopping intake")
+        self.__intake_client.cancel_goals_at_and_before_time(rospy.Time.now())
+        self.__finished = True

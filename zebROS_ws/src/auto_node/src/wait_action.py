@@ -1,7 +1,7 @@
 from action import Action
 from datetime import datetime
 from typing import List
-from subsystem import Subsystem
+import rospy
 
 class WaitAction(Action):
     """An action that waits for the specified amount of time in seconds"""
@@ -24,6 +24,9 @@ class WaitAction(Action):
         if duration.total_seconds() > self.__time_to_wait:
             print("Wait action finished!")
             return True 
+        else:
+            return False
 
-    def affectedSystems(self) -> List[Subsystem]:
-        return [ Subsystem.NONE ]
+    def preempt(self):
+        rospy.logwarn("Wait action preempted!!!!.... what did you want to happen")
+        
