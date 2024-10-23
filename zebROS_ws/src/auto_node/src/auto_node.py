@@ -14,9 +14,11 @@ import autos
 from autos import AutonomousNames
 from path_loader import PathLoader
 from frc_utils.match_data_helper import RobotStatusHelper, Alliance, RobotMode
+from std_msgs.msg import String
 
-# number to str of auto name
-IDS_TO_AUTO_NAME: dict[int, str] = {1: AutonomousNames.TestCmdVel, 2: AutonomousNames.Test4Note}
+# number to str of auto name, what /auto/auto_mode needs to send to run a given auto
+IDS_TO_AUTO_NAME: dict[int, str] = {1: AutonomousNames.TestCmdVel, 
+                                    2: AutonomousNames.Test4Note}
 
 
 class AutoNode():
@@ -36,6 +38,7 @@ class AutoNode():
         self.AUTO_NAME_TO_AUTOBASE = autos.init_auto_selection_map()
         self.timer = rospy.Timer(period=rospy.Duration(1.0/50.0), callback=self.loop)
         self.__auto_sub = rospy.Subscriber("/auto/auto_mode", AutoMode, self.set_auto_id)
+        self.__auto_name_pub = rospy.Publisher("/auto/auto_name", String, latch=True)
 
     def loop(self, _) -> None:
         """
@@ -100,6 +103,7 @@ class AutoNode():
                 self.__path_loader.set_auto_name(IDS_TO_AUTO_NAME[msg.auto_mode]) # will load the path for the selected auto
             else:
                 rospy.logwarn_throttle_identical(10, f"AUTO NODE NOT LOADING A PATH for {self.__selected_auto.display_name} because expected trajectory count is 0")
+            self.__auto_name_pub.publish(String(self.__selected_auto.display_name)) # latched publish
             rospy.loginfo_throttle(10, f"Recived auto mode of - {msg.auto_mode} mapped to {IDS_TO_AUTO_NAME[msg.auto_mode]}")
         except Exception as e:
             rospy.logerr(f"Unable to look up auto with id {msg.auto_mode}\n error of {e}")

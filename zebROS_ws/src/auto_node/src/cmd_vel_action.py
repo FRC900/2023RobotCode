@@ -10,7 +10,7 @@ from geometry_msgs.msg import Twist
 class CmdVelAction(Action):
     """Publishes the given Twist to the swerve topic for the specified time"""
     def __init__(self, twist: Twist, time: float):        
-        self.__cmd_vel_pub_ = rospy.Publisher("/auto/cmd_vel", Twist, tcp_nodelay=False)
+        self.__cmd_vel_pub_ = rospy.Publisher("/auto/cmd_vel", Twist, queue_size=1, tcp_nodelay=False)
         self.__finished = False
         self.__run_time: float = time
         self.__twist: Twist = twist
