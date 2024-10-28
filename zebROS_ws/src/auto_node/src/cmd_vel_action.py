@@ -24,7 +24,7 @@ class CmdVelAction(Action):
     def update(self):
         if rospy.Time.now() - self.start_time > rospy.Duration(self.__run_time):
             rospy.loginfo_throttle(1, "Cmd Vel action finished")
-            self.__finished = True
+            self.preempt()
         else:
             self.__cmd_vel_pub_.publish(self.__twist)
             rospy.loginfo_throttle(1, "Still running cmd_vel action!")

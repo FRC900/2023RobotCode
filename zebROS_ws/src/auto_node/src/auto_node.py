@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+from __future__ import annoations
+
 import signal
 import sys
 
