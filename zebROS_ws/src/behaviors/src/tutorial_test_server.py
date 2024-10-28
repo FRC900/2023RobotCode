@@ -33,20 +33,22 @@ class TutorialTestServer(object):
         self._as.start()
 
     def joint_state_cb(self, msg):
-        self.limit_switch = find_joint_state(msg, "test_limit_switch")
+        self.limit_switch = find_joint_state(msg, "diverter_limit_switch")
 
     def execute_cb(self, goal):
+        rospy.loginfo(f"called with {goal.output}")
         self._feedback = TutorialTestFeedback()
         self._feedback.current_state = self._feedback.WAITING_FOR_TOGGLE
         self._as.publish_feedback(self._feedback)
 
-        r = rospy.Rate(1)
+        r = rospy.Rate(20)
         while not rospy.is_shutdown():
             if self._as.is_preempt_requested():
                 rospy.loginfo("2024_diverter_server: preempted")
                 self._as.set_preempted()
                 return
             if self.limit_switch != 0:
+                rospy.loginfo("limit switch pressed")
                 self._feedback.current_state = self._feedback.RUNNING_MOTOR
                 self._as.publish_feedback(self._feedback)
                 rospy.wait_for_service(self._command_service)

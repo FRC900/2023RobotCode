@@ -41,7 +41,6 @@
 			 fl_cancoder_controller
 			 br_cancoder_controller
 			 fr_cancoder_controller
-			 swerve_drive_controller
 			 joint_state_controller_jetson
 			 joint_state_listener_controller_jetson
 			 talon_state_controller_jetson
@@ -49,7 +48,6 @@
 			 match_state_listener_controller
 			 talonfxpro_state_controller
 			 talonfxpro_config_controller
-			 intake_talonfxpro_controller
 			 top_left_shooter_controller
 			 top_right_shooter_controller
 			 bottom_left_shooter_controller
