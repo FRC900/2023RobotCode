@@ -1,5 +1,8 @@
 # Auto Node
 
+## Refrences
+[195 autos, check for how to compose actions](https://gitlab.team195.com/cyberknights/ros2/robots/knight_shift/autonomous_node/-/tree/main/autonomous_node/autos?ref_type=heads)
+
 ## How it works
 There is a base class `action.py`, that "actions" are based off of. These actions are then run by `action_runner.py`. Actions are non blocking. The two foundational actions are `series_action.py` and `parallel_action.py`, which combined together make essentially a tree that should represent whatever we want to do in auto. This could also be used in teleop but is essentially just actionlib.
 

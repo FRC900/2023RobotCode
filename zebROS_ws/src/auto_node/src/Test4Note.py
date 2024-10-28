@@ -5,6 +5,8 @@ from drive_trajectory_iterator import DriveTrajectoryActionIterator
 from parallel_action import ParallelAction
 from intake_action import IntakeAction
 from dynamic_shoot_action import DynamicShootAction
+from wait_intake_action import WaitIntakeAction
+from wait_trajectory_action import WaitTrajectoryAction
 
 class Test4Note(AutoBase):
     def __init__(self) -> None:
@@ -17,24 +19,25 @@ class Test4Note(AutoBase):
         return SeriesAction([
             DynamicShootAction(subwoofer=True),
             ParallelAction([
-                IntakeAction(off=False), 
+                WaitIntakeAction(), 
                 drive_traj_iter.get_next_trajectory_action()
             ]),
+            
+            ParallelAction([
+                drive_traj_iter.get_next_trajectory_action(),
+                SeriesAction([WaitTrajectoryAction(0.5),
+                              DynamicShootAction()
+                              ])
+            ]),
+
             #waitForIntakeAction(timeout=1),
-            WaitAction(2), # can do so much better than this but like start slow,
-                           # really want to wait until the note is "owned" and then continue driving
+            WaitIntakeAction(),
             ParallelAction([
                 DynamicShootAction(),
                 drive_traj_iter.get_next_trajectory_action(),
             ]),
             #waitForIntakeAction(timeout=1),
-            WaitAction(2),
-            ParallelAction([
-                DynamicShootAction(),
-                drive_traj_iter.get_next_trajectory_action(),
-            ]),
-            #waitForIntakeAction(timeout=1),
-            WaitAction(2),
+            WaitIntakeAction(),
             DynamicShootAction(),
             IntakeAction(off=True)
         ])

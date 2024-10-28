@@ -1,6 +1,6 @@
 
 # should be __init__.py in autos directory
-from __future__ import annoations
+from __future__ import annotations
 from enum import Enum
 from auto_base import AutoBase
 # import all autos here

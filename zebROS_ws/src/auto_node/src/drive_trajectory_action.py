@@ -22,7 +22,7 @@ class DriveTrajectoryAction(Action):
         self.__trajectory_index = trajectory_index
         self.__latest_feedback: PathFeedback = None
         self.__path_sub = rospy.Subscriber("/auto/current_auto_path", PathGoalArray, self.path_sub, tcp_nodelay=True)
-        self.__done = False
+        self.__finished = False
 
     def path_sub(self, path_array: PathGoalArray):
         rospy.loginfo(f"Current path updated to path for {path_array.auto_name}")
@@ -37,7 +37,7 @@ class DriveTrajectoryAction(Action):
 
     def done_cb(self, status: PathFeedback, result: PathResult):
         rospy.loginfo(f"Pathing for step {self.__trajectory_index} DONE")
-        self.__done = True
+        self.__finished = True
 
     def start(self):
         rospy.loginfo(f"Running path step {self.__trajectory_index} for auto {self.__autonomous_name}")
@@ -60,11 +60,11 @@ class DriveTrajectoryAction(Action):
         pass
 
     def isFinished(self) -> bool:
-        return self.__done
+        return self.__finished
 
     def preempt(self):
         rospy.logwarn("Preempt called for drive trajectory action, cancelling path goals")
         # will cancel a couple times when there are more than 1 drive trajectory actions but should be ok
         self.__path_follower_client.cancel_goals_at_and_before_time(rospy.Time.now()) 
-        self.__done = True
+        self.__finished = True
 

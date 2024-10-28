@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from __future__ import annoations
+from __future__ import annotations
 
 import signal
 import sys
@@ -41,7 +41,7 @@ class AutoNode():
         self.AUTO_NAME_TO_AUTOBASE = autos.init_auto_selection_map()
         self.timer = rospy.Timer(period=rospy.Duration(1.0/50.0), callback=self.loop)
         self.__auto_sub = rospy.Subscriber("/auto/auto_mode", AutoMode, self.set_auto_id)
-        self.__auto_name_pub = rospy.Publisher("/auto/auto_name", String)
+        self.__auto_name_pub = rospy.Publisher("/auto/auto_name", String, queue_size=1)
 
     def loop(self, _) -> None:
         """
