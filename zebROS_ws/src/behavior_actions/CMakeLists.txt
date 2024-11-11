@@ -124,6 +124,7 @@ add_action_files(
 		DriveAndScore2024.action
 		Climb2024.action
 		TutorialTest.action
+		TurnToFrame.action
 )
 
 generate_messages(DEPENDENCIES actionlib_msgs nav_msgs std_msgs geometry_msgs)
