@@ -21,6 +21,7 @@ Zero point in degrees is set using service call.
 #include <ros/ros.h>
 #include <angles/angles.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <talon_state_msgs/LatencyCompensationState.h>
 #include <sensor_msgs/Imu.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -35,7 +36,7 @@ Zero point in degrees is set using service call.
 #include <zed_interfaces/reset_tracking.h>
 #include <zed_interfaces/reset_odometry.h>
 
-const std::string sub_topic = "imu/data";
+const std::string sub_topic = "latency_compensation_states";
 const std::string pub_topic = "zeroed_imu";
 const std::string service_name = "set_imu_zero";
 const std::string bias_service_name = "imu/bias_estimate";
@@ -135,27 +136,54 @@ double getYaw(const tf2::Quaternion &q)
 	return yaw;
 }
 
-void zeroCallback(const sensor_msgs::Imu::ConstPtr& raw_msg) {
-  geometry_msgs::TransformStamped transformStamped;
-  try
-  {
-    transformStamped = tfBuffer.lookupTransform("base_link", raw_msg->header.frame_id, ros::Time(0));
+void zeroCallback(const talon_state_msgs::LatencyCompensation::ConstPtr& raw_msg) {
+  for (int i = 0; i < raw_msg->name.size(); i++) {
+    if (raw_msg->name[i] == "pigeon2_roll") {
+      double roll = raw_msg->latency_compensation_groups[i].value;
+      double roll_vel = raw_msg->latency_compensation_groups[i].slope;
+      roll += roll_vel * (ros::Time::now() - raw_msg->latency_compensation_groups[i].stamp);
+    }
+
+    if (raw_msg->name[i] == "pigeon2_yaw") {
+      double yaw = raw_msg->latency_compensation_groups[i].value;
+      double yaw_vel = raw_msg->latency_compensation_groups[i].slope;
+      yaw += yaw_vel * (ros::Time::now() - raw_msg->latency_compensation_groups[i].stamp);
+    }
+
+    if (raw_msg->name[i] == "pigeon2_pitch") {
+      double pitch = raw_msg->latency_compensation_groups[i].value;
+      double pitch_vel = raw_msg->latency_compensation_groups[i].slope;
+      pitch += pitch_vel * (ros::Time::now() - raw_msg->latency_compensation_groups[i].stamp);
+    }
   }
-  catch (tf2::TransformException &ex)
-  {
-    ROS_WARN_STREAM_THROTTLE(1.0, "imu_zero : error looking up transform from "
-                               << raw_msg->header.frame_id
-                               << " to base_link : "
-                               << ex.what());
-    return;
-  }
-  sensor_msgs::Imu zeroed_imu = *raw_msg;
-  tf2::doTransform(zeroed_imu, zeroed_imu, transformStamped);
-  tf2::convert(zeroed_imu.orientation, last_raw);
-  tf2::Quaternion zeroed = zero_rot * last_raw;
+
+  tf2::Quaternion unzeroed;
+  unzeroed.setRPY(roll, pitch, yaw);
+  unzeroed.normalize()
+
+  // geometry_msgs::TransformStamped transformStamped;
+  // try
+  // {
+  //   transformStamped = tfBuffer.lookupTransform("base_link", "pigeon2_frame", ros::Time(0));
+  // }
+  // catch (tf2::TransformException &ex)
+  // {
+  //   ROS_WARN_STREAM_THROTTLE(1.0, "imu_zero : error looking up transform from "
+  //                              << raw_msg->header.frame_id
+  //                              << " to base_link : "
+  //                              << ex.what());
+  //   return;
+  // }
+  // tf2::doTransform(unzeroed, unzeroed, transformStamped);
+
+  tf2::Quaternion zeroed = zero_rot * unzeroed;
   zeroed.normalize();
 
+  sensor_msgs::Imu zeroed_imu;
   zeroed_imu.orientation = tf2::toMsg(zeroed);
+  zeroed_imu.header.stamp = ros::Time::now();
+  zeroed_imu.header.frame_id = "pigeon2_frame";
+
   if (!std::isfinite(getYaw(zeroed)))
   {
 	  ROS_WARN_STREAM_THROTTLE(5., "zeroCallback : NaN yaw result"
@@ -167,7 +195,6 @@ void zeroCallback(const sensor_msgs::Imu::ConstPtr& raw_msg) {
   }
   else
   {
-    zeroed_imu.header = raw_msg->header;
 	  pub.publish(zeroed_imu);
   }
 }
