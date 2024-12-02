@@ -93,18 +93,15 @@ namespace frc971_gpu_apriltag
             objdetect_msg.header.frame_id = camera_info->header.frame_id;
             for (const auto &result : results)
             {
-                for (const auto &tag : apriltag_array.apriltags)
+                // if tag id is found
+                if (legal_tags_.count(result.id) != 0)
                 {
-                    // if tag id is found
-                    if (legal_tags_.count(tag.id) != 0)
-                    {
-                        apriltag_array.apriltags.emplace_back();
-                        // ROS_INFO_STREAM_THROTTLE(1, "Allowing tag with id " << tag.id  );
-                    }
-                    else
-                    {
-                        ROS_WARN_STREAM("Filtering tag with id " << tag.id);
-                    }
+                    apriltag_array.apriltags.emplace_back();
+                    // ROS_INFO_STREAM_THROTTLE(1, "Allowing tag with id " << tag.id  );
+                }
+                else
+                {
+                    ROS_WARN_STREAM("Filtering tag with id " << result.id);
                 }
 
                 auto &msg = apriltag_array.apriltags.back();
